@@ -1,0 +1,555 @@
+import Base:*, broadcast, reshape, exp, log, tanh, sum, 
+    adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
+    vec, \, cos, sin, sign, map
+import LinearAlgebra: diag, det, norm
+import Statistics: mean
+import FFTW: fft, ifft
+export 
+*,
+^,
+einsum,
+sigmoid,
+tanh,
+mean,
+log,
+exp,
+softplus,
+softmax,
+sum,
+relu,
+squeeze,
+adjoint,
+diag,
+det,
+inv,
+solve,
+triangular_solve,
+argmin,
+argmax,
+max,
+min,
+group_assign,
+assign,
+maximum,
+minimum,
+cast,
+group,
+clip,
+scatter_add,
+scatter_div,
+scatter_max,
+scatter_min,
+scatter_mul,
+scatter_sub,
+stack,
+concat,
+unstack,
+norm,
+cvec,
+rvec,
+vec,
+sqrt,
+mean,
+pad,
+leaky_relu,
+fft, 
+ifft
+
+
+
+function Base.:*(o1::PyObject, o2::PyObject)
+    s1 = size(o1)
+    s2 = size(o2)
+    if s1==nothing || s2==nothing
+        error("o1 and o2 should be tensors of rank 0, 1, 2")
+    end
+    if length(s1)==2 && length(s2)==2
+        return tf.matmul(o1, o2)
+    elseif length(s1)==2 && length(s2)==1
+        return tf.einsum("nm,m->n", o1, o2)
+    elseif length(s1)==2 && length(s2)==0
+        return tf.multiply(o1, o2)
+    elseif length(s1)==1 && length(s2)==2
+        error("[rand 1] x [rank 2] not defined")
+    elseif length(s1)==1 && length(s2)==1
+        return tf.multiply(o1, o2)
+    elseif length(s1)==1 && length(s2)==0
+        return tf.multiply(o1, o2)
+    elseif length(s1)==0 && length(s2)==2
+        return tf.multiply(o1, o2)
+    elseif length(s1)==0 && length(s2)==1
+        return tf.multiply(o1, o2)
+    elseif length(s1)==0 && length(s2)==0
+        return tf.multiply(o1, o2)
+    else
+        @warn("Unusual usage of multiplication. Check carefully")
+        tf.multiply(o1,o2)
+    end
+end
+
+Base.:*(o1::PyObject, o2::Array) = *(o1, constant(o2, dtype=get_dtype(o1)))
+Base.:*(o1::Array, o2::PyObject) = *(constant(o1, dtype=get_dtype(o2)), o2)
+Base.:*(o1::Number, o2::PyObject) = *(constant(o1, dtype=get_dtype(o2)), o2)
+Base.:*(o1::PyObject, o2::Number) = *(o1, constant(o2, dtype=get_dtype(o1)))
+
+Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::Array) = tf.multiply(o1, o2)
+Base.Broadcast.broadcasted(::typeof(*), o1::Array, o2::PyObject) = tf.multiply(o1, o2)
+Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::PyObject) = tf.multiply(o1, o2)
+Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::Number) = tf.multiply(o1, o2)
+Base.Broadcast.broadcasted(::typeof(*), o1::Number, o2::PyObject) = tf.multiply(o1, o2)
+
+Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::Array) = tf.divide(o1, o2)
+Base.Broadcast.broadcasted(::typeof(/), o1::Array, o2::PyObject) = tf.divide(o1, o2)
+Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::PyObject) = tf.divide(o1, o2)
+Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::Number) = tf.divide(o1, o2)
+Base.Broadcast.broadcasted(::typeof(/), o1::Number, o2::PyObject) = tf.divide(o1, o2)
+
+Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::Array) = o1 + o2
+Base.Broadcast.broadcasted(::typeof(+), o1::Array, o2::PyObject) = o1 + o2
+Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::PyObject) = o1 + o2
+Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::Number) = o1 + o2
+Base.Broadcast.broadcasted(::typeof(+), o1::Number, o2::PyObject) = o1 + o2
+
+Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::Array) = o1 - o2
+Base.Broadcast.broadcasted(::typeof(-), o1::Array, o2::PyObject) = o1 - o2
+Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::PyObject) = o1 - o2
+Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::Number) = o1 - o2
+Base.Broadcast.broadcasted(::typeof(-), o1::Number, o2::PyObject) = o1 - o2
+
+
+warn_broadcast_pow() = error(".^ is disabled due to eager evaluation. Use ^ instead.")
+Base.Broadcast.broadcasted(::typeof(^), o1::PyObject, o2::Union{Array,Number}) = warn_broadcast_pow()
+Base.Broadcast.broadcasted(::typeof(^), o1::PyObject, o2::PyObject) = warn_broadcast_pow()
+Base.Broadcast.broadcasted(::typeof(^), o1::Union{Array,Number}, o2::PyObject) = warn_broadcast_pow()
+
+function einsum(equation, args...; kwargs...)
+    tf.einsum(equation, args...; kwargs...)
+end
+
+"""
+`reshape` is designed so that we can think of tensors in column major
+"""
+function reshape(o::PyObject, s::Integer; kwargs...)
+    if length(size(o))==2
+        return tf.reshape(o', [s]; kwargs...)
+    end
+    tf.reshape(o, [s]; kwargs...)
+end
+
+function reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
+    if length(size(o))==1
+        return tf.reshape(o, [n,m]; kwargs...)'
+    elseif length(size(o))==2
+        return tf.reshape(o', [n,m]; kwargs...)'
+    end
+    tf.reshape(o, [m, n]; kwargs...)
+end
+
+function _tfreshape(o::PyObject, s...; kwargs...)
+    if length(size(o))==2
+        return tf.reshape(o', [s...]; kwargs...)
+    end
+    tf.reshape(o, [s...]; kwargs...)
+end
+
+function sigmoid(o::PyObject; kwargs...)
+    tf.math.sigmoid(o; kwargs...)
+end
+
+function relu(o::PyObject; kwargs...)
+    tf.nn.relu(o; kwargs...)
+end
+
+function leaky_relu(o::PyObject; kwargs...)
+    tf.nn.leaky_relu(o; kwargs...)
+end
+
+function tanh(o::PyObject; kwargs...)
+    tf.tanh(o; kwargs...)
+end
+
+function argmax(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.argmax(o; kwargs...) + 1
+end
+
+function Base.:sqrt(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.sqrt(o)
+end
+
+function argmin(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.argmin(o; kwargs...) + 1
+end
+
+function max(o1::PyObject, o2::PyObject; kwargs...)
+    tf.maximum(o1, o2; kwargs...)
+end
+
+function min(o1::PyObject, o2::PyObject; kwargs...)
+    tf.minimum(o1, o2; kwargs...)
+end
+
+function maximum(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.reduce_max(o; kwargs...) 
+end
+
+function minimum(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.reduce_min(o; kwargs...) 
+end
+
+function cast(x::PyObject, dtype::Type;kwargs...)
+    dtype = DTYPE[dtype]
+    tf.cast(x, dtype; kwargs...)
+end
+
+function cast(dtype::Type, x::PyObject;kwargs...)
+    dtype = DTYPE[dtype]
+    tf.cast(x, dtype; kwargs...)
+end
+
+function softplus(x;kwargs...)
+    tf.math.softplus(x; kwargs...)
+end
+
+function log(o::PyObject; kwargs...)
+    tf.log(o; kwargs...)
+end
+
+function exp(o::PyObject; kwargs...)
+    tf.exp(o; kwargs...)
+end
+
+function cos(o::PyObject; kwargs...)
+    tf.cos(o; kwargs...)
+end
+
+function sin(o::PyObject; kwargs...)
+    tf.sin(o; kwargs...)
+end
+
+function sign(o::PyObject; kwargs...)
+    tf.sign(o; kwargs...)
+end
+
+function softmax(o::PyObject; kwargs...)
+    tf.math.softmax(o; kwargs...)
+end
+
+function sum(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.reduce_sum(o; kwargs...)
+end
+
+function mean(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.reduce_mean(o; kwargs...)
+end
+function squeeze(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.squeeze(o;kwargs...)
+end
+function pad(o::PyObject, paddings, args...; kwargs...)
+    tf.pad(o, paddings, args...; kwargs...)
+end
+
+function assign(o::PyObject,value, args...; kwargs...)
+    tf.assign(o, value, args...;kwargs...)
+end
+
+function group(args...; kwargs...)
+    tf.group(args...; kwargs...)
+end
+
+assign(o::Array{PyObject}, value::Array, args...;kwargs...) = group_assign(o, value, args...; kwargs...)
+
+
+@deprecate group_assign assign
+"""
+group_assign(os::Array{PyObject}, values, args...; kwargs...)
+
+apply `assign` to each element of `os` and `values`
+"""
+function group_assign(os::Array{PyObject}, values, args...; kwargs...)
+    ops = Array{PyObject}(undef, length(os))
+    for i = 1:length(os)
+        ops[i] = tf.assign(os[i], values[i], args...; kwargs...)
+    end
+    ops
+end
+
+function rvec(o::PyObject; kwargs...)
+    s = size(o)
+    if length(s)==0
+        return reshape(o, 1, 1, kwargs...)
+    elseif length(s)==1
+        return reshape(o, 1, s[1], kwargs...)
+    elseif length(s)==2
+        return reshape(o, 1, s[1]*s[2], kwargs...)
+    else
+        error("Invalid argument")
+    end
+end
+
+function cvec(o::PyObject;kwargs...)
+    s = size(o)
+    if length(s)==0
+        return reshape(o, 1, 1,kwargs...)
+    elseif length(s)==1
+        return reshape(o, s[1], 1,kwargs...)
+    elseif length(s)==2
+        return reshape(o, s[1]*s[2], 1,kwargs...)
+    else
+        error("Invalid argument")
+    end
+end
+
+function vec(o::PyObject;kwargs...)
+    s = size(o)
+    if length(s)==0
+        return reshape(o, 1,kwargs...)
+    elseif length(s)==1
+        return o
+    elseif length(s)==2
+        return tf.reshape(tf.linalg.adjoint(o), (s[1]*s[2],),kwargs...)
+    else
+        error("Invalid argument")
+    end
+end
+
+# linear algebra
+function adjoint(o::PyObject; kwargs...) 
+    if length(size(o))<=1
+        return rvec(o)
+    end
+    tf.linalg.adjoint(o; kwargs...)
+end
+diag(o::PyObject; kwargs...) = tf.linalg.diag(o; kwargs...)
+det(o::PyObject; kwargs...) = tf.linalg.det(o; kwargs...)
+inv(o::PyObject; kwargs...) = tf.linalg.inv(o; kwargs...)
+
+function solve(matrix, rhs; kwargs...)
+    flag = false
+    if isa(rhs, Array)
+        rhs = constant(rhs)
+    end
+    if length(size(rhs))==1
+        flag = true
+        rhs = reshape(rhs, size(rhs, 1), 1)
+    end
+    ret = tf.linalg.solve(matrix, rhs; kwargs...)
+    if flag
+        ret = squeeze(ret, dims=2)
+    end
+    return ret
+end
+
+Base.:\(o1::PyObject, o2::PyObject) = solve(o1, o2)
+Base.:\(o1::PyObject, o2::Array) = solve(o1, o2)
+Base.:\(o1::Array, o2::PyObject) = solve(o1, o2)
+
+
+function triangular_solve(matrix, rhs; kwargs...)
+    flag = false
+    if length(size(rhs))==1
+        flag = true
+        rhs = reshape(rhs, size(rhs, 1), 1)
+    end
+    ret = tf.linalg.triangular_solve(matrix, rhs; kwargs...)
+    if flag
+        ret = squeeze(ret, dims=2)
+    end
+    return ret
+end
+
+# reference: https://blog.csdn.net/LoseInVain/article/details/79638183
+function concat(o::Union{PyObject,Array{PyObject}}, args...;kwargs...)
+    if isa(o, PyObject)
+        @warn "Only one input is consumed by concat" maxlog=1
+        return o
+    end
+    kwargs = jlargs(kwargs)
+    tf.concat(o, args...; kwargs...)
+end
+
+function stack(o::Array{PyObject}, args...;kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.stack(o, args...; kwargs...)
+end
+
+Base.:vcat(args::PyObject...) = concat([args...],0)
+Base.:hcat(args::PyObject...) = length(size(args[1]))>=2 ? concat([args...],1) : stack([args...],dims=2)
+
+# for TensorArray
+function stack(o::PyObject)
+    o.stack()
+end
+
+function unstack(o::PyObject, args...;kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.unstack(o, args...; kwargs...)
+end
+
+# https://github.com/tensorflow/tensorflow/issues/2358#issuecomment-274590896
+for (op1, op2) = [(:scatter_add, :add), (:scatter_sub, :subtract), (:scatter_mul,:multiply), (:scatter_div, div)]
+    @eval begin
+        function $op1(ref::PyObject, indices, updates; kwargs...)
+            if isa(indices, BitArray{1}) || isa(indices, Array{Bool,1})
+                indices = findall(indices)
+            elseif isa(indices, UnitRange{Int64}) || isa(indices, StepRange{Int64, Int64})
+                indices = collect(indices)
+            elseif isa(indices, Colon)
+                indices = (1:size(ref,1) |> collect)
+            end
+            
+            indices = indices .- 1
+            
+            if isa(indices, Number)
+                indices = reshape([indices], 1, 1)
+            else
+                indices = reshape(indices, length(indices), 1)
+            end
+            
+            if isa(updates, Number)
+                updates = reshape([updates], 1)
+            elseif isa(updates, Array)
+                updates = reshape(updates, length(updates))
+            elseif isa(updates, PyObject)
+                if length(size(updates))==0
+                    updates = reshape(updates, 1)
+                else
+                    updates = reshape(updates, size(updates,1))
+                end
+            end
+            ref_shape = size(ref)
+            scattered_updates = tf.scatter_nd(indices, updates, ref_shape)
+            output = tf.$op2(ref, scattered_updates)
+        end
+    end
+end
+
+const Index = Union{Int64, Array{Int64,1}, UnitRange{Int64}, StepRange{Int64,Int64}}
+
+function _sub2ind_scatter_update(idx::Index, idy::Index, M::Int64, N::Int64)
+    if isa(idx, Int64)
+        idx = [idx]
+    end
+    if isa(idy, Int64)
+        idy = [idy]
+    end
+    idx = collect(idx)
+    idy = collect(idy)
+    if maximum(idx)>M || maximum(idy)>N || minimum(idx)<1 || minimum(idy)<1
+        error("Invalid argument for idx and idy")
+    end
+    ind = zeros(Int64, length(idx)*length(idy))
+    for i = 1:length(idx)
+        for j = 1:length(idy)
+            # ind[(i-1)*length(idy)+j] = idy[j] + (idx[i]-1)*N
+            ind[i + (j-1)*length(idx)] = idx[i] + (idy[j]-1)*M
+        end
+    end
+    ind
+end
+
+# matrix row major
+for op = [:scatter_add, :scatter_sub, :scatter_mul, :scatter_div]
+    @eval begin
+        function $op(ref::PyObject, idx::Index, idy::Index, updates, 
+                    M::Union{Nothing,Int64}=nothing, N::Union{Nothing,Int64}=nothing; kwargs...)
+            if length(size(ref))==2 &&  (M!=nothing) && (N!=nothing)
+                error("No need to provide M, N for a matrix")
+            end
+            is_matrix = false
+            if M==nothing || N==nothing
+                if length(size(ref))!=2
+                    error("M,N not provided, ref must be a matrix")
+                end
+                M, N = size(ref)
+                ref = reshape(ref, M*N)
+                is_matrix = true
+            end
+            indices = _sub2ind_scatter_update(idx, idy, M, N)
+            if isa(updates, Array)
+                updates = updates[:]
+            elseif isa(updates, PyObject)
+                updates = reshape(updates, length(idx)*length(idy))
+            end
+            ref = $op(ref, indices, updates; kwargs...)
+            if is_matrix
+                ref = reshape(ref, M, N)
+            end
+            return ref
+        end
+    end
+end
+
+function norm(o::PyObject, args...;kwargs...)
+    tf.norm(o, args...;kwargs...)
+end
+
+function Base.:diff(o::PyObject; dims::Union{Int64,Nothing}=nothing)
+    if dims==nothing
+        if length(size(o))!=1
+            error("expect rank=1")
+        end
+        return o[2:end]-o[1:end-1]
+    elseif length(size(o))==2
+        if dims==1
+            return o[2:end,:]-o[1:end-1,:]
+        elseif dims==2
+            return o[:,2:end]-o[:,1:end-1]
+        end
+    else
+        error("Arguments not understood")
+    end
+end
+
+clip(o::PyObject, vmin, vmax, args...;kwargs...) = tf.clip_by_value(o, vmin, vmax, args...;kwargs...)
+function clip(o::Union{Array{Any}, Array{PyObject}}, vmin, vmax, args...;kwargs...)
+    out = Array{PyObject}(undef, length(o))
+    for i = 1:length(o)
+        out[i] = clip(o[i], vmin, vmax, args...;kwargs...)
+    end
+    out
+end
+
+function fft(o::PyObject, args...; kwargs...)
+    if length(size(o))==1
+        tf.fft(o, args...; kwargs...)
+    elseif length(size(o))==2
+        tf.fft2d(o, args...; kwargs...)
+    elseif length(size(o))==3
+        tf.fft3d(o, args...; kwargs...)
+    else
+        error("FFT for d>=4 not supported")
+    end
+end
+
+function ifft(o::PyObject, args...; kwargs...)
+    if length(size(o))==1
+        tf.ifft(o, args...; kwargs...)
+    elseif length(size(o))==2
+        tf.ifft2d(o, args...; kwargs...)
+    elseif length(size(o))==3
+        tf.ifft3d(o, args...; kwargs...)
+    else
+        error("IFFT for d>=4 not supported")
+    end
+end
+
+function Base.:real(o::PyObject, args...; kwargs...)
+    tf.real(o, args...; kwargs...)
+end
+
+function Base.:imag(o::PyObject, args...; kwargs...)
+    tf.imag(o, args...; kwargs...)
+end
+
+function map(fn::Function, o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.map_fn(fn, o;kwargs...)
+end

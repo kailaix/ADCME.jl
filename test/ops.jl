@@ -1,0 +1,196 @@
+@testset "*" begin
+    A = Array{Any}(undef, 6)
+    A[1] = rand(Float32,10,10)
+    A[2] = rand(Float32,10)
+    A[3] = rand(Float32)
+    A[4] = Variable(A[1])
+    A[5] = Variable(A[2])
+    A[6] = Variable(A[3])
+    run(sess, global_variables_initializer())
+    for i = 1:6
+        for j = 1:6
+            if i<=3 && j<=3 || (i in [2,5] && j in [1,4]) ||
+                (i in [2,5] && j in [2,5])
+                continue
+            end
+            ret1 = A[i]*A[j]
+            ret1 = run(sess, ret1)
+            ret2 = A[i>3 ? i-3 : i] * A[j>3 ? j-3 : j] 
+            @test ret1 ≈ ret2
+        end
+    end
+
+    @test A[1].*A[1] ≈ run(sess, A[4].*A[4])
+    @test A[1].*A[1] ≈ run(sess, A[4].*A[1])
+    @test A[1].*A[1] ≈ run(sess, A[1].*A[4])
+    @test A[2].*A[2] ≈ run(sess, A[2].*A[5])
+    @test A[2].*A[2] ≈ run(sess, A[5].*A[5])
+    @test A[2].*A[2] ≈ run(sess, A[5].*A[2])
+end
+
+@testset "reshape" begin
+    a = constant([1 2 3;4 5 6.])
+    @test run(sess, reshape(a, 6))≈[ 1.0
+    4.0
+    2.0
+    5.0
+    3.0
+    6.0]
+
+    @test run(sess, reshape(a, 3, 2))≈[1.0  5.0
+                                        4.0  3.0
+                                        2.0  6.0]
+    
+    b = constant([1;2;3;4;5;6])
+    @test run(sess, reshape(b, 2, 3))≈[1  3  5
+                                    2  4  6]
+    @test run(sess, reshape(constant(2.),1 )) ≈[2.0]
+end
+
+
+@testset "scatter_update" begin
+    A = Variable(ones(3))
+    A = scatter_add(A, 3, 2.)
+    B = [1.;1.;3.]
+
+    C = Variable(ones(9))
+    D = scatter_add(C, [2], [1], 1., 3, 3)
+    G = reshape(D, 3, 3)
+    E = [1. 1. 1; 2. 1. 1.; 1. 1. 1.]
+    run(sess, global_variables_initializer())
+    @test run(sess, A)≈B
+    @test run(sess, G)≈E
+
+    A = Variable(rand(10))
+    B = Variable(rand(5))
+    C = scatter_add(A, [1;4;5;6;7], 2B)
+    D = gradients(sum(C), B)
+    E = gradients(sum(C), A)
+    run(sess, global_variables_initializer())
+    @test run(sess, D)≈2ones(5)
+    @test run(sess, E)≈ones(10)
+
+    A = Variable(ones(10,10))
+    B = Variable(ones(3,4))
+    C = scatter_add(A, [1;2;3],[3;4;5;6], B)
+    run(sess, global_variables_initializer())
+    @test run(sess, C)≈[1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0
+    1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0
+    1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0
+    1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0]
+
+
+    a = rand(10)
+    A = constant(a)
+    A = scatter_add(A, 3:4, -A[3:4])
+    a[3:4] .= 0.0
+    @test run(sess, A) ≈ a
+end
+
+@testset "Operators" begin
+    A = rand(10,2)
+    TA = Variable(A)
+    a = Variable(1.0)
+    b = Variable(0.5)
+
+    maxA = argmax(A, dims=2)
+    maxA = [maxA[i][2] for i = 1:10]
+    maxTA = argmax(TA, dims=2)
+
+    minA = argmin(A, dims=2)
+    minA = [minA[i][2] for i = 1:10]
+    minTA = argmin(TA, dims=2)
+
+    B = rand(Float32, 10)
+    TB = Variable(B)
+    TBc = constant(B)
+
+    gop = group_assign([a,b], [2.0,2.0])
+    run(sess, global_variables_initializer())
+    @test maxA  ≈ run(sess, maxTA)
+    @test minA  ≈ run(sess, minTA)
+    @test get_dtype(cast(maxTA, Float64))==Float64
+    @test B.^2 ≈ run(sess, TB^2)
+    @test B.^2 ≈ run(sess, TBc^2)
+
+    @test 1.0 ≈ run(sess, max(a, b))
+    @test 0.5 ≈ run(sess, min(a, b))
+    @test maximum(A) ≈ run(sess, maximum(TA))
+    @test minimum(A) ≈ run(sess, minimum(TA))
+    @test reshape(maximum(A, dims=1), 2) ≈ run(sess, maximum(TA, dims=1))
+    @test reshape(minimum(A, dims=1),2) ≈ run(sess, minimum(TA, dims=1))
+    @test reshape(maximum(A, dims=2),10) ≈ run(sess, maximum(TA, dims=2))
+    @test reshape(minimum(A, dims=2),10) ≈ run(sess, minimum(TA, dims=2))
+
+    run(sess, gop)
+    @test run(sess, a)≈2.0 && run(sess,b) ≈ 2.0
+end
+
+@testset "Other Operators" begin
+    A = Variable(rand(10,10))
+    @test_nowarn group(assign(A, rand(10,10)), A+A, 2*A)
+end
+
+@testset "Concat and stack" begin
+    A = Variable(rand(10))
+    B = Variable(rand(10,3))
+    @test size(stack([A, A]))==(2,10)
+    @test size(concat([A, A], dims=0))==(20,)
+    @test size([A;A])==(20,)
+    @test size([A A])==(10,2)
+    @test size([B;B])==(20,3)
+    @test size([B B])==(10,6)
+end
+
+
+@testset "Vectorize" begin
+    A = rand(10)
+    B = reshape(A, 2, 5)
+    tA = Variable(A)
+    tB = Variable(B)
+    rA = rvec(tA)
+    cB = vec(tB)
+    init(sess)
+    a, b = run(sess, [rA, cB])
+    @test a≈reshape(A, 1, 10)
+    @test b≈A
+end
+
+@testset "Solve" begin
+    A = rand(10,10)
+    x = rand(10)
+    y = A*x
+    tA = constant(A)
+    ty = constant(y)
+    @test run(sess, tA\ty)≈x
+    @test run(sess, A\ty)≈x
+    @test run(sess, tA\y)≈x
+end
+
+@testset "diff" begin
+    A = rand(10,10)
+    a = rand(10)
+    tfA = constant(A)
+    tfa = constant(a)
+    @test run(sess, diff(tfA, dims=1))≈diff(A, dims=1)
+    @test run(sess, diff(tfA, dims=2))≈diff(A, dims=2)
+    @test run(sess, diff(tfa))≈diff(a)
+end
+
+@testset "clip" begin
+    a = constant(3.0)
+    a = clip(a, 1.0, 2.0)
+    @test run(sess,a)≈2.0
+end
+
+@testset "map" begin
+    a = constant([1.0,2.0,3.0])
+    b = map(x->x^2, a)
+    @test run(sess, b)≈[1.0;4.0;9.0]
+end

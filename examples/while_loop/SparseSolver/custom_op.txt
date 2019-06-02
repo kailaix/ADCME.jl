@@ -1,0 +1,8 @@
+SparseSolver
+int32 ii(?)
+int32 jj(?)
+double vv(?)
+int32 kk(?)
+double ff(?)
+int32 d()
+double u(?) -> output

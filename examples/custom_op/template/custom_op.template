@@ -1,0 +1,95 @@
+#include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/tensor_shape.h"
+#include "tensorflow/core/platform/default/logging.h"
+#include "tensorflow/core/framework/shape_inference.h"
+#include<cmath>
+#include<string> 
+using std::string;
+using namespace tensorflow;
+// If you want to use the PyTorch feature, uncomment the following line
+// #include "la.h" 
+#include "${OperatorName}.h"
+
+REGISTER_OP("${OperatorName}")
+  ${AttributesReg}
+  ${ForwardInputOutput}
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    ${SetShapeFn}
+    return Status::OK();
+  });
+class ${OperatorName}Op : public OpKernel {
+private:
+  ${AttributesDef}
+public:
+  explicit ${OperatorName}Op(OpKernelConstruction* context) : OpKernel(context) {
+${AttributesParse2}
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(${ForwarInputNum}, context->num_inputs());
+    
+    ${ForwardTensor}
+    
+    ${ForwardTensorShape}
+    
+    ${ForwardCheckShape}
+
+    // extra check
+        
+    // create output shape
+    ${ForwardOutputShape}
+            
+    // create output tensor
+    ${ForwardOutput}
+    
+    // get the corresponding Eigen tensors for data access
+    ${ForwardGetData}   
+
+    // implement your forward function here 
+
+    // TODO:
+
+  }
+};
+REGISTER_KERNEL_BUILDER(Name("${OperatorName}").Device(DEVICE_CPU), ${OperatorName}Op);
+
+
+REGISTER_OP("${OperatorName}Grad")
+  ${AttributesReg}
+  ${BackwardInputOutput}
+class ${OperatorName}GradOp : public OpKernel {
+private:
+  ${AttributesDef}
+public:
+  explicit ${OperatorName}GradOp(OpKernelConstruction* context) : OpKernel(context) {
+    ${AttributesParse2}
+  }
+  
+  void Compute(OpKernelContext* context) override {
+    
+    ${BackwardTensor}
+    
+    ${BackwardTensorShape}
+    
+    ${BackwardCheckShape}
+
+    // extra check
+    // int m = Example.dim_size(0);
+        
+    // create output shape
+    ${BackwardOutputShape}
+            
+    // create output tensor
+    ${BackwardOutput}
+    
+    // get the corresponding Eigen tensors for data access
+    ${BackwardGetData}   
+
+    // implement your backward function here 
+
+    // TODO:
+    
+  }
+};
+REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_CPU), ${OperatorName}GradOp);
+
