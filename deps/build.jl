@@ -3,7 +3,7 @@ try
     pyimport("tensorflow")
     # See if it works already
 catch ee
-    pip = joinpath(splitdir(PyCall.python), "pip")
+    pip = joinpath(splitdir(PyCall.python)[1], "pip")
     run(`$pip install tensorflow==1.13`)
     pyimport("tensorflow")
 end
