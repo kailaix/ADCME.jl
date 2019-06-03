@@ -10,7 +10,9 @@ Several features of the library are
 
 * Custom operators are supported. Users can implement their own operators for the bottleneck operations such as those that are difficult to vectorize in TensorFlow. When implementing custom operators, `ADCME.jl` provides access to the `ATen` library in `PyTorch`, which is equipped with automatic differentiation. This further reduces users' effort to do inverse modeling.
 
-* Static graphs. Static computation graphs are used instead of dynamic graphs. This is a key difference between machine learning and scientific computing. In scientific computing, computation graph optimization _do_ matter. One such example is `while_loop`, where in scientific computing, large numbers of iterations are common and direct implementation results in a large computation graph. Another example is the parallelism of different operators.
+* Static graphs. Static computation graphs are used instead of dynamic graphs. This is a key difference between machine learning and scientific computing. In scientific computing, computation graph optimization _does_ matter. One such example is `while_loop`, where in scientific computing, large numbers of iterations are common and direct implementation results in a large computation graph. Another example is the parallelism of different operators.
+
+The introductory [blog](https://medium.com/@kailaix16/introduction-to-adcme-jl-an-inverse-modeling-library-for-scientific-computing-76e56b2bcb49) is also available.
 
 # Installation
 
