@@ -115,8 +115,7 @@ gradients(loss, b)
 
 The following research articles are based on `ADCME.jl`. They should be considered as advanced applications of `ADCME.jl`. If you find them useful, please cite the relevant article(s). 
 
-1. Daniel Z. Huang, **Kailai Xu** (co-first author), Charbel Farhat, Eric Darve. [Predictive Modeling with Learned Constitutive Laws from Indirect Observations](https://arxiv.org/abs/1905.12530)
-2. **Kailai Xu**, Eric Darve. [Calibrating Lévy Processes from Observations Based on Neural Networks and Automatic Differentiation](https://arxiv.org/abs/1812.08883)
+1. **Kailai Xu**, Eric Darve. [Calibrating Lévy Processes from Observations Based on Neural Networks and Automatic Differentiation](https://arxiv.org/abs/1812.08883)
 
 # LICENSE
 Copyright (c) 2019 Kailai Xu
