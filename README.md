@@ -2,7 +2,7 @@
 
 ![](examples/md/demo.png)
 
-The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) is written to facilitate scalable and sophisticated scientific computing that requires the evaluation of gradients by leveraging the power of [TensorFlow](https://www.tensorflow.org/) and [PyTorch](). It is particularly dedicated to the inverse modeling problem, with the ultimate goal -- _Once the forward simulation is implemented, the researcher should be able to do the inverse modeling without substantial effort._
+The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) is written to facilitate scalable and sophisticated scientific computing that requires the evaluation of gradients by leveraging the power of [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). It is particularly dedicated to the inverse modeling problem, with the ultimate goal -- _Once the forward simulation is implemented, the researcher should be able to do the inverse modeling without substantial effort._
 
 Several features of the library are
 
