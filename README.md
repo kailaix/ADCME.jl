@@ -56,13 +56,13 @@ pkg> test ADCME
 
 Consider solving the following problem
 
-$$-bu''(x)+u(x) = f(x)\qquad x\in [0,1]\qquad u(0)=u(1)=0$$
+-bu''(x)+u(x) = f(x), x∈[0,1], u(0)=u(1)=0
 
 where 
 
-$$f(x) = 8 + 4x - 4x^2$$
+f(x) = 8 + 4x - 4x²
 
-Assume that we have observed `u(0.5)=1​`, we want to estimate `b​`. The true value in this case should be `b=1`.
+Assume that we have observed `u(0.5)=1`, we want to estimate `b`. The true value in this case should be `b=1`.
 
 ```julia
 using LinearAlgebra
@@ -115,7 +115,11 @@ gradients(loss, b)
 
 The following research articles are based on `ADCME.jl`. They should be considered as advanced applications of `ADCME.jl`. If you find them useful, please cite the relevant article(s). 
 
-1. **Kailai Xu**, Eric Darve. [Calibrating Lévy Processes from Observations Based on Neural Networks and Automatic Differentiation](https://arxiv.org/abs/1812.08883)
+
+1. Daniel Z. Huang, **Kailai Xu** (co-first author), Charbel Farhat, Eric Darve. [Predictive Modeling with Learned Constitutive Laws from Indirect Observations](https://arxiv.org/abs/1905.12530)
+
+2. **Kailai Xu**, Eric Darve. [Calibrating Lévy Processes from Observations Based on Neural Networks and Automatic Differentiation](https://arxiv.org/abs/1812.08883)
+
 
 # LICENSE
 Copyright (c) 2019 Kailai Xu
