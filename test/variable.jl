@@ -27,13 +27,13 @@ using LinearAlgebra
 end
 
 @testset "Variables" begin
-    @test_nowarn placeholder(Float64, shape=[nothing,20], name="myvar")
-    @test_nowarn Variable(rand(10,10), dtype=Float64, name="myvar")
-    @test_nowarn constant(rand(10,10), dtype=Float64, name="myvar")
-    @test_nowarn get_variable("W", shape=[10,20], dtype=Float64)
-    @test_nowarn placeholder(Float64, shape=[nothing,20])
-    @test_nowarn Variable(rand(10,10), dtype=Float64)
-    @test_nowarn constant(rand(10,10), dtype=Float64)
+    # @test_nowarn placeholder(Float64, shape=[nothing,20], name="myvar")
+    # @test_nowarn Variable(rand(10,10), dtype=Float64, name="myvar")
+    # @test_nowarn constant(rand(10,10), dtype=Float64, name="myvar")
+    # @test_nowarn get_variable("W", shape=[10,20], dtype=Float64)
+    # @test_nowarn placeholder(Float64, shape=[nothing,20])
+    # @test_nowarn Variable(rand(10,10), dtype=Float64)
+    # @test_nowarn constant(rand(10,10), dtype=Float64)
     @test get_dtype(constant(rand(10,10))) == Float64
     @test get_dtype(Variable(rand(Int64,10,10))) == Int64
 end

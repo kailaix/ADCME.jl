@@ -32,10 +32,10 @@ module ADCME
             Bool=>tf.bool,
             ComplexF64=>tf.complex128,
             ComplexF32=>tf.complex64))
-        AUTO_REUSE = tf.AUTO_REUSE
-        GLOBAL_VARIABLES = tf.GraphKeys.GLOBAL_VARIABLES
-        TRAINABLE_VARIABLES = tf.GraphKeys.TRAINABLE_VARIABLES
-        UPDATE_OPS = tf.GraphKeys.UPDATE_OPS
+        AUTO_REUSE = tf.compat.v1.AUTO_REUSE
+        GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
+        TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
+        UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
     end
     
     # const tf = pyimport("tensorflow")

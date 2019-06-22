@@ -93,6 +93,27 @@ end
     @test run(sess, A) ≈ a
 end
 
+@testset "scatter_update_pyobject" begin
+    A = constant(ones(10))
+    B = constant(ones(3))
+    ind = constant([1;3;5], dtype=Int32)
+    C = scatter_add(A, ind, B)
+    @test run(sess, C)≈[1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0]
+    @test run(sess, gradients(sum(C),B))≈ones(3)
+    @test run(sess, gradients(sum(C),A))≈ones(10)
+
+    C = scatter_sub(A, ind, B)
+    @test run(sess, C)≈[1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
+    @test run(sess, gradients(sum(C),B))≈-ones(3)
+    @test run(sess, gradients(sum(C),A))≈ones(10)
+
+    B = constant(3*ones(3))
+    C = scatter_update(A, ind, B)
+    @test run(sess, C)≈[1.0, 3.0, 1.0, 3.0, 1.0, 3.0, 1.0, 1.0, 1.0, 1.0]
+    @test run(sess, gradients(sum(C),B))≈ones(3)
+    @test run(sess, gradients(sum(C),A))≈[1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
+end
+
 @testset "Operators" begin
     A = rand(10,2)
     TA = Variable(A)

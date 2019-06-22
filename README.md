@@ -18,7 +18,7 @@ The introductory [blog](https://medium.com/@kailaix16/introduction-to-adcme-jl-a
 
 1. Install [Julia](https://www.tensorflow.org/)
 
-2. Install [TensorFlow](https://www.tensorflow.org/). Please install `1.12` or `1.13` instead of `2.0` since in `2.0`, dynamic graphs are the default. 
+2. Install [TensorFlow](https://www.tensorflow.org/). Please install `1.14` instead of `2.0` since in `2.0`, dynamic graphs are the default. 
 
 3. Install dependencies in Julia
 ```

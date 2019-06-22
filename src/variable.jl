@@ -47,7 +47,7 @@ end
 
 function get_variable(name; kwargs...)
     kwargs = jlargs(kwargs)
-    tf.get_variable(name;kwargs...)
+    tf.compat.v1.get_variable(name;kwargs...)
 end
 
 function placeholder(dtype::Type; kwargs...)
@@ -59,11 +59,11 @@ function placeholder(dtype::Type; kwargs...)
     if !(:shape in keys(kwargs))
         kwargs[:shape] = []
     end
-    tf.placeholder(dtype;kwargs...)
+    tf.compat.v1.placeholder(dtype;kwargs...)
 end
 
 function placeholder(o::Union{Number, Array, PyObject}; kwargs...)
-    tf.placeholder_with_default(o;kwargs...)
+    tf.compat.v1.placeholder_with_default(o;kwargs...)
 end
 
 function variable_scope(f, name_or_scope; reuse=AUTO_REUSE, kwargs...)
@@ -290,7 +290,7 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
         return o
     elseif typeof(i1)==Array{Bool,1}|| typeof(i1)==BitArray{1}
         return getindex(o, findall(i1), c)
-    elseif typeof(i1)==UnitRange{Int64} || typeof(o)==StepRange{Int64, Int64}
+    elseif typeof(i1)==UnitRange{Int64} || typeof(i1)==StepRange{Int64, Int64}
         i1 = (i1|>collect) 
     end
     tf.gather(o, i1.-1)
@@ -335,7 +335,7 @@ end
 # https://stackoverflow.com/questions/46718356/tensorflow-symmetric-matrix
 function SymmetricMatrix(A, args...;kwargs...)
     X = Variable(A, args...;kwargs...)
-    X_upper = tf.matrix_band_part(X, 0, -1)
+    X_upper = tf.linalg.band_part(X, 0, -1)
     X_symm = 0.5 * (X_upper + tf.transpose(X_upper))
 end
 

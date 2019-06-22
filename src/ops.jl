@@ -41,6 +41,7 @@ scatter_max,
 scatter_min,
 scatter_mul,
 scatter_sub,
+scatter_update,
 stack,
 concat,
 unstack,
@@ -87,40 +88,40 @@ function Base.:*(o1::PyObject, o2::PyObject)
     end
 end
 
-Base.:*(o1::PyObject, o2::Array) = *(o1, constant(o2, dtype=get_dtype(o1)))
-Base.:*(o1::Array, o2::PyObject) = *(constant(o1, dtype=get_dtype(o2)), o2)
+Base.:*(o1::PyObject, o2::AbstractArray) = *(o1, constant(Array(o2), dtype=get_dtype(o1)))
+Base.:*(o1::AbstractArray, o2::PyObject) = *(constant(Array(o1), dtype=get_dtype(o2)), o2)
 Base.:*(o1::Number, o2::PyObject) = *(constant(o1, dtype=get_dtype(o2)), o2)
 Base.:*(o1::PyObject, o2::Number) = *(o1, constant(o2, dtype=get_dtype(o1)))
 
-Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::Array) = tf.multiply(o1, o2)
-Base.Broadcast.broadcasted(::typeof(*), o1::Array, o2::PyObject) = tf.multiply(o1, o2)
+Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::AbstractArray) = tf.multiply(o1, Array(o2))
+Base.Broadcast.broadcasted(::typeof(*), o1::AbstractArray, o2::PyObject) = tf.multiply(Array(o1), o2)
 Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::PyObject) = tf.multiply(o1, o2)
 Base.Broadcast.broadcasted(::typeof(*), o1::PyObject, o2::Number) = tf.multiply(o1, o2)
 Base.Broadcast.broadcasted(::typeof(*), o1::Number, o2::PyObject) = tf.multiply(o1, o2)
 
-Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::Array) = tf.divide(o1, o2)
-Base.Broadcast.broadcasted(::typeof(/), o1::Array, o2::PyObject) = tf.divide(o1, o2)
+Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::AbstractArray) = tf.divide(o1, Array(o2))
+Base.Broadcast.broadcasted(::typeof(/), o1::AbstractArray, o2::PyObject) = tf.divide(Array(o1), o2)
 Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::PyObject) = tf.divide(o1, o2)
 Base.Broadcast.broadcasted(::typeof(/), o1::PyObject, o2::Number) = tf.divide(o1, o2)
 Base.Broadcast.broadcasted(::typeof(/), o1::Number, o2::PyObject) = tf.divide(o1, o2)
 
-Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::Array) = o1 + o2
-Base.Broadcast.broadcasted(::typeof(+), o1::Array, o2::PyObject) = o1 + o2
+Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::AbstractArray) = o1 + Array(o2)
+Base.Broadcast.broadcasted(::typeof(+), o1::AbstractArray, o2::PyObject) = Array(o1) + o2
 Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::PyObject) = o1 + o2
 Base.Broadcast.broadcasted(::typeof(+), o1::PyObject, o2::Number) = o1 + o2
 Base.Broadcast.broadcasted(::typeof(+), o1::Number, o2::PyObject) = o1 + o2
 
-Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::Array) = o1 - o2
-Base.Broadcast.broadcasted(::typeof(-), o1::Array, o2::PyObject) = o1 - o2
+Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::AbstractArray) = o1 - Array(o2)
+Base.Broadcast.broadcasted(::typeof(-), o1::AbstractArray, o2::PyObject) = Array(o1) - o2
 Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::PyObject) = o1 - o2
 Base.Broadcast.broadcasted(::typeof(-), o1::PyObject, o2::Number) = o1 - o2
 Base.Broadcast.broadcasted(::typeof(-), o1::Number, o2::PyObject) = o1 - o2
 
 
 warn_broadcast_pow() = error(".^ is disabled due to eager evaluation. Use ^ instead.")
-Base.Broadcast.broadcasted(::typeof(^), o1::PyObject, o2::Union{Array,Number}) = warn_broadcast_pow()
+Base.Broadcast.broadcasted(::typeof(^), o1::PyObject, o2::Union{AbstractArray,Number}) = warn_broadcast_pow()
 Base.Broadcast.broadcasted(::typeof(^), o1::PyObject, o2::PyObject) = warn_broadcast_pow()
-Base.Broadcast.broadcasted(::typeof(^), o1::Union{Array,Number}, o2::PyObject) = warn_broadcast_pow()
+Base.Broadcast.broadcasted(::typeof(^), o1::Union{AbstractArray,Number}, o2::PyObject) = warn_broadcast_pow()
 
 function einsum(equation, args...; kwargs...)
     tf.einsum(equation, args...; kwargs...)
@@ -257,7 +258,7 @@ function pad(o::PyObject, paddings, args...; kwargs...)
 end
 
 function assign(o::PyObject,value, args...; kwargs...)
-    tf.assign(o, value, args...;kwargs...)
+    tf.compat.v1.assign(o, value, args...;kwargs...)
 end
 
 function group(args...; kwargs...)
@@ -276,7 +277,7 @@ apply `assign` to each element of `os` and `values`
 function group_assign(os::Array{PyObject}, values, args...; kwargs...)
     ops = Array{PyObject}(undef, length(os))
     for i = 1:length(os)
-        ops[i] = tf.assign(os[i], values[i], args...; kwargs...)
+        ops[i] = tf.compat.v1.assign(os[i], values[i], args...; kwargs...)
     end
     ops
 end
@@ -372,6 +373,9 @@ function concat(o::Union{PyObject,Array{PyObject}}, args...;kwargs...)
         return o
     end
     kwargs = jlargs(kwargs)
+    if length(size(o[1]))==0
+        return tf.stack(o)
+    end
     tf.concat(o, args...; kwargs...)
 end
 
@@ -391,6 +395,17 @@ end
 function unstack(o::PyObject, args...;kwargs...)
     kwargs = jlargs(kwargs)
     tf.unstack(o, args...; kwargs...)
+end
+
+for (op1, op2) = [(:scatter_add, :tensor_scatter_nd_add), (:scatter_sub, :tensor_scatter_nd_sub), (:scatter_update,:tensor_scatter_nd_update)]
+    @eval begin
+        function $op1(ref::PyObject, indices::PyObject, updates)
+            if length(size(ref))==1
+                indices = reshape(indices, length(indices), 1)
+            end
+            tf.$op2(ref, indices, updates)
+        end
+    end
 end
 
 # https://github.com/tensorflow/tensorflow/issues/2358#issuecomment-274590896
