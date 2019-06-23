@@ -401,7 +401,9 @@ for (op1, op2) = [(:scatter_add, :tensor_scatter_nd_add), (:scatter_sub, :tensor
     @eval begin
         function $op1(ref::PyObject, indices::PyObject, updates)
             if length(size(ref))==1
-                indices = reshape(indices, length(indices), 1)
+                indices = reshape(indices-1, length(indices), 1)
+            else
+                error("Only 1D $op1 is implemented")
             end
             tf.$op2(ref, indices, updates)
         end

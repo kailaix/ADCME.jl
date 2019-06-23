@@ -96,7 +96,7 @@ end
 @testset "scatter_update_pyobject" begin
     A = constant(ones(10))
     B = constant(ones(3))
-    ind = constant([1;3;5], dtype=Int32)
+    ind = constant([2;4;6], dtype=Int32)
     C = scatter_add(A, ind, B)
     @test run(sess, C)≈[1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0]
     @test run(sess, gradients(sum(C),B))≈ones(3)

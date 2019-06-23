@@ -19,7 +19,7 @@ tensor
 
 
 Graph() = tf.Graph()
-reset_default_graph() = tf.reset_default_graph()
+reset_default_graph() = tf.compat.v1.reset_default_graph()
 get_default_graph() = tf.get_default_graph()
 enable_eager_execution() = tf.enable_eager_execution()
 value(o::PyObject) = o.numpy()
@@ -84,7 +84,7 @@ function Base.:bind(op::PyObject, ops...)
 end
 
 function while_loop(condition::Union{PyObject,Function}, body::Function, loop_vars::Union{PyObject, Array{Any}, Array{PyObject}};
-        parallel_iterations=1, kwargs...)
+        parallel_iterations=10, kwargs...)
     @warn "TensorArray must be initialized (writedown at index 1) outside" maxlog=1
     if isa(loop_vars, PyObject)
         lv = [loop_vars]

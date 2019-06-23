@@ -10,11 +10,11 @@ ScipyOptimizerInterface,
 ScipyOptimizerMinimize
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
-    return tf.train.AdamOptimizer(;kwargs...)
+    return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
 end
 
 function AdadeltaOptimizer(learning_rate=1e-3;kwargs...)
-    return tf.train.AdadeltaOptimizer(;kwargs...)
+    return tf.train.AdadeltaOptimizer(;learning_rate=learning_rate,kwargs...)
 end
 
 function AdagradDAOptimizer(learning_rate=1e-3; global_step, kwargs...)
