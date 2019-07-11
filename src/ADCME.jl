@@ -52,4 +52,5 @@ module ADCME
     include("sparse.jl")
     include("datasets.jl")
     include("extra.jl")
+    include("RBF.jl")
 end

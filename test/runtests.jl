@@ -12,5 +12,6 @@ include("layers.jl")
 include("core.jl")
 include("sparse.jl")
 include("extra.jl")
+include("RBF.jl")
 
 
