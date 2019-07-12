@@ -1,8 +1,9 @@
 # This file implements radial basis functions
 # Inspired by MATLAB code: https://mccormickml.com/2013/08/15/radial-basis-function-network-rbfn-tutorial/
-export kMeansInitCentroids, kMeans
+export kMeans, evaluateRBFN,computeRBFBetas
 using Statistics
 using Random
+
 
                             #####################
                             # k-means utilities #
@@ -155,6 +156,9 @@ function kMeans(X::Array{Float64}, initial_centroids::Array{Float64}, max_iters:
     
         #  Update the 'previous' centroids.
         prevCentroids = centroids
+        if i==max_iters
+          error("kMeans does not converge. Increase `max_iter`.")
+        end
     end
 
     centroids, memberships
@@ -181,6 +185,11 @@ function kMeansInitCentroids(X::Array{Float64}, k::Int64)
     #  Take the first k examples as centroids
     centroids = X[randidx[1:k], :]
     
+end
+
+function kMeans(X::Array{Float64}, k::Int64, max_iters::Int64=10)
+  initial_centroids = kMeansInitCentroids(X, k)
+  centroids, memberships = kMeans(X, initial_centroids, max_iters)
 end
     
     
@@ -212,7 +221,7 @@ function computeRBFBetas(X::Array{Float64}, centroids::Array{Float64}, membershi
         numRBFNeurons = size(centroids, 1);
     
         #  Compute sigma for each cluster.
-        sigmas = zeros(numRBFNeurons, 1);
+        sigmas = zeros(numRBFNeurons);
         
         #  For each cluster...
         for i = 1 : numRBFNeurons
@@ -227,14 +236,14 @@ function computeRBFBetas(X::Array{Float64}, centroids::Array{Float64}, membershi
             #  Subtract the center vector from each of the member vectors.
             sqrdDiffs = zeros(size(members,1))
             for i = 1:size(members,1)
-                sqrdDiffs[i,:] = sum((members[i,:] - center).^2)
+                sqrdDiffs[i] = sum((members[i,:] - center).^2)
             end
                         
             #  Take the square root to get the L2 (Euclidean) distance.
-            distances = sqrt(sqrdDiffs);
+            distances = sqrt.(sqrdDiffs);
     
             #  Compute the average L2 distance, and use this as sigma.
-            sigmas[i, :] = mean(distances);
+            sigmas[i] = mean(distances);
         end
     
         #  Verify no sigmas are 0.
@@ -247,75 +256,107 @@ function computeRBFBetas(X::Array{Float64}, centroids::Array{Float64}, membershi
         
 end
 
-# @doc """ COSTFUNCTIONRBFN Compute cost and gradients for gradient descent based on 
-#    mean squared error over the training set.
-#    [J, grad] = costFunctionRBFN(theta, X, y, lambda) computes the cost of the 
-#    parameters theta for fitting the data set in X and y, and the gradients for
-#    updating theta.
-   
-#    To compute the mean squared error (MSE): 
-#      1. Apply the weights in theta to X to get the predicted output values.
-#      2. Take the difference between the predicted value and the label in y and
-#         square it.
-#      3. Average the squared differences over the training set.
 
-#    Lambda is a regularization term which prevents the weights theta from 
-#    growing too large and overfitting the data set. Cross-validation can be 
-#    used to find the best value for lambda.
+@doc """
+ GETRBFACTIVATIONS Compute the activation values for all RBF neurons.
+   z = getRBFActivations(centers, betas, input) Computes the activations for
+   the given input for each RBF neuron specified by 'centers' and 'betas'.
 
-#    To perform gradient descent, we make iterative changes to the weights in 
-#    theta. This function computes the changes (the gradients) for one iteration
-#    of gradient descent. It does not modify theta itself.
+   This function computes the RBF activation function for each of the RBF 
+   neurons given the supplied 'input'. Each RBF neuron is described by a 
+   prototype or "center" vector in 'centers', and a beta coefficient in
+   'betas'. 
 
-#    Parameters
-#      theta   - The current weights.
-#      X       - The training set inputs.
-#      y       - The training set labels.
-#      lambda  - The regularization parameter.
+   Parameters
+     centers  - Matrix of RBF neuron center vectors, one per row.
+     betas    - Vector of beta coefficients for the corresponding RBF neuron.
+     input    - Column vector containing the input.
 
-#    Returns
-#      J    - The cost of the current theta values.
-#      grad - The updates to make to each theta value."""->
-# function [J, grad] = costFunctionRBFN(theta, X, y, lambda)
-    
-    
+   Returns
+     A column vector containing the activation value (between 0 and 1) for
+     each of the RBF neurons.
+""" ->
+function getRBFActivations(centers::PyObject, betas::PyObject, input::PyObject)  
+      #  Subtract the input from all of the centers.
+      #  diffs becomes an k x n matrix where k is the number of centers
+      #  and n is the number of input dimensions.
+      diffs = centers - input
       
-#      ======== Compute Cost ========
+      #  Take the sum of squared distances (the squared L2 distance).
+      #  sqrdDists becomes a k x 1 vector where k is the number of centers.
+      sqrdDists = sum(diffs^2, dims = 2)
+  
+      #  Apply the beta coefficient and take the negative exponent.
+      z = exp(-betas .* sqrdDists)
+  end
+
+function evaluateRBFN_(Centers::PyObject, betas::PyObject, Theta::PyObject, input::PyObject, normalize::Bool=false)
+  
+    #  Compute the activations for each RBF neuron for this input.
+    phis = getRBFActivations(Centers, betas, input);
+    if normalize
+      phis = phis/sum(phis)
+    end
     
-#     m = length(y);  number of training examples
-    
-#      Evaluate the hypothesis. h becomes a vector with length m.
-#     h = zeros(m, 1);
-    
-#     h = X * theta;
-    
-#      Compute the differences between the hypothesis and correct value.
-#     diff = h - y;
-    
-#      Take the squared difference.
-#     sqrdDiff = diff.^2;
-    
-#      Take the sum of all the squared differences.
-#     J = sum(sqrdDiff);
-    
-#      Divide by 2m to get the average squared difference.
-#     J = J / (2 * m);
-    
-#      Add the regularization term to the cost.
-#     J = J + (lambda / (2 * m) * sum(theta(2:length(theta)).^2));
-    
-#      ===== Compute Gradient ========
-    
-#     grad = zeros(size(theta));
-    
-#      Multiply each data point by the difference between the hypothesis
-#      and actual value for that data point. 
-#     grad = X' * diff;
-    
-#     grad = grad / m;
-    
-#      Add the regularization term for theta 1 to n (but not theta_0).
-#     grad(2 : length(theta)) = grad(2 : length(theta)) + ((lambda / m) * theta(2 : length(theta)));
-    
-#     end
-    
+  #    Multiply the activations by the weights and take the sum. Do this for
+  #  each category (output node). The result is a column vector with one row
+  #  per output node.
+  
+    #  Theta = centroids x categories	  Theta' = categories x centroids
+    #   phis = centroids x 1
+    #      z = Theta' * phis = categories x 1
+    z = Theta[1] + sum(Theta[2:end] .* phis)
+end
+
+@doc """
+  EVALUATERBFN Computes the outputs of an RBF Network for the provided input.
+    z = evaluateRBFN(Centers::PyObject, betas::PyObject, Theta::PyObject, input::PyObject, normalize::Bool=false) Evaluates the RBFN over
+    given input using the provided parameters.
+
+    This function computes the activation values of all of the RBFN neurons
+    in the hidden layer using the provided 'Centers' and their 'betas', then
+    computes the values for the output layer of the network using the 'Theta'
+    coefficients
+
+    Parameters
+      Centers  - The prototype vectors for the RBF neurons.
+      betas    - The beta coefficients for the corresponding prototypes.
+      Theta    - The output weights to apply to the neuron activations.
+      input    - The input vector to evaluate the RBFN over.
+
+    Returns
+      A column vector representing the network's output value for each output
+      node.
+""" ->
+function evaluateRBFN(Centers::PyObject, betas::PyObject, Theta::PyObject, input::PyObject, normalize::Bool=false)
+    @assert length(size(betas))==1
+    @assert length(size(Centers))==2
+    @assert length(size(Theta))==1
+    @assert length(betas)==size(Centers,1)
+    @assert length(Theta)==size(Centers,1)+1
+  
+    if length(size(input))==1 
+        @assert length(input)==size(Centers,2)
+        return evaluateRBFN_(Centers, betas, Theta, input, normalize)
+    elseif  size(input,1)==1
+        @assert length(input)==size(Centers,2)
+        v = evaluateRBFN_(Centers, betas, Theta, input[1], normalize)
+        return reshape(v, 1)
+    end
+    @assert size(input,2)==size(Centers,2)
+
+    N = size(input,1)
+    ta = TensorArray(N)
+    ta = write(ta, 1, evaluateRBFN_(Centers, betas, Theta, input[1], normalize))
+    function cond0(i, ta)
+      i<=N
+    end
+    function body(i, ta)
+      ta = write(ta, i, evaluateRBFN_(Centers, betas, Theta, input[i], normalize))
+      i+1, ta
+    end
+    i = constant(2, dtype=Int32)
+    _, out = while_loop(cond0, body, [i, ta]; parallel_iterations=10)
+    return stack(out)
+end
+
