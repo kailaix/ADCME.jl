@@ -111,17 +111,7 @@ gradients(loss, b)
 3. [TensorFlow Meets PyTorch: Using PyTorch to Create TensorFlow Custom Operators](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/pytorch.pdf)
 4. [Four Types of Forward Simulation Operators to Consider in Automatic Differentiation](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/four_types.pdf)
 
-# Research Work Based on ADCME.jl
-
-The following research articles are based on `ADCME.jl`. They should be considered as advanced applications of `ADCME.jl`. If you find them useful, please cite the relevant article(s). 
-
-
-1. Daniel Z. Huang, **Kailai Xu** (co-first author), Charbel Farhat, Eric Darve. [Predictive Modeling with Learned Constitutive Laws from Indirect Observations](https://arxiv.org/abs/1905.12530)
-
-2. **Kailai Xu**, Eric Darve. [Calibrating Lévy Processes from Observations Based on Neural Networks and Automatic Differentiation](https://arxiv.org/abs/1812.08883)
-
 
 # LICENSE
-Copyright (c) 2019 Kailai Xu
 
 ADCME.jl is released under GNU GENERAL PUBLIC LICENSE Version 3. See [License](https://github.com/kailaix/ADCME.jl/tree/master/LICENSE) for details. 
