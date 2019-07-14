@@ -23,7 +23,6 @@ hessian_vector,
 TensorArray,
 random_normal,
 random_uniform,
-gradients_v,
 seed!
 
 function constant(value; kwargs...)
@@ -133,9 +132,9 @@ function gradients(ys::PyObject, xs::PyObject; kwargs...)
             return nothing
         end
     elseif length(s1)==1 && length(s2)==0
-        return _gradients_v(ys, xs; kwargs...)
+        return gradients10(ys, xs; kwargs...)
     elseif length(s1)==1 && length(s2)==1
-        return _jacobian(ys, xs)
+        return gradients11(ys, xs)
     elseif length(s1)==2 && length(s2)==0
         grad = gradients(vec(ys), xs; kwargs...)
         reshape(grad, s1...)
@@ -166,11 +165,15 @@ gradients_v computes the gradients of a vector function f(x) w.r.t. a single var
 `ys` is the n dimensional vector function 
 `xs` is a scalar 
 """
-function _gradients_v(ys::PyObject, xs::PyObject; kwargs...)
-    u = Variable(rand(length(ys)), trainable=false)
-    g = tf.gradients(ys, xs, grad_ys=u; kwargs...)
-    g==nothing && (return nothing)
-    r = tf.gradients(g[1], u; unconnected_gradients="zero", kwargs...)[1]
+function gradients10(ys::PyObject, xs::PyObject; kwargs...)
+    try
+        u = Variable(rand(length(ys)), trainable=false)
+        g = tf.gradients(ys, xs, grad_ys=u; kwargs...)
+        g==nothing && (return nothing)
+        r = tf.gradients(g[1], u; unconnected_gradients="zero", kwargs...)[1]
+    catch
+        gradients_v(ys, xs; kwargs...)
+    end
 end
 
 function gradients_v(ys::PyObject, xs::PyObject;kwargs...)
@@ -199,7 +202,7 @@ end
 `jacobian` computes the jacobian of a vector function f with respect to a vector variable x
 the output is |f| x |x| matrix
 """
-function _jacobian(ys::PyObject, xs::PyObject; kwargs...)
+function gradients11(ys::PyObject, xs::PyObject; kwargs...)
     n = size(ys,1)
     function condition(i, ta)
         i <= n 
