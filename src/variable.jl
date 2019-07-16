@@ -272,7 +272,7 @@ end
 # rank 1 tensor
 function getindex(o::PyObject, r::Union{Colon, Array{Bool,1}, BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}})
     if typeof(r)==Colon
-        return o
+        return vec(o)
     elseif typeof(r)==Array{Bool,1} || typeof(r)==BitArray{1}
         return getindex(o, findall(r))
     elseif typeof(r)==UnitRange{Int64} || typeof(r)==StepRange{Int64, Int64}

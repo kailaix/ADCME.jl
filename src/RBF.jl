@@ -187,7 +187,7 @@ function kMeansInitCentroids(X::Array{Float64}, k::Int64)
     
 end
 
-function kMeans(X::Array{Float64}, k::Int64, max_iters::Int64=10)
+function kMeans(X::Array{Float64}, k::Int64, max_iters::Int64=100)
   initial_centroids = kMeansInitCentroids(X, k)
   centroids, memberships = kMeans(X, initial_centroids, max_iters)
 end
@@ -323,6 +323,7 @@ end
       betas    - The beta coefficients for the corresponding prototypes.
       Theta    - The output weights to apply to the neuron activations.
       input    - The input vector to evaluate the RBFN over.
+      normalize- Whether the basis function is normalized or not
 
     Returns
       A column vector representing the network's output value for each output

@@ -24,6 +24,7 @@ Conv3DTranspose,
 BatchNormalization,
 Dropout,
 ae,
+ae_to_code,
 sparse_softmax_cross_entropy_with_logits
 
 # for a keras layer, `training` is a keyword
@@ -58,6 +59,11 @@ ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
 Create a neural network with intermediate numbers of neurons `output_dims`.
 """
 function ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
+    flag = false
+    if length(size(x))==1
+        x = reshape(x, length(x), 1)
+        flag = true
+    end
     net = x
     variable_scope(scope, reuse=AUTO_REUSE) do
         for i = 1:length(output_dims)-1
@@ -65,7 +71,39 @@ function ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
         end
         net = dense(net, output_dims[end])
     end
+    if flag && (size(net,2)==1)
+        net = squeeze(net)
+    end
     return net
+end
+
+function ae_to_code(d::Dict, scope::String)
+    i = 0
+    nn_code = ""
+    while true
+        si = i==0 ? "" : "_$i"
+        Wkey = "$(scope)backslashfully_connected$(si)backslashweightscolon0"
+        bkey = "$(scope)backslashfully_connected$(si)backslashbiasescolon0"
+        if haskey(d, Wkey)
+            if i!=0
+                nn_code *= "\tisa(net, Array) ? (net = tanh.(net)) : (net=tanh(net))\n"
+            end
+            nn_code *= "\tW$i = aedict$scope[\"$Wkey\"]; b$i = aedict$scope[\"$bkey\"];\n"
+            nn_code *= "\tisa(net, Array) ? (net = net * W$i .+ b$i') : (net = net *W$i + b$i)\n"
+            i += 1
+        else
+            break
+        end
+    end
+    nn_code = """function nn$scope(net)
+$(nn_code)\treturn net\nend """
+    println(nn_code)
+end
+
+function ae_to_code(file::String, scope::String)
+    d = matread(file)
+    println("aedict$scope = matread(\"$file\"); # using MAT")
+    ae_to_code(d, scope)
 end
 
 # tensorflow layers from contrib 
