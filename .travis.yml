@@ -6,13 +6,13 @@ addons:
     packages:
       - "python3"
       - "python3-pip"
-install:
-    - pip install -U pip
-    - pip install tensorflow==1.14
 dist: trusty
 sudo: true
 os:
   - osx
   - linux
+install:
+    - sudo pip install -U pip
+    - pip install tensorflow==1.14
 notifications:
   email: false
