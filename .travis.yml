@@ -10,9 +10,5 @@ dist: trusty
 sudo: true
 os:
   - osx
-  - linux
-install:
-    - sudo python3 -m pip install --upgrade pip
-    - python3 -m pip install -U tensorflow==1.14
 notifications:
   email: false

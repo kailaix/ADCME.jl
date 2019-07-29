@@ -1,11 +1,5 @@
 
 __precompile__(true)
-#printstyled(
-#"""
-#Note that `ADCME.jl` is currently a ***PROPRIETARY***  package. 
-#Unauthorized copying and/or distribution without the express permission from the developers is strictly prohibited.
-#""", bold=true);
-
 module ADCME
 
     export tf,
