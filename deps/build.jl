@@ -3,7 +3,7 @@ using PyCall
 
 if Sys.iswindows()
     @warn "PyTorch plugin is still under construction for Windows platform. Make sure tensorflow==1.14 is installed properly on your platform."
-else
+end
 
 function install_tensorflow()
     run(`$(PyCall.python) -m pip install tensorflow==1.14`)
