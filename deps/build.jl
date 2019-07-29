@@ -1,14 +1,21 @@
 using PyCall
+
+function install_tensorflow()
+    pip = joinpath(splitdir(PyCall.python)[1], "pip")
+    if !isfile(pip)
+        pip = joinpath(splitdir(PyCall.python)[1], "pip3")
+    end
+    run(`$pip install tensorflow==1.14`)
+end
+
 try
     tf = pyimport("tensorflow")
     if !(tf.VERSION=="1.14.0")
-        pip = joinpath(splitdir(PyCall.python)[1], "pip")
-        run(`$pip install tensorflow==1.14`)
+        install_tensorflow()
     end
     # See if it works already
 catch ee
-    pip = joinpath(splitdir(PyCall.python)[1], "pip")
-    run(`$pip install tensorflow==1.14`)
+    install_tensorflow()
     pyimport("tensorflow")
 end
 
