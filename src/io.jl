@@ -66,6 +66,9 @@ function load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array
         if !(name in keys(d))
             @warn "$(vars[i].name) not found in the file, skipped"
         else
+            if occursin("bias", name) && isa(d[name], Number)
+                d[name] = [d[name]]
+            end
             push!(ops, assign(vars[i], d[name]))
         end
     end

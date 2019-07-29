@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(TFApp)
-# For PyTorch
-set(CMAKE_PREFIX_PATH /Users/kailaix/Desktop/ADCME.jl/examples/custom_op/template/../../../deps/Libraries/libtorch)
-find_package(Torch REQUIRED)
-include_directories(/Users/kailaix/Desktop/ADCME.jl/examples/custom_op/template/../../../deps/Libraries /Users/kailaix/Desktop/ADCME.jl/examples/custom_op/template/../../../deps/Libraries/libtorch/include /Users/kailaix/Desktop/ADCME.jl/examples/custom_op/template/../headers)
+
+include_directories(../../../deps/Libraries)
 
 set (CMAKE_CXX_STANDARD 11)
 # C++11 required for tensorflow

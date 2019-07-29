@@ -3,14 +3,14 @@ using PyCall
 using LinearAlgebra
 using PyPlot
 if !(@isdefined initialized)
-    py"""
-    import tensorflow as tf
-    from tensorflow.python.framework import ops
-    libnonlinear = tf.load_op_library('build/libnonlinear.dylib')
-    @ops.RegisterGradient("NonLinear")
-    def _gradcc(op, grad):
-        return libnonlinear.non_linear_grad(grad, *op.inputs)
-    """
+py"""
+import tensorflow as tf
+from tensorflow.python.framework import ops
+libnonlinear = tf.load_op_library('build/libnonlinear.dylib')
+@ops.RegisterGradient("NonLinear")
+def _gradcc(op, grad):
+    return libnonlinear.non_linear_grad(grad, *op.inputs)
+"""
     global initialized = true
 end
 

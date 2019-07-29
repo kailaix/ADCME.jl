@@ -1,26 +1,33 @@
 using PyCall
 try
-    pyimport("tensorflow")
+    tf = pyimport("tensorflow")
+    if !(tf.VERSION=="1.14.0")
+        pip = joinpath(splitdir(PyCall.python)[1], "pip")
+        run(`$pip install tensorflow==1.14`)
+    end
     # See if it works already
 catch ee
     pip = joinpath(splitdir(PyCall.python)[1], "pip")
-    run(`$pip install tensorflow==1.13`)
+    run(`$pip install tensorflow==1.14`)
     pyimport("tensorflow")
 end
 
+if Sys.iswindows()
+    @warn "The current platform is windows and plugin from PyTorch is not supported yet."
+else
+    # Install Eigen3 library
+    if !isdir("$(@__DIR__)/Libraries")
+        mkdir("$(@__DIR__)/Libraries")
+    end
 
-# Install Eigen3 library
-if !isdir("$(@__DIR__)/Libraries")
-    mkdir("$(@__DIR__)/Libraries")
-end
+    if !isfile("$(@__DIR__)/Libraries/eigen.zip")
+        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
+    end
 
-if !isfile("$(@__DIR__)/Libraries/eigen.zip")
-    download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
-end
-
-if !isdir("$(@__DIR__)/Libraries/eigen3")    
-    run(`unzip $(@__DIR__)/Libraries/eigen.zip`)
-    run(`mv $(@__DIR__)/eigen-eigen-323c052e1731 $(@__DIR__)/Libraries/eigen3`)
+    if !isdir("$(@__DIR__)/Libraries/eigen3")    
+        run(`unzip $(@__DIR__)/Libraries/eigen.zip`)
+        run(`mv $(@__DIR__)/eigen-eigen-323c052e1731 $(@__DIR__)/Libraries/eigen3`)
+    end
 end
 
 # Install Torch library

@@ -1,0 +1,7 @@
+name = "ADCME"
+uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
+
+[deps]
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"

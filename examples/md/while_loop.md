@@ -15,9 +15,57 @@ To be able to compute the gradients, we need to create 1000000 subgraphs for `do
 
 `TensorFlow` provides us a clever way to do loops, where only one graph is created for the whole loops. The basic idea is to create a `while_loop` graph based on five primitives, and the corresponding graph for backpropagation is constructed thereafter. 
 
-## A model problem
+## A simple example
 
-In this tutorial, we demonstrate how to assemble a finite element matrix based on `while_loop`. We consider the following problem
+As a simple example, we consider assemble the external load vector for linear finite elements in 1D. Assume that the load distribution is $f(x)=1-x^2$, $x\in[0,1]$. The goal is to compute a vector $\mathbf{v}$ with $v_i=\int_{0}^1 f(x)\phi_i(x)dx$, where $\phi_i(x)$ is the $i$-th linear element. 
+
+The pseudocode for this problem is shown in the following
+
+```pseudocode
+F = zeros(ne+1) // ne is the total number of elements
+for e = 1:ne
+	x_mid = middle point of element e
+	h = length of element e
+	f_mid = f(x_mid)
+	F[global index of left end point of e] += f_mid*h/2
+	F[global index of right end point of e] += f_mid*h/2
+end
+```
+
+However, if `ne` is very large, writing explicit loops is unwise since it will create `ne` subgraphs. `while_loop` can be very helpful in this case (the script can also be found in https://github.com/kailaix/ADCME.jl/tree/master/examples/while_loop/while_loop_simple.jl)
+
+```julia
+using ADCME
+
+ne = 100
+h = 1/ne
+f = x->1-x^2
+function cond0(i, F_arr)
+    i<=ne+1
+end
+function body(i, F_arr)
+    fmid = f(cast(i-2, Float64)*h+h/2)
+    F = constant(zeros(ne+1))
+    F = scatter_add(F, [i-1;i], [fmid*h/2;fmid*h/2])
+    F_arr = write(F_arr, i, F)
+    i+1, F_arr
+end
+
+F_arr = TensorArray(ne+1)
+F_arr = write(F_arr, 1, constant(zeros(ne+1))) # inform `F_arr` of the data type by writing at index 1
+i = constant(2, dtype=Int32)
+_, out = while_loop(cond0, body, [i,F_arr]; parallel_iterations=10)
+F = sum(stack(out), dims=1)
+sess = Session(); init(sess)
+F0 = run(sess, F)
+
+```
+
+
+
+## A practical application
+
+In this section, we demonstrate how to assemble a finite element matrix based on `while_loop` for a 2D Poisson problem. We consider the following problem
 $$
 \begin{aligned}
 \nabla \cdot ( D\nabla u(\mathbf{x}) ) &= f(\mathbf{x})& \mathbf{x}\in \Omega\\

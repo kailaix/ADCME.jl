@@ -1,0 +1,10 @@
+language: julia
+julia:
+  - 1.1
+dist: trusty
+sudo: true
+os:
+  - osx
+  - linux
+notifications:
+  email: false
