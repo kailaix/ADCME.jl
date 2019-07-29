@@ -12,6 +12,7 @@ end
 try
     tf = pyimport("tensorflow")
     if !(tf.VERSION=="1.14.0")
+        println("Current tensorflow version = $(tf.VERSION)")
         install_tensorflow()
     end
     # See if it works already
