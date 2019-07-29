@@ -32,6 +32,8 @@ for e = 1:ne
 end
 ```
 
+![](externalforce.png)
+
 However, if `ne` is very large, writing explicit loops is unwise since it will create `ne` subgraphs. `while_loop` can be very helpful in this case (the script can also be found in https://github.com/kailaix/ADCME.jl/tree/master/examples/while_loop/while_loop_simple.jl)
 
 ```julia
