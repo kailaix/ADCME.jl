@@ -6,6 +6,5 @@ sudo: true
 os:
   - osx
   - linux
-  - windows
 notifications:
   email: false

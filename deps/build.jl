@@ -1,11 +1,12 @@
 using PyCall
 
+
+if Sys.iswindows()
+    @warn "PyTorch plugin is still under construction for Windows platform. Make sure tensorflow==1.14 is installed properly on your platform."
+else
+
 function install_tensorflow()
-    pip = joinpath(splitdir(PyCall.python)[1], "pip")
-    if !isfile(pip)
-        pip = joinpath(splitdir(PyCall.python)[1], "pip3")
-    end
-    run(`$pip install tensorflow==1.14`)
+    run(`$(PyCall.python) -m pip install tensorflow==1.14`)
 end
 
 try
@@ -19,22 +20,19 @@ catch ee
     pyimport("tensorflow")
 end
 
-if Sys.iswindows()
-    @warn "The current platform is windows and plugin from PyTorch is not supported yet."
-else
-    # Install Eigen3 library
-    if !isdir("$(@__DIR__)/Libraries")
-        mkdir("$(@__DIR__)/Libraries")
-    end
 
-    if !isfile("$(@__DIR__)/Libraries/eigen.zip")
-        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
-    end
+# Install Eigen3 library
+if !isdir("$(@__DIR__)/Libraries")
+    mkdir("$(@__DIR__)/Libraries")
+end
 
-    if !isdir("$(@__DIR__)/Libraries/eigen3")    
-        run(`unzip $(@__DIR__)/Libraries/eigen.zip`)
-        run(`mv $(@__DIR__)/eigen-eigen-323c052e1731 $(@__DIR__)/Libraries/eigen3`)
-    end
+if !isfile("$(@__DIR__)/Libraries/eigen.zip")
+    download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
+end
+
+if !isdir("$(@__DIR__)/Libraries/eigen3")    
+    run(`unzip $(@__DIR__)/Libraries/eigen.zip`)
+    run(`mv $(@__DIR__)/eigen-eigen-323c052e1731 $(@__DIR__)/Libraries/eigen3`)
 end
 
 # Install Torch library
