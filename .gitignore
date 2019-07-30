@@ -2,3 +2,4 @@ deps/Libraries
 deps/build.log
 *build*
 .DS_Store
+*distmesh*

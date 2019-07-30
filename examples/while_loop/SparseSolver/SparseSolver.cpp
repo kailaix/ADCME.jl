@@ -34,7 +34,7 @@ REGISTER_OP("SparseSolver")
         shape_inference::ShapeHandle d_shape;
         TF_RETURN_IF_ERROR(c->WithRank(c->input(5), 0, &d_shape));
 
-        c->set_output(0, c->Vector(-1));
+        // c->set_output(0, c->Vector(-1));
     return Status::OK();
   });
 class SparseSolverOp : public OpKernel {

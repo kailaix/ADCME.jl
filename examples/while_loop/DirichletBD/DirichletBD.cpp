@@ -28,7 +28,7 @@ REGISTER_OP("DirichletBD")
         shape_inference::ShapeHandle vv_shape;
         TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 1, &vv_shape));
 
-        c->set_output(0, c->Vector(-1));
+        // c->set_output(0, c->Vector(-1));
     return Status::OK();
   });
 class DirichletBDOp : public OpKernel {

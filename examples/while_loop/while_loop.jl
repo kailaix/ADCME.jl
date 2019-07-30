@@ -1,7 +1,7 @@
 using ADCME
-using MATLAB
 using PyCall
 using PyPlot
+using DelimitedFiles
 np = pyimport("numpy")
 
 # load operators
@@ -118,13 +118,24 @@ function solve_LS(bddof, ii, jj, vv, kk, ff, d)
     ii = cast(ii, Int32); jj = cast(jj, Int32); kk = cast(kk, Int32); d_= constant(d, dtype=Int32)
     vv = dirichlet_bd(ii, jj, constant(bddof, dtype=Int32), vv)
     u = sparse_solver(ii,jj,vv,kk,ff,d_)
+    u.set_shape((d,))
     t = ones(Bool, d); t[bddof] .= false
     t = findall(t)
     out = constant(zeros(d))
     out = scatter_add(out, t, u[t])
 end
 
+#=
+# choice 1: create mesh from distmesh
 # creating geometries: you need to download distmesh first
+# http://persson.berkeley.edu/distmesh/
+
+using MATLAB
+if !isdir("distmesh")
+    download("http://persson.berkeley.edu/distmesh/distmesh.zip", "$(@__DIR__)/distmesh.zip")
+    run(`unzip $(@__DIR__)/distmesh.zip -d $(@__DIR__)`)
+    rm("$(@__DIR__)/distmesh.zip")
+end
 mat"""
 addpath distmesh
 fd=@(p) sqrt(sum(p.^2,2))-1;
@@ -133,6 +144,13 @@ $e=boundedges($nodes,$elem)
 """
 elem = Int32.(elem)
 dof = Int32.(e)[:]|>unique
+=#
+
+# choice 2: load data from data folder
+nodes = readdlm("$(@__DIR__)/meshdata/nodes.txt")
+elem = readdlm("$(@__DIR__)/meshdata/elem.txt", '\t', Int32)
+dof = readdlm("$(@__DIR__)/meshdata/dof.txt", '\t', Int32)[:]
+
 
 
 fn = (x,y) -> 4.0
