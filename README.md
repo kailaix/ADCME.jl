@@ -60,7 +60,7 @@ If you want to use `customop()` and test the utility, test with the following co
 ```
 julia> test_customop()
 ```
-If it fails, it is probably the `tensorflow, python, gcc` configuration is not compatible. The following configurations are partially tested
+If it fails, it is probably the `tensorflow, python, gcc` configuration is not compatible. The following configurations were partially tested
 
 * Linux: GCC==4.8, Anaconda Python==3.6, TensorFlow==1.14
 
