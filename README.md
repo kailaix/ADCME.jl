@@ -54,6 +54,19 @@ julia> ]
 pkg> test ADCME
 ```
 
+7. Additional Test
+
+If you want to use `customop()` and test the utility, test with the following command
+```
+julia> test_customop()
+```
+If it fails, it is probably the `tensorflow, python, gcc` configuration is not compatible. The following configurations are partially tested
+
+* Linux: GCC==4.8, Anaconda Python==3.6, TensorFlow==1.14
+
+* Mac: Homebrew GCC==8.3, Anaconda Python==3.6, TensorFlow==1.14
+
+
 # Tutorial
 
 Consider solving the following problem

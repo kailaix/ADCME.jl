@@ -42,20 +42,20 @@ end
 
 ${operator_name} = py"${operator_name}"
 
-# TODO: 
+# TODO: specify your input parameters
 u = ${operator_name}(${ARGS})
 sess = Session()
 init(sess)
 run(sess, u)
 
-# TODO: 
 
-
+# TODO: change your test parameter to `m`
 # gradient check -- v
 function scalar_function(m)
     return sum(tanh(${operator_name}(${ARGS})))
 end
 
+# TODO: change `m_` and `v_` to appropriate values
 m_ = constant(rand(10,20))
 v_ = rand(10,20)
 y_ = scalar_function(m_)

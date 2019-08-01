@@ -6,7 +6,8 @@ gan,
 klgan,
 wgan,
 rklgan,
-lsgan
+lsgan,
+test_customop
 
 function customop()
     py_dir = "$(@__DIR__)/../examples/custom_op/template"
@@ -119,3 +120,32 @@ function traintestdev(n::Int64, train::Float64=0.64, test::Float64=0.2)
     return rn[1:Int64(round(train*n))], rn[Int64(round(train*n))+1:Int64(round((train+test)*n))],
                 rn[Int64(round((train+test)*n)):end]
 end
+
+
+function test_customop()
+    dir = pwd()
+    @info "Test: $(@__DIR__)/../examples/while_loop/DirichletBD"
+    cd("$(@__DIR__)/../examples/while_loop/DirichletBD")
+    if !isdir("build")
+        mkdir("build")
+    end
+    cd("build")
+    run(`cmake ..`)
+    run(`make -j`)
+    cd("..")
+    include("gradtest.jl")
+    
+
+    @info "Test: $(@__DIR__)/../examples/while_loop/SparseSolver"
+    cd("$(@__DIR__)/../examples/while_loop/SparseSolver")
+    if !isdir("build")
+        mkdir("build")
+    end
+    cd("build")
+    run(`cmake ..`)
+    run(`make -j`)
+    cd("..")
+    include("gradtest.jl")
+
+    cd(dir)
+end 
