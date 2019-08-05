@@ -9,7 +9,7 @@ git:
 julia:
   - 1.1
 env:
-  - PYTHON="/Users/travis/Library/Python/3.6/bin/python"
+  - PYTHON="/usr/bin/python"
 install:
   - which python
   - sudo curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
