@@ -1,4 +1,10 @@
 language: julia
+cache: pip
+python:
+  - "3.6"
+git:
+  depth: 3
+  quiet: true
 julia:
   - 1.1
 addons:
@@ -6,9 +12,12 @@ addons:
     packages:
       - "python3"
       - "python3-pip"
+install:
+  - ./deps/install.sh
 dist: trusty
 sudo: true
 os:
   - osx
+  - linux
 notifications:
   email: false

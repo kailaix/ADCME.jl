@@ -5,23 +5,11 @@ if Sys.iswindows()
     @warn "PyTorch plugin is still under construction for Windows platform. Make sure tensorflow==1.14 is installed properly on your platform."
 end
 
-function install_tensorflow()
-    run(`$(PyCall.python) -m pip install tensorflow==1.14`)
-    run(`$(PyCall.python) -m pip install tensorflow_probability==0.5.0`)
-end
-
 try
     tf = pyimport("tensorflow")
     tfp = pyimport("tensorflow_probability")
-    if !(tf.VERSION=="1.14.0") || !(tf.VERSION=="0.5.0")
-        println("Current tensorflow version = $(tf.VERSION)")
-        install_tensorflow()
-    end
-    # See if it works already
 catch ee
-    install_tensorflow()
-    pyimport("tensorflow")
-    pyimport("tensorflow_probability")
+    error("tensorflow and/or tensorflow_probability is not properly installed. Refer to README for installation instructions.")
 end
 
 
