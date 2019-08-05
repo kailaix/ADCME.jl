@@ -1,5 +1,7 @@
 using ADCME
 using Test
+using Statistics
+using LinearAlgebra
 using PyCall
 sess = Session()
 
@@ -9,5 +11,5 @@ include("ops.jl")
 include("core.jl")
 include("extra.jl")
 include("RBF.jl")
-
+include("UQFlow.jl")
 

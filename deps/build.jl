@@ -7,11 +7,13 @@ end
 
 function install_tensorflow()
     run(`$(PyCall.python) -m pip install tensorflow==1.14`)
+    run(`$(PyCall.python) -m pip install tensorflow_probability==0.5.0`)
 end
 
 try
     tf = pyimport("tensorflow")
-    if !(tf.VERSION=="1.14.0")
+    tfp = pyimport("tensorflow_probability")
+    if !(tf.VERSION=="1.14.0") || !(tf.VERSION=="0.5.0")
         println("Current tensorflow version = $(tf.VERSION)")
         install_tensorflow()
     end
@@ -19,6 +21,7 @@ try
 catch ee
     install_tensorflow()
     pyimport("tensorflow")
+    pyimport("tensorflow_probability")
 end
 
 
