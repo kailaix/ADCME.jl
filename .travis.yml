@@ -1,5 +1,6 @@
 sudo: required
 language: julia
+dist: xenial
 python:
   - "3.6"
 git:
@@ -7,18 +8,12 @@ git:
   quiet: true
 julia:
   - 1.1
-addons:
-  apt:
-    packages:
-      - "python3.6"
 env:
-  global:
-    - PYTHON="/Users/travis/Library/Python/3.6/bin/python"
+  - PYTHON="/Users/travis/Library/Python/3.6/bin/python"
 install:
   - sudo curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
   - sudo python3.6 get-pip.py
   - sudo sh ./deps/install.sh
-dist: trusty
 os:
   - osx
   - linux
