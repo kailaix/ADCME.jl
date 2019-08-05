@@ -11,8 +11,9 @@ julia:
 env:
   - PYTHON="/Users/travis/Library/Python/3.6/bin/python"
 install:
+  - which python
   - sudo curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-  - sudo python3.6 get-pip.py
+  - sudo python3 get-pip.py
   - sudo sh ./deps/install.sh
 os:
   - osx
