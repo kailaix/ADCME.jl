@@ -14,7 +14,7 @@ addons:
       - "python3"
       - "python3-pip"
 install:
-  - ./deps/install.sh
+  - sudo sh ./deps/install.sh
 dist: trusty
 os:
   - osx
