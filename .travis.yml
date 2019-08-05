@@ -16,7 +16,6 @@ addons:
 install:
   - ./deps/install.sh
 dist: trusty
-sudo: true
 os:
   - osx
   - linux
