@@ -1,7 +1,7 @@
 using PyCall
 
 if Sys.iswindows()
-    @warn "PyTorch plugin is still under construction for Windows platform. Make sure tensorflow==1.14 is installed properly on your platform."
+    @warn "PyTorch plugin is still under construction for Windows platform and will be disabled for the current version."
 end
 
 
@@ -24,8 +24,6 @@ try
     tfp = pyimport("tensorflow_probability")
 catch ee
     install_tensorflow()
-    tf = pyimport("tensorflow")
-    tfp = pyimport("tensorflow_probability")
 end
 
 

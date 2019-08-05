@@ -1,6 +1,7 @@
 # ADCME.jl
 
-![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=master)
+![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=UQFlow)
+![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=UQFlow)
 
 ![](examples/md/demo.png)
 
