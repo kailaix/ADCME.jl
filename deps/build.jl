@@ -1,15 +1,26 @@
 using PyCall
 
-
 if Sys.iswindows()
     @warn "PyTorch plugin is still under construction for Windows platform. Make sure tensorflow==1.14 is installed properly on your platform."
+end
+
+
+function install_tensorflow()
+    download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
+    run(`$(PyCall.python) get-pip.py`)
+    rm("get-pip.py")
+    run(`$(PyCall.python) -m pip install --user -U numpy`)
+    run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
+    run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
 end
 
 try
     tf = pyimport("tensorflow")
     tfp = pyimport("tensorflow_probability")
 catch ee
-    error("tensorflow and/or tensorflow_probability is not properly installed. Refer to README for installation instructions.")
+    install_tensorflow()
+    tf = pyimport("tensorflow")
+    tfp = pyimport("tensorflow_probability")
 end
 
 
