@@ -7,7 +7,7 @@ end
 
 function install_tensorflow()
     download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
-    run(`$(PyCall.python) get-pip.py`)
+    run(`$(PyCall.python) --user get-pip.py`)
     rm("get-pip.py")
     run(`$(PyCall.python) -m pip install --user -U numpy`)
     run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
