@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
         }
 
     forward((jl_array_t*)args[0],(jl_array_t*) args[1], (jl_array_t*)args[2],(jl_array_t*)args[3],(jl_array_t*)args[4],
-            (jl_array_t*)args[5]);
+        (jl_array_t*)args[5]);
+    
     backward((jl_array_t*)args[0],(jl_array_t*) args[1], (jl_array_t*)args[2],(jl_array_t*)args[3],(jl_array_t*)args[4],
             (jl_array_t*)args[6]);
     
