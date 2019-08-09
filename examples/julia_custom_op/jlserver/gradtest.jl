@@ -9,46 +9,39 @@ if Sys.islinux()
 py"""
 import tensorflow as tf
 libTwoLayer = tf.load_op_library('build/libTwoLayer.so')
-@tf.custom_gradient
 def two_layer(x):
-    y = libTwoLayer.two_layer(x)
-    def grad(dy):
-        return libTwoLayer.two_layer_grad(dy, y, x)
-    return y, grad
+    y,g = libTwoLayer.two_layer(x)
+    return y, g
 """
 elseif Sys.isapple()
 py"""
 import tensorflow as tf
 libTwoLayer = tf.load_op_library('build/libTwoLayer.dylib')
-@tf.custom_gradient
 def two_layer(x):
-    y = libTwoLayer.two_layer(x)
-    def grad(dy):
-        return libTwoLayer.two_layer_grad(dy, y, x)
-    return y, grad
+    y,g = libTwoLayer.two_layer(x)
+    return y, g
 """
 elseif Sys.iswindows()
 py"""
 import tensorflow as tf
 libTwoLayer = tf.load_op_library('build/libTwoLayer.dll')
-@tf.custom_gradient
 def two_layer(x):
-    y = libTwoLayer.two_layer(x)
-    def grad(dy):
-        return libTwoLayer.two_layer_grad(dy, y, x)
-    return y, grad
+    y,g = libTwoLayer.two_layer(x)
+    return y, g
 """
 end
 
 two_layer = py"two_layer"
 
-x = zeros(10);
+x = randn(10) .+ 1.0
 # TODO: specify your input parameters
-u = two_layer(x)
+u, g = two_layer(x)
 sess = Session()
 init(sess)
-run(sess, u)
+@show run(sess, u)
+@show run(sess, g)
 error()
+
 
 # TODO: change your test parameter to `m`
 # gradient check -- v

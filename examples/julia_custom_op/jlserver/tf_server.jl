@@ -34,9 +34,10 @@ println("Serving...")
 while true
     if isfile("isignal.txt") && isfile("input.txt")
         println("Received file")
-        x = reinterpret(Float64, read("input.txt"))
+        x = Float64.(reinterpret(Float64, read("input.txt")))
         y = forward(x, b1, W1, b2, W2)
-        write("output.txt", y)
+        g = backward(x, b1, W1, b2, W2)
+        write("output.txt", y); write("output2.txt", g)
         rm("input.txt"); rm("isignal.txt") # or mark as done
         run(`touch osignal.txt`) # must be written after output.txt
     end
