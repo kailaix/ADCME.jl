@@ -9,14 +9,30 @@ rklgan,
 lsgan,
 test_customop
 
-function customop()
+
+"""
+    customop(torch=false)
+
+Create a new custom operator.
+
+# example
+```julia-repl
+julia> customop() # create an editable `customop.txt` file
+[ Info: Custom operator wrapper generated; Torch is disabled
+
+julia> customop() # after editing `customop.txt`, call it again to generate interface files.
+[ Info: Custom operator wrapper generated; Torch is disabled
+```
+The option `torch` adds support for `PyTorch` backend in `CMakeLists.txt`
+"""
+function customop(torch=false)
     py_dir = "$(@__DIR__)/../examples/custom_op/template"
     if !("custom_op.txt" in readdir("."))
         cp("$(py_dir)/custom_op.example", "custom_op.txt")
         @info "Edit custom_op.txt for custom operators"
     else
-        run(`python $(py_dir)/customop.py custom_op.txt $py_dir`)
-        @info "Custom operator wrapper generated"
+        run(`python $(py_dir)/customop.py custom_op.txt $py_dir $(torch ? "" : "# ")`)
+        @info "Custom operator wrapper generated; Torch is $(torch ? "enabled" : "disabled")"
     end
 end
 

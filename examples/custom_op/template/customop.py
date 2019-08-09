@@ -348,6 +348,7 @@ def OUTPUT():
 
 filename = sys.argv[1]
 dirname = sys.argv[2]
+iftorch = sys.argv[3]
 if filename not in os.listdir("."):
     print("ERROR: file {} does not exist".format(filename))
     exit(0)
@@ -417,9 +418,7 @@ d = {"include": tf.sysconfig.get_compile_flags()[0][2:],
     "link": tf.sysconfig.get_link_flags()[0][2:],
     "ABI": tf.sysconfig.get_compile_flags()[1][-1],
     "OperatorName": op,
-    "PREFIX": os.path.join(pypath, "../../../deps/Libraries/libtorch"),
-    "EIGEN_INC": os.path.join(pypath, "../../../deps/Libraries"),
-    "TORCH_INC": os.path.join(pypath, "../../../deps/Libraries/libtorch/include"),
+    "IfTorch": iftorch,
     "HEADERS": os.path.join(pypath, "../headers")}
 with open("{}/CMakeLists.template".format(dirname),"r") as fp:
     cnt = fp.read()
