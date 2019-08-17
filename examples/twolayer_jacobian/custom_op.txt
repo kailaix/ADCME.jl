@@ -1,0 +1,7 @@
+TwoLayer
+double x(?)
+double w1(?)
+double b1(?)
+double w2(?)
+double b2(?)
+double y(?) -> output

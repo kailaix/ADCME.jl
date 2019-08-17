@@ -1,4 +1,0 @@
-TwoLayer
-double x(?)
-double y(?) -> output
-double g(?,?) -> output

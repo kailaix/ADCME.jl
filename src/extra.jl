@@ -7,11 +7,12 @@ klgan,
 wgan,
 rklgan,
 lsgan,
-test_customop
+test_customop,
+load_op
 
 
 """
-    customop(torch=false)
+    customop(torch=false; julia=false)
 
 Create a new custom operator.
 
@@ -25,15 +26,37 @@ julia> customop() # after editing `customop.txt`, call it again to generate inte
 ```
 The option `torch` adds support for `PyTorch` backend in `CMakeLists.txt`
 """
-function customop(torch=false)
+function customop(torch=false; julia=false)
     py_dir = "$(@__DIR__)/../examples/custom_op/template"
     if !("custom_op.txt" in readdir("."))
         cp("$(py_dir)/custom_op.example", "custom_op.txt")
         @info "Edit custom_op.txt for custom operators"
+        return
     else
         run(`python $(py_dir)/customop.py custom_op.txt $py_dir $(torch ? "" : "# ")`)
         @info "Custom operator wrapper generated; Torch is $(torch ? "enabled" : "disabled")"
     end
+
+    if julia
+        cmakelist = read("CMakeLists.txt", String)
+        s1 = """set(CMAKE_CXX_FLAGS "-std=c++11 \${CMAKE_CXX_FLAGS}")"""
+        s2 = """execute_process(COMMAND python -c "from sysconfig import get_paths as gp; import sys; sys.stdout.write(gp()['include'])" OUTPUT_VARIABLE PYTHON_INC)
+execute_process(COMMAND julia -e "using PyCall; print(PyCall.libpython)" OUTPUT_VARIABLE PYTHON_LIB)
+execute_process(COMMAND julia -e "abspath(joinpath(Sys.BINDIR, \\"../lib\\"))|>print" OUTPUT_VARIABLE JULIA_LIB)
+execute_process(COMMAND julia -e "abspath(joinpath(Sys.BINDIR, \\"../include/julia\\"))|>print" OUTPUT_VARIABLE JULIA_INC)
+add_definitions( -DJULIA_ENABLE_THREADING=1 )
+"""
+        cmakelist = replace(cmakelist, s1=>s2)
+        s1 = """link_directories(\${TF_LIB})"""
+        s2 = """include_directories(\${JULIA_INC} \${PYTHON_INC})
+link_directories(\${TF_LIB} \${JULIA_LIB})"""
+        cmakelist = replace(cmakelist, s1=>s2)
+        s1 = """tensorflow_framework"""
+        s2 = """tensorflow_framework julia \${PYTHON_LIB}"""
+        cmakelist = replace(cmakelist, s1=>s2)
+        write("CMakeLists.txt", cmakelist)
+    end
+
 end
 
 function torchexample()
@@ -165,3 +188,25 @@ function test_customop()
 
     cd(dir)
 end 
+
+
+@doc """
+load_op(oplibpath::String, opname::String)
+
+loads the operator `opname` from library `oplibpath`, 
+if the surfix of `oplibpath` is not given, it will be inferred from system
+"""
+function load_op(oplibpath::String, opname::String)
+    if splitext(oplibpath)[2]==""
+        oplibpath = oplibpath * (Sys.islinux() ? 
+                        ".so" : Sys.isapple() ? ".dylib" : ".dll")
+    end
+py"""
+import tensorflow as tf
+libop = tf.load_op_library($oplibpath)
+"""
+    s = py"libop"
+    s = getproperty(s, opname)
+    println("Load library: $oplibpath")
+    s
+end

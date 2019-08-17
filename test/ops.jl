@@ -215,3 +215,10 @@ end
     b = map(x->x^2, a)
     @test run(sess, b)≈[1.0;4.0;9.0]
 end
+
+@testset "diag" begin
+    C = rand(3,3)
+    D = rand(3)
+    @test run(sess, diag(constant(C))) ≈  diag(C)
+    @test run(sess, diagm(constant(D))) ≈ diagm(0=>D)
+end
