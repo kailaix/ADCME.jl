@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map
-import LinearAlgebra: diag, det, norm
+import LinearAlgebra: diag, det, norm, diagm
 import Statistics: mean
 import FFTW: fft, ifft
 export 
@@ -20,6 +20,7 @@ relu,
 squeeze,
 adjoint,
 diag,
+diagm,
 det,
 inv,
 solve,
@@ -328,7 +329,8 @@ function adjoint(o::PyObject; kwargs...)
     end
     tf.linalg.adjoint(o; kwargs...)
 end
-diag(o::PyObject; kwargs...) = tf.linalg.diag(o; kwargs...)
+diagm(o::PyObject; kwargs...) = tf.linalg.diag(o; kwargs...)
+diag(o::PyObject; kwargs...) = tf.linalg.diag_part(o; kwargs...)
 det(o::PyObject; kwargs...) = tf.linalg.det(o; kwargs...)
 inv(o::PyObject; kwargs...) = tf.linalg.inv(o; kwargs...)
 

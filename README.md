@@ -1,6 +1,7 @@
 # ADCME.jl
 
 ![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=master)
+![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
 
 ![](examples/md/demo.png)
 
@@ -125,6 +126,7 @@ gradients(loss, b)
 2. [Writing Custom Operators in `ADCME.jl`](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/custom_op.ipynb)
 3. [TensorFlow Meets PyTorch: Using PyTorch to Create TensorFlow Custom Operators](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/pytorch.ipynb)
 4. [Four Types of Forward Simulation Operators to Consider in Automatic Differentiation](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/four_types.ipynb)
+5. [Calling Julia from TensorFlow](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/julia_customop.ipynb)
 
 
 # LICENSE

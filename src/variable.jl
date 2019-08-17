@@ -342,8 +342,10 @@ function SymmetricMatrix(A, args...;kwargs...)
     X_symm = 0.5 * (X_upper + tf.transpose(X_upper))
 end
 
-function SPDMatrix(C, args...;kwargs...)
-    tf.matmul(C, tf.transpose(C), args...;kwargs...)
+SPDMatrix(C::PyObject) = C*C'
+function SPDMatrix(m::Int64)
+    x = Variable(ones(m,m))
+    x*x'
 end
 
 

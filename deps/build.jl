@@ -1,24 +1,29 @@
 using PyCall
 
-
 if Sys.iswindows()
-    @warn "PyTorch plugin is still under construction for Windows platform. Make sure tensorflow==1.14 is installed properly on your platform."
+    @warn "PyTorch plugin is still under construction for Windows platform and will be disabled for the current version."
 end
 
+
 function install_tensorflow()
-    run(`$(PyCall.python) -m pip install tensorflow==1.14`)
+    try 
+        run(`$(PyCall.python) -m pip --version`)
+    catch
+        @warn "pip is not installed, downloading and installing pip..."
+        download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
+        run(`$(PyCall.python) get-pip.py --user`)
+        rm("get-pip.py")
+    end
+    run(`$(PyCall.python) -m pip install --user -U numpy`)
+    run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
+    run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
 end
 
 try
     tf = pyimport("tensorflow")
-    if !(tf.VERSION=="1.14.0")
-        println("Current tensorflow version = $(tf.VERSION)")
-        install_tensorflow()
-    end
-    # See if it works already
+    tfp = pyimport("tensorflow_probability")
 catch ee
     install_tensorflow()
-    pyimport("tensorflow")
 end
 
 

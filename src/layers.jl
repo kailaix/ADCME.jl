@@ -85,6 +85,7 @@ function ae_to_code(d::Dict, scope::String)
         Wkey = "$(scope)backslashfully_connected$(si)backslashweightscolon0"
         bkey = "$(scope)backslashfully_connected$(si)backslashbiasescolon0"
         if haskey(d, Wkey)
+            @show Wkey
             if i!=0
                 nn_code *= "\tisa(net, Array) ? (net = tanh.(net)) : (net=tanh(net))\n"
             end

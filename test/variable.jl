@@ -38,14 +38,6 @@ end
     @test get_dtype(Variable(rand(Int64,10,10))) == Int64
 end
 
-@testset "Special Matrices" begin
-    R = SymmetricMatrix(rand(10,10))
-    S = SPDMatrix(rand(10,10))
-    run(sess, global_variables_initializer())
-    @test maximum(abs.(run(sess, R)-run(sess, R')))≈0.0
-    @test eigvals(run(sess, S))[1]>0.0
-end
-
 
 @testset "tensor" begin
     v = Variable(0.5)

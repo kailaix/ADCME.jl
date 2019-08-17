@@ -3,3 +3,4 @@ deps/build.log
 *build*
 .DS_Store
 *distmesh*
+.vscode
