@@ -23,12 +23,10 @@ The introductory [blog](https://medium.com/@kailaix16/introduction-to-adcme-jl-a
 
 2. Install [TensorFlow](https://www.tensorflow.org/). Please install `1.14` instead of `2.0` since in `2.0`, dynamic graphs are the default. 
 
-3. Install dependencies in Julia
+3. Install `ADCME.jl`
 ```
 julia> ]
-pkg> add PyCall 
-pkg> add MAT
-pkg> add FFTW
+pkg> add ADCME
 ```
 
 4. Check the PyCall Python version is consistent with the `TensorFlow`. To check the PyCall Python version, 
@@ -43,19 +41,13 @@ julia> ]
 pkg> build PyCall
 ```
 
-5. Install `ADCME.jl`
-```
-julia> ]
-pkg> add https://github.com/kailaix/ADCME.jl
-```
-
-6. Test `ADCME.jl`
+5. (Optional) Test `ADCME.jl`
 ```
 julia> ]
 pkg> test ADCME
 ```
 
-7. Additional Test
+7. (Optional) Additional Test
 
 If you want to use `customop()` and test the utility, test with the following command
 ```
