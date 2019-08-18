@@ -11,4 +11,5 @@ include("ops.jl")
 include("core.jl")
 include("extra.jl")
 include("RBF.jl")
+include("customop.jl")
 

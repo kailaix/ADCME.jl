@@ -6,6 +6,7 @@ using Random
 using SparseArrays
 Random.seed!(233)
 
+################## Load Operator ##################
 if Sys.islinux()
 py"""
 import tensorflow as tf
@@ -42,6 +43,7 @@ def sparse_solver(ii,jj,vv,kk,ff,d):
 end
 
 sparse_solver = py"sparse_solver"
+################## End Load Operator ##################
 
 # TODO:
 d0 = 30
@@ -79,6 +81,7 @@ init(sess)
 # TODO: 
 
 
+# TODO: change your test parameter to `m`
 # gradient check -- v
 function scalar_function(m)
     return sum(tanh(sparse_solver(ii,jj,m,kk,ff,d)))

@@ -55,6 +55,31 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
         s2 = """tensorflow_framework julia \${PYTHON_LIB}"""
         cmakelist = replace(cmakelist, s1=>s2)
         write("CMakeLists.txt", cmakelist)
+
+        gradtest = read("gradtest.jl", String)
+        m = match(r"(\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\# Load Operator.*End Load Operator \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#)"s, gradtest)
+        s = m.captures[1]
+        m = match(r"(build/.*?)\.so", s)
+        Dir = m.captures[1]
+        m = match(r"= py\\\"(.*?)\\\"", s)
+        Fun = m.captures[1]
+        s0 = "$Fun = load_op(\"$Dir\", \"$Fun\")"
+        gradtest = replace(gradtest, s=>s0)
+        m = match(r"(\# TODO: change your test parameter to `m`.*)"s, gradtest)
+        s = m.captures[1]
+        gradtest = replace(gradtest, s=>"")
+        write("gradtest.jl", gradtest)
+
+        opname = strip(readline("custom_op.txt"))
+        cpp = read("$opname.cpp", String)
+        s = "(REGISTER_OP\\(\"$(opname)Grad\"\\).*)"
+        r = Regex(s, "s")
+        m = match(r, cpp)
+        cpp = replace(cpp, m.captures[1]=>"")
+        cpp = replace(cpp, "using namespace tensorflow;"=>"using namespace tensorflow;
+#include \"julia.h\";\n#include \"Python.h\";")
+        write("$opname.cpp", cpp)
+        
     end
 
 end
