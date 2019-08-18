@@ -5,7 +5,42 @@ using PyPlot
 using Random
 Random.seed!(233)
 
-${operator_name} = load_op("build/lib${OperatorName}", ${operator_name})
+if Sys.islinux()
+py"""
+import tensorflow as tf
+lib${OperatorName} = tf.load_op_library('build/lib${OperatorName}.so')
+@tf.custom_gradient
+def ${operator_name}(${ARGS}):
+    ${OUTPUT} = lib${OperatorName}.${operator_name}(${ARGS})
+    def grad(dy):
+        return lib${OperatorName}.${operator_name}_grad(dy, ${OUTPUT}, ${ARGS})
+    return ${FIRST_OUTPUT}, grad
+"""
+elseif Sys.isapple()
+py"""
+import tensorflow as tf
+lib${OperatorName} = tf.load_op_library('build/lib${OperatorName}.dylib')
+@tf.custom_gradient
+def ${operator_name}(${ARGS}):
+    ${OUTPUT} = lib${OperatorName}.${operator_name}(${ARGS})
+    def grad(dy):
+        return lib${OperatorName}.${operator_name}_grad(dy, ${OUTPUT}, ${ARGS})
+    return ${FIRST_OUTPUT}, grad
+"""
+elseif Sys.iswindows()
+py"""
+import tensorflow as tf
+lib${OperatorName} = tf.load_op_library('build/lib${OperatorName}.dll')
+@tf.custom_gradient
+def ${operator_name}(${ARGS}):
+    ${OUTPUT} = lib${OperatorName}.${operator_name}(${ARGS})
+    def grad(dy):
+        return lib${OperatorName}.${operator_name}_grad(dy, ${OUTPUT}, ${ARGS})
+    return ${FIRST_OUTPUT}, grad
+"""
+end
+
+${operator_name} = py"${operator_name}"
 
 # TODO: specify your input parameters
 u = ${operator_name}(${ARGS})
