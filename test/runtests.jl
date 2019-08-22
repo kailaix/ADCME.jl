@@ -1,8 +1,12 @@
 using ADCME
-using Test
 using Statistics
 using LinearAlgebra
 using PyCall
+
+using Test
+using NLopt
+using Optim
+
 sess = Session()
 
 include("io.jl")
@@ -11,5 +15,5 @@ include("ops.jl")
 include("core.jl")
 include("extra.jl")
 include("RBF.jl")
-include("customop.jl")
+include("optim.jl")
 

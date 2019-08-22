@@ -112,6 +112,39 @@ The gradients can be obtained very easily. For example, if we want the gradients
 gradients(loss, b)
 ```
 
+
+# Advanced Tutorials
+
+## Custom Optimizers
+
+For many engineering problems, using a specialized optimizer for large-scale constrained optimization problem is desirable. This can be achieved through the `CustomOperator` interface in `ADCME`. For example, suppose we want to call a third-party optimizer such as [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), we can use the following code snippet
+```julia
+using ADCME
+using Optim
+NonCon = CustomOptimizer() do f, df, c, dc, x0, nineq, neq
+    res = Optim.optimize(f, df, x0; inplace = false)        
+    res.minimizer
+end
+x = Variable(rand(2))
+f = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
+opt = NonCon(f)
+sess = Session(); init(sess)
+opt.minimize(sess)
+println("Optimal value is xmin = $(run(sess, x))")
+```
+This will give us a value around `[1.0,1.0]`. The syntax for creating custom optimizer is
+```julia
+function CustomOptimizer(
+    func::Function    # function to compute optimal values
+    f,                # Callback: objective function
+    df,               # Callback: objective function gradient
+    c,                # Callback: constraint evaluation, inequality constraints followed by equality ones
+    dc,               # Callback: constraint gradients
+    x0,               # Initial value
+    nineq,            # number of inequality constraints
+    neq)              # number of equality constraints
+```
+
 # More Documentation
 
 1. [The Power of `while_loop` -- Application to Finite Element Analysis](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/while_loop.ipynb)

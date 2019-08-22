@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
-    vec, \, cos, sin, sign, map
-import LinearAlgebra: diag, det, norm, diagm
+    vec, \, cos, sin, sign, map, prod
+import LinearAlgebra: diag, det, norm, diagm, dot
 import Statistics: mean
 import FFTW: fft, ifft
 export 
@@ -249,6 +249,11 @@ end
 function mean(o::PyObject; kwargs...)
     kwargs = jlargs(kwargs)
     tf.reduce_mean(o; kwargs...)
+end
+
+function prod(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.reduce_prod(o; kwargs...)
 end
 function squeeze(o::PyObject; kwargs...)
     kwargs = jlargs(kwargs)
@@ -572,3 +577,8 @@ function map(fn::Function, o::PyObject; kwargs...)
     kwargs = jlargs(kwargs)
     tf.map_fn(fn, o;kwargs...)
 end
+
+dot(x::PyObject, y::PyObject) = sum(x.*y)
+dot(x::PyObject, y::AbstractArray{<:Real}) = sum(x.*constant(y))
+dot(x::AbstractArray{<:Real}, y::PyObject) = sum(constant(x).*y)
+

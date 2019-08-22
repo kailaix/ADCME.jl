@@ -9,6 +9,7 @@ module ADCME
     UPDATE_OPS
     
     using PyCall
+    using Random
 
     tf = PyNULL()
     tfp = PyNULL()

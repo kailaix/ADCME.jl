@@ -4,3 +4,5 @@ MAT
 FFTW
 LinearAlgebra
 Statistics
+SparseArrays
+Random

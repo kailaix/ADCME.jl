@@ -222,3 +222,18 @@ end
     @test run(sess, diag(constant(C))) ≈  diag(C)
     @test run(sess, diagm(constant(D))) ≈ diagm(0=>D)
 end
+
+@testset "dot" begin
+    A = rand(10)
+    B = rand(10)
+    tA = constant(A); tB = constant(B)
+    u = sum(A.*B)
+    @test run(sess, dot(tA, tB))≈u
+    @test run(sess, dot(A, tB))≈u
+    @test run(sess, dot(tA, B))≈u
+end
+
+@testset "prod" begin
+    A = rand(10)
+    @test run(sess, prod(constant(A)))≈prod(A)
+end
