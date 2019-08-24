@@ -109,6 +109,8 @@ void forward(double *y, const double *x, const double *w1, const double *w2, con
     auto fun = jl_get_function(jl_main_module, "twolayer");
     jl_call(fun, args, 6);
     JL_GC_POP();
+    if (jl_exception_occurred())
+        printf("%s \n", jl_typeof_str(jl_exception_occurred()));
     PyGILState_Release(py_threadstate);
 }
 ```

@@ -13,7 +13,8 @@ has_gpu,
 while_loop,
 cond,
 stop_gradient,
-tensor
+tensor,
+RegisterGradient
 
 
 
@@ -23,6 +24,13 @@ reset_default_graph() = tf.compat.v1.reset_default_graph()
 get_default_graph() = tf.get_default_graph()
 enable_eager_execution() = tf.enable_eager_execution()
 value(o::PyObject) = o.numpy()
+function RegisterGradient(args...;kwargs...)
+    try
+        tfops.RegisterGradient(args...;kwargs...)
+    catch e
+        @warn(e)
+    end
+end
 
 """
 finalize(s::PyObject)

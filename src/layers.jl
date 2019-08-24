@@ -58,7 +58,10 @@ ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
 
 Create a neural network with intermediate numbers of neurons `output_dims`.
 """
-function ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
+function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope::String = "default")
+    if isa(x, Array)
+        x = constant(x)
+    end
     flag = false
     if length(size(x))==1
         x = reshape(x, length(x), 1)
