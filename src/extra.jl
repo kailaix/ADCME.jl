@@ -216,12 +216,12 @@ end
 
 
 @doc """
-load_op(oplibpath::String, opname::String)
+load_op(oplibpath::String, opname::String; grad=false)
 
 loads the operator `opname` from library `oplibpath`, 
 if the surfix of `oplibpath` is not given, it will be inferred from system
 """
-function load_op(oplibpath::String, opname::String)
+function load_op(oplibpath::String, opname::String; grad=false)
     if splitext(oplibpath)[2]==""
         oplibpath = oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll")
@@ -230,8 +230,13 @@ py"""
 import tensorflow as tf
 libop = tf.load_op_library($oplibpath)
 """
-    s = py"libop"
-    s = getproperty(s, opname)
+    lib = py"libop"
+    s = getproperty(lib, opname)
     println("Load library: $oplibpath")
-    s
+    if grad
+        t = getproperty(lib, opname*"_grad")
+        return s, t
+    else
+        return s
+    end
 end
