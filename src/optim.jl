@@ -122,11 +122,16 @@ function CustomOptimizer(opt::Function)
             function _minimize(self; initial_val, loss_grad_func, equality_funcs,
                 equality_grad_funcs, inequality_funcs, inequality_grad_funcs,
                 packed_bounds, step_callback, optimizer_kwargs)
-                x_L = vcat([x[1] for x in packed_bounds]...)
-                x_U = vcat([x[2] for x in packed_bounds]...)
+                local x_L, x_U
                 x0 = initial_val # rename 
                 nineq, neq = length(inequality_funcs), length(equality_funcs)
                 nvar = Int64(sum([prod(self._vars[i].get_shape().as_list()) for i = 1:length(self._vars)]))
+                if isnothing(packed_bounds)
+                    x_L = -Inf*ones(nvar); x_U = Inf*ones(nvar)
+                else
+                    x_L = vcat([x[1] for x in packed_bounds]...)
+                    x_U = vcat([x[2] for x in packed_bounds]...)
+                end
                 ncon = nineq + neq
                 f(x) = loss_grad_func(x)[1]
                 df(x) = loss_grad_func(x)[2]

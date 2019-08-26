@@ -1,11 +1,13 @@
+using NLopt
+using Optim
 using ADCME
 using Statistics
 using LinearAlgebra
 using PyCall
 
 using Test
-using NLopt
-using Optim
+
+
 
 sess = Session()
 
