@@ -16,12 +16,10 @@ function install_tensorflow()
     end
     run(`$(PyCall.python) -m pip install --user -U numpy`)
     run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
-    run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
 end
 
 try
     tf = pyimport("tensorflow")
-    tfp = pyimport("tensorflow_probability")
 catch ee
     install_tensorflow()
 end
