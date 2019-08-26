@@ -27,8 +27,8 @@ inequality_constraint!(opt, (x,g) -> myconstraint(x,g,2,0), 1e-8)
 
 (minf,minx,ret) = NLopt.optimize(opt, [1.234, 5.678])
 # ================ END NLopt ================
-
-Con = CustomOptimizer() do f, df, c, dc, x0, nineq, neq
+p = ones(10)
+Con = CustomOptimizer() do f, df, c, dc, x0, args...
     opt = Opt(:LD_MMA, length(x0))
     bd = zeros(length(x0)); bd[end-1:end] = [-Inf, 0.0]
     opt.lower_bounds = bd
@@ -43,9 +43,10 @@ end
 # for NLopt to work properly
 reset_default_graph() 
 x = Variable([1.234; 5.678])
-loss = x[2]^2
-c1 = (x[1]-1)^2 - x[2]
-opt = Con(loss, inequalities=[c1])
+y = Variable([1.0;2.0])
+loss = x[2]^2 + sum(y^2)
+c1 = (x[1]-1)^2 - x[2] 
+opt = Con(loss, inequalities=[c1],var_to_bounds=Dict(x=>[-1.,1.]))
 sess = Session(); init(sess)
 opt.minimize(sess)
 xmin = run(sess, x)
@@ -57,7 +58,7 @@ end
 @testset "Optim" begin
 ######################### integration with Optim.jl #########################
 
-NonCon = CustomOptimizer() do f, df, c, dc, x0, nineq, neq
+NonCon = CustomOptimizer() do f, df, c, dc, x0, args...
     res = Optim.optimize(f, df, x0; inplace = false)        
     res.minimizer
 end
@@ -74,22 +75,16 @@ xmin = run(sess, x)
 
 end
 
-#=
+
 ######################### integration with Ipopt.jl #########################
 # https://github.com/jainachin/tf-ipopt/blob/master/examples/hs071.py
-CustomOptimizer("IPOPT") do f, df, c, dc, x0, nineq, neq
-    @show "here"
-    error()
+IPOPT = CustomOptimizer() do f, df, c, dc, x0, nineq, neq, x_L, x_U
     n = length(x0)
-    m = 2
-    x_L = [1.0, 1.0, 1.0, 1.0]
-    x_U = [5.0, 5.0, 5.0, 5.0]
+    nz = length(dc(x0))
     g_L, g_U = [-2e19;0.0], [0.0;0.0]
     eval_jac_g = (x, mode, rows, cols, values) -> (values[:]=dc(x))
-    eval_h = (x, mode, rows, cols, obj_factor, lambda, values)->(values[:].=0.0)
-    @show "here"
-    prob = Ipopt.createProblem(n, x_L, x_U, m, g_L, g_U, 8, 0,
-            f, (x,g)->(g[:]=c(x)), (x,g)->(g[:]=df(x)), eval_jac_g, eval_h)
+    prob = Ipopt.createProblem(n, x_L, x_U, 2, g_L, g_U, nz, 0,
+            f, (x,g)->(g[:]=c(x)), (x,g)->(g[:]=df(x)), eval_jac_g, nothing)
     prob.x = x0
     status = Ipopt.solveProblem(prob)
     println(Ipopt.ApplicationReturnStatus[status])
@@ -98,11 +93,12 @@ CustomOptimizer("IPOPT") do f, df, c, dc, x0, nineq, neq
 end
 
 reset_default_graph()
-x1, x2, x3, x4 = Variable(1.0), Variable(5.0), Variable(5.0), Variable(1.0)
-loss = x1 * x4 * (x1 + x2 + x3) + x3
-g = (x1 * x2 * x3 * x4 - 25)
-h = x1*x1 + x2*x2 + x3*x3 + x4*x4 - 40
-opt = IPOPT(loss, inequalities=[g], equalities=[h])
+x = Variable([1.0;1.0])
+x1 = x[1]; x2 = x[2]; 
+loss = x2
+g = x1
+h = x1*x1 + x2*x2 - 1
+opt = IPOPT(loss, inequalities=[g], equalities=[h], var_to_bounds=Dict(x=>(-1.0,1.0)))
 sess = Session(); init(sess)
-opt.minimize(loss)
-=#
+opt.minimize(sess)
+

@@ -87,7 +87,7 @@ CustomOptimizer(opt::Function, name::String)
 creates a custom optimizer with struct name `name`. For example, we can integrate `Optim.jl` with `ADCME` by 
 constructing a new optimizer
 ```julia
-CustomOptimizer("Con") do f, df, c, dc, x0, nineq, neq
+CustomOptimizer("Con") do f, df, c, dc, x0, nineq, neq, x_L, x_U
     opt = Opt(:LD_MMA, length(x0))
     bd = zeros(length(x0)); bd[end-1:end] = [-Inf, 0.0]
     opt.lower_bounds = bd
@@ -110,6 +110,9 @@ or
 ```
 minimize(opt, sess)
 ```
+
+Note thanks to the global variable scope of Julia, `step_callback`, `optimizer_kwargs` can actually 
+be passed from Julia environment directly.
 """
 function CustomOptimizer(opt::Function)
     name = "CustomOptimizer_"*randstring(16)
@@ -119,6 +122,8 @@ function CustomOptimizer(opt::Function)
             function _minimize(self; initial_val, loss_grad_func, equality_funcs,
                 equality_grad_funcs, inequality_funcs, inequality_grad_funcs,
                 packed_bounds, step_callback, optimizer_kwargs)
+                x_L = vcat([x[1] for x in packed_bounds]...)
+                x_U = vcat([x[2] for x in packed_bounds]...)
                 x0 = initial_val # rename 
                 nineq, neq = length(inequality_funcs), length(equality_funcs)
                 nvar = Int64(sum([prod(self._vars[i].get_shape().as_list()) for i = 1:length(self._vars)]))
@@ -143,7 +148,7 @@ function CustomOptimizer(opt::Function)
                     end
                     return values[:]
                 end
-                $opt(f, df, c, dc, x0, nineq, neq)
+                $opt(f, df, c, dc, x0, nineq, neq, x_L, x_U)
             end
         end
         return $name

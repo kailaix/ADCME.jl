@@ -107,7 +107,8 @@ void forward(double *y, const double *x, const double *w1, const double *w2, con
     args[4] = (jl_value_t*)jl_ptr_to_array_1d(array_type, const_cast<double*>(b1), n, 0);
     args[5] = (jl_value_t*)jl_ptr_to_array_1d(array_type, const_cast<double*>(b2), n, 0);
     auto fun = jl_get_function(jl_main_module, "twolayer");
-    jl_call(fun, args, 6);
+  	if (fun==NULL) jl_errorf("Function not found in Main module.");
+    else jl_call(fun, args, 6);
     JL_GC_POP();
     if (jl_exception_occurred())
         printf("%s \n", jl_typeof_str(jl_exception_occurred()));
@@ -138,6 +139,21 @@ sess = Session(); init(sess)
 J0 = run(sess, y)
 @show norm(J-J0)
 ```
+
+
+
+## Usage in a Module
+
+If the custom operator is intended to be used in a precompiled module, we can load the dynamic library at initialization
+
+```julia
+global my_op 
+function __init__()
+	global my_op = load_op("$(@__DIR__)/path/to/libMyOp", "my_op")
+end
+```
+
+The corresponding `Julia` function called by `my_op` must be exported in the module (such that it is in the Main module when invoked). One such example is given in [MyModule](https://github.com/kailaix/ADCME.jl/blob/master/examples/JuliaOpModule.jl)
 
 
 

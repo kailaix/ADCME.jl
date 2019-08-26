@@ -79,6 +79,8 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
         cpp = replace(cpp, "using namespace tensorflow;"=>"using namespace tensorflow;
 #include \"julia.h\"\n#include \"Python.h\"")
         write("$opname.cpp", cpp)
+
+        cp("$(py_dir)/julia_op_example.h", "example.h")
         
     end
 
