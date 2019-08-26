@@ -144,6 +144,7 @@ function CustomOptimizer(
     nineq,            # number of inequality constraints
     neq)              # number of equality constraints
 ```
+See [Optimizers](https://github.com/kailaix/ADCME.jl/tree/master/test/optim.jl) for examples of integration with NLopt.jl, Optim.jl and Ipopt.
 
 # More Documentation
 

@@ -82,9 +82,20 @@ IPOPT = CustomOptimizer() do f, df, c, dc, x0, nineq, neq, x_L, x_U
     n = length(x0)
     nz = length(dc(x0))
     g_L, g_U = [-2e19;0.0], [0.0;0.0]
-    eval_jac_g = (x, mode, rows, cols, values) -> (values[:]=dc(x))
+    function eval_jac_g(x, mode, rows, cols, values)
+        if mode == :Structure
+            rows[1] = 1; cols[1] = 1
+            rows[2] = 1; cols[2] = 1
+            rows[3] = 2; cols[3] = 1
+            rows[4] = 2; cols[4] = 1
+        else
+            values[:]=dc(x)
+        end
+    end
     prob = Ipopt.createProblem(n, x_L, x_U, 2, g_L, g_U, nz, 0,
             f, (x,g)->(g[:]=c(x)), (x,g)->(g[:]=df(x)), eval_jac_g, nothing)
+    addOption(prob, "hessian_approximation", "limited-memory")
+
     prob.x = x0
     status = Ipopt.solveProblem(prob)
     println(Ipopt.ApplicationReturnStatus[status])
