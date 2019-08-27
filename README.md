@@ -1,27 +1,34 @@
-# ADCME.jl
+![](examples/md/icon.jpg)
+
+---
+
+
 
 ![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=master)
 ![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
 
 ![](examples/md/demo.png)
 
-The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) is written to facilitate scalable and sophisticated scientific computing that requires the evaluation of gradients by leveraging the power of [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). It is particularly dedicated to the inverse modeling problem, with the ultimate goal -- _Once the forward simulation is implemented, the researcher should be able to do the inverse modeling without substantial effort._
+The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling with gradient based optimization techniques. It has [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/) as the automatic differentiation backends. The dataflow model adopted by the framework enables researchers to do efficient inverse modeling without substantial effort after implementing the forward simulation.
 
 Several features of the library are
 
-* Simple and neat Julia syntax (MATLAB-style). Most of the arithmetic operators are overloaded into Python TensorFlow, which indicates that users will obtain the static graph performance of TensorFlow and do not need to worry about the overhead of scripting in Julia. In addition, since operators are overloaded, users can write Julia-style codes, e.g., one can use `A*B` for matrix production instead of `tf.matmul(A,B)`.
+* Simple and neat Julia syntax (MATLAB-style). Most of the arithmetic operators are overloaded to Julia operators, and the operations are further forwarded to TensorFlow. Therefore, users get the static graph performance of TensorFlow. Since operators are overloaded, users can write Julia-style codes, e.g., one can use `A*B` for matrix production instead of `tf.matmul(A,B)`.
 
-* Custom operators are supported. Users can implement their own operators for the bottleneck operations such as those that are difficult to vectorize in TensorFlow. When implementing custom operators, `ADCME.jl` provides access to the `ATen` library in `PyTorch`, which is equipped with automatic differentiation. This further reduces users' effort to do inverse modeling.
+* Custom operators are supported. Users can implement their own operators in `C/C++` or `Julia` for the bottleneck operations (e.g., when it is difficult to do vectorization in TensorFlow). When implementing custom operators, `ADCME.jl` provides access to the `ATen` library in `PyTorch`, which is a linear algebra library equipped with automatic differentiation. Users can also use [ForwardDiff](https://github.com/JuliaDiff/ForwardDiff.jl) for this purpose. Since `Julia` can interface with other languages such as `MATLAB`, `R`, `Java`, this means we can reuse codes from other languages in custom operators freely. 
 
-* Static graphs. Static computation graphs are used instead of dynamic graphs. This is a key difference between machine learning and scientific computing. In scientific computing, computation graph optimization _does_ matter. One such example is `while_loop`, where in scientific computing, large numbers of iterations are common and direct implementation results in a large computation graph. Another example is the parallelism of different operators.
+* Static graphs. Static computation graphs are used instead of dynamic graphs. The preference for static computation graphs is special for scientific computing. In scientific computing, computation graph optimization _does_ matter. One such example is `while_loop`, where in scientific computing, large numbers of iterations are common and direct implementation results in a large computation graph. Another example is the parallelism of different operators.
 
-The introductory [blog](https://medium.com/@kailaix16/introduction-to-adcme-jl-an-inverse-modeling-library-for-scientific-computing-76e56b2bcb49) is also available.
+* Custom optimizers. Users can link to external optimizers with `Julia` custom operators. For example, one can link to [Ipopt](https://github.com/coin-or/Ipopt) for constrained optimization. See [Advanced Tutorial](https://github.com/kailaix/ADCME.jl#advanced-tutorials) for an example. 
 
 # Installation
 
 1. Install [Julia](https://www.tensorflow.org/)
 
 2. Install [TensorFlow](https://www.tensorflow.org/). Please install `1.14` instead of `2.0` since in `2.0`, dynamic graphs are the default. 
+```python
+pip install tensorflow==1.14
+```
 
 3. Install `ADCME.jl`
 ```
@@ -90,26 +97,20 @@ ue = u[div(n+1,2)] # extract values at x=0.5
 loss = (ue-1.0)^2 # form the loss function
 
 # Optimization
-opt = ScipyOptimizerInterface(loss)
 sess = Session(); init(sess)
-ScipyOptimizerMinimize(sess, opt)
+BFGS!(sess, loss)
 
 println("Estimated b = ", run(sess, b))
 ```
 Expected output 
 ```
-INFO:tensorflow:Optimization terminated with:
-Message: b'CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL'
-Objective function value: 0.000000
-Number of iterations: 7
-Number of functions evaluations: 19
-
 Estimated b = 0.9995582304494237
 ```
 
 The gradients can be obtained very easily. For example, if we want the gradients of `loss` with respect to `b`, the following code will create a Tensor for the gradient
 ```
-gradients(loss, b)
+julia> gradients(loss, b)
+PyObject <tf.Tensor 'gradients_1/Mul_grad/Reshape:0' shape=() dtype=float64>
 ```
 
 
@@ -154,6 +155,9 @@ See [Optimizers](https://github.com/kailaix/ADCME.jl/tree/master/test/optim.jl) 
 4. [Four Types of Forward Simulation Operators to Consider in Automatic Differentiation](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/four_types.ipynb)
 5. [Calling Julia from TensorFlow](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/julia_customop.ipynb)
 
+# Research Work
+
+[1] Huang, D.Z., Xu, K., Farhat, C. and Darve, E., 2019. Predictive Modeling with Learned Constitutive Laws from Indirect Observations. arXiv preprint arXiv:1905.12530.
 
 # LICENSE
 
