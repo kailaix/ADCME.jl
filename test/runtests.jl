@@ -12,6 +12,8 @@ using Test
 
 sess = Session()
 
+
+include("sparse.jl")
 include("io.jl")
 include("variable.jl")
 include("ops.jl")
@@ -19,5 +21,3 @@ include("core.jl")
 include("extra.jl")
 include("RBF.jl")
 include("optim.jl")
-include("sparse.jl")
-

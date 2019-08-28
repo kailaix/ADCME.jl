@@ -1,4 +1,4 @@
-@testset "sparse constructor" begin
+@testset "sparse_constructor" begin
     A = sprand(10,10,0.1)
     s = SparseTensor(A)
     @test run(sess, s)≈A
@@ -20,7 +20,7 @@
     @test size(s,2)==5
 end
 
-@testset "sparse arithmetic" begin
+@testset "sparse_arithmetic" begin
     A1 = rand(10,5); B1 = sprand(10,5,0.3)
     A = constant(A1)
     B = SparseTensor(B1)
@@ -33,13 +33,13 @@ end
     @test run(sess, B-A)≈B1-A1
 end
 
-@testset "sparse adjoint" begin
+@testset "sparse_adjoint" begin
     A = sprand(10,5,0.3)
     A1 = SparseTensor(A)
     @test run(sess, A1')≈sparse(A')
 end
 
-@testset "sparse mul" begin
+@testset "sparse_mul" begin
     A1 = rand(10,10); B1 = sprand(10,10,0.3)
     C1 = rand(10)
     A = constant(A1)
@@ -53,14 +53,14 @@ end
     @test run(sess, B*C1) ≈ B1*C1
 end
 
-@testset "sparse vcat, hcat" begin
+@testset "sparse_vcat_hcat" begin
     B1 = sprand(10,3,0.3)
     B = SparseTensor(B1)
     @test run(sess, [B;B])≈[B1;B1]
     @test run(sess, [B B])≈[B1 B1]
 end
 
-@testset "indexing" begin
+@testset "sparse_indexing" begin
     B1 = sprand(10,10,0.3)
     B = SparseTensor(B1)
     @test run(sess, B[2:3,2:3])≈B1[2:3,2:3]
@@ -69,7 +69,7 @@ end
 
 end
 
-@testset "sparse solve" begin
+@testset "sparse_solve" begin
     A = sparse(I, 10,10) + sprand(10,10,0.1)
     b = rand(10)
     A1 = SparseTensor(A)
