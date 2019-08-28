@@ -31,9 +31,9 @@ function compile(s::String)
         mkdir("build")
     end
     cd("build")
-    cmd = setenv(`cmake ..`, "PATH"=>ENV["PATH"]*":"*PyCall.python)
+    cmd = setenv(`cmake ..`, "PATH"=>ENV["PATH"]*":"*splitdir(PyCall.python)[1])
     run(cmd)
-    cmd = setenv(`make -j`, "PATH"=>ENV["PATH"]*":"*PyCall.python)
+    cmd = setenv(`make -j`, "PATH"=>ENV["PATH"]*":"*splitdir(PyCall.python)[1])
     run(cmd)
     cd(PWD)
 end
