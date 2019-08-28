@@ -15,7 +15,7 @@ module ADCME
     tfops = PyNULL()
     gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
-    COFUNC = Dict{String, Function}()
+    COFUNC = Dict{String, Union{Nothing,Function}}()
     global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, COFUNC

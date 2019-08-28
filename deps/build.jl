@@ -31,8 +31,8 @@ function compile(s::String)
         mkdir("build")
     end
     cd("build")
-    run(`cmake ..`)
-    run(`make -j`)
+    run(`PYTHONPATH=$(PyCall.python)` & `cmake ..`)
+    run(`PYTHONPATH=$(PyCall.python)` & `make -j`)
     cd(PWD)
 end
 
