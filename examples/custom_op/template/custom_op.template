@@ -11,9 +11,9 @@ using namespace tensorflow;
 #include "${OperatorName}.h"
 
 REGISTER_OP("${OperatorName}")
-  ${AttributesReg}
-  ${ForwardInputOutput}
-  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+${AttributesReg}
+${ForwardInputOutput}
+.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
     ${SetShapeFn}
     return Status::OK();
   });

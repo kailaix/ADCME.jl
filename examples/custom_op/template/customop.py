@@ -5,7 +5,7 @@ import tensorflow as tf
 import os
 pypath = os.path.dirname(os.path.realpath(__file__))
 
-supported_types = ["float", "double", "int32", "bool", "string"]
+supported_types = ["float", "double", "int32", "int64", "bool", "string"]
 used_names = set([])
 
 def convert(name):
@@ -13,6 +13,12 @@ def convert(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 def typeerror(tp):
+    if tp=="int":
+        tp = "int64"
+    elif tp=="float32":
+        tp = "float"
+    elif tp=="float64":
+        tp = "double"
     if tp not in supported_types:
         print("ERROR: type {} not supported\nSupported types: {}".format(tp, supported_types))
         exit(0)

@@ -33,7 +33,8 @@ function customop(torch=false; julia=false)
         @info "Edit custom_op.txt for custom operators"
         return
     else
-        run(`python $(py_dir)/customop.py custom_op.txt $py_dir $(torch ? "" : "# ")`)
+        python = PyCall.python
+        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $(torch ? "" : "# ")`)
         @info "Custom operator wrapper generated; Torch is $(torch ? "enabled" : "disabled")"
     end
 
