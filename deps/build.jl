@@ -31,10 +31,10 @@ function compile(s::String)
         mkdir("build")
     end
     cd("build")
-    ENV["PATH"]*= ":"*PyCall.python
-    ENV["PYTHON"] = PyCall.python
-    run(`cmake ..`)
-    run(`make -j`)
+    cmd = setenv(`cmake ..`, "PATH"=>ENV["PATH"]*":"*PyCall.python)
+    run(cmd)
+    cmd = setenv(`make -j`, "PATH"=>ENV["PATH"]*":"*PyCall.python)
+    run(cmd)
     cd(PWD)
 end
 
