@@ -4,7 +4,6 @@ if Sys.iswindows()
     @warn "PyTorch plugin is still under construction for Windows platform and will be disabled for the current version."
 end
 
-
 function install_tensorflow()
     try 
         run(`$(PyCall.python) -m pip --version`)
@@ -24,6 +23,29 @@ catch ee
     install_tensorflow()
 end
 
+
+function compile(s::String)
+    PWD = pwd()
+    cd(joinpath(joinpath("$(@__DIR__)", "CustomOps"), s))
+    if !isdir("build")
+        mkdir("build")
+    end
+    cd("build")
+    run(`cmake ..`)
+    run(`make -j`)
+    cd(PWD)
+end
+
+# Install custom operators
+libs = readdir(joinpath(joinpath("$(@__DIR__)", "CustomOps")))
+for lb in libs
+    @info "Compling $lb..."
+    try
+        compile(lb)
+    catch e
+        @warn "$lb was not compiled successfully:\n$e"
+    end
+end
 
 # Install Eigen3 library
 if !isdir("$(@__DIR__)/Libraries")

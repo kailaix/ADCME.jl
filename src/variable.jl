@@ -19,6 +19,7 @@ variance_scaling_initializer,
 SymmetricMatrix,
 SPDMatrix,
 tensor,
+convert_to_tensor,
 hessian_vector,
 TensorArray,
 random_normal,
@@ -91,7 +92,7 @@ get_shape(o::PyObject, i::Union{Int64,Nothing}) = size(o,i)
 # compatible with Julia size
 function Base.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
     d = o.shape.dims
-    if d==nothing
+    if d===nothing
         return nothing
     end
     if length(d)==0
@@ -430,4 +431,12 @@ end
 
 function seed!(k::Int64)
     tf.random.set_random_seed(k)
+end
+
+function convert_to_tensor(o::Union{PyObject, Number, Array{T}}) where T<:Number
+    if isa(o, PyObject)
+        return o
+    else
+        return constant(o)
+    end
 end

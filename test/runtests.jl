@@ -4,6 +4,7 @@ using ADCME
 using Statistics
 using LinearAlgebra
 using PyCall
+using SparseArrays
 
 using Test
 
@@ -18,4 +19,5 @@ include("core.jl")
 include("extra.jl")
 include("RBF.jl")
 include("optim.jl")
+include("sparse.jl")
 

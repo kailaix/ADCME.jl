@@ -12,12 +12,12 @@ using namespace tensorflow;
 
 REGISTER_OP("SparseSolver")
   
-  .Input("ii : int32")
-  .Input("jj : int32")
+  .Input("ii : int64")
+  .Input("jj : int64")
   .Input("vv : double")
-  .Input("kk : int32")
+  .Input("kk : int64")
   .Input("ff : double")
-  .Input("d : int32")
+  .Input("d : int64")
   .Output("u : double")
   .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
     
@@ -76,7 +76,7 @@ public:
         
     // create output shape
     int nv = vv_shape.dim_size(0), nf = ff_shape.dim_size(0);
-    TensorShape u_shape({*d.flat<int32>().data()});
+    TensorShape u_shape({*d.flat<int64>().data()});
             
     // create output tensor
     
@@ -85,12 +85,12 @@ public:
     
     // get the corresponding Eigen tensors for data access
     
-    auto ii_tensor = ii.flat<int32>().data();
-    auto jj_tensor = jj.flat<int32>().data();
+    auto ii_tensor = ii.flat<int64>().data();
+    auto jj_tensor = jj.flat<int64>().data();
     auto vv_tensor = vv.flat<double>().data();
-    auto kk_tensor = kk.flat<int32>().data();
+    auto kk_tensor = kk.flat<int64>().data();
     auto ff_tensor = ff.flat<double>().data();
-    auto d_tensor = d.flat<int32>().data();
+    auto d_tensor = d.flat<int64>().data();
     auto u_tensor = u->flat<double>().data();   
 
     // implement your forward function here 
@@ -106,18 +106,18 @@ REGISTER_OP("SparseSolverGrad")
   
   .Input("grad_u : double")
   .Input("u : double")
-  .Input("ii : int32")
-  .Input("jj : int32")
+  .Input("ii : int64")
+  .Input("jj : int64")
   .Input("vv : double")
-  .Input("kk : int32")
+  .Input("kk : int64")
   .Input("ff : double")
-  .Input("d : int32")
-  .Output("grad_ii : int32")
-  .Output("grad_jj : int32")
+  .Input("d : int64")
+  .Output("grad_ii : int64")
+  .Output("grad_jj : int64")
   .Output("grad_vv : double")
-  .Output("grad_kk : int32")
+  .Output("grad_kk : int64")
   .Output("grad_ff : double")
-  .Output("grad_d : int32");
+  .Output("grad_d : int64");
 class SparseSolverGradOp : public OpKernel {
 private:
   
@@ -188,20 +188,20 @@ public:
     
     // get the corresponding Eigen tensors for data access
     
-    auto ii_tensor = ii.flat<int32>().data();
-    auto jj_tensor = jj.flat<int32>().data();
+    auto ii_tensor = ii.flat<int64>().data();
+    auto jj_tensor = jj.flat<int64>().data();
     auto vv_tensor = vv.flat<double>().data();
-    auto kk_tensor = kk.flat<int32>().data();
+    auto kk_tensor = kk.flat<int64>().data();
     auto ff_tensor = ff.flat<double>().data();
-    auto d_tensor = d.flat<int32>().data();
+    auto d_tensor = d.flat<int64>().data();
     auto grad_u_tensor = grad_u.flat<double>().data();
     auto u_tensor = u.flat<double>().data();
-    auto grad_ii_tensor = grad_ii->flat<int32>().data();
-    auto grad_jj_tensor = grad_jj->flat<int32>().data();
+    auto grad_ii_tensor = grad_ii->flat<int64>().data();
+    auto grad_jj_tensor = grad_jj->flat<int64>().data();
     auto grad_vv_tensor = grad_vv->flat<double>().data();
-    auto grad_kk_tensor = grad_kk->flat<int32>().data();
+    auto grad_kk_tensor = grad_kk->flat<int64>().data();
     auto grad_ff_tensor = grad_ff->flat<double>().data();
-    auto grad_d_tensor = grad_d->flat<int32>().data();   
+    auto grad_d_tensor = grad_d->flat<int64>().data();   
 
     // implement your backward function here 
 

@@ -108,3 +108,13 @@ end
      a = constant([1.;2.;3.;4.])
      @test run(sess, a[i])≈2.0
 end
+
+
+@testset "convert_to_tensor" begin
+    a = rand(10)
+    @test run(sess, convert_to_tensor(a))≈a
+    a = 5.0
+    @test run(sess, convert_to_tensor(a))≈a
+    a = constant(rand(10))
+    @test run(sess, convert_to_tensor(a))≈run(sess, a)
+end
