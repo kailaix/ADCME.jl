@@ -31,7 +31,8 @@ function compile(s::String)
         mkdir("build")
     end
     cd("build")
-    push!(ENV["PATH"], PyCall.python)
+    ENV["PATH"]*= ":"*PyCall.python
+    ENV["PYTHON"] = PyCall.python
     run(`cmake ..`)
     run(`make -j`)
     cd(PWD)
