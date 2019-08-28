@@ -31,8 +31,9 @@ function compile(s::String)
         mkdir("build")
     end
     cd("build")
-    run(`export PATH=$PATH:$(PyCall.python)` & `cmake ..`)
-    run(`export PATH=$PATH:$(PyCall.python)` & `make -j`)
+    push!(ENV["PATH"], PyCall.python)
+    run(`cmake ..`)
+    run(`make -j`)
     cd(PWD)
 end
 
