@@ -42,7 +42,6 @@ end
 
 # Install custom operators
 function compile(s::String)
-    PWD = pwd()
     cd(joinpath(joinpath("$(@__DIR__)", "CustomOps"), s))
     if !isdir("build")
         mkdir("build")
@@ -51,18 +50,19 @@ function compile(s::String)
     cmd = setenv(`cmake ..`, "PATH"=>ENV["PATH"]*":"*splitdir(PyCall.python)[1])
     run(cmd)
     cmd = setenv(`make -j`, "PATH"=>ENV["PATH"]*":"*splitdir(PyCall.python)[1])
-    run(cmd)
-    cd(PWD)
+    run(cmd) 
 end
 
 libs = readdir(joinpath(joinpath("$(@__DIR__)", "CustomOps")))
 for lb in libs
     @info "Compling $lb..."
+    PWD = pwd()
     try
         compile(lb)
     catch e
         @warn "$lb was not compiled successfully:\n$e"
     end
+    cd(PWD)
 end
 
 # Install Torch library
