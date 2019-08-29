@@ -24,6 +24,23 @@ catch ee
 end
 
 
+
+# Install Eigen3 library
+if !isdir("$(@__DIR__)/Libraries")
+    mkdir("$(@__DIR__)/Libraries")
+end
+
+if !isfile("$(@__DIR__)/Libraries/eigen.zip")
+    download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
+end
+
+if !isdir("$(@__DIR__)/Libraries/eigen3")    
+    run(`unzip $(@__DIR__)/Libraries/eigen.zip`)
+    run(`mv $(@__DIR__)/eigen-eigen-323c052e1731 $(@__DIR__)/Libraries/eigen3`)
+end
+
+
+# Install custom operators
 function compile(s::String)
     PWD = pwd()
     cd(joinpath(joinpath("$(@__DIR__)", "CustomOps"), s))
@@ -38,7 +55,6 @@ function compile(s::String)
     cd(PWD)
 end
 
-# Install custom operators
 libs = readdir(joinpath(joinpath("$(@__DIR__)", "CustomOps")))
 for lb in libs
     @info "Compling $lb..."
@@ -47,20 +63,6 @@ for lb in libs
     catch e
         @warn "$lb was not compiled successfully:\n$e"
     end
-end
-
-# Install Eigen3 library
-if !isdir("$(@__DIR__)/Libraries")
-    mkdir("$(@__DIR__)/Libraries")
-end
-
-if !isfile("$(@__DIR__)/Libraries/eigen.zip")
-    download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
-end
-
-if !isdir("$(@__DIR__)/Libraries/eigen3")    
-    run(`unzip $(@__DIR__)/Libraries/eigen.zip`)
-    run(`mv $(@__DIR__)/eigen-eigen-323c052e1731 $(@__DIR__)/Libraries/eigen3`)
 end
 
 # Install Torch library
