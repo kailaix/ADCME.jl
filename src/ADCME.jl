@@ -15,9 +15,11 @@ module ADCME
     tfops = PyNULL()
     gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
+    COFUNC = Dict{String, Union{Nothing,Function}}()
+    COOK = false
     global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS
     function __init__()
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, COFUNC, COOK
         copy!(tf, pyimport("tensorflow"))
         copy!(tfops, pyimport("tensorflow.python.framework.ops"))
         copy!(gradients_impl, pyimport("tensorflow.python.ops.gradients_impl"))
@@ -32,6 +34,9 @@ module ADCME
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
+        CODIR = joinpath(@__DIR__, "../deps/CustomOps")
+        COFUNC["sparse_solver"]=load_op_and_grad(joinpath(CODIR, "SparseSolver/build/libSparseSolver"), "sparse_solver")
+        COOK = !any([v===nothing for (k,v) in COFUNC])
     end
 
     include("core.jl")
@@ -41,9 +46,8 @@ module ADCME
     include("variable.jl")
     include("ops.jl")
     include("layers.jl")
-    include("sparse.jl")
     include("datasets.jl")
     include("extra.jl")
     include("RBF.jl")
-    # include("custom_ops.jl")
+    include("sparse.jl")
 end
