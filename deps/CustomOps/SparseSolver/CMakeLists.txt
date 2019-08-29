@@ -18,6 +18,7 @@ message(STATUS ${PYTHON})
 message(STATUS ${TF_INC})
 message(STATUS ${TF_ABI})
 message(STATUS ${TF_LIB})
+message(STATUS ${TF_LIB_FILE})
 # https://github.com/tensorflow/tensorflow/issues/1569
 # if GCC > 5
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
