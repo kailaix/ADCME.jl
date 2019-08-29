@@ -11,9 +11,9 @@ execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.s
 execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_link_flags()[0][2:])" OUTPUT_VARIABLE TF_LIB)
 execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_compile_flags()[1][-1])" OUTPUT_VARIABLE TF_ABI)
 
-message(TF_INC)
-message(TF_ABI)
-message(TF_LIB)
+message(${TF_INC})
+message(${TF_ABI})
+message(${TF_LIB})
 # https://github.com/tensorflow/tensorflow/issues/1569
 # if GCC > 5
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
