@@ -162,6 +162,10 @@ function relu(o::PyObject; kwargs...)
     tf.nn.relu(o; kwargs...)
 end
 
+function tan(o::PyObject; kwargs...)
+    tf.math.tan(o; kwargs...)
+end
+
 function leaky_relu(o::PyObject; kwargs...)
     tf.nn.leaky_relu(o; kwargs...)
 end

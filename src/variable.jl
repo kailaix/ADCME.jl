@@ -21,10 +21,7 @@ SPDMatrix,
 tensor,
 convert_to_tensor,
 hessian_vector,
-TensorArray,
-random_normal,
-random_uniform,
-seed!
+TensorArray
 
 function constant(value; kwargs...)
     if isa(value, PyObject)
@@ -415,22 +412,6 @@ end
 
 function Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj)
     ta.write(i-1, obj)
-end
-
-
-# random variables
-function random_uniform(shape, args...;kwargs...)
-    kwargs = jlargs(kwargs)
-    tf.random_uniform(shape, args...;kwargs...)
-end
-
-function random_normal(shape, args...;kwargs...)
-    kwargs = jlargs(kwargs)
-    tf.random_normal(shape, args...;kwargs...)
-end
-
-function seed!(k::Int64)
-    tf.random.set_random_seed(k)
 end
 
 function convert_to_tensor(o::Union{PyObject, Number, Array{T}}) where T<:Number

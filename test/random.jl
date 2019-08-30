@@ -1,0 +1,28 @@
+@testset "random" begin
+    @test_skip run(sess, categorical(10))
+    for shape in [[10], [10,5]]
+        @test_skip run(sess, uniform(shape...))
+        @test_skip run(sess, normal(shape...))
+        @test_skip run(sess, choice(rand(10,2), 4))
+        @test_skip run(sess, choice(rand(10,2), 4, replace=true))
+        @test_skip run(sess, beta(shape...;concentration1=1.0, concentration0=1.0))
+        @test_skip run(sess, bernoulli(shape...; probs=0.2))
+        @test_skip run(sess, gamma(shape...;concentration=3.0, rate=2.0))
+        @test_skip run(sess, truncatednormal(shape...;loc=0.0, scale=1.0, low=-1., high=1.))
+        @test_skip run(sess, chi(shape...;df=5))
+        @test_skip run(sess, chi2(shape...;df=5))
+        @test_skip run(sess, exponential(shape...;rate=1.))
+        @test_skip run(sess, gumbel(shape...;loc=0, scale=1))
+        @test_skip run(sess, poisson(shape...;rate=1.0))
+        @test_skip run(sess, halfcauchy(shape...;loc=0, scale=1))
+        @test_skip run(sess, halfnormal(shape...;scale=1))
+        @test_skip run(sess, horseshoe(shape...;scale=1.0))
+        @test_skip run(sess, inversegamma(shape...;concentration=1.0, scale=1.0))
+        @test_skip run(sess, inversegaussian(shape...;loc=1.0, concentration=1.0))
+        @test_skip run(sess, kumaraswamy(shape...;concentration1=1.0, concentration0=1.0))
+        @test_skip run(sess, pareto(shape...;scale=1.0, concentration=1.0))
+        @test_skip run(sess, sinharcsinh(shape...;skewness=1.0, tailweight=1.0, loc=0.0, scale=1.0))
+        @test_skip run(sess, studentt(shape...;loc=0, scale=1, df=10))
+        @test_skip run(sess, vonmises(shape...;concentration=1.0, loc=1.0))
+    end
+end
