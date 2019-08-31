@@ -4,45 +4,55 @@ using PyPlot
 matplotlib.use("macosx")
 X,_,_,_ = mnist()
 X = X/127.5 .-1.
-X = reshape(X, size(X,1), :)
+Y = zeros(size(X,1), 28*28)
+for i = 1:size(X,1)
+    Y[i,:] = vec(X[i,:,:,1])
+end
+X = copy(Y)
+
+hidden_units = [128,256]
 
 function discriminator(x, gan)
-    local y
-    y = dense(x,512)
-    y = leaky_relu(y, alpha=0.2)
-    y = dense(y,256)
-    y = leaky_relu(y, alpha=0.2)
-    y = dense(y, 1, activation="sigmoid")
+    y = ae(x, [256,128,64,1])
     return y
 end
 
 function generator(x, gan)
-    y = dense(x, 256)
-    y = leaky_relu(y, alpha=0.2)
-    # y = bn(y, momentum=0.8, is_training=gan.is_training)
-    y = dense(y, 512)
-    y = leaky_relu(y, alpha=0.2)
-    # y = bn(y, momentum=0.8, is_training=gan.is_training)
-    y = dense(y, 1024)
-    y = leaky_relu(y, alpha=0.2)
-    # y = bn(y, momentum=0.8, is_training=gan.is_training)
-    y = dense(y, gan.dim, activation="tanh")
+    y = ae(x, [128,256,784])
     return y
 end
 
+function loss(t, f, gan)
+    t_logits = discriminator(t, gan)
+    f_logits = discriminator(f, gan)
+    t_loss = mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=t_logits, labels=tf.ones_like(t_logits)))
+    f_loss = mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=f_logits, labels=tf.zeros_like(f_logits)))
+    d_loss = t_loss + f_loss
+    g_loss = mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=f_logits, labels=tf.ones_like(f_logits)))
+    d_loss, g_loss
+end
+
 reset_default_graph()
-gan = GAN(X, generator, discriminator, "jsgan"; latent_dim=100, batch_size=32)
-opt_d = AdamOptimizer(0.0002, beta1=0.5).minimize(gan.d_loss, var_list=gan.d_vars)
-opt_g = AdamOptimizer(0.0002, beta1=0.5).minimize(gan.g_loss, var_list=gan.g_vars)
+gan = GAN(X, generator, discriminator, loss; latent_dim=100, batch_size=32)
+opt_d = RMSPropOptimizer(0.0002).minimize(gan.d_loss, var_list=gan.d_vars)
+opt_g = RMSPropOptimizer(0.0002).minimize(gan.g_loss, var_list=gan.g_vars)
 img = sample(gan, 25)
 sess = Session(); init(sess)
+# run(sess, gan.d_vars[1][1:10,1:10])
+# run(sess, predict(gan, ones(100)))
 rm("images/", force=true, recursive=true)
 mkdir("images/")
-for i = 1:30000
-    _, dl = run(sess, [opt_d, gan.d_loss])
-    _, _, gl = run(sess, [opt_g, gan.update, gan.g_loss])
-    println("iter=$i, dloss=$dl, gloss=$gl")
-    if i%200==0
+for i = 1:200000
+    feed = Dict(gan.noise=>randn(gan.batch_size, gan.latent_dim), gan.ids=>Int32.(rand(1:size(X,1), gan.batch_size)))
+    _, dl = run(sess, [opt_d, gan.d_loss], feed_dict=feed)
+    for i = 1:4
+        run(sess, opt_g, feed_dict=feed)
+    end
+    _, _, gl = run(sess, [opt_g, gan.update, gan.g_loss], feed_dict=feed)
+    if i%100==1
+        println("iter=$i, dloss=$dl, gloss=$gl") 
+    end
+    if i%500==1
         val = run(sess, img)
         fig, axs = subplots(5,5)
         cnt = 1

@@ -4,7 +4,8 @@ klgan,
 wgan,
 rklgan,
 lsgan,
-sample
+sample,
+predict
 """
 `GAN(dat::PyObject, generator::Function, gan::GAN,
 loss::Union{String, Function, Missing}=missing; latent_dim::Union{Missing, Int64}=missing, batch_size::Union{Missing, Int64}=missing)`
@@ -31,6 +32,8 @@ mutable struct GAN
     fake_data::Union{Missing,PyObject}
     true_data::Union{Missing,PyObject}
     ganid::String
+    noise::Union{Missing,PyObject}
+    ids::Union{Missing,PyObject}
 end
 
 
@@ -42,7 +45,7 @@ function GAN(dat::Union{Array,PyObject}, generator::Function, discriminator::Fun
     if ismissing(latent_dim); latent_dim=dim; end
     if ismissing(batch_size); batch_size=32; end
     gan = GAN(latent_dim, batch_size, dim, dat, generator, discriminator, loss, missing, missing, missing, 
-        missing, placeholder(true, shape=[]), missing, missing, missing, randstring())
+        missing, placeholder(true, shape=[]), missing, missing, missing, randstring(), missing, missing)
     build!(gan)
     gan
 end
@@ -134,31 +137,47 @@ end
 #######################################################
 
 function build!(gan::GAN)
-    z = normal(gan.batch_size, gan.latent_dim)
-    variable_scope("generator_$(gan.ganid)") do
-        gan.fake_data = gan.generator(z, gan)
+    gan.noise = placeholder(get_dtype(gan.dat), shape=(gan.batch_size, gan.latent_dim))
+    gan.ids = placeholder(Int32, shape=(gan.batch_size,))
+    variable_scope("generator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
+        gan.fake_data = gan.generator(gan.noise, gan)
     end
-    gan.true_data = choice(gan.dat, gan.batch_size)
+    gan.true_data = tf.gather(gan.dat,gan.ids-1)
     if ismissing(gan.loss); gan.loss="jsgan"; end
     if isa(gan.loss, String)
         gan.loss = eval(Meta.parse(gan.loss))
     end
-    variable_scope("discriminator_$(gan.ganid)") do
+    variable_scope("discriminator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
         gan.d_loss, gan.g_loss = gan.loss(gan.true_data, gan.fake_data, gan)
     end
-    gan.d_vars = get_collection("discriminator_$(gan.ganid)")
-    gan.g_vars = get_collection("generator_$(gan.ganid)")
+    gan.d_vars = Array{PyObject}(get_collection("discriminator_$(gan.ganid)"))
+    gan.g_vars = Array{PyObject}(get_collection("generator_$(gan.ganid)"))
     gan.update = Array{PyCall.PyObject}(get_collection(UPDATE_OPS))
 end 
 
 function sample(gan::GAN, n::Int64)
     local out
-    z = normal(n, gan.latent_dim)
+    noise = normal(n, gan.latent_dim)
     gan.is_training = false
-    variable_scope("generator_$(gan.ganid)") do
-        out = gan.generator(z, gan)
+    variable_scope("generator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
+        out = gan.generator(noise, gan)
     end
     gan.is_training = placeholder(true, shape=[])
+    out
+end
+
+function predict(gan::GAN, input::Union{PyObject, Array})
+    local out
+    flag = false
+    if length(size(input))==1
+        flag = true
+        input = reshape(input, 1, length(input))
+    end
+    input = convert_to_tensor(input)
+    variable_scope("generator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
+        out = gan.generator(input, gan)
+    end
+    if flag; out = squeeze(out); end
     out
 end
 
