@@ -48,8 +48,8 @@ add_definitions( -DJULIA_ENABLE_THREADING=1 )
         s2 = """include_directories(\${JULIA_INC} \${PYTHON_INC})
 link_directories(\${TF_LIB} \${JULIA_LIB})"""
         cmakelist = replace(cmakelist, s1=>s2)
-        s1 = """tensorflow_framework"""
-        s2 = """tensorflow_framework julia \${PYTHON_LIB}"""
+        s1 = """\${TF_LIB_FILE}"""
+        s2 = """\${TF_LIB_FILE} julia \${PYTHON_LIB}"""
         cmakelist = replace(cmakelist, s1=>s2)
         write("CMakeLists.txt", cmakelist)
 
