@@ -14,6 +14,7 @@ sess = Session()
 
 
 if ADCME.COOK; include("sparse.jl"); end
+include("random.jl")
 include("io.jl")
 include("variable.jl")
 include("ops.jl")

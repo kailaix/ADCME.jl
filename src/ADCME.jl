@@ -12,6 +12,7 @@ module ADCME
     using Random
 
     tf = PyNULL()
+    tfp = PyNULL()
     tfops = PyNULL()
     gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
@@ -22,6 +23,7 @@ module ADCME
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, COFUNC, COOK, DTYPE
         copy!(tf, pyimport("tensorflow"))
         copy!(tfops, pyimport("tensorflow.python.framework.ops"))
+        copy!(tfp, pyimport("tensorflow_probability"))
         copy!(gradients_impl, pyimport("tensorflow.python.ops.gradients_impl"))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
@@ -50,4 +52,5 @@ module ADCME
     include("extra.jl")
     include("RBF.jl")
     include("sparse.jl")
+    include("random.jl")
 end
