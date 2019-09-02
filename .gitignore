@@ -4,3 +4,4 @@ deps/build.log
 .DS_Store
 *distmesh*
 .vscode
+test/images*

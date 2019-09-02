@@ -19,17 +19,17 @@ module ADCME
     COOK = false
     global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS
     function __init__()
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, COFUNC, COOK
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, COFUNC, COOK, DTYPE
         copy!(tf, pyimport("tensorflow"))
         copy!(tfops, pyimport("tensorflow.python.framework.ops"))
         copy!(gradients_impl, pyimport("tensorflow.python.ops.gradients_impl"))
-        copy!(DTYPE, Dict(Float64=>tf.float64,
+        DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
             Int32=>tf.int32,
             Bool=>tf.bool,
             ComplexF64=>tf.complex128,
-            ComplexF32=>tf.complex64))
+            ComplexF32=>tf.complex64)
         AUTO_REUSE = tf.compat.v1.AUTO_REUSE
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
