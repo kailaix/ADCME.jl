@@ -23,7 +23,7 @@ Several features of the library are
 
 # Installation
 
-1. Install [Julia](https://www.tensorflow.org/)
+1. Install [Julia](https://julialang.org/)
 
 2. Install [TensorFlow](https://www.tensorflow.org/). Please install `1.14` instead of `2.0` since in `2.0`, dynamic graphs are the default. 
 ```python
