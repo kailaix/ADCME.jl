@@ -1,5 +1,6 @@
 using PyCall
 using Documenter
+using ADCME
 
 function install_packages()
     try 
