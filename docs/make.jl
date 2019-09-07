@@ -1,6 +1,6 @@
 using PyCall
 using Documenter
-using ADCME
+
 
 function install_packages()
     try 
@@ -19,6 +19,8 @@ function install_packages()
 end
 
 install_packages()
+
+using ADCME
 
 
 makedocs(sitename="ADCME", modules=[ADCME],
