@@ -13,6 +13,9 @@ function install_packages()
     end
     run(`$(PyCall.python) -m pip install --user scipy`)
     run(`$(PyCall.python) -m pip install --user matplotlib`)
+    run(`$(PyCall.python) -m pip install --user -U numpy`)
+    run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
+    run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
 end
 
 install_packages()
