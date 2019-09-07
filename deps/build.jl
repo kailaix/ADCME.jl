@@ -5,6 +5,12 @@ if Sys.iswindows()
 end
 
 function install_tensorflow()
+    if haskey(ENV,"REINSTALL_PIP")
+        @info "Reinstall pip..."
+        download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
+        run(`$(PyCall.python) get-pip.py --user`)
+        rm("get-pip.py")
+    end
     try 
         run(`$(PyCall.python) -m pip --version`)
     catch
