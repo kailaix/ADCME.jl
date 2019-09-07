@@ -8,4 +8,4 @@ test/images*
 deps/CustomOps/SparseAccumulate/example*
 deps/CustomOps/SparseAccumulate/benchmark*
 deps/CustomOps/SparseAccumulate/README*
-docs*
+!docs/build.jl
