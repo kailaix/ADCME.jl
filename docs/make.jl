@@ -1,4 +1,6 @@
 using PyCall
+using Documenter
+
 function install_packages()
     try 
         run(`$(PyCall.python) -m pip --version`)
@@ -14,7 +16,6 @@ end
 
 install_packages()
 
-using Documenter
 
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any["index.md"],
