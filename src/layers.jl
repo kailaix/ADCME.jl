@@ -203,9 +203,9 @@ function group_conv2d(inputs::PyObject, filters::Int64, args...;  groups = 1, sc
         in_ = Array{PyObject}(undef, groups)
         out_ = Array{PyObject}(undef, groups)
         for i = 1:groups 
-            py"""
-            temp = $inputs[:,:,:,$((i-1)*n):$(i*n)]
-            """
+py"""
+temp = $inputs[:,:,:,$((i-1)*n):$(i*n)]
+"""
             in_[i] = py"temp"
             out_[i] = conv2d(in_[i], n, args...;scope=scope*"_group$i", kwargs...)
         end

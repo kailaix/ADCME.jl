@@ -89,5 +89,5 @@ end
     bb = b*2
     cc = c + 3.0
     res = if_else(a>1.0, bb, cc)
-    @test run(res)≈1.0
+    @test run(sess, res)≈2.0
 end

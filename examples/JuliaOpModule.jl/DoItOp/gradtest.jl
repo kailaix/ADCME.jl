@@ -7,6 +7,7 @@ Random.seed!(233)
 
 do_it_op = load_op("build/libDoItOp", "do_it_op")
 function DoIt!(x::Array{Float64}, y::Array{Float64})
+    @show "print from Julia"
     x[:] = y
 end
 

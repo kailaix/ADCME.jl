@@ -13,7 +13,7 @@ using Test
 sess = Session()
 
 
-if ADCME.COOK; include("sparse.jl"); end
+include("sparse.jl")
 include("random.jl")
 include("io.jl")
 include("variable.jl")

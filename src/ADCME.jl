@@ -16,11 +16,16 @@ module ADCME
     tfops = PyNULL()
     gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
-    COFUNC = Dict{String, Union{Nothing,Function}}()
-    COOK = false
+    # a list of custom operators 
+    COLIB = Dict{String, Tuple{String, String, String, Bool}}(
+        "sparse_solver"=>("SparseSolver", "libSparseSolver", "sparse_solver", true),
+        "sparse_assembler"=>("SparseAccumulate", "libSparseAccumulate", "", false)
+    )
+
+    libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS
     function __init__()
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, COFUNC, COOK, DTYPE
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
         copy!(tf, pyimport("tensorflow"))
         copy!(tfops, pyimport("tensorflow.python.framework.ops"))
         copy!(tfp, pyimport("tensorflow_probability"))
@@ -36,9 +41,6 @@ module ADCME
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
-        CODIR = joinpath(@__DIR__, "../deps/CustomOps")
-        COFUNC["sparse_solver"]=load_op_and_grad(joinpath(CODIR, "SparseSolver/build/libSparseSolver"), "sparse_solver")
-        COOK = !any([v===nothing for (k,v) in COFUNC])
     end
 
     include("core.jl")
