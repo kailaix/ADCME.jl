@@ -23,9 +23,37 @@ module ADCME
     )
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
-    global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS
+
+    function install_tensorflow()
+        if haskey(ENV,"REINSTALL_PIP")
+            @info "Reinstall pip..."
+            download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
+            run(`$(PyCall.python) get-pip.py --user`)
+            rm("get-pip.py")
+        end
+        try 
+            run(`$(PyCall.python) -m pip --version`)
+        catch
+            @warn "pip is not installed, downloading and installing pip..."
+            download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
+            run(`$(PyCall.python) get-pip.py --user`)
+            rm("get-pip.py")
+        end
+        run(`$(PyCall.python) -m pip install --user -U numpy`)
+        run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
+        run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
+    end
+    
+    
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
+        try
+            tf = pyimport("tensorflow")
+            tf = pyimport("tensorflow_probability")
+        catch ee
+            install_tensorflow()
+        end
+        
         copy!(tf, pyimport("tensorflow"))
         copy!(tfops, pyimport("tensorflow.python.framework.ops"))
         copy!(tfp, pyimport("tensorflow_probability"))
