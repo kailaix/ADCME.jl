@@ -80,3 +80,14 @@ end
     @test run(sess, g)≈288
 
 end
+
+
+@testset "if_clause" begin
+    a = constant(2.0)
+    b = constant(1.0)
+    c = constant(0.0)
+    bb = b*2
+    cc = c + 3.0
+    res = if_else(a>1.0, bb, cc)
+    @test run(sess, res)≈2.0
+end

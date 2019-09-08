@@ -88,7 +88,6 @@ function ae_to_code(d::Dict, scope::String)
         Wkey = "$(scope)backslashfully_connected$(si)backslashweightscolon0"
         bkey = "$(scope)backslashfully_connected$(si)backslashbiasescolon0"
         if haskey(d, Wkey)
-            @show Wkey
             if i!=0
                 nn_code *= "\tisa(net, Array) ? (net = tanh.(net)) : (net=tanh(net))\n"
             end
@@ -101,7 +100,7 @@ function ae_to_code(d::Dict, scope::String)
     end
     nn_code = """function nn$scope(net)
 $(nn_code)\treturn net\nend """
-    println(nn_code)
+    nn_code
 end
 
 function ae_to_code(file::String, scope::String)
@@ -203,9 +202,9 @@ function group_conv2d(inputs::PyObject, filters::Int64, args...;  groups = 1, sc
         in_ = Array{PyObject}(undef, groups)
         out_ = Array{PyObject}(undef, groups)
         for i = 1:groups 
-            py"""
-            temp = $inputs[:,:,:,$((i-1)*n):$(i*n)]
-            """
+py"""
+temp = $inputs[:,:,:,$((i-1)*n):$(i*n)]
+"""
             in_[i] = py"temp"
             out_[i] = conv2d(in_[i], n, args...;scope=scope*"_group$i", kwargs...)
         end
