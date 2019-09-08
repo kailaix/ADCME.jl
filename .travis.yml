@@ -7,7 +7,7 @@ git:
   depth: 3
   quiet: true
 julia:
-  - 1.1
+  - 1.2
 os:
   - osx
   - linux
@@ -21,7 +21,7 @@ coveralls: true
 jobs:
   include:
     - stage: "Documentation"
-      julia: 1.0
+      julia: 1.2
       os: linux
       script:
         - julia --project=docs/ -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("PyCall"); Pkg.develop(PackageSpec(path=pwd()));
