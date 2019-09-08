@@ -70,10 +70,31 @@ end
 end
 
 @testset "sparse_solve" begin
-    A = sparse(I, 10,10) + sprand(10,10,0.1)
-    b = rand(10)
-    A1 = SparseTensor(A)
-    b1 = constant(b)
-    u = A1\b1
-    @test run(sess, u) ≈ A\b
+    @test_skip begin
+        A = sparse(I, 10,10) + sprand(10,10,0.1)
+        b = rand(10)
+        A1 = SparseTensor(A)
+        b1 = constant(b)
+        u = A1\b1
+        run(sess, u) ≈ A\b
+    end 
+end
+
+@testset "sparse_assembler" begin
+    @test_skip begin
+        accumulator, creater, initializer = SparseAssembler()
+        initializer(5)
+        op1 = accumulator(1, [1;2;3], ones(3))
+        op2 = accumulator(1, [3], [1.])
+        op3 = accumulator(2, [1;3], ones(2))
+        run(sess, [op1,op2,op3])
+        ii,jj,vv = creater()
+        i,j,v = run(sess, [ii,jj,vv])
+        A = sparse(i,j,v,5,5)
+        @test Array(A)≈[1.0  1.0  2.0  0.0  0.0
+                        1.0  0.0  1.0  0.0  0.0
+                        0.0  0.0  0.0  0.0  0.0
+                        0.0  0.0  0.0  0.0  0.0
+                        0.0  0.0  0.0  0.0  0.0]
+    end
 end

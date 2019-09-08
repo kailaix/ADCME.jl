@@ -1,5 +1,5 @@
 using SparseArrays
-export SparseTensor
+export SparseTensor, SparseAssembler
 
 mutable struct SparseTensor
     o::PyObject
@@ -137,6 +137,59 @@ function Base.:\(s::SparseTensor, o::PyObject)
     if size(s,1)!=length(o)
         error("shape A and b must match")
     end
-    u = COFUNC["sparse_solver"](s.o.indices[:,1]+1, s.o.indices[:,2]+1, s.o.values, constant(collect(1:length(o))),o,
+    ss = load_system_op(COLIB["sparse_solver"]...)
+    u = ss(s.o.indices[:,1]+1, s.o.indices[:,2]+1, s.o.values, constant(collect(1:length(o))),o,
                 constant(size(s, 1)))
+end
+
+
+"""
+accumulator, creater, initializer = SparseAssembler()
+
+
+Returns 3 functions that can be used for assembling sparse matrices concurrently.
+
+- `initializer` must be called before the working session
+- `accumulator` accumulates column indices and values 
+- `creator` accepts no input and outputs row indices, column indices and values for the sparse matrix
+
+Example:
+```
+accumulator, creater, initializer = SparseAssembler()
+initializer(5)
+op1 = accumulator(1, [1;2;3], ones(3))
+op2 = accumulator(1, [3], [1.])
+op3 = accumulator(2, [1;3], ones(2))
+run(sess, [op1,op2,op3])
+ii,jj,vv = creater()
+i,j,v = run(sess, [ii,jj,vv])
+A = sparse(i,j,v,5,5)
+@assert Array(A)≈[1.0  1.0  2.0  0.0  0.0
+                1.0  0.0  1.0  0.0  0.0
+                0.0  0.0  0.0  0.0  0.0
+                0.0  0.0  0.0  0.0  0.0
+                0.0  0.0  0.0  0.0  0.0]
+```
+"""
+function SparseAssembler()
+    s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
+    @show s
+    _sparse_accumulate = load_op(s, "sparse_accumulate")
+    get_sparse_accumulate = load_op(s, "get_sparse_accumulate")
+    function _clear(n)
+        @eval begin
+            ccall((:initialize_sparse_accumulate, $s), Cvoid, (Cint,), $n)
+        end
+    end
+    function sparse_accumulate(row::Union{PyObject,T}, col::Union{Array{T}, PyObject}, val::Union{PyObject, Array{S}}) where {T<:Integer, S<:Real}
+        row = cast(convert_to_tensor(row), Int32)
+        col = cast(convert_to_tensor(col), Int32)
+        val = cast(convert_to_tensor(val), Float64)
+        _sparse_accumulate(row, col,val)
+    end
+    function clear!(n::Integer)
+        n = Int32(n)
+        _clear(n)
+    end
+    return sparse_accumulate, get_sparse_accumulate, clear!
 end
