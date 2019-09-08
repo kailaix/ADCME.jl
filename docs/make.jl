@@ -1,6 +1,4 @@
-using PyCall
-using Documenter
-
+using PyCall 
 
 function install_packages()
     try 
@@ -20,7 +18,7 @@ end
 
 install_packages()
 
-using ADCME
+using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any["index.md"],
 authors = "Kailai Xu")
