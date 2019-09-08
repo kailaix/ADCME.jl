@@ -49,6 +49,7 @@ module ADCME
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
         if haskey(ENV,"REINSTALL_PIP")
             install_tensorflow()
+            PYTHONPATH="/home/travis/.local/lib/python3.5/site-packages"
         end
         
         copy!(tf, pyimport("tensorflow"))
