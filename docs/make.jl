@@ -21,8 +21,6 @@ end
 install_packages()
 
 using ADCME
-
-
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any["index.md"],
 authors = "Kailai Xu")

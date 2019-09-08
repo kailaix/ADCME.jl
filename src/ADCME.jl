@@ -47,10 +47,7 @@ module ADCME
     
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
-        try
-            tf = pyimport("tensorflow")
-            tf = pyimport("tensorflow_probability")
-        catch ee
+        if haskey(ENV,"REINSTALL_PIP")
             install_tensorflow()
         end
         
