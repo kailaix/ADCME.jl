@@ -6,6 +6,8 @@
 
 ![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=master)
 ![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev)
+
 
 ![](examples/md/demo.png)
 

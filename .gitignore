@@ -5,3 +5,6 @@ deps/build.log
 *distmesh*
 .vscode
 test/images*
+deps/CustomOps/SparseAccumulate/benchmark*
+deps/CustomOps/SparseAccumulate/example*
+deps/CustomOps/SparseAccumulate/README*
