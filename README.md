@@ -89,17 +89,17 @@ n = 101 # number of grid nodes in [0,1]
 h = 1/(n-1)
 x = LinRange(0,1,n)[2:end-1]
 
-b = Variable(10.0) # create a Variable for `b`
-A = diagm(0=>2/h^2*ones(n-2), -1=>-1/h^2*ones(n-3), 1=>-1/h^2*ones(n-3)) # discrete Laplacian matrix
-B = b*A + diagm(0=>ones(n-2))  # coefficient matrix
-f = @. 4*(2 + x - x^2) # right hand side
-u = B\f # solve the equation
+b = Variable(10.0) # we use Variable keyword to mark the unknowns
+A = diagm(0=>2/h^2*ones(n-2), -1=>-1/h^2*ones(n-3), 1=>-1/h^2*ones(n-3)) 
+B = b*A + I  # I stands for the identity matrix
+f = @. 4*(2 + x - x^2) 
+u = B\f # solve the equation using built-in linear solver
 ue = u[div(n+1,2)] # extract values at x=0.5
 
-loss = (ue-1.0)^2 # form the loss function
+loss = (ue-1.0)^2 
 
 # Optimization
-sess = Session(); init(sess)
+sess = Session(); init(sess) 
 BFGS!(sess, loss)
 
 println("Estimated b = ", run(sess, b))
