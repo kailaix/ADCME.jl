@@ -5,14 +5,14 @@ mutable struct SparseTensor
     o::PyObject
 end
 
-function SparseTensor(I::Union{PyObject,Array{Int64,1}}, J::Union{PyObject,Array{Int64,1}}, 
+function SparseTensor(I::Union{PyObject,Array{T,1}}, J::Union{PyObject,Array{T,1}}, 
       V::Union{Array{Float64,1}, PyObject},
-     m::Union{Int64, PyObject, Nothing}=nothing, n::Union{Int64, PyObject, Nothing}=nothing)
+     m::Union{S, PyObject, Nothing}=nothing, n::Union{S, PyObject, Nothing}=nothing) where {T<:Integer, S<:Integer}
     if isa(I, PyObject) && size(I,2)==2
         return SparseTensor_(I, J, V)
     end
-    I, J, V, m, n = convert_to_tensor(I), convert_to_tensor(J), convert_to_tensor(V), 
-            convert_to_tensor(m), convert_to_tensor(n)
+    I, J, V = convert_to_tensor(I, dtype=Int64), convert_to_tensor(J, dtype=Int64), convert_to_tensor(V)
+    m, n = convert_to_tensor(m, dtype=Int64), convert_to_tensor(n, dtype=Int64)
     indices = [I J] .- 1
     value = V
     shape = [m;n]
@@ -20,8 +20,18 @@ function SparseTensor(I::Union{PyObject,Array{Int64,1}}, J::Union{PyObject,Array
     SparseTensor(tf.sparse.reorder(sp))
 end
 
-function SparseTensor_(indices::Union{PyObject,Array{Int64,2}}, value::Union{PyObject,Array{Float64,1}},
-        shape::Union{PyObject,Array{Int64,1}})
+
+
+function Base.:copy(s::SparseTensor)
+    t = SparseTensor(tf.SparseTensor(copy(s.o.indices), copy(s.o.values), s.o.dense_shape))
+end
+
+function Base.:eltype(o::SparseTensor)
+    return (eltype(o.o.indices), eltype(o.o.values))
+end
+
+function SparseTensor_(indices::Union{PyObject,Array{T,2}}, value::Union{PyObject,Array{Float64,1}},
+        shape::Union{PyObject,Array{T,1}}) where T<:Integer
     indices = convert_to_tensor(indices)
     value = convert_to_tensor(value)
     shape = convert_to_tensor(shape)
@@ -32,7 +42,7 @@ end
 function SparseTensor(A::SparseMatrixCSC)
     rows = rowvals(A)
     vals = nonzeros(A)
-    cols = zeros(Int64, length(rows))
+    cols = zeros(eltype(rows), length(rows))
     m, n = size(A)
     k = 1
     for i = 1:n
@@ -46,7 +56,7 @@ end
 
 function Base.:show(io::IO, s::SparseTensor)
     shape = size(s)
-    print("SparseTensor($(shape[1]), $(shape[2]))")
+    print(io, "SparseTensor($(shape[1]), $(shape[2]))")
 end
 
 function Base.:run(o::PyObject, S::SparseTensor, args...; kwargs...)
@@ -62,30 +72,30 @@ function Base.:size(s::SparseTensor)
     (s.o.shape[1].value,s.o.shape[2].value)
 end
 
-function Base.:size(s::SparseTensor, i::Int64)
+function Base.:size(s::SparseTensor, i::T) where T<:Integer
     s.o.shape[i].value
 end
 
-function Base.:+(s::SparseTensor, o::PyObject)
+function PyCall.:+(s::SparseTensor, o::PyObject)
     if size(s)!=size(o)
         error("size $(size(s)) and $(size(o)) does not match")
     end
     out = tf.sparse_add(s.o, o)
     out
 end
-Base.:+(o::PyObject, s::SparseTensor) = s+o
+PyCall.:+(o::PyObject, s::SparseTensor) = s+o
 function Base.:-(s::SparseTensor)
     SparseTensor(s.o.indices+1, -s.o.values, s.o.dense_shape)
 end
-Base.:-(o::PyObject, s::SparseTensor) = o + (-s)
-Base.:-(s::SparseTensor, o::PyObject) = s + (-o)
+PyCall.:-(o::PyObject, s::SparseTensor) = o + (-s)
+PyCall.:-(s::SparseTensor, o::PyObject) = s + (-o)
 
-Base.:+(s::SparseTensor, o::PyObject) = s + (-o)
-# Base.:+(s1::SparseTensor, s2::SparseTensor) = tf.sparse_add(s1, s2)
-# Base.:-(s1::SparseTensor, s2::SparseTensor) = tf.sparse_add(s1, -s2)
+PyCall.:+(s::SparseTensor, o::PyObject) = s + (-o)
+Base.:+(s1::SparseTensor, s2::SparseTensor) = SparseTensor(tf.sparse.add(s1.o,s2.o))
+Base.:-(s1::SparseTensor, s2::SparseTensor) = s1 + (-s2)
 
 Base.:adjoint(s::SparseTensor) = SparseTensor(tf.sparse.transpose(s.o))
-function Base.:*(s::SparseTensor, o::PyObject)
+function PyCall.:*(s::SparseTensor, o::PyObject)
     flag = false
     if length(size(o))==1
         flag = true
@@ -102,7 +112,7 @@ function Base.:*(s::SparseTensor, o::Array{Float64})
     s*convert_to_tensor(o)
 end
 
-function Base.:*(o::PyObject, s::SparseTensor)
+function PyCall.:*(o::PyObject, s::SparseTensor)
     tf.sparse.sparse_dense_matmul(s.o, o, adjoint_a=true, adjoint_b=true)'
 end
 
@@ -113,8 +123,8 @@ end
 Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]))
 Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]))
 
-function getindex(s::SparseTensor, i1::Union{Colon, Array{Int64,1}, UnitRange{Int64}},
-    i2::Union{Colon, Array{Int64,1},UnitRange{Int64}})
+function getindex(s::SparseTensor, i1::Union{Colon, Array{T,1}, UnitRange{T}},
+    i2::Union{Colon, Array{T,1},UnitRange{T}}) where T<:Integer
     i1 = _to_range_array(s.o, i1)
     i2 = _to_range_array(s.o, i2)
 
@@ -123,25 +133,39 @@ function getindex(s::SparseTensor, i1::Union{Colon, Array{Int64,1}, UnitRange{In
     SparseTensor(tf.sparse.slice(s.o, start_, size_))
 end
 
-function Base.:reshape(s::SparseTensor, shape::Int64...)
+function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
     SparseTensor(tf.sparse.reshape(s, shape))
 end
 
-function Base.:\(s::SparseTensor, o::PyObject)
+function PyCall.:\(s::SparseTensor, o::PyObject)
     if length(size(o))!=1
         error("input b must be a vector")
     end
-    if size(s,1)!=size(s,2)
-        error("input A must be a square matrix")
-    end
     if size(s,1)!=length(o)
-        error("shape A and b must match")
+        error("nrows(A) and nrows(b) must match")
     end
-    ss = load_system_op(COLIB["sparse_solver"]...)
-    u = ss(s.o.indices[:,1]+1, s.o.indices[:,2]+1, s.o.values, constant(collect(1:length(o))),o,
-                constant(size(s, 1)))
+    if size(s,1)!=size(s,2)
+        # least squre 
+        ss = load_system_op(COLIB["sparse_least_square"]...)
+        ii = s.o.indices'[1,:]+1
+        jj = s.o.indices'[2,:]+1
+        ii = cast(ii, Int32)
+        jj = cast(jj, Int32)
+        vv = cast(s.o.values, Float64)
+        o = cast(o, Float64)
+        # @show ii, jj, vv, o, constant(size(s, 2), dtype=Int32)
+        u = ss(ii, jj, vv, o, constant(size(s, 2), dtype=Int32))
+    else
+        ss = load_system_op(COLIB["sparse_solver"]...)
+        # in case `indices` has dynamical shape
+        ii = s.o.indices'[1,:]+1
+        jj = s.o.indices'[2,:]+1
+        u = ss(ii, jj, s.o.values, constant(collect(1:length(o))),o,
+                    constant(size(s, 1)))
+    end
 end
 
+Base.:\(s::SparseTensor, o::Array{Float64}) = s\constant(o)
 
 """
 accumulator, creater, initializer = SparseAssembler()

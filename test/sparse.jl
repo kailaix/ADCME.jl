@@ -98,3 +98,15 @@ end
                         0.0  0.0  0.0  0.0  0.0]
     end
 end
+
+@testset "sparse_least_square" begin
+    @test_skip begin
+        ii = Int32[1;1;2;2;3;3]
+        jj = Int32[1;2;1;2;1;2]
+        vv = Float64[1;2;3;4;5;6]
+        ff = Float64[1;1;1]
+        A = SparseTensor(ii, jj, vv, 3, 2)
+        o = A\ff
+        @test norm(run(sess, o)-[-1;1])<1e-6
+    end
+end
