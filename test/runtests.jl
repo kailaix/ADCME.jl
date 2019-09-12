@@ -1,3 +1,7 @@
+push!(LOAD_PATH, "@stdlib")
+using Pkg
+Pkg.add("NLopt"); Pkg.add("Optim")
+
 using NLopt
 using Optim
 using ADCME
