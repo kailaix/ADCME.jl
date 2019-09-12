@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map, prod
-import LinearAlgebra: diag, det, norm, diagm, dot
+import LinearAlgebra: diag, det, norm, diagm, dot, I 
 import Statistics: mean
 import FFTW: fft, ifft
 export 
@@ -55,11 +55,12 @@ mean,
 pad,
 leaky_relu,
 fft, 
-ifft
+ifft,
+I
 
 
 
-function Base.:*(o1::PyObject, o2::PyObject)
+function PyCall.:*(o1::PyObject, o2::PyObject)
     s1 = size(o1)
     s2 = size(o2)
     if s1==nothing || s2==nothing
@@ -585,4 +586,18 @@ end
 dot(x::PyObject, y::PyObject) = sum(x.*y)
 dot(x::PyObject, y::AbstractArray{<:Real}) = sum(x.*constant(y))
 dot(x::AbstractArray{<:Real}, y::PyObject) = sum(constant(x).*y)
+
+import PyCall: +, -
+function +(o::PyObject, I::UniformScaling{Bool})
+    @assert size(o,1)==size(o,2)
+    o + diagm(0=>ones(size(o,1)))
+end
+
+function -(o::PyObject, I::UniformScaling{Bool})
+    @assert size(o,1)==size(o,2)
+    o - diagm(0=>ones(size(o,1)))
+end
+
+Base.:+(I::UniformScaling{Bool}, o::PyObject) = o+I
+Base.:-(I::UniformScaling{Bool}, o::PyObject) = -(o-I)
 

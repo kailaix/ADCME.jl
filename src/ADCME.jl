@@ -10,6 +10,7 @@ module ADCME
     
     using PyCall
     using Random
+    using LinearAlgebra
 
     tf = PyNULL()
     tfp = PyNULL()
@@ -19,7 +20,8 @@ module ADCME
     # a list of custom operators 
     COLIB = Dict{String, Tuple{String, String, String, Bool}}(
         "sparse_solver"=>("SparseSolver", "libSparseSolver", "sparse_solver", true),
-        "sparse_assembler"=>("SparseAccumulate", "libSparseAccumulate", "", false)
+        "sparse_assembler"=>("SparseAccumulate", "libSparseAccumulate", "", false),
+        "sparse_least_square"=>("SparseLeastSquare", "libSparseLeastSquare", "sparse_least_square", true)
     )
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")

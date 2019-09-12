@@ -42,6 +42,10 @@ function Variable(initial_value;kwargs...)
     tf.Variable(initial_value; kwargs...)
 end
 
+function Base.:copy(o::PyObject)
+    return tf.identity(o)
+end
+
 function get_variable(name; kwargs...)
     kwargs = jlargs(kwargs)
     tf.compat.v1.get_variable(name;kwargs...)
@@ -83,11 +87,13 @@ function get_dtype(o::PyObject)
     return nothing
 end
 
+Base.:eltype(o::PyObject) = get_dtype(o)
+
 @deprecate get_shape size
 get_shape(o::PyObject, i::Union{Int64,Nothing}) = size(o,i)
 
 # compatible with Julia size
-function Base.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
+function PyCall.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
     d = o.shape.dims
     if d===nothing
         return nothing
@@ -110,7 +116,7 @@ function Base.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
     end
 end
 
-Base.:length(o::PyObject) = prod(size(o))
+PyCall.:length(o::PyObject) = prod(size(o))
 
 """
 gradients compute the gradients of ys w.r.t xs
@@ -259,11 +265,11 @@ variance_scaling_initializer(args...;kwargs...) = tf.uniform_unit_scaling_initia
 
 # Indexing
 
-function lastindex(o::PyObject)
+function PyCall.:lastindex(o::PyObject)
     return size(o,1)
 end
 
-function lastindex(o::PyObject, i::Int64)
+function PyCall.:lastindex(o::PyObject, i::Int64)
     return size(o,i)
 end
 
@@ -381,16 +387,6 @@ function tensor(v::Array{T,2}; dtype=Float64, sparse=false) where T
     ret
 end
 
-function Base.:copy(o::PyObject)
-    local var
-    if length(size(o))==0
-        var = Variable(get_dtype(o)(0.0), trainable=false)
-    else
-        var = Variable(zeros(get_dtype(o), size(o)...), trainable=false)
-    end
-    assign(var, o)
-end
-
 function TensorArray(size_::Int64=0, args...;kwargs...)
     kwargs = jlargs(kwargs)
     if !(haskey(kwargs, :dtype))
@@ -414,10 +410,18 @@ function Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj)
     ta.write(i-1, obj)
 end
 
-function convert_to_tensor(o::Union{PyObject, Number, Array{T}}) where T<:Number
+function convert_to_tensor(o::Union{PyObject, Number, Array{T}}; dtype::Union{Type, Missing}=missing) where T<:Number
     if isa(o, PyObject)
-        return o
+        if ismissing(dtype) || dtype==eltype(o)
+            return o
+        else
+            return cast(o, dtype)
+        end
     else
-        return constant(o)
+        if !ismissing(dtype)
+            return constant(o, dtype=dtype)
+        else
+            return constant(o)
+        end
     end
 end

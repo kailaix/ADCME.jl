@@ -231,52 +231,53 @@ function compile(s::String)
 end
 
 function install_custom_op_dependency()
-    if isdir("$(@__DIR__)/../deps/Libraries")
+    LIBDIR = "$(@__DIR__)/../deps/Libraries"
+    if isdir(LIBDIR)
         return
     end
 
     # Install Eigen3 library
-    if !isdir("$(@__DIR__)/../deps/Libraries")
+    if !isdir(LIBDIR)
         @info "Your are running `customop` for the first time; installing dependencies..."
-        mkdir("$(@__DIR__)/../deps/Libraries")
+        mkdir(LIBDIR)
     end
 
-    if !isfile("$(@__DIR__)/../deps/Libraries/eigen.zip")
-        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$(@__DIR__)/Libraries/eigen.zip")
+    if !isfile("$LIBDIR/eigen.zip")
+        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$LIBDIR/eigen.zip")
     end
 
-    if !isdir("$(@__DIR__)/../deps/Libraries/eigen3")    
-        run(`unzip $(@__DIR__)/../deps/Libraries/eigen.zip`)
-        run(`mv $(@__DIR__)/../deps/eigen-eigen-323c052e1731 $(@__DIR__)/../deps/Libraries/eigen3`)
+    if !isdir("$LIBDIR/eigen3")    
+        run(`unzip $LIBDIR/eigen.zip`)
+        run(`mv eigen-eigen-323c052e1731 $LIBDIR/eigen3`)
     end
 
     # Install Torch library
     if Sys.isapple()
-        if !isfile("$(@__DIR__)/../deps/Libraries/libtorch.zip")
-            download("https://download.pytorch.org/libtorch/cpu/libtorch-macos-latest.zip","$(@__DIR__)/Libraries/libtorch.zip")
+        if !isfile("$LIBDIR/libtorch.zip")
+            download("https://download.pytorch.org/libtorch/cpu/libtorch-macos-latest.zip","$LIBDIR/libtorch.zip")
         end
-        if !isdir("$(@__DIR__)/../deps/Libraries/libtorch")
-            run(`unzip $(@__DIR__)/../deps/Libraries/libtorch.zip`)
-            run(`mv $(@__DIR__)/../deps/libtorch $(@__DIR__)/../deps/Libraries/libtorch`)
-            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_mac_2019.0.5.20190502.tgz","$(@__DIR__)/Libraries/mklml_mac_2019.0.5.20190502.tgz")
-            run(`tar -xvzf $(@__DIR__)/../deps/Libraries/mklml_mac_2019.0.5.20190502.tgz`)
-            run(`mv $(@__DIR__)/../deps/mklml_mac_2019.0.5.20190502/lib/libiomp5.dylib $(@__DIR__)/../deps/Libraries/libtorch/lib/`)
-            run(`mv $(@__DIR__)/../deps/mklml_mac_2019.0.5.20190502/lib/libmklml.dylib $(@__DIR__)/../deps/Libraries/libtorch/lib/`)
-            run(`rm -rf $(@__DIR__)/../deps/mklml_mac_2019.0.5.20190502/`)
+        if !isdir("$LIBDIR/libtorch")
+            run(`unzip $LIBDIR/libtorch.zip`)
+            run(`mv libtorch $LIBDIR/libtorch`)
+            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_mac_2019.0.5.20190502.tgz","$LIBDIR/mklml_mac_2019.0.5.20190502.tgz")
+            run(`tar -xvzf $LIBDIR/mklml_mac_2019.0.5.20190502.tgz`)
+            run(`mv mklml_mac_2019.0.5.20190502/lib/libiomp5.dylib $LIBDIR/libtorch/lib/`)
+            run(`mv mklml_mac_2019.0.5.20190502/lib/libmklml.dylib $LIBDIR/libtorch/lib/`)
+            run(`rm -rf mklml_mac_2019.0.5.20190502/`)
         end
     elseif Sys.islinux()
-        if !isfile("$(@__DIR__)/../deps/Libraries/libtorch.zip")
-            download("https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip","$(@__DIR__)/../deps/Libraries/libtorch.zip")
+        if !isfile("$LIBDIR/libtorch.zip")
+            download("https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip","$LIBDIR/libtorch.zip")
         end
-        if !isdir("$(@__DIR__)/../deps/Libraries/libtorch")
-            run(`unzip $(@__DIR__)/../deps/Libraries/libtorch.zip`)
-            run(`mv $(@__DIR__)/../deps/libtorch $(@__DIR__)/../deps/Libraries/libtorch`)
-            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_lnx_2019.0.5.20190502.tgz","$(@__DIR__)/../deps/Libraries/mklml_lnx_2019.0.5.20190502.tgz")
-            run(`tar -xvzf $(@__DIR__)/../deps/Libraries/mklml_lnx_2019.0.5.20190502.tgz`)
-            run(`mv $(@__DIR__)/../deps/mklml_lnx_2019.0.5.20190502/lib/libiomp5.so $(@__DIR__)/../deps/Libraries/libtorch/lib/`)
-            run(`mv $(@__DIR__)/../deps/mklml_lnx_2019.0.5.20190502/lib/libmklml_gnu.so $(@__DIR__)/../deps/Libraries/libtorch/lib/`)
-            run(`mv $(@__DIR__)/../deps/mklml_lnx_2019.0.5.20190502/lib/libmklml_intel.so $(@__DIR__)/../deps/Libraries/libtorch/lib/`)
-            run(`rm -rf $(@__DIR__)/../deps/mklml_lnx_2019.0.5.20190502/`)
+        if !isdir("$LIBDIR/libtorch")
+            run(`unzip $LIBDIR/libtorch.zip`)
+            run(`mv libtorch $LIBDIR/libtorch`)
+            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_lnx_2019.0.5.20190502.tgz","$LIBDIR/mklml_lnx_2019.0.5.20190502.tgz")
+            run(`tar -xvzf $LIBDIR/mklml_lnx_2019.0.5.20190502.tgz`)
+            run(`mv mklml_lnx_2019.0.5.20190502/lib/libiomp5.so $LIBDIR/libtorch/lib/`)
+            run(`mv mklml_lnx_2019.0.5.20190502/lib/libmklml_gnu.so $LIBDIR/libtorch/lib/`)
+            run(`mv mklml_lnx_2019.0.5.20190502/lib/libmklml_intel.so $LIBDIR/libtorch/lib/`)
+            run(`rm -rf mklml_lnx_2019.0.5.20190502/`)
         end
     end
 end
