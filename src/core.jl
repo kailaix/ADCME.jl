@@ -1,4 +1,3 @@
-import LinearAlgebra:cond
 export
 Graph,
 reset_default_graph,
@@ -11,7 +10,7 @@ value,
 control_dependencies,
 has_gpu,
 while_loop,
-cond,
+if_else,
 stop_gradient,
 tensor,
 RegisterGradient
@@ -112,8 +111,10 @@ function while_loop(condition::Union{PyObject,Function}, body::Function, loop_va
     end
 end
 
-function cond(condition::Union{PyObject,Function}, fn1::Function, fn2::Function, args...;kwargs...)
-    tf.cond(condition, fn1, fn2, args...;kwargs...)
+function if_else(condition::Union{PyObject,Function}, fn1, fn2, args...;kwargs...)
+    fn1_ = ifelse(isa(fn1, Function), fn1, ()->fn1)
+    fn2_ = ifelse(isa(fn2, Function), fn2, ()->fn1)
+    tf.cond(condition, fn1_, fn2_, args...;kwargs...)
 end
 
 function has_gpu()

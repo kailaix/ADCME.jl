@@ -2,19 +2,33 @@ sudo: required
 language: julia
 dist: xenial
 python:
-  - "3.6"
+  - "3.7"
 git:
   depth: 3
   quiet: true
 julia:
-  - 1.1
+  - 1.2
 os:
   - osx
   - linux
   - windows
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update  ; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install hdf5; fi
+  - julia -e 'using Pkg; Pkg.add("NLopt"); Pkg.add("Optim"); Pkg.add("Statistics"); Pkg.add("LinearAlgebra"); Pkg.add("PyCall"); Pkg.add("SparseArrays"); Pkg.add("Test")'
 notifications:
   email: false
 coveralls: true
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.2
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("PyCall"); Pkg.add("ADCME"); Pkg.develop(PackageSpec(path=pwd()));
+                                               Pkg.instantiate()'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
 
