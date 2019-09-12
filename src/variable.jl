@@ -48,9 +48,6 @@ function get_variable(name; kwargs...)
 end
 
 function placeholder(dtype::Type; kwargs...)
-    if dtype==Int64
-        error("`placeholder` only accepts Int32, not Int64")
-    end
     dtype = DTYPE[dtype]
     kwargs = Dict{Any,Any}(kwargs)
     if !(:shape in keys(kwargs))

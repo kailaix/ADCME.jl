@@ -81,4 +81,5 @@ module ADCME
     include("RBF.jl")
     include("sparse.jl")
     include("random.jl")
+    include("gan.jl")
 end

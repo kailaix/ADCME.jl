@@ -222,7 +222,7 @@ function softplus(x;kwargs...)
 end
 
 function log(o::PyObject; kwargs...)
-    tf.log(o; kwargs...)
+    tf.math.log(o; kwargs...)
 end
 
 function exp(o::PyObject; kwargs...)
