@@ -148,6 +148,10 @@ function reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
     tf.reshape(o, [m, n]; kwargs...)
 end
 
+reshape(o::PyObject, ::Colon, n::Integer) = reshape(o, -1, n)
+reshape(o::PyObject, n::Integer, ::Colon) = reshape(o, n, -1)
+
+
 function _tfreshape(o::PyObject, s...; kwargs...)
     if length(size(o))==2
         return tf.reshape(o', [s...]; kwargs...)
@@ -601,3 +605,18 @@ end
 Base.:+(I::UniformScaling{Bool}, o::PyObject) = o+I
 Base.:-(I::UniformScaling{Bool}, o::PyObject) = -(o-I)
 
+function Base.:findall(o::PyObject)
+    if !(length(size(o)) in [1,2])
+        error("ADCME: input tensor must have rank 1 or 2")
+    end
+    if !(eltype(o) <: Bool)
+        error("ADCME: input tensor must have boolean types")
+    end
+    if length(size(o))==2
+        tf.compat.v2.where(o) + 1
+    else
+        o = reshape(o, :, 1)
+        res = findall(o)
+        res'[1,:]
+    end
+end 

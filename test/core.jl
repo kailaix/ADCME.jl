@@ -91,3 +91,18 @@ end
     res = if_else(a>1.0, bb, cc)
     @test run(sess, res)≈2.0
 end
+
+@testset "if_else: tf.where" begin
+    condition = [true true false false
+                true true true true]
+    a = [1 1 1 1
+         1 1 1 1]
+    b = [2 2 2 2
+         2 2 2 2]
+    res = if_else(condition, a, b)
+    @test run(sess, res)≈[1 1 2 2
+                          1 1 1 1]
+
+    res1 = if_else(condition[1,:], a[1,:], b[1,:])
+    @test run(sess, res1)≈[1;1;2;2]
+end
