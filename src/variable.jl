@@ -407,7 +407,11 @@ function Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj)
     ta.write(i-1, obj)
 end
 
-function convert_to_tensor(o::Union{PyObject, Number, Array{T}}; dtype::Union{Type, Missing}=missing) where T<:Number
+function convert_to_tensor(o::Union{PyObject, Number, Array{T}, Missing, Nothing}; 
+    dtype::Union{Type, Missing}=missing) where T<:Number
+    if ismissing(o) || isnothing(o)
+        return o
+    end
     if isa(o, PyObject)
         if ismissing(dtype) || dtype==eltype(o)
             return o

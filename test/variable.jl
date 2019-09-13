@@ -117,4 +117,6 @@ end
     @test run(sess, convert_to_tensor(a))≈a
     a = constant(rand(10))
     @test run(sess, convert_to_tensor(a))≈run(sess, a)
+    @test ismissing(convert_to_tensor(missing))
+    @test isnothing(convert_to_tensor(nothing))
 end

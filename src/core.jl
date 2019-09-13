@@ -111,10 +111,29 @@ function while_loop(condition::Union{PyObject,Function}, body::Function, loop_va
     end
 end
 
-function if_else(condition::Union{PyObject,Function}, fn1, fn2, args...;kwargs...)
+function if_else_v1(condition::Union{PyObject,Function}, fn1, fn2, args...;kwargs...)
     fn1_ = ifelse(isa(fn1, Function), fn1, ()->fn1)
     fn2_ = ifelse(isa(fn2, Function), fn2, ()->fn1)
     tf.cond(condition, fn1_, fn2_, args...;kwargs...)
+end 
+
+function if_else_v2(condition::PyObject, fn1::Union{Nothing, PyObject, Array}, 
+        fn2::Union{Nothing, PyObject, Array})
+    fn1 = convert_to_tensor(fn1)
+    fn2 = convert_to_tensor(fn2)
+    tf.compat.v2.where(condition, fn1, fn2) 
+end 
+
+
+function if_else(condition::Union{PyObject,Function,Array,Bool}, fn1, fn2, args...;kwargs...)
+    if isa(condition, Array) || isa(condition, Bool)
+        condition = convert_to_tensor(condition)
+    end
+    if isa(condition, Function) || (eltype(condition)<:Bool && length(size(condition))==0)
+        if_else_v1(condition, fn1, fn2, args...;kwargs...)
+    else
+        if_else_v2(condition, fn1, fn2)
+    end
 end
 
 function has_gpu()
