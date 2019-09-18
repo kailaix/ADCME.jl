@@ -4,7 +4,8 @@ torchexample,
 xavier_init,
 load_op_and_grad,
 load_op,
-compile_op
+compile_op,
+timestamp
 
 function torchexample()
     filename = "$(@__DIR__)/../examples/torch/laexample.cpp"
@@ -308,4 +309,14 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
         
     end
 
+end
+
+
+"""
+    timestamp()
+
+Returns the timestamp as a TensorFlow operation
+"""
+function timestamp()
+    return tf.timestamp()
 end

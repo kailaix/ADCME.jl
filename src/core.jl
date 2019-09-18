@@ -81,7 +81,17 @@ function control_dependencies(f, ops)
     end
 end
 
+"""
+    bind(op::PyObject, ops...)
 
+Adding operations `ops` to the dependencies of `op`. The function is useful when we want to execute `ops` but `ops` is not 
+in the dependency of the final output. For example, if we want to print `i` each time `i` is evaluated
+```julia
+i = constant(1.0)
+op = tf.print(i)
+i = bind(i, op)
+```
+"""
 function Base.:bind(op::PyObject, ops...)
     local op1
     control_dependencies(ops) do 
@@ -111,7 +121,7 @@ function while_loop(condition::Union{PyObject,Function}, body::Function, loop_va
     end
 end
 
-function if_else_v1(condition::Union{PyObject,Function}, fn1, fn2, args...;kwargs...)
+function if_else_v1(condition::Union{PyObject}, fn1, fn2, args...;kwargs...)
     fn1_ = ifelse(isa(fn1, Function), fn1, ()->fn1)
     fn2_ = ifelse(isa(fn2, Function), fn2, ()->fn1)
     tf.cond(condition, fn1_, fn2_, args...;kwargs...)
@@ -125,7 +135,13 @@ function if_else_v2(condition::PyObject, fn1::Union{Nothing, PyObject, Array},
 end 
 
 
-function if_else(condition::Union{PyObject,Function,Array,Bool}, fn1, fn2, args...;kwargs...)
+"""
+    if_else(condition::Union{PyObject,Array,Bool}, fn1, fn2, args...;kwargs...)
+
+- If `condition` is a scalar boolean, it outputs `fn1` or `fn2` (a function with no input argument or a tensor) based on whether `condition` is true or false.
+- If `condition` is a boolean array, if returns `condition .* fn1 + (1 - condition) .* fn2`
+"""
+function if_else(condition::Union{PyObject,Array,Bool}, fn1, fn2, args...;kwargs...)
     if isa(condition, Array) || isa(condition, Bool)
         condition = convert_to_tensor(condition)
     end
@@ -136,6 +152,11 @@ function if_else(condition::Union{PyObject,Function,Array,Bool}, fn1, fn2, args.
     end
 end
 
+"""
+    has_gpu()
+
+Checks if GPU is available.
+"""
 function has_gpu()
     s = tf.test.gpu_device_name()
     if length(s)==0
