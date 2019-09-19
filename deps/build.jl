@@ -18,8 +18,7 @@ if PyCall.python!=readlines(`which python`)[1]
 PyCall Python: $(PyCall.python)
 System Python: $(readlines(`which python`)[1])
 Instruction: 
-julia> ENV[\"PYTHON\"] = $(readlines(`which python`)[1])
-julia> using Pkg; Pkg.build(\"PyCall\")")
+julia -e 'ENV[\"PYTHON\"] = readlines(`which python`)[1]; using Pkg; Pkg.build(\"PyCall\")")
 end
 
 if Sys.iswindows()
