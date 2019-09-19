@@ -1,15 +1,29 @@
+# install requirements.txt
+try
+    run(`which pip`)
+    if haskey(ENV, "REINSTALL_PIP")
+        error("Force Reinstall Pip...")
+    end
+catch
+    run(`wget -O get-pip.py https://bootstrap.pypa.io/get-pip.py`)
+    run(`python get-pip.py --user`)
+    rm("get-pip.py")
+end
+run(`pip install --user -U -r $(@__DIR__)/requirements.txt`)
+
+
 using PyCall
+if PyCall.python!=readlines(`which python`)[1]
+    error("Python version and PyCall Python version does not match. Please reinstall PyCall with the default Python version.
+PyCall Python: $(PyCall.python)
+System Python: $(readlines(`which python`)[1])
+Instruction: 
+julia> ENV[\"PYTHON\"] = $(readlines(`which python`)[1])
+julia> using Pkg; Pkg.build(\"PyCall\")")
+end
 
 if Sys.iswindows()
     @warn "PyTorch plugin is still under construction for Windows platform and will be disabled for the current version."
-end
-
-function package_exist(s::String)
-py"""
-import pkgutil; 
-exist_ = True if pkgutil.find_loader($s) else False
-"""
-py"exist_"
 end
 
 function mksymlink()
@@ -34,27 +48,4 @@ function mksymlink()
     end
 end
 
-function install_tensorflow()
-    if haskey(ENV,"REINSTALL_PIP")
-        @info "Reinstall pip..."
-        download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
-        run(`$(PyCall.python) get-pip.py --user`)
-        rm("get-pip.py")
-    end
-    try 
-        run(`$(PyCall.python) -m pip --version`)
-    catch
-        @warn "pip is not installed, downloading and installing pip..."
-        download("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
-        run(`$(PyCall.python) get-pip.py --user`)
-        rm("get-pip.py")
-    end
-    run(`$(PyCall.python) -m pip install --user -U numpy`)
-    run(`$(PyCall.python) -m pip install --user tensorflow==1.14`)
-    run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
-end
-
-if !(package_exist("tensorflow") && package_exist("tensorflow_probability"))
-    install_tensorflow()
-end
 mksymlink()

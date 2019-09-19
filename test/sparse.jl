@@ -81,7 +81,7 @@ end
 end
 
 @testset "sparse_assembler" begin
-    @test_skip begin
+    # @test_skip begin
         accumulator, creater, initializer = SparseAssembler()
         initializer(5)
         op1 = accumulator(1, [1;2;3], ones(3))
@@ -96,11 +96,11 @@ end
                         0.0  0.0  0.0  0.0  0.0
                         0.0  0.0  0.0  0.0  0.0
                         0.0  0.0  0.0  0.0  0.0]
-    end
+    # end
 end
 
 @testset "sparse_least_square" begin
-    @test_skip begin
+    # @test_skip begin
         ii = Int32[1;1;2;2;3;3]
         jj = Int32[1;2;1;2;1;2]
         vv = Float64[1;2;3;4;5;6]
@@ -108,5 +108,5 @@ end
         A = SparseTensor(ii, jj, vv, 3, 2)
         o = A\ff
         @test norm(run(sess, o)-[-1;1])<1e-6
-    end
+    # end
 end

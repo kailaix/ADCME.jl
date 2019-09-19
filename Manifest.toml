@@ -83,9 +83,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FFTW]]
 deps = ["AbstractFFTs", "BinaryProvider", "Conda", "Libdl", "LinearAlgebra", "Reexport", "Test"]
-git-tree-sha1 = "03f8776fbdae28c20c0d1d2ae4e090cd1dfcd247"
+git-tree-sha1 = "6c5b420da0b8c12098048561b8d58f81adea506f"
 uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.0.0"
+version = "1.0.1"
 
 [[HDF5]]
 deps = ["BinaryProvider", "Blosc", "CMakeWrapper", "Libdl", "Mmap"]
@@ -149,9 +149,9 @@ version = "1.1.0"
 
 [[Parameters]]
 deps = ["OrderedCollections"]
-git-tree-sha1 = "1dfd7cd50a8eb06ef693a4c2bbe945943cd000c5"
+git-tree-sha1 = "b62b2558efb1eef1fa44e4be5ff58a515c287e38"
 uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.11.0"
+version = "0.12.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
