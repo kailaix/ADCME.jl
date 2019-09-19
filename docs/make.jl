@@ -9,7 +9,7 @@ catch
     run(`python get-pip.py --user`)
     rm("get-pip.py")
 end
-run(`pip install --user -U -r $(@__DIR__)/requirements.txt`)
+run(`pip install --user -U -r $(@__DIR__)/../deps/requirements.txt`)
 
 using PyCall 
 using Pkg; Pkg.add("PyPlot")
