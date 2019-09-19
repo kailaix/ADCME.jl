@@ -9,7 +9,12 @@ catch
     run(`python get-pip.py --user`)
     rm("get-pip.py")
 end
-run(`pip install --user -U -r $(@__DIR__)/../deps/requirements.txt`)
+run(`pip install --user tensorflow==1.14`)
+run(`pip install --user tensorflow_probability==0.7`)
+run(`pip install --user -U numpy`)
+run(`pip install --user -U scipy`)
+run(`pip install --user -U matplotlib`)
+
 
 using PyCall 
 using Pkg; Pkg.add("PyPlot")

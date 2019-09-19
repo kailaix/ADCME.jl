@@ -106,3 +106,11 @@ end
     res1 = if_else(condition[1,:], a[1,:], b[1,:])
     @test run(sess, res1)≈[1;1;2;2]
 end
+
+@testset "get and add collection" begin
+    a = constant(ones(10))
+    b = 2a 
+    add_collection("my_collect", a)
+    add_collection("my_collect", a, b)
+    @assert get_collection("my_collect")==[a,b]
+end
