@@ -112,5 +112,9 @@ end
     b = 2a 
     add_collection("my_collect", a)
     add_collection("my_collect", a, b)
-    @assert get_collection("my_collect")==[a,b]
+    @test get_collection("my_collect")==[a,b]
+end
+
+@testset "has_gpu" begin
+    @test has_gpu()==false
 end

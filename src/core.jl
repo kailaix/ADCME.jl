@@ -9,23 +9,18 @@ while_loop,
 if_else,
 stop_gradient,
 tensor,
-RegisterGradient
-
+tensorname
 
 # only for eager eager execution
 enable_eager_execution() = tf.enable_eager_execution()
 Base.:values(o::PyObject) = o.numpy()
 
+"""
+    reset_default_graph()
+
+Resets the graph by removing all the operators. 
+"""
 reset_default_graph() = tf.compat.v1.reset_default_graph()
-function RegisterGradient(args...;kwargs...)
-    try
-        tfops.RegisterGradient(args...;kwargs...)
-    catch e
-        @warn(e)
-    end
-end
-
-
 """
     get_collection(name::Union{String, Missing})
 
@@ -62,8 +57,22 @@ function add_collection(name::String, vs::PyObject...)
     nothing
 end
 
+"""
+    tensor(s::String)
+
+Returns the tensor with name `s`. See [`tensorname`](@ref).
+"""
 function tensor(s::String)
     tf.get_default_graph().get_tensor_by_name(s)
+end
+
+"""
+    tensorname(o::PyObject)
+
+Returns the name of the tensor. See [`tensor`](@ref).
+"""
+function tensorname(o::PyObject)
+    o.name
 end
 
 function jlargs(kwargs)
