@@ -3,7 +3,9 @@ export customop,
 torchexample,
 xavier_init,
 load_op_and_grad,
-load_op
+load_op,
+compile_op,
+timestamp
 
 function torchexample()
     filename = "$(@__DIR__)/../examples/torch/laexample.cpp"
@@ -35,6 +37,31 @@ end
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
+
+"""
+    compile_op(oplibpath::String, opname::String)
+
+Compile the library operator by force.
+"""
+function compile_op(oplibpath::String)
+    PWD = pwd()
+    if splitext(oplibpath)[2]==""
+        oplibpath = abspath(oplibpath * (Sys.islinux() ? 
+                        ".so" : Sys.isapple() ? ".dylib" : ".dll"))
+    end
+    DIR, FILE = splitdir(oplibpath)
+    if !isdir(DIR); mkdir(DIR); end 
+    cd(DIR)
+    try
+        run(`cmake ..`)
+        run(`make -j`)
+    catch
+        @warn("Compiling not successful. Instruction: Check $oplibpath")
+    finally
+        cd(PWD)
+    end
+end
+
 @doc """
 load_op(oplibpath::String, opname::String)
 
@@ -50,11 +77,15 @@ function load_op(oplibpath::String, opname::String)
         return load_op_dict[(oplibpath,opname)]
     end
 
+    if !isfile(oplibpath)
+        error("File $oplibpath does not exist. Instruction:\nRunning `compile_op(oplibpath)` to compile the library first.")
+    end
+
 py"""
 import tensorflow as tf
-libop = tf.load_op_library($oplibpath)
+lib = tf.load_op_library($oplibpath)
 """
-    lib = py"libop"
+    lib = py"lib"
     s = getproperty(lib, opname)
     load_op_dict[(oplibpath,opname)] = s
     println("Load library: $oplibpath")
@@ -69,18 +100,22 @@ function load_op_and_grad(oplibpath::String, opname::String)
     if haskey(load_op_grad_dict, (oplibpath,opname))
         return load_op_grad_dict[(oplibpath,opname)]
     end
+    if !isfile(oplibpath)
+        error("File $oplibpath does not exist. Instruction:\nRunning `compile_op(oplibpath)` to compile the library first.")
+    end
+    
     opname_grad = opname*"_grad"
 py"""
 import tensorflow as tf
 lib = tf.load_op_library($oplibpath)
 @tf.custom_gradient
-def sparse_solver(*args):
+def custom_fn(*args):
     u = lib.__getattribute__($opname)(*args)
     def grad(dy):
         return lib.__getattribute__($opname_grad)(dy, u, *args)
     return u, grad
 """
-        s = py"sparse_solver"
+        s = py"custom_fn"
         load_op_grad_dict[(oplibpath,opname)] = s
         println("Load library: $oplibpath")
         return s
@@ -150,9 +185,6 @@ end
 
 function install_custom_op_dependency()
     LIBDIR = "$(@__DIR__)/../deps/Libraries"
-    if isdir(LIBDIR)
-        return
-    end
 
     # Install Eigen3 library
     if !isdir(LIBDIR)
@@ -277,4 +309,14 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
         
     end
 
+end
+
+
+"""
+    timestamp()
+
+Returns the timestamp as a TensorFlow operation
+"""
+function timestamp()
+    return tf.timestamp()
 end

@@ -13,8 +13,10 @@ pybytes(b) = PyObject(
                                              b, sizeof(b)))
 
 """
-`save` saves the values of tensors in the session `sess`. The result is written into `file` as a dictionary. 
-see also `load`
+    save(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
+
+Saves the values of `vars` in the session `sess`. The result is written into `file` as a dictionary. If `vars` is nothing, it saves all the trainable variables.
+See also [`save`](@ref), [`load`](@ref)
 """
 function save(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
     if vars==nothing
@@ -49,8 +51,10 @@ function save(sess::PyObject, vars::Union{PyObject, Nothing, Array{PyObject}}=no
 end
 
 """
-`load` loads the values of tensors to the session `sess`. 
-see also `save`
+    load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
+
+Loads the values of variables to the session `sess` from the file `file`. If `vars` is nothing, it loads values to all the trainable variables.
+See also [`save`](@ref), [`load`](@ref)
 """
 function load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
     if vars==nothing
