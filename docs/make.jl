@@ -13,6 +13,13 @@ run(`pip install --user -U -r $(@__DIR__)/requirements.txt`)
 
 using PyCall 
 using Pkg; Pkg.add("PyPlot")
+if PyCall.python!=readlines(`which python`)[1]
+    error("Python version and PyCall Python version does not match. Please reinstall PyCall with the default Python version.
+PyCall Python: $(PyCall.python)
+System Python: $(readlines(`which python`)[1])
+Instruction: 
+julia -e 'ENV[\"PYTHON\"] = readlines(`which python`)[1]; using Pkg; Pkg.build(\"PyCall\")")
+end
 
 using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],

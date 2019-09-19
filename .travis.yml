@@ -26,10 +26,9 @@ jobs:
       julia: 1.2
       os: linux
       script:
-        - export PYTHONPATH=$PYTHONPATH:/home/travis/.local/lib/python3.5/site-packages
         - julia --project=docs/ -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("PyCall");  Pkg.add("LinearAlgebra"); Pkg.develop(PackageSpec(path=pwd()));
                                                Pkg.instantiate()'
-        - julia --project=docs/ -e 'using PyCall; println(PyCall.python)'
+        - julia --project=docs/ -e 'ENV["PYTHON"] = readlines(`which python`)[1]; println(ENV["PYTHON"])'
         - julia --project=docs/ docs/make.jl
       after_success: skip
 after_success:
