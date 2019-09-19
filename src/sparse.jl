@@ -149,6 +149,7 @@ function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
 end
 
 function PyCall.:\(s::SparseTensor, o::PyObject)
+    local u
     if length(size(o))!=1
         error("input b must be a vector")
     end
@@ -174,6 +175,10 @@ function PyCall.:\(s::SparseTensor, o::PyObject)
         u = ss(ii, jj, s.o.values, constant(collect(1:length(o))),o,
                     constant(size(s, 1)))
     end
+    if size(o,1)!=nothing 
+        u.set_shape((size(o,1),))
+    end
+    u
 end
 
 Base.:\(s::SparseTensor, o::Array{Float64}) = s\constant(o)

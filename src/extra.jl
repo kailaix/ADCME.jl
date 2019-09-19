@@ -5,7 +5,8 @@ xavier_init,
 load_op_and_grad,
 load_op,
 compile_op,
-timestamp
+tic,
+toc
 
 function torchexample()
     filename = "$(@__DIR__)/../examples/torch/laexample.cpp"
@@ -73,6 +74,7 @@ function load_op(oplibpath::String, opname::String)
         oplibpath = abspath(oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll"))
     end
+    oplibpath = abspath(oplibpath)
     if haskey(load_op_dict, (oplibpath,opname))
         return load_op_dict[(oplibpath,opname)]
     end
@@ -80,15 +82,15 @@ function load_op(oplibpath::String, opname::String)
     if !isfile(oplibpath)
         error("File $oplibpath does not exist. Instruction:\nRunning `compile_op(oplibpath)` to compile the library first.")
     end
-
+    fn_name = opname*randstring(8)
 py"""
 import tensorflow as tf
-lib = tf.load_op_library($oplibpath)
+lib$$fn_name = tf.load_op_library($oplibpath)
 """
-    lib = py"lib"
+    lib = py"lib$$fn_name"
     s = getproperty(lib, opname)
     load_op_dict[(oplibpath,opname)] = s
-    println("Load library: $oplibpath")
+    printstyled("Load library operator: $oplibpath ==> $opname\n", color=:green)
     return s
 end
 
@@ -97,6 +99,7 @@ function load_op_and_grad(oplibpath::String, opname::String)
         oplibpath = oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll")
     end
+    oplibpath = abspath(oplibpath)
     if haskey(load_op_grad_dict, (oplibpath,opname))
         return load_op_grad_dict[(oplibpath,opname)]
     end
@@ -105,19 +108,20 @@ function load_op_and_grad(oplibpath::String, opname::String)
     end
     
     opname_grad = opname*"_grad"
+    fn_name = opname*randstring(8)
 py"""
 import tensorflow as tf
-lib = tf.load_op_library($oplibpath)
+lib$$fn_name = tf.load_op_library($oplibpath)
 @tf.custom_gradient
-def custom_fn(*args):
-    u = lib.__getattribute__($opname)(*args)
+def $$fn_name(*args):
+    u = lib$$fn_name.__getattribute__($opname)(*args)
     def grad(dy):
-        return lib.__getattribute__($opname_grad)(dy, u, *args)
+        return lib$$fn_name.__getattribute__($opname_grad)(dy, u, *args)
     return u, grad
 """
-        s = py"custom_fn"
+        s = py"$$fn_name"
         load_op_grad_dict[(oplibpath,opname)] = s
-        println("Load library: $oplibpath")
+        printstyled("Load library operator (with gradient): $oplibpath ==> $opname\n", color=:green)
         return s
 end
 
@@ -312,11 +316,29 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
 end
 
 
-"""
-    timestamp()
 
-Returns the timestamp as a TensorFlow operation
 """
-function timestamp()
-    return tf.timestamp()
+    tic(o::PyObject, i::Union{PyObject, Integer}=0)
+
+Construts a TensorFlow timer with index `i`. The start time record is right before `o` is executed.
+"""
+function tic(o::PyObject, i::Union{PyObject, Integer}=0)
+    set_tensor_flow_timer = load_system_op(COLIB["set_tensor_flow_timer"]...)
+    i = convert_to_tensor(i, dtype=Int32)
+    start_timer = set_tensor_flow_timer(i)
+    o = bind(o, start_timer)
+end
+
+
+"""
+    toc(o::PyObject, i::Union{PyObject, Integer}=0)
+
+Returns the elapsed time from last [`tic`](@ref) call with index `i` (default=0). The terminal time record is right before `o` is executed.
+"""
+function toc(o::PyObject, i::Union{PyObject, Integer}=0)
+    get_tensor_flow_timer = load_system_op(COLIB["get_tensor_flow_timer"]...)
+    i = convert_to_tensor(i, dtype=Int32)
+    end_timer = get_tensor_flow_timer(i)
+    o = bind(o, end_timer)
+    o, end_timer
 end

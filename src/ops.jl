@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map, prod
-import LinearAlgebra: diag, det, norm, diagm, dot, I 
+import LinearAlgebra: diag, det, norm, diagm, dot, I, svd
 import Statistics: mean
 import FFTW: fft, ifft
 export 
@@ -56,7 +56,8 @@ pad,
 leaky_relu,
 fft, 
 ifft,
-I
+I,
+svd
 
 
 
@@ -560,6 +561,20 @@ function fft(o::PyObject, args...; kwargs...)
     else
         error("FFT for d>=4 not supported")
     end
+end
+
+
+# mimic the Julia SVD 
+struct TFSVD
+    S::PyObject
+    U::PyObject
+    V::PyObject
+    Vt::PyObject
+end
+
+function svd(o::PyObject, args...; kwargs...)
+    s,u,v = tf.svd(o)
+    TFSVD(s, u, v, v')
 end
 
 function ifft(o::PyObject, args...; kwargs...)

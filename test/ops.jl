@@ -273,3 +273,10 @@ end
     ci = findall(b[1,:])
     @test run(sess, ci)==[1;2;5]
 end
+
+@testset "svd" begin
+    A = rand(10,20)
+    r = svd(constant(A))
+    A2 = r.U*diagm(r.S)*r.Vt 
+    @test run(sess, A2)≈A
+end

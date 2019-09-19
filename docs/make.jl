@@ -17,10 +17,14 @@ function install_packages()
 end
 
 install_packages()
+using Pkg; Pkg.add("PyPlot")
 
 using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
-pages = Any["index.md"],
+pages = Any[
+    "Getting Started" => "index.md",
+    "Additional Tools" => "extra.md"
+],
 authors = "Kailai Xu")
 
 
