@@ -11,7 +11,7 @@ julia:
 os:
   - osx
   - linux
-  - windows
+  # - windows
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update  ; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install hdf5; fi
