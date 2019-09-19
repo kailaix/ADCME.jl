@@ -21,7 +21,9 @@ module ADCME
     COLIB = Dict{String, Tuple{String, String, String, Bool}}(
         "sparse_solver"=>("SparseSolver", "libSparseSolver", "sparse_solver", true),
         "sparse_assembler"=>("SparseAccumulate", "libSparseAccumulate", "", false),
-        "sparse_least_square"=>("SparseLeastSquare", "libSparseLeastSquare", "sparse_least_square", true)
+        "sparse_least_square"=>("SparseLeastSquare", "libSparseLeastSquare", "sparse_least_square", true),
+        "get_tensor_flow_timer"=>("Timer", "libTensorFlowTimer", "get_tensor_flow_timer", false),
+        "set_tensor_flow_timer"=>("Timer", "libTensorFlowTimer", "set_tensor_flow_timer", false)
     )
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")

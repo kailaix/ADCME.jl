@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map, prod
-import LinearAlgebra: diag, det, norm, diagm, dot, I 
+import LinearAlgebra: diag, det, norm, diagm, dot, I, svd
 import Statistics: mean
 import FFTW: fft, ifft
 export 
@@ -56,7 +56,8 @@ pad,
 leaky_relu,
 fft, 
 ifft,
-I
+I,
+svd
 
 
 
@@ -147,6 +148,10 @@ function reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
     end
     tf.reshape(o, [m, n]; kwargs...)
 end
+
+reshape(o::PyObject, ::Colon, n::Integer) = reshape(o, -1, n)
+reshape(o::PyObject, n::Integer, ::Colon) = reshape(o, n, -1)
+
 
 function _tfreshape(o::PyObject, s...; kwargs...)
     if length(size(o))==2
@@ -558,6 +563,20 @@ function fft(o::PyObject, args...; kwargs...)
     end
 end
 
+
+# mimic the Julia SVD 
+struct TFSVD
+    S::PyObject
+    U::PyObject
+    V::PyObject
+    Vt::PyObject
+end
+
+function svd(o::PyObject, args...; kwargs...)
+    s,u,v = tf.svd(o)
+    TFSVD(s, u, v, v')
+end
+
 function ifft(o::PyObject, args...; kwargs...)
     if length(size(o))==1
         tf.ifft(o, args...; kwargs...)
@@ -601,3 +620,18 @@ end
 Base.:+(I::UniformScaling{Bool}, o::PyObject) = o+I
 Base.:-(I::UniformScaling{Bool}, o::PyObject) = -(o-I)
 
+function Base.:findall(o::PyObject)
+    if !(length(size(o)) in [1,2])
+        error("ADCME: input tensor must have rank 1 or 2")
+    end
+    if !(eltype(o) <: Bool)
+        error("ADCME: input tensor must have boolean types")
+    end
+    if length(size(o))==2
+        tf.compat.v2.where(o) + 1
+    else
+        o = reshape(o, :, 1)
+        res = findall(o)
+        res'[1,:]
+    end
+end 

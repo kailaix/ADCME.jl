@@ -113,12 +113,23 @@ function Base.:*(s::SparseTensor, o::Array{Float64})
 end
 
 function PyCall.:*(o::PyObject, s::SparseTensor)
-    tf.sparse.sparse_dense_matmul(s.o, o, adjoint_a=true, adjoint_b=true)'
+    if length(size(o))==0
+        SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape))
+    else
+        tf.sparse.sparse_dense_matmul(s.o, o, adjoint_a=true, adjoint_b=true)'
+    end
 end
 
 function Base.:*(o::Array{Float64}, s::SparseTensor)
     convert_to_tensor(o)*s
 end
+
+function Base.:*(o::Real, s::SparseTensor)
+    o = Float64(o)
+    SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape))
+end
+
+Base.:*(s::SparseTensor, o::Real) = o*s
 
 Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]))
 Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]))
@@ -138,6 +149,7 @@ function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
 end
 
 function PyCall.:\(s::SparseTensor, o::PyObject)
+    local u
     if length(size(o))!=1
         error("input b must be a vector")
     end
@@ -163,6 +175,10 @@ function PyCall.:\(s::SparseTensor, o::PyObject)
         u = ss(ii, jj, s.o.values, constant(collect(1:length(o))),o,
                     constant(size(s, 1)))
     end
+    if size(o,1)!=nothing 
+        u.set_shape((size(o,1),))
+    end
+    u
 end
 
 Base.:\(s::SparseTensor, o::Array{Float64}) = s\constant(o)

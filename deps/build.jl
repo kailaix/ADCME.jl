@@ -4,6 +4,36 @@ if Sys.iswindows()
     @warn "PyTorch plugin is still under construction for Windows platform and will be disabled for the current version."
 end
 
+function package_exist(s::String)
+py"""
+import pkgutil; 
+exist_ = True if pkgutil.find_loader($s) else False
+"""
+py"exist_"
+end
+
+function mksymlink()
+    tf = pyimport("tensorflow")
+    if Sys.isapple()
+        ext = "dylib"
+    elseif Sys.iswindows()
+        ext = "dll"
+    elseif Sys.islinux()
+        ext = "so"
+    end
+    tfdir = splitdir(tf.__file__)[1] 
+    if !isfile(joinpath(tfdir, "libtensorflow_framework.$ext"))
+        for f in readdir(tfdir)
+            if occursin("libtensorflow_framework", f)
+                name = joinpath(tfdir, f)
+                link = joinpath(tfdir, "libtensorflow_framework.$ext")
+                @info "Creating symbolic link $link-->$name"
+                symlink(name, link)
+            end
+        end
+    end
+end
+
 function install_tensorflow()
     if haskey(ENV,"REINSTALL_PIP")
         @info "Reinstall pip..."
@@ -24,9 +54,7 @@ function install_tensorflow()
     run(`$(PyCall.python) -m pip install --user tensorflow_probability==0.7`)
 end
 
-try
-    tf = pyimport("tensorflow")
-    tf = pyimport("tensorflow_probability")
-catch ee
+if !(package_exist("tensorflow") && package_exist("tensorflow_probability"))
     install_tensorflow()
 end
+mksymlink()

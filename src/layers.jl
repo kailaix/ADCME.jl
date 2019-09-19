@@ -105,8 +105,8 @@ end
 
 function ae_to_code(file::String, scope::String)
     d = matread(file)
-    println("aedict$scope = matread(\"$file\"); # using MAT")
-    ae_to_code(d, scope)
+    s = "aedict$scope = matread(\"$file\");"*ae_to_code(d, scope)
+    return s
 end
 
 # tensorflow layers from contrib 
