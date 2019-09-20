@@ -140,7 +140,7 @@ Creates a diary at a temporary directory path. It returns a writer and the corre
 """
 function Diary(suffix::Union{String, Nothing}=nothing)
     tdir = mktempdir()
-    printstyled("tensorboard --logdir=\"$(sw.tdir)\" --port 0\n", color=:blue)
+    printstyled("tensorboard --logdir=\"$(tdir)\" --port 0\n", color=:blue)
     Diary(tf.summary.FileWriter(tdir, tf.get_default_graph(),filename_suffix=suffix), tdir)
 end
 
