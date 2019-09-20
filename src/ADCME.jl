@@ -15,6 +15,7 @@ module ADCME
     tf = PyNULL()
     tfp = PyNULL()
     tfops = PyNULL()
+    pickle = PyNULL()
     gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
     # a list of custom operators 
@@ -35,6 +36,7 @@ module ADCME
         copy!(tfops, pyimport("tensorflow.python.framework.ops"))
         copy!(tfp, pyimport("tensorflow_probability"))
         copy!(gradients_impl, pyimport("tensorflow.python.ops.gradients_impl"))
+        copy!(pickle, pyimport("pickle"))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
