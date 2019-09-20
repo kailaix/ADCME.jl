@@ -1,7 +1,7 @@
 name = "ADCME"
 uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
 authors = ["Kailai Xu <kailaix@hotmail.com>"]
-version = "0.2.4"
+version = "0.2.5"
 
 [compat]
 julia = "1"

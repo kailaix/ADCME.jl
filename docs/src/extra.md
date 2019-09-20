@@ -21,3 +21,38 @@ run(sess, t)
 tic
 toc
 ```
+
+## Save and Load Python Object
+```@docs
+psave
+pload
+```
+
+## Save and Load TensorFlow Session
+```@docs
+load
+save
+```
+
+## Save and Load Diary
+
+We can use TensorBoard to track a scalar value easily
+```julia
+d = Diary("test")
+p = placeholder(1.0, dtype=Float64)
+b = constant(1.0)+p
+s = scalar(b, "variable")
+for i = 1:100
+    write(d, i, run(sess, s, Dict(p=>Float64(i))))
+end
+activate(d)
+```
+
+```@docs
+Diary
+scalar
+activate
+load
+save
+write
+```

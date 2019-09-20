@@ -2,15 +2,44 @@ using MAT
 export 
 save,
 load,
-diary,
+Diary,
 scalar,
-writepb
+writepb,
+psave,
+pload,
+activate
 
 
 pybytes(b) = PyObject(
     ccall(PyCall.@pysym(PyCall.PyString_FromStringAndSize),
                                              PyPtr, (Ptr{UInt8}, Int),
                                              b, sizeof(b)))
+
+"""
+    psave(o::PyObject, file::String)
+
+Saves a Python objection `o` to `file`.
+See also [`pload`](@ref)
+"""                                             
+function psave(o::PyObject, file::String)
+    f = open(file, "w")
+    pickle.dump(o, f)
+    close(f)
+end
+
+"""
+    pload(file::String)
+
+Loads a Python objection from `file`.
+See also [`psave`](@ref)
+"""                
+function pload(file::String)
+    r = nothing
+    @pywith pybuiltin("open")(file,"rb") as f begin
+        r = pickle.load(f)
+    end
+    return r
+end
 
 """
     save(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
@@ -98,30 +127,75 @@ function load(sess::PyObject, d::Dict, vars::Union{PyObject, Nothing, Array{PyOb
     run(sess, ops, args...; kwargs...)
 end
 
-function diary(logdir::String)
-    if logdir[1]!='/' && logdir[1]!="."
-        logdir = "./"*logdir
-    end
-    try
-        run(`rm -rf $logdir`)
-    catch
-        run(`rm -rf $logdir/*`)
-    end
-    println("""** Run the following command in terminal **""")
-    printstyled("""tensorboard --logdir="$(abspath(logdir))" --port 6006\n""", color=:cyan, bold = true)
-    tf.summary.FileWriter(logdir, tf.get_default_graph())
+
+mutable struct Diary
+    writer::PyObject
+    tdir::String
 end
 
-function scalar(o::PyObject, name::String)
+"""
+    Diary(suffix::Union{String, Nothing}=nothing)
+
+Creates a diary at a temporary directory path. It returns a writer and the corresponding directory path
+"""
+function Diary(suffix::Union{String, Nothing}=nothing)
+    tdir = mktempdir()
+    printstyled("tensorboard --logdir=\"$(tdir)\" --port 0\n", color=:blue)
+    Diary(tf.summary.FileWriter(tdir, tf.get_default_graph(),filename_suffix=suffix), tdir)
+end
+
+"""
+    save(sw::Diary, dirp::String)
+
+Saves [`Diary`](@ref) to `dirp`.
+"""
+function save(sw::Diary, dirp::String)
+    cp(sw.tdir, dirp, force=true)
+end
+
+"""
+    load(sw::Diary, dirp::String)
+
+Loads [`Diary`](@ref) from `dirp`.
+"""
+function load(sw::Diary,dirp::String)
+    sw.writer = tf.summary.FileWriter(dirp, tf.get_default_graph())
+    sw.tdir = dirp
+end
+
+"""
+    activate(sw::Diary, port::Int64=6006)
+
+Running [`Diary`](@ref) at http://localhost:port.
+"""
+function activate(sw::Diary, port::Int64=0)
+    printstyled("tensorboard --logdir=\"$(sw.tdir)\" --port $port\n", color=:blue)
+    run(`tensorboard --logdir="$(sw.tdir)" --port $port &`)
+end
+
+"""
+    scalar(o::PyObject, name::String)
+
+Returns a scalar summary object.
+"""
+function scalar(o::PyObject, name::Union{String,Missing}=missing)
+    if ismissing(name)
+        name = tensorname(o)
+    end
     tf.summary.scalar(name, o)
 end
 
-function Base.:write(writer::PyObject, cnt::Union{String, Array{String}}, step::Int64)
+"""
+    write(sw::Diary, step::Int64, cnt::Union{String, Array{String}})
+
+Writes to [`Diary`](@ref).
+"""
+function Base.:write(sw::Diary, step::Int64, cnt::Union{String, Array{String}})
     if isa(cnt, String)
-        writer.add_summary(pybytes(cnt), step)
+        sw.writer.add_summary(pybytes(cnt), step)
     else
         for c in cnt 
-            writer.add_summary(pybytes(c), step)
+            sw.writer.add_summary(pybytes(c), step)
         end
     end
 end

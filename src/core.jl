@@ -1,58 +1,78 @@
 export
-Graph,
 reset_default_graph,
-get_default_graph,
 get_collection,
-add_to_collection,
-finalize_graph,
+add_collection,
 enable_eager_execution,
-value,
 control_dependencies,
 has_gpu,
 while_loop,
 if_else,
 stop_gradient,
 tensor,
-RegisterGradient
+tensorname
 
-
-
-
-Graph() = tf.Graph()
-reset_default_graph() = tf.compat.v1.reset_default_graph()
-get_default_graph() = tf.get_default_graph()
+# only for eager eager execution
 enable_eager_execution() = tf.enable_eager_execution()
-value(o::PyObject) = o.numpy()
-function RegisterGradient(args...;kwargs...)
-    try
-        tfops.RegisterGradient(args...;kwargs...)
-    catch e
-        @warn(e)
-    end
-end
+Base.:values(o::PyObject) = o.numpy()
 
 """
-finalize(s::PyObject)
+    reset_default_graph()
 
-The method can help to catch leaks like this: it marks a graph as read-only, and raises an exception if anything is added to the graph
-Reference: https://riptutorial.com/tensorflow/example/13426/use-graph-finalize---to-catch-nodes-being-added-to-the-graph
+Resets the graph by removing all the operators. 
 """
-finalize_graph(s::PyObject) = s.graph.finalize()
+reset_default_graph() = tf.compat.v1.reset_default_graph()
+"""
+    get_collection(name::Union{String, Missing})
 
-
-# TensorFlow Graph Collections
-function get_collection(name, args...;kwargs...)
-    if !(name in [GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS])
-        return get_collection(GLOBAL_VARIABLES, scope=name)
+Returns the collection with name `name`. If `name` is `missing`, returns all the trainable variables.
+"""
+function get_collection(name::Union{String, Missing})
+    if ismissing(name)
+        res = tf.compat.v1.get_collection(TRAINABLE_VARIABLES)
     else
-        return tf.get_collection(name, args...;kwargs...)
+        res = tf.get_default_graph()._collections[name]
     end
+    return unique(res)
 end
-add_to_collection(args...;kwargs...) = tf.get_collection(args...;kwargs...)
 
+"""
+    add_collection(name::String, v::PyObject)
 
+Adds `v` to the collection with name `name`. If `name` does not exist, a new one is created.
+"""
+function add_collection(name::String, v::PyObject)
+    tf.get_default_graph().add_to_collection(name, v)
+    nothing
+end
+
+"""
+    add_collection(name::String, vs::PyObject...)
+
+Adds operators `vs` to the collection with name `name`. If `name` does not exist, a new one is created.
+"""
+function add_collection(name::String, vs::PyObject...)
+    for v in vs
+        add_collection(name, v)
+    end
+    nothing
+end
+
+"""
+    tensor(s::String)
+
+Returns the tensor with name `s`. See [`tensorname`](@ref).
+"""
 function tensor(s::String)
     tf.get_default_graph().get_tensor_by_name(s)
+end
+
+"""
+    tensorname(o::PyObject)
+
+Returns the name of the tensor. See [`tensor`](@ref).
+"""
+function tensorname(o::PyObject)
+    o.name
 end
 
 function jlargs(kwargs)

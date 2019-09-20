@@ -61,7 +61,8 @@ function placeholder(dtype::Type; kwargs...)
 end
 
 function placeholder(o::Union{Number, Array, PyObject}; kwargs...)
-    tf.compat.v1.placeholder_with_default(o;kwargs...)
+    o = convert_to_tensor(o; kwargs...)
+    tf.compat.v1.placeholder_with_default(o, shape=size(o))
 end
 
 function variable_scope(f, name_or_scope; reuse=AUTO_REUSE, kwargs...)

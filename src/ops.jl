@@ -573,7 +573,7 @@ struct TFSVD
 end
 
 function svd(o::PyObject, args...; kwargs...)
-    s,u,v = tf.svd(o)
+    s,u,v = tf.linalg.svd(o)
     TFSVD(s, u, v, v')
 end
 
