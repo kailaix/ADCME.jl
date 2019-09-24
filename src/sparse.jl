@@ -1,13 +1,27 @@
 using SparseArrays
-export SparseTensor, SparseAssembler
+export SparseTensor, SparseAssembler, spdiag, find
 
 mutable struct SparseTensor
     o::PyObject
+    _diag::Bool
 end
 
+"""
+    SparseTensor(I::Union{PyObject,Array{T,1}}, J::Union{PyObject,Array{T,1}}, V::Union{Array{Float64,1}, PyObject}, m::Union{S, PyObject, Nothing}=nothing, n::Union{S, PyObject, Nothing}=nothing) where {T<:Integer, S<:Integer}
+
+Constructs a sparse tensor. 
+Examples:
+```
+ii = [1;2;3;4]
+jj = [1;2;3;4]
+vv = [1.0;1.0;1.0;1.0]
+s = SparseTensor(ii, jj, vv, 4, 4)
+s = SparseTensor(sprand(10,10,0.3))
+```
+"""
 function SparseTensor(I::Union{PyObject,Array{T,1}}, J::Union{PyObject,Array{T,1}}, 
       V::Union{Array{Float64,1}, PyObject},
-     m::Union{S, PyObject, Nothing}=nothing, n::Union{S, PyObject, Nothing}=nothing) where {T<:Integer, S<:Integer}
+     m::Union{S, PyObject, Nothing}=nothing, n::Union{S, PyObject, Nothing}=nothing; is_diag::Bool=false) where {T<:Integer, S<:Integer}
     if isa(I, PyObject) && size(I,2)==2
         return SparseTensor_(I, J, V)
     end
@@ -17,13 +31,25 @@ function SparseTensor(I::Union{PyObject,Array{T,1}}, J::Union{PyObject,Array{T,1
     value = V
     shape = [m;n]
     sp = tf.SparseTensor(indices, value, shape)
-    SparseTensor(tf.sparse.reorder(sp))
+    SparseTensor(tf.sparse.reorder(sp), is_diag)
+end
+
+"""
+    find(s::SparseTensor)
+
+Returns the row, column and values for sparse tensor `s`.
+"""
+function find(s::SparseTensor)
+    ind = s.o.indices
+    val = s.o.values
+    ii = ind'[1,:]
+    jj = ind'[2,:]
+    ii+1, jj+1, val
 end
 
 
-
-function Base.:copy(s::SparseTensor)
-    t = SparseTensor(tf.SparseTensor(copy(s.o.indices), copy(s.o.values), s.o.dense_shape))
+function Base.:copy(s::SparseTensor, )
+    t = SparseTensor(tf.SparseTensor(copy(s.o.indices), copy(s.o.values), s.o.dense_shape), copy(s.is_diag))
 end
 
 function Base.:eltype(o::SparseTensor)
@@ -31,14 +57,17 @@ function Base.:eltype(o::SparseTensor)
 end
 
 function SparseTensor_(indices::Union{PyObject,Array{T,2}}, value::Union{PyObject,Array{Float64,1}},
-        shape::Union{PyObject,Array{T,1}}) where T<:Integer
+        shape::Union{PyObject,Array{T,1}}; is_diag::Bool=false) where T<:Integer
     indices = convert_to_tensor(indices)
     value = convert_to_tensor(value)
     shape = convert_to_tensor(shape)
     sp = tf.SparseTensor(indices-1, value, shape)
-    SparseTensor(tf.sparse.reorder(sp))
+    SparseTensor(tf.sparse.reorder(sp), is_diag)
 end
 
+"""
+    SparseTensor(A::SparseMatrixCSC)
+"""
 function SparseTensor(A::SparseMatrixCSC)
     rows = rowvals(A)
     vals = nonzeros(A)
@@ -51,7 +80,7 @@ function SparseTensor(A::SparseMatrixCSC)
             k += 1
         end
     end
-    SparseTensor(rows, cols, vals, m, n)
+    SparseTensor(rows, cols, vals, m, n; is_diag=isdiag(A))
 end
 
 function Base.:show(io::IO, s::SparseTensor)
@@ -85,16 +114,16 @@ function PyCall.:+(s::SparseTensor, o::PyObject)
 end
 PyCall.:+(o::PyObject, s::SparseTensor) = s+o
 function Base.:-(s::SparseTensor)
-    SparseTensor(s.o.indices+1, -s.o.values, s.o.dense_shape)
+    SparseTensor(s.o.indices+1, -s.o.values, s.o.dense_shape, is_diag=s._diag)
 end
 PyCall.:-(o::PyObject, s::SparseTensor) = o + (-s)
 PyCall.:-(s::SparseTensor, o::PyObject) = s + (-o)
 
 PyCall.:+(s::SparseTensor, o::PyObject) = s + (-o)
-Base.:+(s1::SparseTensor, s2::SparseTensor) = SparseTensor(tf.sparse.add(s1.o,s2.o))
+Base.:+(s1::SparseTensor, s2::SparseTensor) = SparseTensor(tf.sparse.add(s1.o,s2.o), s1._diag&&s2._diag)
 Base.:-(s1::SparseTensor, s2::SparseTensor) = s1 + (-s2)
 
-Base.:adjoint(s::SparseTensor) = SparseTensor(tf.sparse.transpose(s.o))
+Base.:adjoint(s::SparseTensor) = SparseTensor(tf.sparse.transpose(s.o), s._diag)
 function PyCall.:*(s::SparseTensor, o::PyObject)
     flag = false
     if length(size(o))==1
@@ -114,7 +143,7 @@ end
 
 function PyCall.:*(o::PyObject, s::SparseTensor)
     if length(size(o))==0
-        SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape))
+        SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape), s._diag)
     else
         tf.sparse.sparse_dense_matmul(s.o, o, adjoint_a=true, adjoint_b=true)'
     end
@@ -126,13 +155,13 @@ end
 
 function Base.:*(o::Real, s::SparseTensor)
     o = Float64(o)
-    SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape))
+    SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape), s._diag)
 end
 
 Base.:*(s::SparseTensor, o::Real) = o*s
 
-Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]))
-Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]))
+Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]), false)
+Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]), false)
 
 function getindex(s::SparseTensor, i1::Union{Colon, Array{T,1}, UnitRange{T}},
     i2::Union{Colon, Array{T,1},UnitRange{T}}) where T<:Integer
@@ -141,11 +170,11 @@ function getindex(s::SparseTensor, i1::Union{Colon, Array{T,1}, UnitRange{T}},
 
     start_ = [i1[1];i2[1]] .- 1
     size_ = [length(i1);length(i2)]
-    SparseTensor(tf.sparse.slice(s.o, start_, size_))
+    SparseTensor(tf.sparse.slice(s.o, start_, size_), false)
 end
 
 function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
-    SparseTensor(tf.sparse.reshape(s, shape))
+    SparseTensor(tf.sparse.reshape(s, shape), false)
 end
 
 function PyCall.:\(s::SparseTensor, o::PyObject)
@@ -175,8 +204,8 @@ function PyCall.:\(s::SparseTensor, o::PyObject)
         u = ss(ii, jj, s.o.values, constant(collect(1:length(o))),o,
                     constant(size(s, 1)))
     end
-    if size(o,1)!=nothing 
-        u.set_shape((size(o,1),))
+    if size(s,2)!=nothing 
+        u.set_shape((size(s,2),))
     end
     u
 end
@@ -232,4 +261,43 @@ function SparseAssembler()
         _clear(n)
     end
     return sparse_accumulate, get_sparse_accumulate, clear!
+end
+
+
+"""
+    spdiag(n::Int64)
+
+Constructs a sparse identity matrix of size ``n\\times n``.
+"""
+function spdiag(n::Int64)
+    SparseTensor(sparse(1:n, 1:n, ones(Float64, n)), true)
+end
+
+"""
+    spdiag(o::PyObject)
+
+Constructs a sparse diagonal matrix where the diagonal entries are `o`
+"""
+function spdiag(o::PyObject)
+    ii = collect(1:length(o))
+    SparseTensor(ii, ii, o, length(o), length(o), is_diag=true)
+end
+
+
+function Base.:*(s1::SparseTensor, s2::SparseTensor)
+    ii1, jj1, vv1 = find(s1)
+    ii2, jj2, vv2 = find(s2)
+    m, n = size(s1)
+    n_, k = size(s2)
+    if n!=n_
+        error("IGACS: matrix size mismatch: ($m, $n) vs ($n_, $k)")
+    end
+    mat_mul_fn = load_system_op(COLIB["sparse_mat_mul"]...)
+    if s1._diag
+        mat_mul_fn = load_system_op(COLIB["diag_sparse_mat_mul"]...)
+    elseif s2._diag
+        mat_mul_fn = load_system_op(COLIB["sparse_diag_mat_mul"]...)
+    end
+    ii3, jj3, vv3 = mat_mul_fn(ii1-1,jj1-1,vv1,ii2-1,jj2-1,vv2,m,n,k)
+    SparseTensor(ii3, jj3, vv3, m, k, is_diag=s1._diag&&s2._diag)
 end

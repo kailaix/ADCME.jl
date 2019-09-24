@@ -1,0 +1,13 @@
+SparseMatMul
+int64 ii1(?)
+int64 jj1(?)
+double vv1(?)
+int64 ii2(?)
+int64 jj2(?)
+double vv2(?)
+int64 m()
+int64 n()
+int64 k()
+int64 ii3(?) -> output
+int64 jj3(?) -> output
+double vv3(?) -> output
