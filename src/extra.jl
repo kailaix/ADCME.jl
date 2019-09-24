@@ -114,9 +114,9 @@ import tensorflow as tf
 lib$$fn_name = tf.load_op_library($oplibpath)
 @tf.custom_gradient
 def $$fn_name(*args):
-    u = lib$$fn_name.__getattribute__($opname)(*args)
+    u = lib$$fn_name.$$opname(*args)
     def grad(dy):
-        return lib$$fn_name.__getattribute__($opname_grad)(dy, u, *args)
+        return lib$$fn_name.$$opname_grad(dy, u, *args)
     return u, grad
 """
         s = py"$$fn_name"

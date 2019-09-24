@@ -110,3 +110,28 @@ end
         @test norm(run(sess, o)-[-1;1])<1e-6
     end
 end
+
+@testset "sparse mat mul" begin
+    @test_skip begin
+        A = sprand(10,5,0.3)
+        B = sprand(5,20,0.3)
+        C = A*B
+        CC = SparseTensor(A)*SparseTensor(B)
+        C_ = run(sess, CC)
+        @test C_≈C
+
+        A = spdiagm(0=>[1.;2.;3;4;5])
+        B = sprand(5,20,0.3)
+        C = A*B
+        CC = SparseTensor(A)*SparseTensor(B)
+        C_ = run(sess, CC)
+        @test C_≈C
+
+        A = sprand(10,5,0.5)
+        B = spdiagm(0=>[1.;2.;3;4;5])
+        C = A*B
+        CC = SparseTensor(A)*SparseTensor(B)
+        C_ = run(sess, CC)
+        @test C_≈C
+    end
+end
