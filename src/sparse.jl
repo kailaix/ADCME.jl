@@ -299,5 +299,5 @@ function Base.:*(s1::SparseTensor, s2::SparseTensor)
         mat_mul_fn = load_system_op(COLIB["sparse_diag_mat_mul"]...)
     end
     ii3, jj3, vv3 = mat_mul_fn(ii1-1,jj1-1,vv1,ii2-1,jj2-1,vv2,m,n,k)
-    SparseTensor(ii3, jj3, vv3, m, k)
+    SparseTensor(ii3, jj3, vv3, m, k, is_diag=s1._diag&&s2._diag)
 end
