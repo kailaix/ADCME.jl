@@ -135,3 +135,13 @@ end
         @test C_≈C
     end
 end
+
+@testset "spdiag" begin
+    p = rand(10)
+    A = spdiagm(0=>p)
+    B = spdiag(constant(p))
+    C = spdiag(10)
+    @test run(sess, B)≈A
+    @test B._diag
+    @test run(sess, C)≈spdiagm(0=>ones(10))
+end

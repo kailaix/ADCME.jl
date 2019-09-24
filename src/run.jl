@@ -9,7 +9,7 @@ init
 function Session(args...;kwargs...)
     config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth=true
-    tf.compat.v1.Session(args...;config=config, kwargs...)
+    @suppress tf.compat.v1.Session(args...;config=config, kwargs...)
 end
 
 function Base.:run(o::PyObject, fetches::Union{Nothing, PyObject, Array, Tuple}=nothing, args...; kwargs...)

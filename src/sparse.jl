@@ -48,7 +48,7 @@ function find(s::SparseTensor)
 end
 
 
-function Base.:copy(s::SparseTensor, )
+function Base.:copy(s::SparseTensor)
     t = SparseTensor(tf.SparseTensor(copy(s.o.indices), copy(s.o.values), s.o.dense_shape), copy(s.is_diag))
 end
 
@@ -119,7 +119,6 @@ end
 PyCall.:-(o::PyObject, s::SparseTensor) = o + (-s)
 PyCall.:-(s::SparseTensor, o::PyObject) = s + (-o)
 
-PyCall.:+(s::SparseTensor, o::PyObject) = s + (-o)
 Base.:+(s1::SparseTensor, s2::SparseTensor) = SparseTensor(tf.sparse.add(s1.o,s2.o), s1._diag&&s2._diag)
 Base.:-(s1::SparseTensor, s2::SparseTensor) = s1 + (-s2)
 
@@ -270,7 +269,7 @@ end
 Constructs a sparse identity matrix of size ``n\\times n``.
 """
 function spdiag(n::Int64)
-    SparseTensor(sparse(1:n, 1:n, ones(Float64, n)), true)
+    SparseTensor(sparse(1:n, 1:n, ones(Float64, n)))
 end
 
 """
@@ -279,6 +278,9 @@ end
 Constructs a sparse diagonal matrix where the diagonal entries are `o`
 """
 function spdiag(o::PyObject)
+    if length(size(o))!=1
+        error("ADCME: input `o` must be a vector")
+    end
     ii = collect(1:length(o))
     SparseTensor(ii, ii, o, length(o), length(o), is_diag=true)
 end
@@ -301,3 +303,14 @@ function Base.:*(s1::SparseTensor, s2::SparseTensor)
     ii3, jj3, vv3 = mat_mul_fn(ii1-1,jj1-1,vv1,ii2-1,jj2-1,vv2,m,n,k)
     SparseTensor(ii3, jj3, vv3, m, k, is_diag=s1._diag&&s2._diag)
 end
+
+
+# missing is treated as zeros
+Base.:+(s1::SparseTensor, s2::Missing) = s1
+Base.:-(s1::SparseTensor, s2::Missing) = s1
+Base.:*(s1::SparseTensor, s2::Missing) = missing
+Base.:/(s1::SparseTensor, s2::Missing) = missing
+Base.:-(s1::Missing, s2::SparseTensor) = -s2
+Base.:+(s1::Missing, s2::SparseTensor) = s2
+Base.:*(s1::Missing, s2::SparseTensor) = missing
+Base.:/(s1::Missing, s2::SparseTensor) = missing

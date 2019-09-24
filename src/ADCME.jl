@@ -8,9 +8,11 @@ module ADCME
     TRAINABLE_VARIABLES,
     UPDATE_OPS
     
+    using Suppressor
     using PyCall
     using Random
     using LinearAlgebra
+    
 
     tf = PyNULL()
     tfp = PyNULL()
@@ -35,11 +37,11 @@ module ADCME
     
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
-        copy!(tf, pyimport("tensorflow"))
-        copy!(tfops, pyimport("tensorflow.python.framework.ops"))
-        copy!(tfp, pyimport("tensorflow_probability"))
-        copy!(gradients_impl, pyimport("tensorflow.python.ops.gradients_impl"))
-        copy!(pickle, pyimport("pickle"))
+        copy!(tf, (@suppress pyimport("tensorflow")))
+        copy!(tfops, (@suppress pyimport("tensorflow.python.framework.ops")))
+        copy!(tfp, (@suppress pyimport("tensorflow_probability")))
+        copy!(gradients_impl, (@suppress pyimport("tensorflow.python.ops.gradients_impl")))
+        copy!(pickle, (@suppress pyimport("pickle")))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
