@@ -145,3 +145,16 @@ end
     @test B._diag
     @test run(sess, C)≈spdiagm(0=>ones(10))
 end
+
+@testset "sparse indexing" begin
+    @test_skip begin
+        i1 = unique(rand(1:20,3))
+        j1 = unique(rand(1:30,3))
+        A = sprand(20,30,0.3)
+        Ad = Array(A[i1, j1])
+        B = SparseTensor(A)
+        Bd = Array(B[i1, j1])
+        Bd_ = run(sess, Bd)
+        @test Ad≈Bd_
+    end
+end

@@ -29,7 +29,8 @@ module ADCME
         "set_tensor_flow_timer"=>("Timer", "libTensorFlowTimer", "set_tensor_flow_timer", false),
         "sparse_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
         "diag_sparse_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
-        "sparse_diag_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false)
+        "sparse_diag_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
+        "sparse_indexing"=>("SparseIndexing", "libSparseIndexing", "sparse_indexing", false)
     )
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")

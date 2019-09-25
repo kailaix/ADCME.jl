@@ -114,7 +114,13 @@ function PyCall.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
     end
 end
 
-PyCall.:length(o::PyObject) = prod(size(o))
+function PyCall.:length(o::PyObject) 
+    if any(isnothing.(size(o)))
+        return nothing
+    else
+        return prod(size(o))
+    end
+end
 
 """
 gradients compute the gradients of ys w.r.t xs
@@ -305,8 +311,10 @@ end
 function _to_range_array(o::PyObject, i::Union{Int64, Colon, Array{Bool,1},BitArray{1},  UnitRange{Int64}, Array{Int64,1}, StepRange{Int64, Int64}})
     if typeof(i)==Int64
         return [i]
-    elseif typeof(i)==Colon
-        return 1:size(o,1)
+    elseif typeof(i)==Colon 
+        return collect(1:size(o,1))
+    elseif typeof(i)<:StepRange || typeof(i)<:UnitRange
+        return collect(i)
     elseif typeof(i)==Array{Bool,1}|| typeof(i)==BitArray{1}
         return findall(i)
     else

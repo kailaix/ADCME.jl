@@ -4,6 +4,9 @@ export SparseTensor, SparseAssembler, spdiag, find
 mutable struct SparseTensor
     o::PyObject
     _diag::Bool
+    function SparseTensor(o::PyObject, _diag::Union{Missing,Bool}=missing)
+        new(o, _diag)
+    end
 end
 
 """
@@ -85,7 +88,9 @@ end
 
 function Base.:show(io::IO, s::SparseTensor)
     shape = size(s)
-    print(io, "SparseTensor($(shape[1]), $(shape[2]))")
+    s1 = shape[1]===nothing ? "?" : shape[1]
+    s2 = shape[2]===nothing ? "?" : shape[2]
+    print(io, "SparseTensor($s1, $s2)")
 end
 
 function Base.:run(o::PyObject, S::SparseTensor, args...; kwargs...)
@@ -162,14 +167,25 @@ Base.:*(s::SparseTensor, o::Real) = o*s
 Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]), false)
 Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]), false)
 
-function getindex(s::SparseTensor, i1::Union{Colon, Array{T,1}, UnitRange{T}},
-    i2::Union{Colon, Array{T,1},UnitRange{T}}) where T<:Integer
-    i1 = _to_range_array(s.o, i1)
-    i2 = _to_range_array(s.o, i2)
+function Base.:lastindex(o::SparseTensor, i::Int64)
+    return size(o,i)
+end
 
-    start_ = [i1[1];i2[1]] .- 1
-    size_ = [length(i1);length(i2)]
-    SparseTensor(tf.sparse.slice(s.o, start_, size_), false)
+function Base.:getindex(s::SparseTensor, i1::Union{Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Colon, UnitRange{T}, PyObject,Array{T,1}}) where {S<:Real,T<:Real}
+    if isa(i1, UnitRange) || isa(i1, StepRange); i1 = collect(i1); end
+    if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
+    if isa(i1, Colon); i1 = collect(1:lastindex(s,1)); end
+    if isa(i2, Colon); i2 = collect(1:lastindex(s,2)); end
+    m_, n_ = length(i1), length(i2)
+    i1 = convert_to_tensor(i1, dtype=Int64)
+    i2 = convert_to_tensor(i2, dtype=Int64)
+    ii1, jj1, vv1 = find(s)
+    m = tf.convert_to_tensor(s.o.shape[1],dtype=tf.int64)
+    n = tf.convert_to_tensor(s.o.shape[2],dtype=tf.int64)
+    ss = load_system_op(COLIB["sparse_indexing"]...)
+    ii2, jj2, vv2 = ss(ii1,jj1,vv1,m,n,i1,i2)
+    SparseTensor(ii2, jj2, vv2, m_, n_)
 end
 
 function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
