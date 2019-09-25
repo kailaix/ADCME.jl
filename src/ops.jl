@@ -56,7 +56,8 @@ leaky_relu,
 fft, 
 ifft,
 I,
-svd
+svd,
+vector
 
 
 
@@ -634,3 +635,23 @@ function Base.:findall(o::PyObject)
         res'[1,:]
     end
 end 
+
+"""
+    vector(i::Union{Array{T}, PyObject, UnitRange, StepRange}, v::Union{Array{Float64},PyObject},s::Union{Int64,PyObject})
+
+Returns a vector `V` with length `s` such that
+```
+V[i] = v
+```
+"""
+function vector(i::Union{Array{T}, PyObject, UnitRange, StepRange}, v::Union{Array{Float64},PyObject},
+                 s::Union{Int64,PyObject}) where T<:Integer
+    if isa(i, UnitRange) || isa(i, StepRange)
+        i = collect(i)
+    end
+    i = convert_to_tensor(i)
+    s = convert_to_tensor(s)
+    i = reshape(i - 1,:,1)
+    s = reshape(s, 1)
+    tf.scatter_nd(i, v, s)
+end
