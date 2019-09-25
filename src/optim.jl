@@ -11,7 +11,7 @@ ScipyOptimizerMinimize,
 BFGS!,
 CustomOptimizer,
 newton_raphson,
-LCGradients
+NonlinearConstrainedProblem
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -258,7 +258,7 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
                 r = read(ta_r, i-1)
                 r_ = read(ta_r, i-2)
                 tol = norm(r)
-                rel_tol = norm(r-r_)/norm(r_)
+                rel_tol = abs(norm(r)-norm(r_))/norm(r_)
                 if options["verbose"]
                     op = tf.print("Iteration =",i-1, "| Tol =", tol, "( $(options["tol"]) )", "| Rel_Tol =", rel_tol, 
                         "( $(options["rtol"]) )", summarize=-1)
@@ -335,7 +335,7 @@ end
 
 
 @doc raw"""
-    LCGradients(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}) 
+    NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
 
 Computes the gradients ``\frac{\partial L}{\partial \theta}``
 ```math
@@ -344,6 +344,7 @@ Computes the gradients ``\frac{\partial L}{\partial \theta}``
 \mathrm{s.t.} & \ F(\theta, u) = 0
 \end{align}
 ```
+`u0` is the initial guess for the numerical solution `u`, see [`newton_raphson`](@ref).
 
 Caveats:
 Assume `r, A = f(θ, u)` and `θ` are the unknown parameters,
@@ -354,12 +355,14 @@ It returns a tuple (`L`: loss, `C`: constraints, and `Graidents`)
 ```math
 \left(L(u), u, \frac{\partial L}{\partial θ}\right)
 ```
+
 """
-function LCGradients(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}})
-    nr = newton_raphson(f, u0, θ)
+function NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
+    nr = newton_raphson(f, u0, θ, options = options)
     r, A = f(θ, nr.x)
     l = L(nr.x)
-    g = A\gradients(l, nr.x)
+    top_grad = tf.convert_to_tensor(gradients(l, nr.x))
+    g = A\top_grad
     g = stop_gradient(g) # preventing gradients backprop
     l, nr.x, -gradients(sum(r*g), θ)
 end

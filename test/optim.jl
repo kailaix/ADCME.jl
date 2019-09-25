@@ -101,7 +101,7 @@ end
     end
 end
 
-@testset "LCGradients" begin
+@testset "NonlinearConstrainedProblem" begin
     @test_skip begin
         θ = Variable(1.8*ones(3))
         u0 = ones(3)
@@ -113,7 +113,7 @@ end
         function L1(u)
             return sum((u-u0)^2)
         end
-        l, u, g = LCGradients(f1,L1,θ,zeros(3))
+        l, u, g = NonlinearConstrainedProblem(f1,L1,θ,zeros(3))
         # the negative gradients and vars are (-g, θ)
         opt_ = AdamOptimizer(1e-1).apply_gradients([(g, θ)])
         init(sess)
@@ -123,7 +123,7 @@ end
         @test norm(run(sess, θ)-2.0*ones(3))<1e-8
 
         function value_and_gradients_function(θ)
-            l, u, g = LCGradients(f1,L1,θ,zeros(3))
+            l, u, g = NonlinearConstrainedProblem(f1,L1,θ,zeros(3))
             l, g
         end
         results = BFGS!(value_and_gradients_function, zeros(3))
