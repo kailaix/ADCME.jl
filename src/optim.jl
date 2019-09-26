@@ -206,7 +206,7 @@ end
 
 struct NRResult
     x::Union{PyObject, Array{Float64}} # final solution
-    res::Union{PyObject, Array{Float64, 2}} # residual
+    res::Union{PyObject, Array{Float64, 1}} # residual
     u::Union{PyObject, Array{Float64, 2}} # solution history
     converged::Union{PyObject, Bool} # whether it converges
     iter::Union{PyObject, Int64} # number of iterations
@@ -252,13 +252,12 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     u = convert_to_tensor(u0)
 
     function condition(i,  ta_r, ta_u)
+        if options["verbose"]; @info "(2/4)Parsing Condition..."; end
         if_else(tf.math.logical_and(tf.equal(i,2), tf.less(i, options["max_iter"]+1)), 
             constant(true),
             ()->begin
-                r = read(ta_r, i-1)
-                r_ = read(ta_r, i-2)
-                tol = norm(r)
-                rel_tol = abs(norm(r)-norm(r_))/norm(r_)
+                tol = read(ta_r, i-1)
+                rel_tol = read(ta_r, i-2)
                 if options["verbose"]
                     op = tf.print("Iteration =",i-1, "| Tol =", tol, "( $(options["tol"]) )", "| Rel_Tol =", rel_tol, 
                         "( $(options["rtol"]) )", summarize=-1)
@@ -272,20 +271,20 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
         )
     end
     function body(i, ta_r, ta_u)
+        if options["verbose"]; @info "(3/4)Parsing Main Loop..."; end
         u_ = read(ta_u, i-1)
         r_, J = f(θ, u_)
+        ta_r = write(ta_r, i, norm(r_))
         δ = J\r_
         new_u = u_ - δ
-        # op = tf.print(i,"==>\n", u_, "\n", δ,"\n", new_u, summarize=-1)
+        # op = tf.print(i,"==>\n", u_, "\n", norm(r_),"\n", summarize=-1)
         # i = bind(i, op)
-        ta_u = write(ta_u, i, new_u)    
-        r, _ = f(θ, new_u)  
-        ta_r = write(ta_r, i, r)  
+        ta_u = write(ta_u, i, new_u)     
         i+1, ta_r, ta_u
     end
     
     
-    
+    if options["verbose"]; @info "(1/4)Intializing TensorArray..."; end
     r0, _ = f(θ, u)
     tol0 = norm(r0)
     if options["verbose"]
@@ -297,11 +296,12 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     ta_r = TensorArray(options["max_iter"])
     ta_u = TensorArray(options["max_iter"])
     ta_u = write(ta_u, 1, u)
-    ta_r = write(ta_r, 1, r0)
+    ta_r = write(ta_r, 1, tol0)
     i = constant(2, dtype=Int32)
     i_, ta_r_, ta_u_ = while_loop(condition, body, [i, ta_r, ta_u])
     r_out, u_out = stack(ta_r_), stack(ta_u_)
     
+    if options["verbose"]; @info "(4/4)Postprocessing Results..."; end
     sol = if_else(
         tf.less(tol0,options["tol"]),
         u,
@@ -309,18 +309,18 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     )
     res = if_else(
         tf.less(tol0,options["tol"]),
-        reshape(r0, 1, length(r0)),
-        tf.slice(r_out, [0; 0], [i_-1; length(r0)])
+        reshape(tol0, 1),
+        tf.slice(r_out, [1],[i_-2])
     )
     u_his = if_else(
         tf.less(tol0,options["tol"]),
         reshape(u, 1, length(u)),
-        tf.slice(u_out, [0; 0], [i_-1; length(u)])
+        tf.slice(u_out, [0; 0], [i_-2; length(u)])
     )
     iter = if_else(
         tf.less(tol0,options["tol"]),
         constant(1),
-        cast(Int64,i_)-1
+        cast(Int64,i_)-2
     )
     converged = if_else(
         tf.less(i_, options_["max_iter"]),
@@ -330,7 +330,7 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     # it makes no sense to take the gradients
     sol = stop_gradient(sol)
     res = stop_gradient(res)
-    NRResult(sol, res', u_his', converged, iter)
+    NRResult(sol, res, u_his', converged, iter)
 end
 
 

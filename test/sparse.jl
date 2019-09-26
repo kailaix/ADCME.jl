@@ -147,6 +147,13 @@ end
     @test run(sess, C)≈spdiagm(0=>ones(10))
 end
 
+@testset "spzero" begin
+    q = spzero(10)
+    @test run(sess, q)≈sparse(zeros(10,10))
+    q = spzero(10,20)
+    @test run(sess, q)≈sparse(zeros(10,20))
+end
+
 @testset "sparse indexing" begin
     @test_skip begin
         i1 = unique(rand(1:20,3))

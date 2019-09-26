@@ -1,5 +1,5 @@
 using SparseArrays
-export SparseTensor, SparseAssembler, spdiag, find
+export SparseTensor, SparseAssembler, spdiag, find, spzero
 
 mutable struct SparseTensor
     o::PyObject
@@ -299,6 +299,21 @@ function spdiag(o::PyObject)
     end
     ii = collect(1:length(o))
     SparseTensor(ii, ii, o, length(o), length(o), is_diag=true)
+end
+
+"""
+    spzero(m::Int64, n::Union{Missing, Int64}=missing)
+
+Constructs a empty sparse matrix of size ``m\\times n``. `n=m` if `n` is `missing`
+"""
+function spzero(m::Int64, n::Union{Missing, Int64}=missing)
+    if ismissing(n)
+        n = m
+    end
+    ii = Int64[]
+    jj = Int64[]
+    vv = Float64[]
+    SparseTensor(ii, jj, vv, m, n, is_diag=true)
 end
 
 
