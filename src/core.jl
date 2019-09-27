@@ -26,7 +26,7 @@ reset_default_graph() = tf.compat.v1.reset_default_graph()
 
 Returns the collection with name `name`. If `name` is `missing`, returns all the trainable variables.
 """
-function get_collection(name::Union{String, Missing})
+function get_collection(name::Union{String, Missing}=missing)
     if ismissing(name)
         res = tf.compat.v1.get_collection(TRAINABLE_VARIABLES)
     else

@@ -280,3 +280,10 @@ end
     A2 = r.U*diagm(r.S)*r.Vt 
     @test run(sess, A2)≈A
 end
+
+@testset "vector" begin
+    m = zeros(20)
+    m[2:11] = rand(10)
+    v = vector(2:11, m[2:11], 20)
+    @test run(sess, v)≈m
+end

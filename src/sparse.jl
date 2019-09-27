@@ -1,9 +1,12 @@
 using SparseArrays
-export SparseTensor, SparseAssembler, spdiag, find
+export SparseTensor, SparseAssembler, spdiag, find, spzero
 
 mutable struct SparseTensor
     o::PyObject
     _diag::Bool
+    function SparseTensor(o::PyObject, _diag::Union{Missing,Bool}=missing)
+        new(o, _diag)
+    end
 end
 
 """
@@ -48,7 +51,7 @@ function find(s::SparseTensor)
 end
 
 
-function Base.:copy(s::SparseTensor, )
+function Base.:copy(s::SparseTensor)
     t = SparseTensor(tf.SparseTensor(copy(s.o.indices), copy(s.o.values), s.o.dense_shape), copy(s.is_diag))
 end
 
@@ -85,7 +88,9 @@ end
 
 function Base.:show(io::IO, s::SparseTensor)
     shape = size(s)
-    print(io, "SparseTensor($(shape[1]), $(shape[2]))")
+    s1 = shape[1]===nothing ? "?" : shape[1]
+    s2 = shape[2]===nothing ? "?" : shape[2]
+    print(io, "SparseTensor($s1, $s2)")
 end
 
 function Base.:run(o::PyObject, S::SparseTensor, args...; kwargs...)
@@ -119,7 +124,6 @@ end
 PyCall.:-(o::PyObject, s::SparseTensor) = o + (-s)
 PyCall.:-(s::SparseTensor, o::PyObject) = s + (-o)
 
-PyCall.:+(s::SparseTensor, o::PyObject) = s + (-o)
 Base.:+(s1::SparseTensor, s2::SparseTensor) = SparseTensor(tf.sparse.add(s1.o,s2.o), s1._diag&&s2._diag)
 Base.:-(s1::SparseTensor, s2::SparseTensor) = s1 + (-s2)
 
@@ -163,14 +167,25 @@ Base.:*(s::SparseTensor, o::Real) = o*s
 Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]), false)
 Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]), false)
 
-function getindex(s::SparseTensor, i1::Union{Colon, Array{T,1}, UnitRange{T}},
-    i2::Union{Colon, Array{T,1},UnitRange{T}}) where T<:Integer
-    i1 = _to_range_array(s.o, i1)
-    i2 = _to_range_array(s.o, i2)
+function Base.:lastindex(o::SparseTensor, i::Int64)
+    return size(o,i)
+end
 
-    start_ = [i1[1];i2[1]] .- 1
-    size_ = [length(i1);length(i2)]
-    SparseTensor(tf.sparse.slice(s.o, start_, size_), false)
+function Base.:getindex(s::SparseTensor, i1::Union{Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Colon, UnitRange{T}, PyObject,Array{T,1}}) where {S<:Real,T<:Real}
+    if isa(i1, UnitRange) || isa(i1, StepRange); i1 = collect(i1); end
+    if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
+    if isa(i1, Colon); i1 = collect(1:lastindex(s,1)); end
+    if isa(i2, Colon); i2 = collect(1:lastindex(s,2)); end
+    m_, n_ = length(i1), length(i2)
+    i1 = convert_to_tensor(i1, dtype=Int64)
+    i2 = convert_to_tensor(i2, dtype=Int64)
+    ii1, jj1, vv1 = find(s)
+    m = tf.convert_to_tensor(s.o.shape[1],dtype=tf.int64)
+    n = tf.convert_to_tensor(s.o.shape[2],dtype=tf.int64)
+    ss = load_system_op(COLIB["sparse_indexing"]...)
+    ii2, jj2, vv2 = ss(ii1,jj1,vv1,m,n,i1,i2)
+    SparseTensor(ii2, jj2, vv2, m_, n_)
 end
 
 function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
@@ -270,7 +285,7 @@ end
 Constructs a sparse identity matrix of size ``n\\times n``.
 """
 function spdiag(n::Int64)
-    SparseTensor(sparse(1:n, 1:n, ones(Float64, n)), true)
+    SparseTensor(sparse(1:n, 1:n, ones(Float64, n)))
 end
 
 """
@@ -279,8 +294,26 @@ end
 Constructs a sparse diagonal matrix where the diagonal entries are `o`
 """
 function spdiag(o::PyObject)
+    if length(size(o))!=1
+        error("ADCME: input `o` must be a vector")
+    end
     ii = collect(1:length(o))
     SparseTensor(ii, ii, o, length(o), length(o), is_diag=true)
+end
+
+"""
+    spzero(m::Int64, n::Union{Missing, Int64}=missing)
+
+Constructs a empty sparse matrix of size ``m\\times n``. `n=m` if `n` is `missing`
+"""
+function spzero(m::Int64, n::Union{Missing, Int64}=missing)
+    if ismissing(n)
+        n = m
+    end
+    ii = Int64[]
+    jj = Int64[]
+    vv = Float64[]
+    SparseTensor(ii, jj, vv, m, n, is_diag=true)
 end
 
 
@@ -301,3 +334,14 @@ function Base.:*(s1::SparseTensor, s2::SparseTensor)
     ii3, jj3, vv3 = mat_mul_fn(ii1-1,jj1-1,vv1,ii2-1,jj2-1,vv2,m,n,k)
     SparseTensor(ii3, jj3, vv3, m, k, is_diag=s1._diag&&s2._diag)
 end
+
+
+# missing is treated as zeros
+Base.:+(s1::SparseTensor, s2::Missing) = s1
+Base.:-(s1::SparseTensor, s2::Missing) = s1
+Base.:*(s1::SparseTensor, s2::Missing) = missing
+Base.:/(s1::SparseTensor, s2::Missing) = missing
+Base.:-(s1::Missing, s2::SparseTensor) = -s2
+Base.:+(s1::Missing, s2::SparseTensor) = s2
+Base.:*(s1::Missing, s2::SparseTensor) = missing
+Base.:/(s1::Missing, s2::SparseTensor) = missing

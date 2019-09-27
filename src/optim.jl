@@ -9,7 +9,9 @@ minimize,
 ScipyOptimizerInterface,
 ScipyOptimizerMinimize,
 BFGS!,
-CustomOptimizer
+CustomOptimizer,
+newton_raphson,
+NonlinearConstrainedProblem
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -191,5 +193,176 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
     out
 end
 
+"""
+    BFGS!(value_and_gradients_function::Function, initial_position::Union{PyObject, Array{Float64}}, max_iter::Int64=50, args...;kwargs...)
 
- 
+Applies the BFGS optimizer to `value_and_gradients_function`
+"""
+function BFGS!(value_and_gradients_function::Function, 
+    initial_position::Union{PyObject, Array{Float64}}, max_iter::Int64=50, args...;kwargs...)
+    tfp.optimizer.bfgs_minimize(value_and_gradients_function, 
+        initial_position=initial_position, args...;max_iterations=max_iter, kwargs...)[5]
+end
+
+struct NRResult
+    x::Union{PyObject, Array{Float64}} # final solution
+    res::Union{PyObject, Array{Float64, 1}} # residual
+    u::Union{PyObject, Array{Float64, 2}} # solution history
+    converged::Union{PyObject, Bool} # whether it converges
+    iter::Union{PyObject, Int64} # number of iterations
+end
+
+function Base.:run(sess::PyObject, nr::NRResult)
+    NRResult(run(sess, [nr.x, nr.res, nr.u, nr.converged, nr.iter])...)
+end
+
+"""
+    newton_raphson(f::Function, u::Union{Array,PyObject}, θ::Union{Missing,PyObject}; options::Union{Dict{String, T}, Missing}=missing)
+
+Newton Raphson solver for solving a nonlinear equation. 
+`f` has the signature `f(u::PyObject, θ::Union{Missing,PyObject})->(r::PyObject, A::Union{PyObject,SparseTensor})`
+where `r` is the residual and `A` is the Jacobian matrix. 
+`θ` are external parameters.
+`u0` is the initial guess for `u`
+`options`:
+- "max_iter": maximum number of iterations (default=100)
+- "verbose": whether details are printed (default=false)
+- "rtol": relative tolerance for termination (default=1e-12)
+- "tol": absolute tolerance for termination (default=1e-12)
+"""
+function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject}=missing; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+    options_ = Dict(
+            "max_iter"=>100,
+            "verbose"=>false,
+            "rtol"=>1e-12,
+            "tol"=>1e-12
+        )
+    if !ismissing(options)
+        for k in keys(options)
+            options_[k] = options[k]
+        end
+    end
+    options = options_
+    if length(size(u0))!=1
+        error("ADCME: Initial guess must be a vector")
+    end
+    if length(u0)===nothing
+        error("ADCME: The length of the initial guess must be determined at compilation.")
+    end
+    u = convert_to_tensor(u0)
+
+    function condition(i,  ta_r, ta_u)
+        if options["verbose"]; @info "(2/4)Parsing Condition..."; end
+        if_else(tf.math.logical_and(tf.equal(i,2), tf.less(i, options["max_iter"]+1)), 
+            constant(true),
+            ()->begin
+                tol = read(ta_r, i-1)
+                rel_tol = read(ta_r, i-2)
+                if options["verbose"]
+                    op = tf.print("Iteration =",i-1, "| Tol =", tol, "( $(options["tol"]) )", "| Rel_Tol =", rel_tol, 
+                        "( $(options["rtol"]) )", summarize=-1)
+                    tol = bind(tol, op)
+                end
+                return tf.math.logical_and(
+                    tf.math.logical_and(tol>=options["tol"], rel_tol>=options["rtol"]),
+                    i<=options["max_iter"]
+                )
+            end
+        )
+    end
+    function body(i, ta_r, ta_u)
+        if options["verbose"]; @info "(3/4)Parsing Main Loop..."; end
+        u_ = read(ta_u, i-1)
+        r_, J = f(θ, u_)
+        ta_r = write(ta_r, i, norm(r_))
+        δ = J\r_
+        new_u = u_ - δ
+        # op = tf.print(i,"==>\n", u_, "\n", norm(r_),"\n", summarize=-1)
+        # i = bind(i, op)
+        ta_u = write(ta_u, i, new_u)     
+        i+1, ta_r, ta_u
+    end
+    
+    
+    if options["verbose"]; @info "(1/4)Intializing TensorArray..."; end
+    r0, _ = f(θ, u)
+    tol0 = norm(r0)
+    if options["verbose"]
+        op = tf.print("Iteration = 1", "| Tol =", tol0, "( $(options["tol"]) )", "| Rel_Tol = ---", 
+        "( $(options["rtol"]) )", summarize=-1)
+        tol0 = bind(tol0, op)
+    end
+
+    ta_r = TensorArray(options["max_iter"])
+    ta_u = TensorArray(options["max_iter"])
+    ta_u = write(ta_u, 1, u)
+    ta_r = write(ta_r, 1, tol0)
+    i = constant(2, dtype=Int32)
+    i_, ta_r_, ta_u_ = while_loop(condition, body, [i, ta_r, ta_u])
+    r_out, u_out = stack(ta_r_), stack(ta_u_)
+    
+    if options["verbose"]; @info "(4/4)Postprocessing Results..."; end
+    sol = if_else(
+        tf.less(tol0,options["tol"]),
+        u,
+        u_out[i_-1]
+    )
+    res = if_else(
+        tf.less(tol0,options["tol"]),
+        reshape(tol0, 1),
+        tf.slice(r_out, [1],[i_-2])
+    )
+    u_his = if_else(
+        tf.less(tol0,options["tol"]),
+        reshape(u, 1, length(u)),
+        tf.slice(u_out, [0; 0], [i_-2; length(u)])
+    )
+    iter = if_else(
+        tf.less(tol0,options["tol"]),
+        constant(1),
+        cast(Int64,i_)-2
+    )
+    converged = if_else(
+        tf.less(i_, options_["max_iter"]),
+        constant(true),
+        constant(false)
+    )
+    # it makes no sense to take the gradients
+    sol = stop_gradient(sol)
+    res = stop_gradient(res)
+    NRResult(sol, res, u_his', converged, iter)
+end
+
+
+@doc raw"""
+    NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
+
+Computes the gradients ``\frac{\partial L}{\partial \theta}``
+```math
+\begin{align}
+\min & \ L(u)\\ 
+\mathrm{s.t.} & \ F(\theta, u) = 0
+\end{align}
+```
+`u0` is the initial guess for the numerical solution `u`, see [`newton_raphson`](@ref).
+
+Caveats:
+Assume `r, A = f(θ, u)` and `θ` are the unknown parameters,
+`gradients(r, θ)` must be defined (backprop works properly)
+
+Returns:
+It returns a tuple (`L`: loss, `C`: constraints, and `Graidents`)
+```math
+\left(L(u), u, \frac{\partial L}{\partial θ}\right)
+```
+
+"""
+function NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
+    nr = newton_raphson(f, u0, θ, options = options)
+    r, A = f(θ, nr.x)
+    l = L(nr.x)
+    top_grad = tf.convert_to_tensor(gradients(l, nr.x))
+    g = A\top_grad
+    g = stop_gradient(g) # preventing gradients backprop
+    l, nr.x, -gradients(sum(r*g), θ)
+end

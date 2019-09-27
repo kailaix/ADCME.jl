@@ -1,0 +1,12 @@
+SparseIndexing
+int64 ii1(?)
+int64 jj1(?)
+double vv1(?)
+int64 m()
+int64 n()
+int64 ii(?)
+int64 jj(?)
+int64 ii2(?) -> output
+int64 jj2(?) -> output
+double vv2(?) -> output
+

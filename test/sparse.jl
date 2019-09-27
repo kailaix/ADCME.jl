@@ -61,12 +61,13 @@ end
 end
 
 @testset "sparse_indexing" begin
-    B1 = sprand(10,10,0.3)
-    B = SparseTensor(B1)
-    @test run(sess, B[2:3,2:3])≈B1[2:3,2:3]
-    @test run(sess, B[2:3,:])≈B1[2:3,:]
-    @test run(sess, B[:,2:3])≈B1[:,2:3]
-
+    @test_skip begin
+        B1 = sprand(10,10,0.3)
+        B = SparseTensor(B1)
+        @test run(sess, B[2:3,2:3])≈B1[2:3,2:3]
+        @test run(sess, B[2:3,:])≈B1[2:3,:]
+        @test run(sess, B[:,2:3])≈B1[:,2:3]
+    end
 end
 
 @testset "sparse_solve" begin
@@ -133,5 +134,35 @@ end
         CC = SparseTensor(A)*SparseTensor(B)
         C_ = run(sess, CC)
         @test C_≈C
+    end
+end
+
+@testset "spdiag" begin
+    p = rand(10)
+    A = spdiagm(0=>p)
+    B = spdiag(constant(p))
+    C = spdiag(10)
+    @test run(sess, B)≈A
+    @test B._diag
+    @test run(sess, C)≈spdiagm(0=>ones(10))
+end
+
+@testset "spzero" begin
+    q = spzero(10)
+    @test run(sess, q)≈sparse(zeros(10,10))
+    q = spzero(10,20)
+    @test run(sess, q)≈sparse(zeros(10,20))
+end
+
+@testset "sparse indexing" begin
+    @test_skip begin
+        i1 = unique(rand(1:20,3))
+        j1 = unique(rand(1:30,3))
+        A = sprand(20,30,0.3)
+        Ad = Array(A[i1, j1])
+        B = SparseTensor(A)
+        Bd = Array(B[i1, j1])
+        Bd_ = run(sess, Bd)
+        @test Ad≈Bd_
     end
 end
