@@ -1,5 +1,5 @@
 using SparseArrays
-export SparseTensor, SparseAssembler, spdiag, find, spzero
+export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse
 
 mutable struct SparseTensor
     o::PyObject
@@ -35,6 +35,15 @@ function SparseTensor(I::Union{PyObject,Array{T,1}}, J::Union{PyObject,Array{T,1
     shape = [m;n]
     sp = tf.SparseTensor(indices, value, shape)
     SparseTensor(tf.sparse.reorder(sp), is_diag)
+end
+
+function dense_to_sparse(o::Union{Array, PyObject})
+    if isa(o, Array)
+        return SparseTensor(sparse(o))
+    else
+        idx = tf.where(tf.not_equal(o, 0))
+        return SparseTensor(tf.SparseTensor(idx, tf.gather_nd(o, idx), o.get_shape()), false)
+    end
 end
 
 """
@@ -127,7 +136,13 @@ PyCall.:-(s::SparseTensor, o::PyObject) = s + (-o)
 Base.:+(s1::SparseTensor, s2::SparseTensor) = SparseTensor(tf.sparse.add(s1.o,s2.o), s1._diag&&s2._diag)
 Base.:-(s1::SparseTensor, s2::SparseTensor) = s1 + (-s2)
 
-Base.:adjoint(s::SparseTensor) = SparseTensor(tf.sparse.transpose(s.o), s._diag)
+function Base.:adjoint(s::SparseTensor) 
+    indices = [s.o.indices'[2,:] s.o.indices'[1,:]]
+    sp = tf.SparseTensor(indices, s.o.values, (size(s,2), size(s,1)))
+    sp = tf.sparse.reorder(sp)
+    SparseTensor(sp, s._diag)
+end
+
 function PyCall.:*(s::SparseTensor, o::PyObject)
     flag = false
     if length(size(o))==1
@@ -345,3 +360,11 @@ Base.:-(s1::Missing, s2::SparseTensor) = -s2
 Base.:+(s1::Missing, s2::SparseTensor) = s2
 Base.:*(s1::Missing, s2::SparseTensor) = missing
 Base.:/(s1::Missing, s2::SparseTensor) = missing
+
+function Base.:sum(s::SparseTensor; dims::Union{Integer, Missing}=missing)
+    if ismissing(dims)
+        tf.sparse.reduce_sum(s.o)
+    else
+        tf.sparse.reduce_sum(s.o, axis=dims-1)
+    end
+end

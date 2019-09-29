@@ -2,6 +2,7 @@
 #include <eigen3/Eigen/IterativeLinearSolvers>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
+#include <eigen3/Eigen/SparseQR>
 #include <vector>
 #include <iostream>
 typedef Eigen::Map<const Eigen::MatrixXd> MapTypeConst;   // a read-only map
@@ -22,7 +23,7 @@ void forward(double *u, const int *ii, const int *jj, const double *vv, int nv, 
     A.resize(m, n);
     A.setFromTriplets(triplets.begin(), triplets.end());
 
-    Eigen::LeastSquaresConjugateGradient<SpMat> solver;
+    Eigen::SparseQR<SpMat,Eigen::COLAMDOrdering<int>> solver;
     solver.compute(A);
     Eigen::VectorXd x = solver.solve(rhs);
 

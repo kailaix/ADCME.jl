@@ -24,6 +24,7 @@ Conv3DTranspose,
 BatchNormalization,
 Dropout,
 ae,
+num_ae,
 ae_to_code,
 sparse_softmax_cross_entropy_with_logits
 
@@ -54,9 +55,9 @@ Dropout(args...;kwargs...) = tf.keras.layers.Dropout(args...;kwargs...)
 
 
 """
-ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
+    ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
 
-Create a neural network with intermediate numbers of neurons `output_dims`.
+Creates a neural network with intermediate numbers of neurons `output_dims`.
 """
 function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope::String = "default")
     if isa(x, Array)
@@ -78,6 +79,63 @@ function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope:
         net = squeeze(net)
     end
     return net
+end
+
+"""
+    ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject})
+
+Creates a neural network with intermediate numbers of neurons `output_dims`. The weights are given by `θ`
+"""
+function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject})
+    if isa(x, Array)
+        x = constant(x)
+    end
+    flag = false
+    if length(size(x))==1
+        x = reshape(x, length(x), 1)
+        flag = true
+    end
+    offset = 0
+    net = x
+    
+    output_dims = [size(x,2); output_dims]
+    for i = 1:length(output_dims)-2
+        m = output_dims[i]
+        n = output_dims[i+1]
+        net = net * reshape(θ[offset+1:offset+m*n], m, n)  + θ[offset+m*n+1:offset+m*n+n]
+        net = tanh(net)
+        offset += m*n+n
+    end
+    m = output_dims[end-1]
+    n = output_dims[end]
+    net = net * reshape(θ[offset+1:offset+m*n], m, n)  + θ[offset+m*n+1:offset+m*n+n]
+    offset += m*n+n
+
+    if offset!=length(θ)
+        error("ADCME: the weights and configuration does not match. Required $offset but given $(length(θ)).")
+    end
+    if flag && (size(net,2)==1)
+        net = squeeze(net)
+    end
+    return net
+end
+
+"""
+    num_ae(output_dims::Array{Int64})
+
+Estimates the number of weights for the neural network.
+"""
+function num_ae(output_dims::Array{Int64})
+    offset = 0
+    for i = 1:length(output_dims)-2
+        m = output_dims[i]
+        n = output_dims[i+1]
+        offset += m*n+n
+    end
+    m = output_dims[end-1]
+    n = output_dims[end]
+    offset += m*n+n
+    return offset
 end
 
 function ae_to_code(d::Dict, scope::String)

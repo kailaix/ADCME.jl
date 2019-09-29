@@ -12,15 +12,15 @@ function Session(args...;kwargs...)
     @suppress tf.compat.v1.Session(args...;config=config, kwargs...)
 end
 
-function Base.:run(o::PyObject, fetches::Union{Nothing, PyObject, Array{PyObject}}=nothing, args::Union{Nothing, PyObject, Array{PyObject}}...; kwargs...)
+function Base.:run(o::PyObject, fetches::Union{Nothing, PyObject, Array{PyObject}, Array{Any}, Tuple}=nothing, args::Union{Nothing, PyObject, Array{PyObject}}...; kwargs...)
     o.run(fetches, args...; kwargs...)
 end
 
-function Base.:run(o::PyObject, fetches::Union{PyObject, Array{PyObject}}, args::Pair{PyObject, T}...; kwargs...) where T
+function Base.:run(o::PyObject, fetches::Union{PyObject, Array{PyObject}, Array{Any}, Tuple}, args::Pair{PyObject, <:Any}...; kwargs...)
     o.run(fetches, feed_dict = Dict(args))
 end
 
-function Base.:run(o::PyObject, fetches::Union{PyObject, Array{PyObject,N} where N})
+function Base.:run(o::PyObject, fetches::Union{PyObject, Array{PyObject,N} where N, Array{Any}, Tuple})
     o.run(fetches)
 end
 

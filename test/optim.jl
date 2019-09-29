@@ -98,6 +98,18 @@ end
         nr = run(sess, nr)
         uval = nr.x
         @test norm(uval.^3+uval-u0)<1e-3
+
+        # least square
+        u0 = rand(10)
+        rs = rand(10)
+        function newton_raphson_f3(θ, u)
+            r = [u^2;u] - [rs.^2;rs]
+            r, [spdiag(2*u); spdiag(10)]
+        end
+        nr = newton_raphson(newton_raphson_f3, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
+        nr = run(sess, nr)
+        uval = nr.x
+        @test norm(uval-rs)<1e-3
     end
 end
 
@@ -122,6 +134,25 @@ end
         end
         @test norm(run(sess, θ)-2.0*ones(3))<1e-8
 
+
+        θ = constant(ones(1))
+        u0 = ones(3)
+        Random.seed!(233)
+        A = round.(rand(3, 3), digits=1)
+        t = zeros(3); t[1:2].=1.0
+        function f1(θ, u)
+            # r = u-sum(θ)^2-t*sum(θ)
+            # A = spdiag(length(u))
+            # r, A
+            # -t*sum(θ)
+            A*u-[sum(θ);sum(θ);constant(0.0)], constant(A)
+        end
+        function L1(u)
+            return sum(u)
+        end
+        verify_NonlinearConstrainedProblem(sess, f1,L1,θ,u0); 
+        close("all")
+
         function value_and_gradients_function(θ)
             l, u, g = NonlinearConstrainedProblem(f1,L1,θ,zeros(3))
             l, g
@@ -129,6 +160,26 @@ end
         results = BFGS!(value_and_gradients_function, zeros(3))
         u = run(sess, results)
         @test u≈[2.;2.;2.]
+    end
+end
+
+@testset "verify_jacobian" begin
+    @test_skip begin
+        u0 = rand(10)
+        function verify_jacobian_f(θ, u)
+            r = u^3+u - u0
+            r, spdiag(3u^2+1.0)
+        end
+        verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+
+        # least square
+        u0 = rand(10)
+        rs = rand(10)
+        function verify_jacobian_f(θ, u)
+            r = [u^2;u] - [rs;rs]
+            r, [spdiag(2*u); spdiag(10)]
+        end
+        verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
     end
 end
 

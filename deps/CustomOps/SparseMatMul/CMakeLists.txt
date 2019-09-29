@@ -29,6 +29,11 @@ endif()
 include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
 link_directories(${TF_LIB})
 
+
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
+
+
 add_library(SparseMatMul SHARED SparseMatMul.cpp)
 set_property(TARGET SparseMatMul PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(SparseMatMul ${TF_LIB_FILE} "${TORCH_LIBRARIES}")

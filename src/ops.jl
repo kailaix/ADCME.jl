@@ -358,7 +358,12 @@ function solve(matrix, rhs; kwargs...)
         flag = true
         rhs = reshape(rhs, size(rhs, 1), 1)
     end
-    ret = tf.linalg.solve(matrix, rhs; kwargs...)
+    if size(matrix,1)==size(matrix,2)
+        ret = tf.linalg.solve(matrix, rhs; kwargs...)
+    else
+        # @show matrix, rhs
+        ret = tf.linalg.lstsq(matrix, rhs;kwargs...)
+    end
     if flag
         ret = squeeze(ret, dims=2)
     end
