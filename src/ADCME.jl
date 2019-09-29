@@ -12,6 +12,7 @@ module ADCME
     using PyCall
     using Random
     using LinearAlgebra
+    using PyPlot
     
 
     tf = PyNULL()

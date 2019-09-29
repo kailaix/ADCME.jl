@@ -166,3 +166,18 @@ end
         @test Ad≈Bd_
     end
 end
+
+@testset "sum" begin
+    s = sprand(10,20,0.2)
+    S = SparseTensor(s)
+    @test run(sess, sum(S)) ≈ sum(s)
+    @test run(sess, sum(S,dims=1)) ≈ sum(Array(s),dims=1)[:]
+    @test run(sess, sum(S,dims=2)) ≈ sum(Array(s),dims=2)[:]
+end
+
+@testset "dense_to_sparse" begin
+    A = sprand(10,20,0.3)
+    B = Array(A)
+    @test run(sess, dense_to_sparse((B))) ≈ A
+    @test run(sess, dense_to_sparse(constant(B))) ≈ A
+end

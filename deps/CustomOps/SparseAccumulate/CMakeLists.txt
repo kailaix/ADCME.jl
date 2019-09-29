@@ -29,6 +29,9 @@ include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
 include_directories(${JULIA_INC} ${PYTHON_INC})
 link_directories(${TF_LIB} ${JULIA_LIB})
 
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
+
 add_library(SparseAccumulate SHARED SparseAccumulate.cpp)
 set_property(TARGET SparseAccumulate PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(SparseAccumulate ${TF_LIB_FILE} "${TORCH_LIBRARIES}")

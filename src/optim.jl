@@ -11,7 +11,9 @@ ScipyOptimizerMinimize,
 BFGS!,
 CustomOptimizer,
 newton_raphson,
-NonlinearConstrainedProblem
+NonlinearConstrainedProblem,
+verify_jacobian,
+verify_NonlinearConstrainedProblem
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -230,7 +232,7 @@ where `r` is the residual and `A` is the Jacobian matrix.
 - "rtol": relative tolerance for termination (default=1e-12)
 - "tol": absolute tolerance for termination (default=1e-12)
 """
-function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject}=missing; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject, Array{<:Real}}=missing; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
     options_ = Dict(
             "max_iter"=>100,
             "verbose"=>false,
@@ -334,6 +336,32 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
 end
 
 
+function verify_jacobian(sess::PyObject, f::Function, θ::Union{Array{Float64}, PyObject, Missing}, u0::Array{Float64}, args...)
+    u = placeholder(Float64, shape=[length(u0)])
+    L, J = f(θ, u)
+    L_ = run(sess, L, u=>u0, args...)
+    J_ = run(sess, J, u=>u0, args...)
+    v = rand(length(u0))
+    γs = 1.0 ./ 10 .^ (1:5)
+    v1 = Float64[]
+    v2 = Float64[]
+    for i = 1:5
+        L__ = run(sess, L, u=>u0+v*γs[i], args...)
+        push!(v1, norm(L__-L_))
+        push!(v2, norm(L__-L_-γs[i]*J_*v))
+    end
+    close("all")
+    loglog(γs, abs.(v1), "*-", label="finite difference")
+    loglog(γs, abs.(v2), "+-", label="automatic linearization")
+    loglog(γs, γs.^2 * 0.5*abs(v2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
+    loglog(γs, γs * 0.5*abs(v1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
+    plt.gca().invert_xaxis()
+    legend()
+    xlabel("\$\\gamma\$")
+    ylabel("Error")
+end
+
+
 @doc raw"""
     NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
 
@@ -357,12 +385,45 @@ It returns a tuple (`L`: loss, `C`: constraints, and `Graidents`)
 ```
 
 """
-function NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
+function NonlinearConstrainedProblem(f::Function, L::Function, θ::Union{Array{Float64,1},PyObject},
+     u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+    θ = convert_to_tensor(θ)
     nr = newton_raphson(f, u0, θ, options = options)
     r, A = f(θ, nr.x)
     l = L(nr.x)
     top_grad = tf.convert_to_tensor(gradients(l, nr.x))
+    A = A'
     g = A\top_grad
     g = stop_gradient(g) # preventing gradients backprop
-    l, nr.x, -gradients(sum(r*g), θ)
+    l, nr.x, tf.convert_to_tensor(-gradients(sum(r*g), θ))
+end
+
+function verify_NonlinearConstrainedProblem(sess::PyObject, f::Function, L::Function, θ::Union{PyObject,Array{Float64,1}, Float64}, 
+    u0::Union{PyObject, Array{Float64}}, args...; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+    if isa(θ, PyObject)
+        θ = run(sess, θ, args...)
+    end
+    x = placeholder(Float64, shape=[length(θ)])
+    l, u, g = NonlinearConstrainedProblem(f, L, x, u0; options=options)
+    L_ = run(sess, l, x=>θ, args...)
+    J_ = run(sess, g, x=>θ, args...)
+    v = rand(length(x))
+    γs = 1.0 ./ 10 .^ (1:5)
+    v1 = Float64[]
+    v2 = Float64[]
+    for i = 1:5
+        L__ = run(sess, l, x=>θ+v*γs[i], args...)
+        # @show L__,L_,J_, v
+        push!(v1, L__-L_)
+        push!(v2, L__-L_-γs[i]*sum(J_.*v))
+    end
+    close("all")
+    loglog(γs, abs.(v1), "*-", label="finite difference")
+    loglog(γs, abs.(v2), "+-", label="automatic linearization")
+    loglog(γs, γs.^2 * 0.5*abs(v2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
+    loglog(γs, γs * 0.5*abs(v1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
+    plt.gca().invert_xaxis()
+    legend()
+    xlabel("\$\\gamma\$")
+    ylabel("Error")
 end
