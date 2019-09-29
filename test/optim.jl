@@ -164,21 +164,23 @@ end
 end
 
 @testset "verify_jacobian" begin
-    u0 = rand(10)
-    function verify_jacobian_f(θ, u)
-        r = u^3+u - u0
-        r, spdiag(3u^2+1.0)
-    end
-    verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+    @test_skip begin
+        u0 = rand(10)
+        function verify_jacobian_f(θ, u)
+            r = u^3+u - u0
+            r, spdiag(3u^2+1.0)
+        end
+        verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
 
-    # least square
-    u0 = rand(10)
-    rs = rand(10)
-    function verify_jacobian_f(θ, u)
-        r = [u^2;u] - [rs;rs]
-        r, [spdiag(2*u); spdiag(10)]
+        # least square
+        u0 = rand(10)
+        rs = rand(10)
+        function verify_jacobian_f(θ, u)
+            r = [u^2;u] - [rs;rs]
+            r, [spdiag(2*u); spdiag(10)]
+        end
+        verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
     end
-    verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
 end
 
 
