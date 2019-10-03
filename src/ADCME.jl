@@ -38,6 +38,7 @@ module ADCME
     
     
     function __init__()
+        install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
         copy!(tf, (@suppress pyimport("tensorflow")))
         copy!(tfops, (@suppress pyimport("tensorflow.python.framework.ops")))

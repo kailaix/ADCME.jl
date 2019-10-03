@@ -6,9 +6,6 @@ using namespace std;
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
-
-
-
 void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, const int64 *kk, const double *ff,int64 nf,  int64 d){
     vector<T> triplets;
     Eigen::VectorXd rhs(d); rhs.setZero();

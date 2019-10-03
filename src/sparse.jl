@@ -186,8 +186,11 @@ function Base.:lastindex(o::SparseTensor, i::Int64)
     return size(o,i)
 end
 
-function Base.:getindex(s::SparseTensor, i1::Union{Colon, UnitRange{T}, PyObject,Array{S,1}},
-    i2::Union{Colon, UnitRange{T}, PyObject,Array{T,1}}) where {S<:Real,T<:Real}
+function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}}) where {S<:Real,T<:Real}
+    squeeze_dims = Int64[]
+    if isa(i1, Integer); i1 = [i1]; push!(squeeze_dims, 1); end
+    if isa(i2, Integer); i2 = [i2]; push!(squeeze_dims, 2); end
     if isa(i1, UnitRange) || isa(i1, StepRange); i1 = collect(i1); end
     if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
     if isa(i1, Colon); i1 = collect(1:lastindex(s,1)); end
@@ -200,7 +203,11 @@ function Base.:getindex(s::SparseTensor, i1::Union{Colon, UnitRange{T}, PyObject
     n = tf.convert_to_tensor(s.o.shape[2],dtype=tf.int64)
     ss = load_system_op(COLIB["sparse_indexing"]...)
     ii2, jj2, vv2 = ss(ii1,jj1,vv1,m,n,i1,i2)
-    SparseTensor(ii2, jj2, vv2, m_, n_)
+    ret = SparseTensor(ii2, jj2, vv2, m_, n_)
+    if length(squeeze_dims)>0
+        ret = squeeze(Array(ret), dims=squeeze_dims)
+    end
+    ret
 end
 
 function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer

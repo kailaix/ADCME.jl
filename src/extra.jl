@@ -192,7 +192,7 @@ function install_custom_op_dependency()
 
     # Install Eigen3 library
     if !isdir(LIBDIR)
-        @info "Your are running `customop` for the first time; installing dependencies..."
+        @info "The library directory does not exist; installing dependencies..."
         mkdir(LIBDIR)
     end
 

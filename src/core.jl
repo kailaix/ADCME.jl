@@ -85,6 +85,9 @@ function jlargs(kwargs)
     end
     if :dims in keys(kwargs)
         kwargs[:axis] = kwargs[:dims] .- 1
+        if isa(kwargs[:axis], Array)
+            kwargs[:axis] = Tuple(kwargs[:axis])
+        end
         delete!(kwargs, :dims)
     end
     kwargs
