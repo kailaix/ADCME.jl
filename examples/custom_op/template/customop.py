@@ -441,6 +441,12 @@ d = {"operator_name": convert(op),
     "ARGS": ARGS(),
     "OUTPUT": OUTPUT(),
     "FIRST_OUTPUT": outputs[0][1]}
+
+if len(outputs)>1:
+    d["multiple"] = ", multiple=true"
+else:
+    d["multiple"] = ""
+
 with open("{}/gradtest.template".format(dirname),"r") as fp:
     cnt = fp.read()
     s = Template(cnt)

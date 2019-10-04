@@ -5,44 +5,7 @@ using PyPlot
 using Random
 Random.seed!(233)
 
-################## Load Operator ##################
-if Sys.islinux()
-py"""
-import tensorflow as tf
-lib${OperatorName} = tf.load_op_library('build/lib${OperatorName}.so')
-@tf.custom_gradient
-def ${operator_name}(${ARGS}):
-    ${OUTPUT} = lib${OperatorName}.${operator_name}(${ARGS})
-    def grad(dy):
-        return lib${OperatorName}.${operator_name}_grad(dy, ${OUTPUT}, ${ARGS})
-    return ${FIRST_OUTPUT}, grad
-"""
-elseif Sys.isapple()
-py"""
-import tensorflow as tf
-lib${OperatorName} = tf.load_op_library('build/lib${OperatorName}.dylib')
-@tf.custom_gradient
-def ${operator_name}(${ARGS}):
-    ${OUTPUT} = lib${OperatorName}.${operator_name}(${ARGS})
-    def grad(dy):
-        return lib${OperatorName}.${operator_name}_grad(dy, ${OUTPUT}, ${ARGS})
-    return ${FIRST_OUTPUT}, grad
-"""
-elseif Sys.iswindows()
-py"""
-import tensorflow as tf
-lib${OperatorName} = tf.load_op_library('build/lib${OperatorName}.dll')
-@tf.custom_gradient
-def ${operator_name}(${ARGS}):
-    ${OUTPUT} = lib${OperatorName}.${operator_name}(${ARGS})
-    def grad(dy):
-        return lib${OperatorName}.${operator_name}_grad(dy, ${OUTPUT}, ${ARGS})
-    return ${FIRST_OUTPUT}, grad
-"""
-end
-
-${operator_name} = py"${operator_name}"
-################## End Load Operator ##################
+${operator_name} = load_op_and_grad("./build/lib${OperatorName}","${operator_name}"${multiple})
 
 # TODO: specify your input parameters
 u = ${operator_name}(${ARGS})
@@ -54,7 +17,7 @@ run(sess, u)
 # TODO: change your test parameter to `m`
 # gradient check -- v
 function scalar_function(m)
-    return sum(tanh(${operator_name}(${ARGS})))
+    return sum(${operator_name}(${ARGS}))
 end
 
 # TODO: change `m_` and `v_` to appropriate values

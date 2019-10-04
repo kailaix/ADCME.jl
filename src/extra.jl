@@ -94,7 +94,7 @@ lib$$fn_name = tf.load_op_library($oplibpath)
     return s
 end
 
-function load_op_and_grad(oplibpath::String, opname::String)
+function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false)
     if splitext(oplibpath)[2]==""
         oplibpath = oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll")
@@ -109,6 +109,7 @@ function load_op_and_grad(oplibpath::String, opname::String)
     
     opname_grad = opname*"_grad"
     fn_name = opname*randstring(8)
+if !multiple
 py"""
 import tensorflow as tf
 lib$$fn_name = tf.load_op_library($oplibpath)
@@ -119,6 +120,18 @@ def $$fn_name(*args):
         return lib$$fn_name.$$opname_grad(dy, u, *args)
     return u, grad
 """
+else
+py"""
+import tensorflow as tf
+lib$$fn_name = tf.load_op_library($oplibpath)
+@tf.custom_gradient
+def $$fn_name(*args):
+    u = lib$$fn_name.$$opname(*args)
+    def grad(*dy):
+        return lib$$fn_name.$$opname_grad(*dy, *u, *args)
+    return u, grad
+"""
+end
         s = py"$$fn_name"
         load_op_grad_dict[(oplibpath,opname)] = s
         printstyled("Load library operator (with gradient): $oplibpath ==> $opname\n", color=:green)
@@ -286,14 +299,8 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
         write("CMakeLists.txt", cmakelist)
 
         gradtest = read("gradtest.jl", String)
-        m = match(r"(\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\# Load Operator.*End Load Operator \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#)"s, gradtest)
-        s = m.captures[1]
-        m = match(r"(build/.*?)\.so", s)
-        Dir = m.captures[1]
-        m = match(r"= py\\\"(.*?)\\\"", s)
-        Fun = m.captures[1]
-        s0 = "$Fun = load_op(\"$Dir\", \"$Fun\")"
-        gradtest = replace(gradtest, s=>s0)
+        gradtest = replace(gradtest, "load_op_and_grad"=>"load_op")
+        gradtest = replace(gradtest, ", multiple=true"=>"")
         m = match(r"(\# TODO: change your test parameter to `m`.*)"s, gradtest)
         s = m.captures[1]
         gradtest = replace(gradtest, s=>"")
