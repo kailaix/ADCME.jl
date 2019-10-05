@@ -1,5 +1,7 @@
 import Conda 
 pkgs = Conda._installed_packages()
+
+@warn "Installing binary dependencies..."
 for pkg in ["make", "cmake", "zip", "python", "unzip"]
     if pkg in pkgs; continue; end
     Conda.add(pkg)
@@ -8,6 +10,8 @@ if !("gcc" in pkgs)
     Conda.add("gcc", channel="anaconda")
 end
 
+
+@warn "Downloading python dependencies..."
 PYTHON = joinpath(Conda.BINDIR, "python")
 PIP = joinpath(Conda.BINDIR, "pip")
 ZIP = joinpath(Conda.BINDIR, "zip")
@@ -21,7 +25,7 @@ function install_custom_op_dependency()
 
     # Install Eigen3 library
     if !isdir(LIBDIR)
-        @info "The Libraries directory $LIBDIR does not exist; installing dependencies..."
+        @warn "Downloading dependencies to $LIBDIR..."
         mkdir(LIBDIR)
     end
 
