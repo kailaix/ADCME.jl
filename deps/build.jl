@@ -3,8 +3,12 @@ using PyCall
 using Pkg
 pkgs = Conda._installed_packages()
 
+
 @warn "Installing binary dependencies..."
-Conda.add("python=3.6")
+if !("python" in pkgs) || 
+    Conda._installed_packages_dict()["python"][1]>v"3.6"
+    Conda.add("python=3.6")
+end
 # Conda.add("gcc", channel="anaconda")
 to_install = ""
 for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy"]
