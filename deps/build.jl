@@ -1,12 +1,18 @@
-using PyCall
 import Conda
+using PyCall
+using Pkg
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
-for pkg in ["make", "cmake", "zip", "python", "unzip", 
+to_install = ""
+for pkg in ["make", "cmake", "zip", "python=3.6", "unzip", 
     "tensorflow=1.14", "tensorflow-probability=0.7", "matplotlib", "numpy", "scipy"]
+    global to_install
     if split(pkg, "=")[1] in pkgs; continue; end
-    Conda.add(pkg)
+    to_install *= " $pkg"
+end
+if length(to_install)>0
+    Conda.add(to_install)
 end
 
 @warn "Downloading python dependencies..."
@@ -71,27 +77,11 @@ function install_custom_op_dependency()
     =#
 end
 
-function mksymlink()
-    tf = pyimport_conda("tensorflow", "tensorflow")
-    if Sys.isapple()
-        ext = "dylib"
-    elseif Sys.iswindows()
-        ext = "dll"
-    elseif Sys.islinux()
-        ext = "so"
-    end
-    tfdir = splitdir(tf.__file__)[1] 
-    if !isfile(joinpath(tfdir, "libtensorflow_framework.$ext"))
-        for f in readdir(tfdir)
-            if occursin("libtensorflow_framework", f)
-                name = joinpath(tfdir, f)
-                link = joinpath(tfdir, "libtensorflow_framework.$ext")
-                @warn "Creating symbolic link $link-->$name"
-                symlink(name, link)
-            end
-        end
-    end
-end
-
 install_custom_op_dependency()
-mksymlink()
+run(`$PYTHON build.py`)
+
+@warn "Fix Python Version"
+if PYTHON!=PyCall.python
+    ENV["PYTHON"] = "$PYTHON"
+    Pkg.build("PyCall")
+end
