@@ -3,7 +3,7 @@ using PyCall
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
-run(`sh script.sh`)
+# run(`sh script.sh`)
 
 
 @warn "Downloading python dependencies..."
