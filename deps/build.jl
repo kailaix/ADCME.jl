@@ -81,7 +81,7 @@ function install_custom_op_dependency()
 end
 
 function mksymlink()
-    tf = pyimport_conda("tensorflow", "tensorflow")
+    tf = pyimport("tensorflow", "tensorflow")
     if Sys.isapple()
         ext = "dylib"
     elseif Sys.iswindows()

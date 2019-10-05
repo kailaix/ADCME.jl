@@ -13,8 +13,8 @@ ${IfTorch}find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++11 $${CMAKE_CXX_FLAGS}")
 
 
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"cc\"))" OUTPUT_VARIABLE CONDAC)
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"c++\"))" OUTPUT_VARIABLE CONDACPP)
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.BINDIR, \"cc\"))" OUTPUT_VARIABLE CONDAC)
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.BINDIR, \"c++\"))" OUTPUT_VARIABLE CONDACPP)
 
 SET(CMAKE_C_COMPILER $${CONDAC})
 SET(CMAKE_CXX_COMPILER $${CONDACPP})

@@ -54,8 +54,8 @@ function compile_op(oplibpath::String)
     if !isdir(DIR); mkdir(DIR); end 
     cd(DIR)
     try
-        run(`cmake ..`)
-        run(`make -j`)
+        run(`$CMAKE ..`)
+        run(`$MAKE -j`)
     catch
         @warn("Compiling not successful. Instruction: Check $oplibpath")
     finally

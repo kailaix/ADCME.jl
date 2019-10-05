@@ -12,8 +12,8 @@
     cp("$(@__DIR__)/../examples/while_loop/DirichletBD/CMakeLists.txt", "CMakeLists.txt", force=true)
     mkdir("build")
     cd("build")
-    run(`cmake ..`)
-    run(`make -j`)
+    run(`$(ADCME.CMAKE) ..`)
+    run(`$(ADCME.MAKE) -j`)
     cd("..")
     rm("temp", force=true, recursive=true)
     @test true
