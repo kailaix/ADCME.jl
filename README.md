@@ -60,13 +60,16 @@ pkg> test ADCME
 
 If you want to use `customop()` and test the utility, test with the following command
 ```
-julia> test_customop()
+julia> test_custom_op()
 ```
 If it fails, it is probably the `tensorflow, python, gcc` configuration is not compatible. The following configurations were partially tested
 
 * Linux: GCC==4.8, Anaconda Python==3.6, TensorFlow==1.14
 
 * Mac: Homebrew GCC==8.3, Anaconda Python==3.6, TensorFlow==1.14
+
+By default, `ADCME` will install `cmake` and `make` for you. It will also keep a private version of `tensorflow`.
+But users are responsible for the compatibility of GCC version for compiling custom operators. `cmake` and `make` is located in `Conda.BINDIR`. If by any case users want to use their own `cmake` or `make`, they can make a symbolic link in `Conda.BINDIR`. Ideally, `test_custom_op` should output no error. 
 
 
 # Tutorial
