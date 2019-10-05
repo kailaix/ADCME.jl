@@ -5,8 +5,9 @@ pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
 Conda.add("python=3.6")
+Conda.add_channel("anaconda")
 to_install = ""
-for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy"]
+for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy", "gcc"]
     global to_install
     if split(pkg, "=")[1] in pkgs; continue; end
     Conda.add(pkg)
@@ -19,7 +20,7 @@ ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
 run(`$PIP install tensorflow==1.14`)
 if Sys.islinux()
-    run(`$PIP install tensorflow-probability==0.7`)
+    run(`$PIP install tensorflow-gpu==1.14`)
 end
 
 function install_custom_op_dependency()
