@@ -5,7 +5,7 @@ pkgs = Conda._installed_packages()
 
 
 @warn "Installing binary dependencies..."
-if !("python" in pkgs) || 
+if !("python" in pkgs) && 
     Conda._installed_packages_dict()["python"][1]>v"3.6"
     Conda.add("python=3.6")
 end

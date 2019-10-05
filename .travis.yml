@@ -2,7 +2,7 @@ sudo: required
 language: julia
 dist: xenial
 python:
-  - "3.6"
+  - "3.7"
 git:
   depth: 3
   quiet: true
