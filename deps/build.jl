@@ -15,7 +15,7 @@ ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
 
 function install_custom_op_dependency()
-    LIBDIR = "$(@__DIR__)/Libraries"
+    LIBDIR = "$(Conda.LIBDIR)/Libraries"
 
     # Install Eigen3 library
     if !isdir(LIBDIR)
@@ -33,6 +33,7 @@ function install_custom_op_dependency()
     end
 
     # Install Torch library
+    #=
     if Sys.isapple()
         if !isfile("$LIBDIR/libtorch.zip")
             download("https://download.pytorch.org/libtorch/cpu/libtorch-macos-latest.zip","$LIBDIR/libtorch.zip")
@@ -67,6 +68,7 @@ function install_custom_op_dependency()
             rm("mklml_lnx_2019.0.5.20190502/", force=true, recursive=true)
         end
     end
+    =#
 end
 
 function mksymlink()
@@ -84,7 +86,7 @@ function mksymlink()
             if occursin("libtensorflow_framework", f)
                 name = joinpath(tfdir, f)
                 link = joinpath(tfdir, "libtensorflow_framework.$ext")
-                @info "Creating symbolic link $link-->$name"
+                @warn "Creating symbolic link $link-->$name"
                 symlink(name, link)
             end
         end
