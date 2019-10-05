@@ -299,7 +299,7 @@ function toc(o::PyObject, i::Union{PyObject, Integer}=0)
 end
 
 function test_custom_op()
-    cd("$(@__DIR__)/../deps/CustomOps/SparseIndexing")
+    cd("$(@__DIR__)/../deps/CustomOps/SparseSolver")
     if !isdir("build")
         mkdir("build")
     end
