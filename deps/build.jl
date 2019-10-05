@@ -12,7 +12,7 @@ for pkg in ["make", "cmake", "zip", "python=3.6", "unzip",
     to_install *= " $pkg"
 end
 if length(to_install)>0
-    run(`$(Conda.conda) -y $(strip(to_install))`)
+    run(`$(Conda.conda) install -y $(strip(to_install))`)
 end
 
 @warn "Downloading python dependencies..."
