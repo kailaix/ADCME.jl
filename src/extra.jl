@@ -189,10 +189,8 @@ function compile(s::String)
     mkdir("build")
     cd("build")
     try
-        cmd = setenv(`cmake ..`, "PATH"=>ENV["PATH"]*":"*splitdir(PyCall.python)[1])
-        run(cmd)
-        cmd = setenv(`make -j`, "PATH"=>ENV["PATH"]*":"*splitdir(PyCall.python)[1])
-        run(cmd) 
+        run(`$CMAKE ..`)
+        run(`$MAKE -j`)
     catch e 
         error("Compilation error: $e")
     finally
