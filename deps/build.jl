@@ -4,8 +4,9 @@ using Pkg
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
+Conda.add("python=3.6")
 to_install = ""
-for pkg in ["make", "cmake", "zip", "python=3.6", "unzip", "matplotlib", "numpy", "scipy"]
+for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy"]
     global to_install
     if split(pkg, "=")[1] in pkgs; continue; end
     Conda.add(pkg)
