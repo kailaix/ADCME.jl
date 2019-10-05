@@ -3,7 +3,8 @@ using PyCall
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
-for pkg in ["make", "cmake", "zip", "python", "unzip"]
+for pkg in ["make", "cmake", "zip", "python", "unzip", 
+    "tensorflow=1.14", "tensorflow_probability=0.7", "matplotlib", "numpy", "scipy"]
     if pkg in pkgs; continue; end
     Conda.add(pkg)
 end
@@ -14,14 +15,9 @@ end
 
 @warn "Downloading python dependencies..."
 PYTHON = joinpath(Conda.BINDIR, "python")
-PIP = joinpath(Conda.BINDIR, "pip")
 ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
 GCC = joinpath(Conda.BINDIR, "")
-run(`$PIP install -U -r $(@__DIR__)/requirements.txt`)
-if Sys.islinux()
-    run(`$PIP install -U tensorflow-gpu==1.14`)
-end
 
 
 function install_custom_op_dependency()
@@ -65,7 +61,7 @@ function install_custom_op_dependency()
         end
         if !isdir("$LIBDIR/libtorch")
             run(`$UNZIP $LIBDIR/libtorch.zip`)
-            run(`mv libtorch $LIBDIR/libtorch`)
+            mv("libtorch", "$LIBDIR/libtorch")
             if !isdir("$LIBDIR/libtorch/lib/")
                 mkdir("$LIBDIR/libtorch/lib/")
             end
