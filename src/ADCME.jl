@@ -44,7 +44,12 @@ module ADCME
     function __init__()
         # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
-
+        if haskey(ENV, "LD_LIBRARY_PATH")
+            push!(ENV["LD_LIBRARY_PATH"], Conda.LIBDIR)
+        else
+            ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR
+        end
+            
         PYTHON = joinpath(Conda.BINDIR, "python")
         if PYTHON!=PyCall.python
             error("""PyCall python and TensorFlow python does not match.
