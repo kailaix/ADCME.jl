@@ -1,4 +1,5 @@
 import Conda 
+using PyCall
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
