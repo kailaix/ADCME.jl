@@ -19,6 +19,9 @@ ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
 GCC = joinpath(Conda.BINDIR, "")
 run(`$PIP install -U -r $(@__DIR__)/requirements.txt`)
+if Sys.islinux()
+    run(`$PIP install -U tensorflow-gpu==1.14`)
+end
 
 
 function install_custom_op_dependency()
@@ -72,7 +75,6 @@ function install_custom_op_dependency()
     end
 end
 
-install_custom_op_dependency()
 function mksymlink()
     tf = pyimport_conda("tensorflow", "tensorflow")
     if Sys.isapple()
@@ -94,3 +96,6 @@ function mksymlink()
         end
     end
 end
+
+install_custom_op_dependency()
+mksymlink()

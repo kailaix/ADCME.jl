@@ -1,5 +1,4 @@
 tensorflow==1.14
-tensorflow_gpu==1.14
 tensorflow_probability==0.7
 numpy
 scipy
