@@ -3,4 +3,3 @@ tensorflow_probability==0.7
 numpy
 scipy
 matplotlib
-pickle
