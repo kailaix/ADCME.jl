@@ -5,7 +5,7 @@ pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
 Conda.add("python=3.6")
-Conda.add("gcc", channel="anaconda")
+# Conda.add("gcc", channel="anaconda")
 to_install = ""
 for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy"]
     global to_install
