@@ -45,7 +45,7 @@ module ADCME
         # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
         if haskey(ENV, "LD_LIBRARY_PATH")
-            push!(ENV["LD_LIBRARY_PATH"], Conda.LIBDIR)
+            ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR*":"*ENV["LD_LIBRARY_PATH"]
         else
             ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR
         end
