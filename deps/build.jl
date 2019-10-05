@@ -80,7 +80,12 @@ function install_custom_op_dependency()
 end
 
 install_custom_op_dependency()
-run(pipeline(`export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$(Conda.LIBDIR)`, `$PYTHON build.py`))
+
+if haskey(ENV, "LD_LIBRARY_PATH")
+    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*"$(Conda.LIBDIR)"))
+else
+    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>"$(Conda.LIBDIR)"))
+end
 
 @warn "Fix Python Version"
 if PYTHON!=PyCall.python
