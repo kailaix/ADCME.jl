@@ -200,57 +200,6 @@ function compile(s::String)
     end
 end
 
-function install_custom_op_dependency()
-    LIBDIR = "$(@__DIR__)/../deps/Libraries"
-
-    # Install Eigen3 library
-    if !isdir(LIBDIR)
-        @info "The library directory does not exist; installing dependencies..."
-        mkdir(LIBDIR)
-    end
-
-    if !isfile("$LIBDIR/eigen.zip")
-        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$LIBDIR/eigen.zip")
-    end
-
-    if !isdir("$LIBDIR/eigen3")    
-        run(`unzip $LIBDIR/eigen.zip`)
-        run(`mv eigen-eigen-323c052e1731 $LIBDIR/eigen3`)
-    end
-
-    # Install Torch library
-    if Sys.isapple()
-        if !isfile("$LIBDIR/libtorch.zip")
-            download("https://download.pytorch.org/libtorch/cpu/libtorch-macos-latest.zip","$LIBDIR/libtorch.zip")
-        end
-        if !isdir("$LIBDIR/libtorch")
-            run(`unzip $LIBDIR/libtorch.zip`)
-            run(`mv libtorch $LIBDIR/libtorch`)
-            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_mac_2019.0.5.20190502.tgz","$LIBDIR/mklml_mac_2019.0.5.20190502.tgz")
-            run(`tar -xvzf $LIBDIR/mklml_mac_2019.0.5.20190502.tgz`)
-            run(`mv mklml_mac_2019.0.5.20190502/lib/libiomp5.dylib $LIBDIR/libtorch/lib/`)
-            run(`mv mklml_mac_2019.0.5.20190502/lib/libmklml.dylib $LIBDIR/libtorch/lib/`)
-            run(`rm -rf mklml_mac_2019.0.5.20190502/`)
-        end
-    elseif Sys.islinux()
-        if !isfile("$LIBDIR/libtorch.zip")
-            download("https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip","$LIBDIR/libtorch.zip")
-        end
-        if !isdir("$LIBDIR/libtorch")
-            run(`unzip $LIBDIR/libtorch.zip`)
-            run(`mv libtorch $LIBDIR/libtorch`)
-            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_lnx_2019.0.5.20190502.tgz","$LIBDIR/mklml_lnx_2019.0.5.20190502.tgz")
-            run(`tar -xvzf $LIBDIR/mklml_lnx_2019.0.5.20190502.tgz`)
-            run(`mv mklml_lnx_2019.0.5.20190502/lib/libiomp5.so $LIBDIR/libtorch/lib/`)
-            run(`mv mklml_lnx_2019.0.5.20190502/lib/libmklml_gnu.so $LIBDIR/libtorch/lib/`)
-            run(`mv mklml_lnx_2019.0.5.20190502/lib/libmklml_intel.so $LIBDIR/libtorch/lib/`)
-            run(`rm -rf mklml_lnx_2019.0.5.20190502/`)
-        end
-    end
-end
-
-
-
 """
     customop(torch=false; julia=false)
 
@@ -267,7 +216,7 @@ julia> customop() # after editing `customop.txt`, call it again to generate inte
 The option `torch` adds support for `PyTorch` backend in `CMakeLists.txt`
 """
 function customop(torch=false; julia=false)
-    install_custom_op_dependency()
+    # install_custom_op_dependency()
     py_dir = "$(@__DIR__)/../examples/custom_op/template"
     if !("custom_op.txt" in readdir("."))
         cp("$(py_dir)/custom_op.example", "custom_op.txt")

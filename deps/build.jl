@@ -1,32 +1,73 @@
-# install requirements.txt
-try
-    run(`which pip`)
-    if haskey(ENV, "REINSTALL_PIP")
-        error("Force Reinstall Pip...")
+import Conda 
+pkgs = Conda._installed_packages()
+for pkg in ["make", "cmake", "zip", "python", "unzip"]
+    if pkg in pkgs; continue; end
+    Conda.add(pkg)
+end
+if !("gcc" in pkgs)
+    Conda.add("gcc", channel="anaconda")
+end
+
+PYTHON = joinpath(Conda.BINDIR, "python")
+PIP = joinpath(Conda.BINDIR, "pip")
+ZIP = joinpath(Conda.BINDIR, "zip")
+UNZIP = joinpath(Conda.BINDIR, "unzip")
+GCC = joinpath(Conda.BINDIR, "")
+run(`$PIP install -U -r $(@__DIR__)/requirements.txt`)
+
+
+function install_custom_op_dependency()
+    LIBDIR = "$(@__DIR__)/Libraries"
+
+    # Install Eigen3 library
+    if !isdir(LIBDIR)
+        @info "The Libraries directory $LIBDIR does not exist; installing dependencies..."
+        mkdir(LIBDIR)
     end
-catch
-    run(`wget -O get-pip.py https://bootstrap.pypa.io/get-pip.py`)
-    run(`python get-pip.py --user`)
-    rm("get-pip.py")
+
+    if !isfile("$LIBDIR/eigen.zip")
+        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$LIBDIR/eigen.zip")
+    end
+
+    if !isdir("$LIBDIR/eigen3")    
+        run(`$UNZIP $LIBDIR/eigen.zip`)
+        mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
+    end
+
+    # Install Torch library
+    if Sys.isapple()
+        if !isfile("$LIBDIR/libtorch.zip")
+            download("https://download.pytorch.org/libtorch/cpu/libtorch-macos-latest.zip","$LIBDIR/libtorch.zip")
+        end
+        if !isdir("$LIBDIR/libtorch")
+            run(`$UNZIP $LIBDIR/libtorch.zip`)
+            mv("libtorch", "$LIBDIR/libtorch", force=true)
+            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_mac_2019.0.5.20190502.tgz","$LIBDIR/mklml_mac_2019.0.5.20190502.tgz")
+            run(`tar -xvzf $LIBDIR/mklml_mac_2019.0.5.20190502.tgz`)
+            mv("mklml_mac_2019.0.5.20190502/lib/libiomp5.dylib","$LIBDIR/libtorch/lib/", force=true)
+            mv("mklml_mac_2019.0.5.20190502/lib/libmklml.dylib","$LIBDIR/libtorch/lib/", force=true)
+            rm("mklml_mac_2019.0.5.20190502/", force=true, recursive=true)
+        end
+    elseif Sys.islinux()
+        if !isfile("$LIBDIR/libtorch.zip")
+            download("https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip","$LIBDIR/libtorch.zip")
+        end
+        if !isdir("$LIBDIR/libtorch")
+            run(`$UNZIP $LIBDIR/libtorch.zip`)
+            run(`mv libtorch $LIBDIR/libtorch`)
+            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_lnx_2019.0.5.20190502.tgz","$LIBDIR/mklml_lnx_2019.0.5.20190502.tgz")
+            run(`tar -xvzf $LIBDIR/mklml_lnx_2019.0.5.20190502.tgz`)
+            mv("mklml_lnx_2019.0.5.20190502/lib/libiomp5.so", "$LIBDIR/libtorch/lib/", force=true)
+            mv("mklml_lnx_2019.0.5.20190502/lib/libmklml_gnu.so", "$LIBDIR/libtorch/lib/", force=true)
+            mv("mklml_lnx_2019.0.5.20190502/lib/libmklml_intel.so", "$LIBDIR/libtorch/lib/", force=true)
+            rm("mklml_lnx_2019.0.5.20190502/", force=true, recursive=true)
+        end
+    end
 end
-run(`pip install --user -U -r $(@__DIR__)/requirements.txt`)
 
-
-using PyCall
-if PyCall.python!=readlines(`which python`)[1]
-    error("Python version and PyCall Python version does not match. Please reinstall PyCall with the default Python version.
-PyCall Python: $(PyCall.python)
-System Python: $(readlines(`which python`)[1])
-Instruction: 
-julia -e 'ENV[\"PYTHON\"] = readlines(`which python`)[1]; using Pkg; Pkg.build(\"PyCall\")")
-end
-
-if Sys.iswindows()
-    @warn "PyTorch plugin is still under construction for Windows platform and will be disabled for the current version."
-end
-
+install_custom_op_dependency()
 function mksymlink()
-    tf = pyimport("tensorflow")
+    tf = pyimport_conda("tensorflow", "tensorflow")
     if Sys.isapple()
         ext = "dylib"
     elseif Sys.iswindows()
@@ -46,5 +87,3 @@ function mksymlink()
         end
     end
 end
-
-mksymlink()

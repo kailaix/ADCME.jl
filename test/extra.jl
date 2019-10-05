@@ -4,7 +4,7 @@ end
 
 @testset "load_op" begin
     @test_skip begin
-        ADCME.install_custom_op_dependency()
+        # ADCME.install_custom_op_dependency()
         ADCME.compile("SparseSolver")
         # somehow we cannot first call `load_op_and_grad` and then call `load_op` 
         load_op("$(@__DIR__)/../deps/CustomOps/SparseSolver/build/libSparseSolver", "sparse_solver")

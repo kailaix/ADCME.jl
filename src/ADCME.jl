@@ -13,6 +13,7 @@ module ADCME
     using Random
     using LinearAlgebra
     using PyPlot
+    using Conda
     
 
     tf = PyNULL()
@@ -38,13 +39,13 @@ module ADCME
     
     
     function __init__()
-        install_custom_op_dependency() # always install dependencies
+        # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
-        copy!(tf, (@suppress pyimport("tensorflow")))
-        copy!(tfops, (@suppress pyimport("tensorflow.python.framework.ops")))
-        copy!(tfp, (@suppress pyimport("tensorflow_probability")))
-        copy!(gradients_impl, (@suppress pyimport("tensorflow.python.ops.gradients_impl")))
-        copy!(pickle, (@suppress pyimport("pickle")))
+        copy!(tf, (@suppress pyimport_conda("tensorflow","tensorflow")))
+        copy!(tfops, (@suppress pyimport_conda("tensorflow.python.framework.ops","tensorflow")))
+        copy!(tfp, (@suppress pyimport_conda("tensorflow_probability","tensorflow_probability")))
+        copy!(gradients_impl, (@suppress pyimport_conda("tensorflow.python.ops.gradients_impl", "tensorflow")))
+        copy!(pickle, (@suppress pyimport_conda("pickle", "pickle")))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
