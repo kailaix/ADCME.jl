@@ -5,20 +5,21 @@ pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
 to_install = ""
-for pkg in ["make", "cmake", "zip", "python=3.6", "unzip", 
-    "tensorflow=1.14", "tensorflow-probability=0.7", "matplotlib", "numpy", "scipy"]
+for pkg in ["make", "cmake", "zip", "python=3.6", "unzip", "matplotlib", "numpy", "scipy"]
     global to_install
     if split(pkg, "=")[1] in pkgs; continue; end
-    to_install *= " $pkg"
-end
-if length(to_install)>0
-    run(`$(Conda.conda) install -y $(strip(to_install))`)
+    Conda.add(pkg)
 end
 
 @warn "Downloading python dependencies..."
 PYTHON = joinpath(Conda.BINDIR, "python")
+PIP = joinpath(Conda.BINDIR, "pip")
 ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
+run(`$PIP install tensorflow==1.14`)
+if Sys.islinux()
+    run(`$PIP install tensorflow-probability==0.7`)
+end
 
 function install_custom_op_dependency()
     LIBDIR = "$(Conda.LIBDIR)/Libraries"

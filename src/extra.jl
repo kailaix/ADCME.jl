@@ -6,7 +6,8 @@ load_op_and_grad,
 load_op,
 compile_op,
 tic,
-toc
+toc,
+test_custom_op
 
 function torchexample()
     filename = "$(@__DIR__)/../examples/torch/laexample.cpp"
@@ -295,4 +296,16 @@ function toc(o::PyObject, i::Union{PyObject, Integer}=0)
     end_timer = get_tensor_flow_timer(i)
     o = bind(o, end_timer)
     o, end_timer
+end
+
+function test_custom_op()
+    cd("$(@__DIR__)/../deps/CustomOps/SparseIndexing")
+    if !isdir("build")
+        mkdir("build")
+    end
+    cd("build")
+    run(`$CMAKE ..`)
+    run(`$MAKE -j`)
+    cd("..")
+    include("gradtest.jl")
 end
