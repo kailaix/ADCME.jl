@@ -11,13 +11,6 @@ ${IfTorch}find_package(Torch REQUIRED)
 
 # C++11 required for tensorflow
 set(CMAKE_CXX_FLAGS "-std=c++11 $${CMAKE_CXX_FLAGS}")
-
-
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.BINDIR, \"cc\"))" OUTPUT_VARIABLE CONDAC)
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.BINDIR, \"c++\"))" OUTPUT_VARIABLE CONDACPP)
-
-SET(CMAKE_C_COMPILER $${CONDAC})
-SET(CMAKE_CXX_COMPILER $${CONDACPP})
 execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"python\"))" OUTPUT_VARIABLE PYTHON)
 execute_process(COMMAND $${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_compile_flags()[0][2:])" OUTPUT_VARIABLE TF_INC)
 execute_process(COMMAND $${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_link_flags()[0][2:])" OUTPUT_VARIABLE TF_LIB)

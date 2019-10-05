@@ -1,17 +1,18 @@
-import Conda 
 using PyCall
+import Conda
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
-# run(`sh script.sh`)
-
+for pkg in ["make", "cmake", "zip", "python", "unzip", 
+    "tensorflow=1.14", "tensorflow-probability=0.7", "matplotlib", "numpy", "scipy"]
+    if split(pkg, "=")[1] in pkgs; continue; end
+    Conda.add(pkg)
+end
 
 @warn "Downloading python dependencies..."
 PYTHON = joinpath(Conda.BINDIR, "python")
 ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
-GCC = joinpath(Conda.BINDIR, "")
-
 
 function install_custom_op_dependency()
     LIBDIR = "$(@__DIR__)/Libraries"
@@ -69,7 +70,7 @@ function install_custom_op_dependency()
 end
 
 function mksymlink()
-    tf = pyimport("tensorflow")
+    tf = pyimport_conda("tensorflow", "tensorflow")
     if Sys.isapple()
         ext = "dylib"
     elseif Sys.iswindows()

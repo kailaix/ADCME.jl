@@ -2,7 +2,7 @@ using ADCME
 using PyCall
 using PyPlot
 using DelimitedFiles
-np = pyimport("numpy")
+np = pyimport_conda("numpy", "numpy")
 
 # load operators
 if Sys.islinux()
