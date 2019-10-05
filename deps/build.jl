@@ -3,19 +3,7 @@ using PyCall
 pkgs = Conda._installed_packages()
 
 @warn "Installing binary dependencies..."
-for pkg in ["make", "cmake", "zip", "python", "unzip", 
-    "tensorflow=1.14", "tensorflow-probability=0.7", "matplotlib", "numpy", "scipy"]
-    if split(pkg, "=")[1] in pkgs; continue; end
-    Conda.add(pkg)
-end
-if !("gcc" in pkgs)
-    Conda.add("gcc", channel="anaconda")
-end
-if Sys.islinux()
-    if !("tensorflow-gpu" in pkgs)
-        Conda.add("tensorflow-gpu=1.14")
-    end
-end
+run(`sh script.sh`)
 
 
 @warn "Downloading python dependencies..."
@@ -81,7 +69,7 @@ function install_custom_op_dependency()
 end
 
 function mksymlink()
-    tf = pyimport("tensorflow", "tensorflow")
+    tf = pyimport("tensorflow")
     if Sys.isapple()
         ext = "dylib"
     elseif Sys.iswindows()

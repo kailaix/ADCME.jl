@@ -44,11 +44,11 @@ module ADCME
     function __init__()
         # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
-        copy!(tf, (@suppress pyimport("tensorflow","tensorflow")))
-        copy!(tfops, (@suppress pyimport("tensorflow.python.framework.ops","tensorflow")))
-        copy!(tfp, (@suppress pyimport("tensorflow_probability","tensorflow_probability")))
-        copy!(gradients_impl, (@suppress pyimport("tensorflow.python.ops.gradients_impl", "tensorflow")))
-        copy!(pickle, (@suppress pyimport("pickle", "pickle")))
+        copy!(tf, (@suppress pyimport("tensorflow")))
+        copy!(tfops, (@suppress pyimport("tensorflow.python.framework.ops")))
+        copy!(tfp, (@suppress pyimport("tensorflow_probability")))
+        copy!(gradients_impl, (@suppress pyimport("tensorflow.python.ops.gradients_impl")))
+        copy!(pickle, (@suppress pyimport("pickle")))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
