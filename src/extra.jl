@@ -301,6 +301,7 @@ end
 function test_custom_op()
     cd("$(@__DIR__)/../deps/CustomOps/SparseSolver")
     rm("build", recursive=true, force=true)
+    mkdir("build")
     cd("build")
     run(`$CMAKE ..`)
     run(`$MAKE -j`)
