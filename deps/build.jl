@@ -11,7 +11,7 @@ if !("python" in pkgs) &&
 end
 # Conda.add("gcc", channel="anaconda")
 to_install = ""
-for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy"]
+for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy", "tensorflow-probability=0.7"]
     global to_install
     if split(pkg, "=")[1] in pkgs; continue; end
     Conda.add(pkg)
