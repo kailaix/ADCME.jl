@@ -55,7 +55,7 @@ function compile_op(oplibpath::String)
     if !isdir(DIR); mkdir(DIR); end 
     cd(DIR)
     try
-        run(`$CMAKE ..`)
+        run(setenv(`$CMAKE ..`,CMAKE_ENV...))
         run(`$MAKE -j`)
     catch
         @warn("Compiling not successful. Instruction: Check $oplibpath")
@@ -190,7 +190,7 @@ function compile(s::String)
     mkdir("build")
     cd("build")
     try
-        run(`$CMAKE ..`)
+        run(setenv(`$CMAKE ..`,CMAKE_ENV...))
         run(`$MAKE -j`)
     catch e 
         error("Compilation error: $e")
@@ -303,7 +303,7 @@ function test_custom_op()
     rm("build", recursive=true, force=true)
     mkdir("build")
     cd("build")
-    run(`$CMAKE ..`)
+    run(setenv(`$CMAKE ..`,CMAKE_ENV...))
     run(`$MAKE -j`)
     cd("..")
     include("gradtest.jl")
