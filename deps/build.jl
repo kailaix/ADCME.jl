@@ -24,10 +24,14 @@ if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
     Conda.add("tensorflow-gpu=$tf_ver")
 end
 
+
+# useful command for debug
+# readelf -p .comment libtensorflow_framework.so 
+# strings libstdc++.so.6 | grep GLIBCXX
 if Sys.islinux() 
     if !("gcc" in Conda._installed_packages())
         Conda.add("gcc", channel="anaconda")
-        Conda.add("libgcc", channel="anaconda")
+        Conda.add("libgcc=5.2.0", channel="anaconda")
     end
 end
 
