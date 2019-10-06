@@ -25,9 +25,12 @@ if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
 end
 
 if Sys.islinux() 
-    if "gcc" in Conda._installed_packages() && Conda._installed_packages_dict()["gcc"][1]!=v"5.4.0"
+    if "gcc" in Conda._installed_packages() && Conda._installed_packages_dict()["gcc"][1]==v"5.4.0"
+        
+    else
         @info "Add GCC==5.4.0"
-        Conda.add("gcc=5.4.0")
+        Conda.add("gcc-5", channel="bonsai-team")
+        Conda.add("libgcc-5", channel="bonsai-team")
     end
 end
 

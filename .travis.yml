@@ -26,13 +26,13 @@ jobs:
       julia: 1.2
       os: linux
       script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")'
         - julia --project=docs/ -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("PyCall");  Pkg.add("LinearAlgebra"); Pkg.develop(PackageSpec(path=pwd()));
                                                Pkg.instantiate()'
-        - julia --project=docs/ -e 'using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")'
         - julia --project=docs/ docs/make.jl
       after_success: skip
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
 cache:
   directories:
-  - $HOME/.julia/conda/3/Libraries
+  - /home/travis/.julia/conda/3/Libraries
