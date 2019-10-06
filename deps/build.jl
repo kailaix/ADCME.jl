@@ -27,6 +27,7 @@ end
 if Sys.islinux() 
     if !("gcc" in Conda._installed_packages())
         Conda.add("gcc", channel="anaconda")
+        Conda.add("libgcc", channel="anaconda")
     end
 end
 
