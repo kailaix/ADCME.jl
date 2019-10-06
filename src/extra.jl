@@ -36,7 +36,11 @@ end
 
 ############### custom operators ##################
 function cmake()
-    run(withenv(`$CMAKE ..`, "CC"=>CC, "CXX"=>CXX))
+    if Sys.islinux()
+        run(withenv(`$CMAKE ..`, "CC"=>CC, "CXX"=>CXX))
+    else
+        run(`$CMAKE ..`)
+    end
 end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
