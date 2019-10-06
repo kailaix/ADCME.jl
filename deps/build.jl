@@ -1,38 +1,47 @@
 import Conda
 using PyCall
 using Pkg
-pkgs = Conda._installed_packages()
+# assumption: PyCall and Conda are installed, and PyCall.conda==true 
 
+tf_ver = "1.14"
 
-@warn "Installing binary dependencies..."
-if !("python" in pkgs) && 
-    Conda._installed_packages_dict()["python"][1]>v"3.6"
-    Conda.add("python=3.6")
+if !PyCall.conda
+    error("""ADCME requires that PyCall use the Conda.jl Python.
+Rebuild PyCall with
+ENV["PYTHON"] = ""
+using Pkg; Pkg.build("PyCall")""")
 end
-# Conda.add("gcc", channel="anaconda")
-to_install = ""
-for pkg in ["make", "cmake", "zip", "unzip", "matplotlib", "numpy", "scipy", "tensorflow-probability=0.7"]
-    global to_install
-    if split(pkg, "=")[1] in pkgs; continue; end
+
+@info "Install CONDA dependencies..."
+pkgs = Conda._installed_packages()
+for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7"]
+    if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
 
-@warn "Downloading python dependencies..."
+if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
+    @info "Add tensorflow-gpu"
+    Conda.add("tensorflow-gpu=$tf_ver")
+end
+
+if Sys.islinux() 
+    if "gcc" in Conda._installed_packages() && Conda._installed_packages_dict()["gcc"][1]!=v"5.4.0"
+        @info "Add GCC==5.4.0"
+        Conda.add("gcc=5.4.0")
+    end
+end
+
 PYTHON = joinpath(Conda.BINDIR, "python")
 PIP = joinpath(Conda.BINDIR, "pip")
 ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
-run(`$PIP install tensorflow==1.14`)
-if Sys.islinux()
-    run(`$PIP install tensorflow-gpu==1.14`)
-end
 
 function install_custom_op_dependency()
     LIBDIR = "$(Conda.LIBDIR)/Libraries"
 
     # Install Eigen3 library
     if !isdir(LIBDIR)
-        @warn "Downloading dependencies to $LIBDIR..."
+        @info "Downloading dependencies to $LIBDIR..."
         mkdir(LIBDIR)
     end
 
@@ -86,14 +95,9 @@ end
 
 install_custom_op_dependency()
 
+@info "Fix libtensorflow_framework.so..."
 if haskey(ENV, "LD_LIBRARY_PATH")
     run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*"$(Conda.LIBDIR)"))
 else
     run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>"$(Conda.LIBDIR)"))
-end
-
-@warn "Fix Python Version"
-if PYTHON!=PyCall.python
-    ENV["PYTHON"] = "$PYTHON"
-    Pkg.build("PyCall")
 end

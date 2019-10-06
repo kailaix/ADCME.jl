@@ -37,7 +37,10 @@ module ADCME
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
-    CMAKE = joinpath(Conda.BINDIR, "cmake")
+    CC = joinpath(Conda.BINDIR, "gcc")
+    CXX = joinpath(Conda.BINDIR, "g++")
+    PREFIX = "CXX=$CXX CC=$CC"
+    CMAKE = PREFIX*" "*joinpath(Conda.BINDIR, "cmake")
     MAKE = joinpath(Conda.BINDIR, "make")
     
 
