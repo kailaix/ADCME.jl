@@ -39,7 +39,7 @@ module ADCME
     
     CC = joinpath(Conda.BINDIR, "gcc")
     CXX = joinpath(Conda.BINDIR, "g++")
-    CMAKE_ENV = ["CXX"=>CXX, "CC"=CC]
+    CMAKE_ENV = ["CXX"=>CXX, "CC"=>CC]
     CMAKE = joinpath(Conda.BINDIR, "cmake")
     MAKE = joinpath(Conda.BINDIR, "make")
     TFLIB = nothing
