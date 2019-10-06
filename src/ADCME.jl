@@ -42,11 +42,12 @@ module ADCME
     PREFIX = "CXX=$CXX CC=$CC"
     CMAKE = PREFIX*" "*joinpath(Conda.BINDIR, "cmake")
     MAKE = joinpath(Conda.BINDIR, "make")
+    TFLIB = nothing
     
 
     function __init__()
         # install_custom_op_dependency() # always install dependencies
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, TFLIB
         if haskey(ENV, "LD_LIBRARY_PATH")
             ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR*":"*ENV["LD_LIBRARY_PATH"]
         else
@@ -54,6 +55,7 @@ module ADCME
         end
             
         PYTHON = joinpath(Conda.BINDIR, "python")
+        TFLIB = joinpath(splitdir(tf.__file__)[1], "libtensorflow_framework.so")
         if PYTHON!=PyCall.python
             error("""PyCall python and TensorFlow python does not match.
 $(PyCall.python) vs $PYTHON
