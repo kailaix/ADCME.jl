@@ -37,7 +37,7 @@ end
 ############### custom operators ##################
 function cmake()
     if Sys.islinux()
-        run(withenv(`$CMAKE ..`, "CC"=>CC, "CXX"=>CXX))
+        run(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..`)
     else
         run(`$CMAKE ..`)
     end
