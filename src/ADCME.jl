@@ -55,7 +55,7 @@ module ADCME
         end
             
         PYTHON = joinpath(Conda.BINDIR, "python")
-        TFLIB = joinpath(splitdir(tf.__file__)[1], "libtensorflow_framework.so")
+        
         if PYTHON!=PyCall.python
             error("""PyCall python and TensorFlow python does not match.
 $(PyCall.python) vs $PYTHON
@@ -81,6 +81,7 @@ using Pkg; Pkg.build("PyCall")
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
+        TFLIB = joinpath(splitdir(tf.__file__)[1], "libtensorflow_framework.so")
     end
 
     include("core.jl")
