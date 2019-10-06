@@ -22,6 +22,7 @@ for pkg in ["python=3.6", "zip", "unzip", "make", "cmake"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
+run(`$PIP install matplotlib`)
 run(`$PIP install tensorflow==$tf_ver`)
 run(`$PIP install tensorflow-probability==0.7`)
 
@@ -37,8 +38,8 @@ end
 # readelf -p .comment libtensorflow_framework.so 
 # strings libstdc++.so.6 | grep GLIBCXX
 if Sys.islinux() 
-    if !("gcc" in Conda._installed_packages())
-        Conda.add("gcc", channel="anaconda")
+    if !("gcc-5" in Conda._installed_packages())
+        Conda.add("gcc-5", channel="psi4")
         Conda.add("libgcc")
     end
     rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
