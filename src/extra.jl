@@ -35,6 +35,9 @@ end
 
 
 ############### custom operators ##################
+function cmake()
+    run(`export CC=$CC` & `export CXX=$CXX` & `$CMAKE ..`)
+end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
@@ -55,7 +58,7 @@ function compile_op(oplibpath::String)
     if !isdir(DIR); mkdir(DIR); end 
     cd(DIR)
     try
-        run(setenv(`$CMAKE ..`,CMAKE_ENV...))
+        cmake()
         run(`$MAKE -j`)
     catch
         @warn("Compiling not successful. Instruction: Check $oplibpath")
@@ -190,7 +193,7 @@ function compile(s::String)
     mkdir("build")
     cd("build")
     try
-        run(setenv(`$CMAKE ..`,CMAKE_ENV...))
+        cmake()
         run(`$MAKE -j`)
     catch e 
         error("Compilation error: $e")
@@ -303,7 +306,7 @@ function test_custom_op()
     rm("build", recursive=true, force=true)
     mkdir("build")
     cd("build")
-    run(setenv(`$CMAKE ..`,CMAKE_ENV...))
+    cmake()
     run(`$MAKE -j`)
     cd("..")
     include("gradtest.jl")
