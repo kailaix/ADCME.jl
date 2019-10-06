@@ -36,7 +36,7 @@ end
 
 ############### custom operators ##################
 function cmake()
-    run(`export CC=$CC` & `export CXX=$CXX` & `$CMAKE ..`)
+    run(withenv(`$CMAKE ..`, "CC"=>CC, "CXX"=>CXX))
 end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
