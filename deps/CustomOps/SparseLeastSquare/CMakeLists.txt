@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(TFApp)
 
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
+
 set (CMAKE_CXX_STANDARD 11)
 # C++11 required for tensorflow
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
