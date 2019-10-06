@@ -32,10 +32,10 @@ if Sys.islinux()
     if !("gcc" in Conda._installed_packages())
         Conda.add("gcc", channel="anaconda")
         Conda.add("libgcc")
-        if !("libstdc++.so.6" in readdir(Conda.LIBDIR))
-            @info "Making a symbolic link for libgcc"
-            symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
-        end
+    end
+    if !("libstdc++.so.6" in readdir(Conda.LIBDIR))
+        @info "Making a symbolic link for libgcc"
+        symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
     end
 end
 
