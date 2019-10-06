@@ -33,6 +33,7 @@ if Sys.islinux()
         Conda.add("gcc", channel="anaconda")
         Conda.add("libgcc")
     end
+    rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
     @info "Making a symbolic link for libgcc"
     symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
 end
