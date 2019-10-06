@@ -17,13 +17,15 @@ using Pkg; Pkg.build("PyCall")""")
 end
 
 @info "Install CONDA dependencies..."
+run(`$PIP install tensorflow==$tf_ver`)
+run(`$PIP install tensorflow-probability==0.7`)
+
 pkgs = Conda._installed_packages()
-for pkg in ["python=3.6", "zip", "unzip", "make", "cmake", "tensorflow-probability=0.7"]
+for pkg in ["python=3.6", "zip", "unzip", "make", "cmake"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
 
-run(`$PIP install tensorflow==$tf_ver`)
 if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
     @info "Add tensorflow-gpu"
     # Conda.add("tensorflow-gpu=$tf_ver")
