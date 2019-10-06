@@ -4,6 +4,10 @@ using Pkg
 # assumption: PyCall and Conda are installed, and PyCall.conda==true 
 
 tf_ver = "1.14"
+PYTHON = joinpath(Conda.BINDIR, "python")
+PIP = joinpath(Conda.BINDIR, "pip")
+ZIP = joinpath(Conda.BINDIR, "zip")
+UNZIP = joinpath(Conda.BINDIR, "unzip")
 
 if !PyCall.conda
     error("""ADCME requires that PyCall use the Conda.jl Python.
@@ -14,14 +18,16 @@ end
 
 @info "Install CONDA dependencies..."
 pkgs = Conda._installed_packages()
-for pkg in ["python=3.6", "zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7"]
+for pkg in ["python=3.6", "zip", "unzip", "make", "cmake", "tensorflow-probability=0.7"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
 
+run(`$PIP install tensorflow==$tf_ver`)
 if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
     @info "Add tensorflow-gpu"
-    Conda.add("tensorflow-gpu=$tf_ver")
+    # Conda.add("tensorflow-gpu=$tf_ver")
+    run(`$PIP install tensorflow-gpu==$tf_ver`)
 end
 
 
@@ -38,10 +44,7 @@ if Sys.islinux()
     symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
 end
 
-PYTHON = joinpath(Conda.BINDIR, "python")
-PIP = joinpath(Conda.BINDIR, "pip")
-ZIP = joinpath(Conda.BINDIR, "zip")
-UNZIP = joinpath(Conda.BINDIR, "unzip")
+
 
 function install_custom_op_dependency()
     LIBDIR = "$(Conda.LIBDIR)/Libraries"
