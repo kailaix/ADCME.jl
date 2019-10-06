@@ -313,7 +313,7 @@ function test_custom_op()
     cd("build")
     cmake()
     run(`$MAKE -j`)
-    cd("..")
+    cd("$(@__DIR__)/../deps/CustomOps/SparseSolver")
     include("gradtest.jl")
     cd(PWD)
     true
