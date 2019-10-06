@@ -306,6 +306,7 @@ function toc(o::PyObject, i::Union{PyObject, Integer}=0)
 end
 
 function test_custom_op()
+    PWD = pwd()
     cd("$(@__DIR__)/../deps/CustomOps/SparseSolver")
     rm("build", recursive=true, force=true)
     mkdir("build")
@@ -314,4 +315,6 @@ function test_custom_op()
     run(`$MAKE -j`)
     cd("..")
     include("gradtest.jl")
+    cd(PWD)
+    true
 end

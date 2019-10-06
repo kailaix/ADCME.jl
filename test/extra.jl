@@ -22,3 +22,7 @@ end
         @test run(sess, t)>0.0
     end
 end
+
+@testset "test_custom_op" begin
+    @test test_custom_op()
+end

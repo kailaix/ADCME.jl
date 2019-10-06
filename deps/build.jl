@@ -25,7 +25,7 @@ if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
 end
 
 if Sys.islinux() 
-    if "gcc" in Conda._installed_packages()    
+    if !("gcc" in Conda._installed_packages())
         Conda.add("gcc", channel="anaconda")
     end
 end
