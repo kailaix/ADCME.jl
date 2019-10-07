@@ -77,6 +77,8 @@ xmin = run(sess, x)
 end
 
 @testset "newton raphson" begin
+@test_skip begin
+
     A = rand(10,10)
     A = A'*A + I
     rhs = rand(10)
@@ -110,8 +112,10 @@ end
     uval = nr.x
     @test norm(uval-rs)<1e-3
 end
+end
 
 @testset "NonlinearConstrainedProblem" begin
+    @test_skip begin
     θ = Variable(1.8*ones(3))
     u0 = ones(3)
     function f1(θ, u)
@@ -157,6 +161,7 @@ end
     results = BFGS!(value_and_gradients_function, zeros(3))
     u = run(sess, results)
     @test u≈[2.;2.;2.]
+    end
 end
 
 @testset "verify_jacobian" begin
