@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(TFApp)
 
-set(EIGEN_INC ${CMAKE_CURRENT_SOURCE_DIR}/../../Libraries)
-execute_process(COMMAND julia -e "using Pkg; Pkg.add(\"PyCall\"); using PyCall;")
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
 execute_process(COMMAND julia -e "using PyCall; print(PyCall.python)" OUTPUT_VARIABLE PYTHON)
 set (CMAKE_CXX_STANDARD 11)
 # C++11 required for tensorflow

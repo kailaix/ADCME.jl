@@ -11,7 +11,7 @@
     sess1 = Session()
     load(sess1, "temp.mat", [a,b])
     @test run(sess1, [a,b])≈[1.0;2.0]
-    rm("temp.mat")
+    rm("temp.mat", force=true)
 end
 
 @testset "psave and pload" begin
@@ -23,7 +23,7 @@ def psave_test_function(x):
     psave(a, "temp.pkl")
     b = pload("temp.pkl")
     @test b(2)==3
-    rm("temp.pkl")
+    rm("temp.pkl", force=true)
 end
 
 @testset "diary" begin
@@ -39,5 +39,5 @@ end
     load(e, "mydiary")
     # activate(e)
 
-    rm("mydiary", recursive=true)
+    rm("mydiary", recursive=true, force=true)
 end

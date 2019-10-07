@@ -61,80 +61,70 @@ end
 end
 
 @testset "sparse_indexing" begin
-    @test_skip begin
-        B1 = sprand(10,10,0.3)
-        B = SparseTensor(B1)
-        @test run(sess, B[2:3,2:3])≈B1[2:3,2:3]
-        @test run(sess, B[2:3,:])≈B1[2:3,:]
-        @test run(sess, B[:,2:3])≈B1[:,2:3]
-    end
+    B1 = sprand(10,10,0.3)
+    B = SparseTensor(B1)
+    @test run(sess, B[2:3,2:3])≈B1[2:3,2:3]
+    @test run(sess, B[2:3,:])≈B1[2:3,:]
+    @test run(sess, B[:,2:3])≈B1[:,2:3]
 end
 
 @testset "sparse_solve" begin
-    @test_skip begin
-        A = sparse(I, 10,10) + sprand(10,10,0.1)
-        b = rand(10)
-        A1 = SparseTensor(A)
-        b1 = constant(b)
-        u = A1\b1
-        run(sess, u) ≈ A\b
-    end 
+    A = sparse(I, 10,10) + sprand(10,10,0.1)
+    b = rand(10)
+    A1 = SparseTensor(A)
+    b1 = constant(b)
+    u = A1\b1
+    run(sess, u) ≈ A\b
 end
 
 @testset "sparse_assembler" begin
-    @test_skip begin
-        accumulator, creater, initializer = SparseAssembler()
-        initializer(5)
-        op1 = accumulator(1, [1;2;3], ones(3))
-        op2 = accumulator(1, [3], [1.])
-        op3 = accumulator(2, [1;3], ones(2))
-        run(sess, [op1,op2,op3])
-        ii,jj,vv = creater()
-        i,j,v = run(sess, [ii,jj,vv])
-        A = sparse(i,j,v,5,5)
-        @test Array(A)≈[1.0  1.0  2.0  0.0  0.0
-                        1.0  0.0  1.0  0.0  0.0
-                        0.0  0.0  0.0  0.0  0.0
-                        0.0  0.0  0.0  0.0  0.0
-                        0.0  0.0  0.0  0.0  0.0]
-    end
+    accumulator, creater, initializer = SparseAssembler()
+    initializer(5)
+    op1 = accumulator(1, [1;2;3], ones(3))
+    op2 = accumulator(1, [3], [1.])
+    op3 = accumulator(2, [1;3], ones(2))
+    run(sess, [op1,op2,op3])
+    ii,jj,vv = creater()
+    i,j,v = run(sess, [ii,jj,vv])
+    A = sparse(i,j,v,5,5)
+    @test Array(A)≈[1.0  1.0  2.0  0.0  0.0
+                    1.0  0.0  1.0  0.0  0.0
+                    0.0  0.0  0.0  0.0  0.0
+                    0.0  0.0  0.0  0.0  0.0
+                    0.0  0.0  0.0  0.0  0.0]
 end
 
 @testset "sparse_least_square" begin
-    @test_skip begin
-        ii = Int32[1;1;2;2;3;3]
-        jj = Int32[1;2;1;2;1;2]
-        vv = Float64[1;2;3;4;5;6]
-        ff = Float64[1;1;1]
-        A = SparseTensor(ii, jj, vv, 3, 2)
-        o = A\ff
-        @test norm(run(sess, o)-[-1;1])<1e-6
-    end
+    ii = Int32[1;1;2;2;3;3]
+    jj = Int32[1;2;1;2;1;2]
+    vv = Float64[1;2;3;4;5;6]
+    ff = Float64[1;1;1]
+    A = SparseTensor(ii, jj, vv, 3, 2)
+    o = A\ff
+    @test norm(run(sess, o)-[-1;1])<1e-6
 end
 
 @testset "sparse mat mul" begin
-    @test_skip begin
-        A = sprand(10,5,0.3)
-        B = sprand(5,20,0.3)
-        C = A*B
-        CC = SparseTensor(A)*SparseTensor(B)
-        C_ = run(sess, CC)
-        @test C_≈C
+    A = sprand(10,5,0.3)
+    B = sprand(5,20,0.3)
+    C = A*B
+    CC = SparseTensor(A)*SparseTensor(B)
+    C_ = run(sess, CC)
+    @test C_≈C
 
-        A = spdiagm(0=>[1.;2.;3;4;5])
-        B = sprand(5,20,0.3)
-        C = A*B
-        CC = SparseTensor(A)*SparseTensor(B)
-        C_ = run(sess, CC)
-        @test C_≈C
+    A = spdiagm(0=>[1.;2.;3;4;5])
+    B = sprand(5,20,0.3)
+    C = A*B
+    CC = SparseTensor(A)*SparseTensor(B)
+    C_ = run(sess, CC)
+    @test C_≈C
 
-        A = sprand(10,5,0.5)
-        B = spdiagm(0=>[1.;2.;3;4;5])
-        C = A*B
-        CC = SparseTensor(A)*SparseTensor(B)
-        C_ = run(sess, CC)
-        @test C_≈C
-    end
+    A = sprand(10,5,0.5)
+    B = spdiagm(0=>[1.;2.;3;4;5])
+    C = A*B
+    CC = SparseTensor(A)*SparseTensor(B)
+    C_ = run(sess, CC)
+    @test C_≈C
 end
 
 @testset "spdiag" begin
@@ -155,16 +145,14 @@ end
 end
 
 @testset "sparse indexing" begin
-    @test_skip begin
-        i1 = unique(rand(1:20,3))
-        j1 = unique(rand(1:30,3))
-        A = sprand(20,30,0.3)
-        Ad = Array(A[i1, j1])
-        B = SparseTensor(A)
-        Bd = Array(B[i1, j1])
-        Bd_ = run(sess, Bd)
-        @test Ad≈Bd_
-    end
+    i1 = unique(rand(1:20,3))
+    j1 = unique(rand(1:30,3))
+    A = sprand(20,30,0.3)
+    Ad = Array(A[i1, j1])
+    B = SparseTensor(A)
+    Bd = Array(B[i1, j1])
+    Bd_ = run(sess, Bd)
+    @test Ad≈Bd_
 end
 
 @testset "sum" begin

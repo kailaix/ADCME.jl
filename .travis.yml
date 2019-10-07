@@ -16,7 +16,8 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update  ; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install hdf5; fi
   - julia -e 'using Pkg; Pkg.add("NLopt"); Pkg.add("Optim"); Pkg.add("Statistics"); Pkg.add("LinearAlgebra"); Pkg.add("PyCall"); Pkg.add("SparseArrays"); Pkg.add("Test")'
-  - julia -e 'ENV["PYTHON"] = readlines(`which python`)[1]; using Pkg; Pkg.build("PyCall")'
+  - julia -e 'using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")'
+  - julia -e 'using Conda; PIP = joinpath(Conda.BINDIR, "pip"); run(`$PIP install matplotlib scipy`)'
 notifications:
   email: false
 coveralls: true
@@ -28,11 +29,10 @@ jobs:
       script:
         - julia --project=docs/ -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("PyCall");  Pkg.add("LinearAlgebra"); Pkg.develop(PackageSpec(path=pwd()));
                                                Pkg.instantiate()'
-        - julia --project=docs/ -e 'ENV["PYTHON"] = readlines(`which python`)[1]; using Pkg; Pkg.build("PyCall")'
         - julia --project=docs/ docs/make.jl
       after_success: skip
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
-
-
-  
+cache:
+  directories:
+  - /home/travis/.julia/conda/3/

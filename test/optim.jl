@@ -77,110 +77,112 @@ xmin = run(sess, x)
 end
 
 @testset "newton raphson" begin
-    @test_skip begin
-        A = rand(10,10)
-        A = A'*A + I
-        rhs = rand(10)
-        function newton_raphson_f(θ, u)
-            r = A*u - rhs
-            r, constant(A)
-        end
-        nr = newton_raphson(newton_raphson_f, zeros(10), missing, options=Dict("verbose"=>true))
-        nr = run(sess, nr)
-        @test nr.x≈A\rhs
+@test_skip begin
 
-        u0 = rand(10)
-        function newton_raphson_f2(θ, u)
-            r = u^3+u - u0
-            r, spdiag(3u^2+1.0)
-        end
-        nr = newton_raphson(newton_raphson_f2, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
-        nr = run(sess, nr)
-        uval = nr.x
-        @test norm(uval.^3+uval-u0)<1e-3
-
-        # least square
-        u0 = rand(10)
-        rs = rand(10)
-        function newton_raphson_f3(θ, u)
-            r = [u^2;u] - [rs.^2;rs]
-            r, [spdiag(2*u); spdiag(10)]
-        end
-        nr = newton_raphson(newton_raphson_f3, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
-        nr = run(sess, nr)
-        uval = nr.x
-        @test norm(uval-rs)<1e-3
+    A = rand(10,10)
+    A = A'*A + I
+    rhs = rand(10)
+    function newton_raphson_f(θ, u)
+        r = A*u - rhs
+        r, constant(A)
     end
+    nr = newton_raphson(newton_raphson_f, zeros(10), missing, options=Dict("verbose"=>true))
+    nr = run(sess, nr)
+    @test nr.x≈A\rhs
+
+    u0 = rand(10)
+    function newton_raphson_f2(θ, u)
+        r = u^3+u - u0
+        r, spdiag(3u^2+1.0)
+    end
+    nr = newton_raphson(newton_raphson_f2, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
+    nr = run(sess, nr)
+    uval = nr.x
+    @test norm(uval.^3+uval-u0)<1e-3
+
+    # least square
+    u0 = rand(10)
+    rs = rand(10)
+    function newton_raphson_f3(θ, u)
+        r = [u^2;u] - [rs.^2;rs]
+        r, [spdiag(2*u); spdiag(10)]
+    end
+    nr = newton_raphson(newton_raphson_f3, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
+    nr = run(sess, nr)
+    uval = nr.x
+    @test norm(uval-rs)<1e-3
+end
 end
 
 @testset "NonlinearConstrainedProblem" begin
     @test_skip begin
-        θ = Variable(1.8*ones(3))
-        u0 = ones(3)
-        function f1(θ, u)
-            r = u+u^3-θ
-            A = spdiag(3u^2+1.0)
-            r, A
-        end
-        function L1(u)
-            return sum((u-u0)^2)
-        end
+    θ = Variable(1.8*ones(3))
+    u0 = ones(3)
+    function f1(θ, u)
+        r = u+u^3-θ
+        A = spdiag(3u^2+1.0)
+        r, A
+    end
+    function L1(u)
+        return sum((u-u0)^2)
+    end
+    l, u, g = NonlinearConstrainedProblem(f1,L1,θ,zeros(3))
+    # the negative gradients and vars are (-g, θ)
+    opt_ = AdamOptimizer(1e-1).apply_gradients([(g, θ)])
+    init(sess)
+    for i = 1:500
+        run(sess, opt_)
+    end
+    @test norm(run(sess, θ)-2.0*ones(3))<1e-8
+
+
+    θ = constant(ones(1))
+    u0 = ones(3)
+    Random.seed!(233)
+    A = round.(rand(3, 3), digits=1)
+    t = zeros(3); t[1:2].=1.0
+    function f1(θ, u)
+        # r = u-sum(θ)^2-t*sum(θ)
+        # A = spdiag(length(u))
+        # r, A
+        # -t*sum(θ)
+        A*u-[sum(θ);sum(θ);constant(0.0)], constant(A)
+    end
+    function L1(u)
+        return sum(u)
+    end
+    verify_NonlinearConstrainedProblem(sess, f1,L1,θ,u0); 
+    close("all")
+
+    function value_and_gradients_function(θ)
         l, u, g = NonlinearConstrainedProblem(f1,L1,θ,zeros(3))
-        # the negative gradients and vars are (-g, θ)
-        opt_ = AdamOptimizer(1e-1).apply_gradients([(g, θ)])
-        init(sess)
-        for i = 1:500
-            run(sess, opt_)
-        end
-        @test norm(run(sess, θ)-2.0*ones(3))<1e-8
-
-
-        θ = constant(ones(1))
-        u0 = ones(3)
-        Random.seed!(233)
-        A = round.(rand(3, 3), digits=1)
-        t = zeros(3); t[1:2].=1.0
-        function f1(θ, u)
-            # r = u-sum(θ)^2-t*sum(θ)
-            # A = spdiag(length(u))
-            # r, A
-            # -t*sum(θ)
-            A*u-[sum(θ);sum(θ);constant(0.0)], constant(A)
-        end
-        function L1(u)
-            return sum(u)
-        end
-        verify_NonlinearConstrainedProblem(sess, f1,L1,θ,u0); 
-        close("all")
-
-        function value_and_gradients_function(θ)
-            l, u, g = NonlinearConstrainedProblem(f1,L1,θ,zeros(3))
-            l, g
-        end
-        results = BFGS!(value_and_gradients_function, zeros(3))
-        u = run(sess, results)
-        @test u≈[2.;2.;2.]
+        l, g
+    end
+    results = BFGS!(value_and_gradients_function, zeros(3))
+    u = run(sess, results)
+    @test u≈[2.;2.;2.]
     end
 end
 
 @testset "verify_jacobian" begin
-    @test_skip begin
-        u0 = rand(10)
-        function verify_jacobian_f(θ, u)
-            r = u^3+u - u0
-            r, spdiag(3u^2+1.0)
-        end
-        verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+@test_skip begin
 
-        # least square
-        u0 = rand(10)
-        rs = rand(10)
-        function verify_jacobian_f(θ, u)
-            r = [u^2;u] - [rs;rs]
-            r, [spdiag(2*u); spdiag(10)]
-        end
-        verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+    u0 = rand(10)
+    function verify_jacobian_f(θ, u)
+        r = u^3+u - u0
+        r, spdiag(3u^2+1.0)
     end
+    verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+
+    # least square
+    u0 = rand(10)
+    rs = rand(10)
+    function verify_jacobian_f(θ, u)
+        r = [u^2;u] - [rs;rs]
+        r, [spdiag(2*u); spdiag(10)]
+    end
+    verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+end
 end
 
 

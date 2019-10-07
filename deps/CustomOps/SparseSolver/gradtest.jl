@@ -46,7 +46,7 @@ end
 
 # sparse_solver = py"sparse_solver"
 # ################## End Load Operator ##################
-sparse_solver = load_op_and_grad("./build/libSparseSolver", "sparse_solver")
+sparse_solver = load_op_and_grad("$(@__DIR__)/build/libSparseSolver", "sparse_solver")
 
 # TODO:
 d0 = 30

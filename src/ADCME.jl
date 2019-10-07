@@ -13,6 +13,7 @@ module ADCME
     using Random
     using LinearAlgebra
     using PyPlot
+    using Conda
     
 
     tf = PyNULL()
@@ -36,15 +37,38 @@ module ADCME
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
+    CC = joinpath(Conda.BINDIR, "gcc")
+    CXX = joinpath(Conda.BINDIR, "g++")
+    CMAKE = joinpath(Conda.BINDIR, "cmake")
+    MAKE = joinpath(Conda.BINDIR, "make")
+    TFLIB = nothing
     
+
     function __init__()
-        install_custom_op_dependency() # always install dependencies
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
-        copy!(tf, (@suppress pyimport("tensorflow")))
-        copy!(tfops, (@suppress pyimport("tensorflow.python.framework.ops")))
-        copy!(tfp, (@suppress pyimport("tensorflow_probability")))
-        copy!(gradients_impl, (@suppress pyimport("tensorflow.python.ops.gradients_impl")))
-        copy!(pickle, (@suppress pyimport("pickle")))
+        # install_custom_op_dependency() # always install dependencies
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, TFLIB
+        if haskey(ENV, "LD_LIBRARY_PATH")
+            ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR*":"*ENV["LD_LIBRARY_PATH"]
+        else
+            ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR
+        end
+            
+        PYTHON = joinpath(Conda.BINDIR, "python")
+        
+        if PYTHON!=PyCall.python
+            error("""PyCall python and TensorFlow python does not match.
+$(PyCall.python) vs $PYTHON
+Instruction:
+ENV["PYTHON"] = "$PYTHON"
+using Pkg; Pkg.build("PyCall")
+""")
+        end
+        
+        copy!(tf, (@suppress pyimport_conda("tensorflow","tensorflow")))
+        copy!(tfops, (@suppress pyimport_conda("tensorflow.python.framework.ops","tensorflow")))
+        copy!(tfp, (@suppress pyimport_conda("tensorflow_probability","tensorflow_probability")))
+        copy!(gradients_impl, (@suppress pyimport_conda("tensorflow.python.ops.gradients_impl","tensorflow")))
+        copy!(pickle, (@suppress pyimport_conda("pickle", "pickle")))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
@@ -56,6 +80,7 @@ module ADCME
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
+        TFLIB = joinpath(splitdir(tf.__file__)[1], "libtensorflow_framework.so")
     end
 
     include("core.jl")

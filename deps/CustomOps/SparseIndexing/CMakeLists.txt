@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(TFApp)
 
-##  For PyTorch
-# execute_process(COMMAND julia -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch\"))|>print" OUTPUT_VARIABLE PREFIX)
-# execute_process(COMMAND julia -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../examples/custom_op/headers\"))|>print" OUTPUT_VARIABLE HEADERS)
-execute_process(COMMAND julia -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries\"))|>print" OUTPUT_VARIABLE EIGEN_INC)
-# execute_process(COMMAND julia -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch/include\"))|>print" OUTPUT_VARIABLE TORCH_INC)
-# set(CMAKE_PREFIX_PATH ${PREFIX})
-# find_package(Torch REQUIRED)
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
 
 set (CMAKE_CXX_STANDARD 11)
 # C++11 required for tensorflow
