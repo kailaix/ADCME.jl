@@ -25,5 +25,6 @@ to load the package, use
 ```julia
 using ADCME
 ```
-The building process will check the dependencies (`tensorflow`, `tensorflow-probability`, etc.) If the install is not successful, check your system and make sure `tensorflow==1.14` and `tensorflow-probability==0.7` are properly installed.
+
+
 

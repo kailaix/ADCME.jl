@@ -58,9 +58,11 @@ module ADCME
         if PYTHON!=PyCall.python
             error("""PyCall python and TensorFlow python does not match.
 $(PyCall.python) vs $PYTHON
-Instruction:
-ENV["PYTHON"] = "$PYTHON"
-using Pkg; Pkg.build("PyCall")
+Rebuild PyCall with 
+
+julia> ENV["PYTHON"] = "$PYTHON"
+julia> using Pkg; Pkg.build("PyCall")
+
 """)
         end
         

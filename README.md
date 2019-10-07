@@ -6,7 +6,6 @@
 
 ![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=master)
 ![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev)
 
 
 ![](examples/md/demo.png)
@@ -20,6 +19,12 @@ Several features of the library are
 * *Numerical Scheme*. Easy to implement numerical shemes for solving PDEs.
 * *Static graphs*. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
 * *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorate optimizer. 
+
+| Documentation                                                |
+| ------------------------------------------------------------ |
+| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) |
+
+
 
 # Installation
 
@@ -110,10 +115,9 @@ Under the hood, a computational graph is created for gradients back-propagation.
 # More Documentation
 
 1. [The Power of `while_loop` -- Application to Finite Element Analysis](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/while_loop.ipynb)
-2. [Writing Custom Operators in `ADCME.jl`](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/custom_op.ipynb)
-3. [TensorFlow Meets PyTorch: Using PyTorch to Create TensorFlow Custom Operators](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/pytorch.ipynb)
-4. [Four Types of Forward Simulation Operators to Consider in Automatic Differentiation](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/four_types.ipynb)
-5. [Calling Julia from TensorFlow](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/julia_customop.ipynb)
+2. [TensorFlow Meets PyTorch: Using PyTorch to Create TensorFlow Custom Operators](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/pytorch.ipynb)
+3. [Four Types of Forward Simulation Operators to Consider in Automatic Differentiation](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/four_types.ipynb)
+4. [Calling Julia from TensorFlow](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/julia_customop.ipynb)
 
 # Research Work
 

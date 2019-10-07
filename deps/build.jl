@@ -12,20 +12,20 @@ UNZIP = joinpath(Conda.BINDIR, "unzip")
 if !PyCall.conda
     error("""ADCME requires that PyCall use the Conda.jl Python.
 Rebuild PyCall with
-ENV["PYTHON"] = ""
-using Pkg; Pkg.build("PyCall")""")
+
+julia> ENV["PYTHON"] = ""
+julia> using Pkg; Pkg.build("PyCall")
+
+""")
 end
 
 @info "Install CONDA dependencies..."
 pkgs = Conda._installed_packages()
-for pkg in ["python=3.6", "zip", "unzip", "make", "cmake"]
+for pkg in ["python=3.6", "zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
 run(`$PIP install matplotlib`)
-run(`$PIP install tensorflow==$tf_ver`)
-run(`$PIP install tensorflow-probability==0.7`)
-
 
 if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
     @info "Add tensorflow-gpu"
@@ -34,20 +34,12 @@ if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
 end
 
 
-# useful command for debug
-# readelf -p .comment libtensorflow_framework.so 
-# strings libstdc++.so.6 | grep GLIBCXX
-if Sys.islinux() 
-    if !("gcc-5" in Conda._installed_packages())
-        Conda.add("gcc-5", channel="psi4")
-        Conda.add("libgcc")
-    end
-    rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
-    @info "Making a symbolic link for libgcc"
-    symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
+@info "Fix libtensorflow_framework.so..."
+if haskey(ENV, "LD_LIBRARY_PATH")
+    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*"$(Conda.LIBDIR)"))
+else
+    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>"$(Conda.LIBDIR)"))
 end
-
-
 
 function install_custom_op_dependency()
     LIBDIR = "$(Conda.LIBDIR)/Libraries"
@@ -108,9 +100,31 @@ end
 
 install_custom_op_dependency()
 
-@info "Fix libtensorflow_framework.so..."
-if haskey(ENV, "LD_LIBRARY_PATH")
-    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*"$(Conda.LIBDIR)"))
-else
-    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>"$(Conda.LIBDIR)"))
+# useful command for debug
+# readelf -p .comment libtensorflow_framework.so 
+# strings libstdc++.so.6 | grep GLIBCXX
+if Sys.islinux() 
+    tflib = joinpath(Conda.LIBDIR, "python3.6/site-packages/tensorflow/libtensorflow_framework.so")
+    verinfo = read(`readelf -p .comment $tflib`, String)
+    if occursin("5.4.", verinfo)
+        if !("gcc-5" in Conda._installed_packages())
+            Conda.add("gcc-5", channel="psi4")
+            Conda.add("libgcc")
+        end
+    elseif occursin("4.8.", verinfo)
+        if !("gcc" in Conda._installed_packages())
+            Conda.add("gcc", channel="anaconda")
+            Conda.add("libgcc")
+        end
+    else
+        error("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
+1. Continue using ADCME. You are responsible for the compatible issue of GCC versions for custom operators.
+2. Report to the author of ADCME by opening an issue in https://github.com/kailaix/ADCME.jl/
+Compiler information:
+$verinfo
+")
+    end
+    rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
+    @info "Making a symbolic link for libgcc"
+    symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
 end
