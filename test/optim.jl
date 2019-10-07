@@ -165,6 +165,8 @@ end
 end
 
 @testset "verify_jacobian" begin
+@test_skip begin
+
     u0 = rand(10)
     function verify_jacobian_f(θ, u)
         r = u^3+u - u0
@@ -180,6 +182,7 @@ end
         r, [spdiag(2*u); spdiag(10)]
     end
     verify_jacobian(sess, verify_jacobian_f, missing, u0); close("all")
+end
 end
 
 
