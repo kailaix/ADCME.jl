@@ -1,3 +1,5 @@
+# API Reference
+
 ## Core Functions
 ```@autodocs
 Modules = [ADCME]

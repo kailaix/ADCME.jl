@@ -287,3 +287,17 @@ end
     v = vector(2:11, m[2:11], 20)
     @test run(sess, v)≈m
 end
+
+@testset "repeat" begin
+    A = constant(2.0)
+    @test run(sess, repeat(A, 2)) ≈ ones(2)*2.0
+    @test run(sess, repeat(A, 1, 2)) ≈ ones(1, 2)*2.0
+    a = rand(2)
+    A = constant(a)
+    @test run(sess, repeat(A, 2)) ≈ repeat(a, 2)
+    @test run(sess, repeat(A, 3, 2)) ≈ repeat(a, 3, 2)
+    a = rand(2, 4)
+    A = constant(a)
+    @test run(sess, repeat(A, 2)) ≈ repeat(a, 2)
+    @test run(sess, repeat(A, 3, 2)) ≈ repeat(a, 3, 2)
+end

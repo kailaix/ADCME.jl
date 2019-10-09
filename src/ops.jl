@@ -660,3 +660,28 @@ function vector(i::Union{Array{T}, PyObject, UnitRange, StepRange}, v::Union{Arr
     s = reshape(s, 1)
     tf.scatter_nd(i, v, s)
 end
+
+function Base.:repeat(o::PyObject, i::Int64, j::Int64)
+    if length(size(o))==0
+        return o*ones(eltype(o), i, j)
+    end
+    if length(size(o))==1
+        o = reshape(o, :, 1)
+    end
+    if length(size(o))!=2
+        error("ADCME: size of `o` must be 0, 1, 2")
+    end
+    tf.tile(o, (i,j))
+end
+
+function Base.:repeat(o::PyObject, i::Int64)
+    if length(size(o))==0
+        o * ones(eltype(o),i)
+    elseif length(size(o))==1
+        squeeze(repeat(o, i, 1))
+    elseif length(size(o))==2
+        repeat(o, i, 1)
+    else
+        error("ADCME: rank of `o` must be 0, 1, 2")
+    end
+end

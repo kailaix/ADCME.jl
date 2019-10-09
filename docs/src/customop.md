@@ -1,5 +1,6 @@
-## Basic Usage
+# Custom Operators
 
+## Basic Usage
 Custom operators are ways to add missing features in ADCME. Typically users do not have to worry about custom operators. However, in the following situation custom opreators might be very useful
 
 - Direct implementation in ADCME is inefficient (bottleneck). 

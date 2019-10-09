@@ -1,8 +1,8 @@
-# The Power of `while_loop` -- Application to Finite Element Analysis
+# While Loops
 
-##Why are loops important and challenging?
+## Motivation
 
-In science and engineering computing, we often encounter loops. For inverse modeling, it is usually desirable that we can compute the gradients of a forward simulation code even if there exists sophisticated loops. This is, however, not a trivial task in consideration of the large number of loops. For example, we have a piece of forward simulation codes
+In engineering, we usually need to do for loops, e.g., time stepping, finite element matrix assembling, etc. In pseudocode, we have
 
 ```julia
 for i = 1:1000000
@@ -11,11 +11,11 @@ for i = 1:1000000
 end
 ```
 
-To be able to compute the gradients, we need to create 1000000 subgraphs for `do_some_simulation` under the hood to track the data flow. This will be very inefficient especially when graph optimization is conducted before execution. 
+To do automatic differentiation in ADCME, direct implemnetation in the above way incurs creation of 1000000 subgraphs, which requires large memories and long dependency parsing time. 
 
 `TensorFlow` provides us a clever way to do loops, where only one graph is created for the whole loops. The basic idea is to create a `while_loop` graph based on five primitives, and the corresponding graph for backpropagation is constructed thereafter. 
 
-## A simple example
+## A Simple Example
 
 As a simple example, we consider assemble the external load vector for linear finite elements in 1D. Assume that the load distribution is $f(x)=1-x^2$, $x\in[0,1]$. The goal is to compute a vector $\mathbf{v}$ with $v_i=\int_{0}^1 f(x)\phi_i(x)dx$, where $\phi_i(x)$ is the $i$-th linear element. 
 
@@ -24,11 +24,7 @@ The pseudocode for this problem is shown in the following
 ```pseudocode
 F = zeros(ne+1) // ne is the total number of elements
 for e = 1:ne
-	x_mid = middle point of element e
-	h = length of element e
-	f_mid = f(x_mid)
-	F[global index of left end point of e] += f_mid*h/2
-	F[global index of right end point of e] += f_mid*h/2
+	add load contribution to F[e] and F[e+1]
 end
 ```
 
@@ -47,8 +43,7 @@ function cond0(i, F_arr)
 end
 function body(i, F_arr)
     fmid = f(cast(i-2, Float64)*h+h/2)
-    F = constant(zeros(ne+1))
-    F = scatter_add(F, [i-1;i], [fmid*h/2;fmid*h/2])
+    F = vector([i-1;i], [fmid*h/2;fmid*h/2], ne+1)
     F_arr = write(F_arr, i, F)
     i+1, F_arr
 end
@@ -60,7 +55,6 @@ _, out = while_loop(cond0, body, [i,F_arr]; parallel_iterations=10)
 F = sum(stack(out), dims=1)
 sess = Session(); init(sess)
 F0 = run(sess, F)
-
 ```
 
 
@@ -68,27 +62,19 @@ F0 = run(sess, F)
 ## A practical application
 
 In this section, we demonstrate how to assemble a finite element matrix based on `while_loop` for a 2D Poisson problem. We consider the following problem
-$$
-\begin{aligned}
+$$\begin{aligned}
 \nabla \cdot ( D\nabla u(\mathbf{x}) ) &= f(\mathbf{x})& \mathbf{x}\in \Omega\\
 u(\mathbf{x}) &= 0 & \mathbf{x}\in \partial \Omega
-\end{aligned}
-$$
+\end{aligned}$$
 Here $\Omega$ is the unit disk. We consider a simple case, where
-$$
-\begin{aligned}
+$$\begin{aligned}
 D&=\mathbf{I}\\
 f(\mathbf{x})&=-4
-\end{aligned}
-$$
+\end{aligned}$$
 Then the exact solution will be 
-$$
-u(\mathbf{x}) = 1-x^2-y^2
-$$
+$$u(\mathbf{x}) = 1-x^2-y^2$$
 The weak formulation is
-$$
-\langle \nabla v(\mathbf{x}), D\nabla u(\mathbf{x}) \rangle = \langle f(\mathbf{x}),v(\mathbf{x}) \rangle
-$$
+$$\langle \nabla v(\mathbf{x}), D\nabla u(\mathbf{x}) \rangle = \langle f(\mathbf{x}),v(\mathbf{x}) \rangle$$
 We  split $\Omega$ into triangles $\mathcal{T}$ and use piecewise linear basis functions. Typically, we would iterate over all elements and compute the local stiffness matrix for each element. However, this could result in a large loop if we use a fine mesh. Instead, we can use `while_loop` to complete the task. In `ADCME`, the syntax for `while_loop` is 
 
 ```julia
