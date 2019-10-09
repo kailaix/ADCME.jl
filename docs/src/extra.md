@@ -1,7 +1,20 @@
-# Additional Tools
+# Miscellaneous Tools
 
 There are many handy tools implemented in `ADCME` for analysis, benchmarking, input/output, etc. 
 
+## Debugging and printing
+
+Add the following line before `Session` and change `tf.Session` to see verbose printing (such as GPU/CPU information)
+```julia
+tf.debugging.set_log_device_placement(true)
+```
+
+`tf.print` can be used for printing tensor values. It must be binded with an executive operator.
+```julia
+# a, b are tensors, and b is executive
+op = tf.print(a)
+b = bind(b, op)
+```
 
 ## Benchmarking
 

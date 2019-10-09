@@ -1,8 +1,8 @@
-#Four Types of Forward Simulation Operators to Consider in Automatic Differentiation
+# Forward Operator Types
 
 All numerical simulations can be decomposed into operators that are chained together. These operators range from a simple arithmetic operation such as addition or multiplication, to more sophisticated computation such as solving a linear system. Automatic differentiation relies on the differentiation of those operators and integrates them with chain rules. Therefore, it is very important for us to study the basic types of existing operators. 
 
-![Operators](sim.png)
+![Operators](asset/sim.png)
 
 In this tutorial, a operator is defined as a numerical procedure that accepts a parameter called *input*, $x$, and turns out a parameter called *ouput*, $y=f(x)$. For reverse mode automatic differentiation, besides evaluating $f(x)$, we need also to compute $\frac{\partial J}{\partial x}$ given $\frac{\partial J}{\partial y}$ where $J$ is a functional of $y$. 
 

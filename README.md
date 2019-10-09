@@ -37,14 +37,12 @@ pkg> add ADCME
 ```
 
 3. (Optional) Test `ADCME.jl`
-
 ```
 julia> ]
 pkg> test ADCME
 ```
 
 4. (Optional) Additional Test
-
 If you want to use `customop()` and test the utility, test with the following command
 ```
 julia> test_custom_op()
@@ -58,9 +56,6 @@ For custom operators, the TensorFlow shared library compiler (see [here](https:/
 | `ADCME.TFLIB` | `libtensorflow_framework.so` location |
 | `ADCME.CMAKE` | Cmake binary location                 |
 | `ADCME.MAKE`  | Make binary location                  |
-
-
-
 
 # Tutorial
 
@@ -112,12 +107,8 @@ Under the hood, a computational graph is created for gradients back-propagation.
 
 ![](examples/md/code.png)
 
-# More Documentation
 
-1. [The Power of `while_loop` -- Application to Finite Element Analysis](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/while_loop.ipynb)
-2. [TensorFlow Meets PyTorch: Using PyTorch to Create TensorFlow Custom Operators](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/pytorch.ipynb)
-3. [Four Types of Forward Simulation Operators to Consider in Automatic Differentiation](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/four_types.ipynb)
-4. [Calling Julia from TensorFlow](https://github.com/kailaix/ADCME.jl/tree/master/examples/md/julia_customop.ipynb)
+For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
 # Research Work
 

@@ -1,4 +1,4 @@
-# Calling Julia from TensorFlow
+# Julia Custom Operators
 
 In scientific and engineering applications, the operators provided by `TensorFlow` are not sufficient for high performance computing. In addition, constraining oneself to `TensorFlow` environment sacrifices the powerful scientific computing ecosystems provided by other languages such as `Julia` and `Python`. For example, one might want to code a finite volume method for a sophisticated fluid dynamics problem; it is hard to have the flexible syntax to achieve this goal, obtain performance boost from existing fast solvers such as AMG, and benefit from many other third-party packages within `TensorFlow`. This motivates us to find a way to "plugin" custom operators to `TensorFlow`.
 

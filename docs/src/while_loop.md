@@ -32,7 +32,7 @@ for e = 1:ne
 end
 ```
 
-![](externalforce.png)
+![](asset/externalforce.png)
 
 However, if `ne` is very large, writing explicit loops is unwise since it will create `ne` subgraphs. `while_loop` can be very helpful in this case (the script can also be found in https://github.com/kailaix/ADCME.jl/tree/master/examples/while_loop/while_loop_simple.jl)
 
@@ -178,7 +178,7 @@ before we call `while_loop`. This is because we need to initialize the `TensorAr
 
 Finally, we stack the `TensorArray` into a tensor and vectorized it according to the row major. This serves as the output of `assemble_FEM`. The complete script for solving this problem is [here](https://github.com/kailaix/ADCME.jl/tree/master/examples/while_loop/while_loop.jl) and the following plot shows the numerical result and corresponding reference solution. 
 
-![Result for the Poisson Problem](while_loop.png)
+![Result for the Poisson Problem](asset/while_loop.png)
 
 ## Gradients that backpropagate through loops
 

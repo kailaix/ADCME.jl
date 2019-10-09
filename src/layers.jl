@@ -25,6 +25,7 @@ BatchNormalization,
 Dropout,
 ae,
 num_ae,
+ae_init,
 ae_to_code,
 sparse_softmax_cross_entropy_with_logits
 
@@ -118,6 +119,27 @@ function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::U
         net = squeeze(net)
     end
     return net
+end
+
+
+"""
+    ae_init(sess::PyObject, x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64})
+
+Return the initial weights and bias values by TensorFlow as a vector.
+"""
+function ae_init(sess::PyObject, x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64})
+    @warn "This function will destroy the current session"
+    reset_default_graph()
+    y = ae(x, output_dims, "internal")
+    vs = get_collection()
+    sess = Session()
+    init(sess)
+    vs = run(sess, vs)
+    vals = Array{Float64}[]
+    for v in vs
+        push!(vals, v[:])
+    end
+    vcat(vals...)
 end
 
 """
