@@ -130,9 +130,7 @@ function einsum(equation, args...; kwargs...)
     tf.einsum(equation, args...; kwargs...)
 end
 
-"""
-`reshape` is designed so that we can think of tensors in column major
-"""
+
 function reshape(o::PyObject, s::Integer; kwargs...)
     if length(size(o))==2
         return tf.reshape(o', [s]; kwargs...)
@@ -285,11 +283,6 @@ assign(o::Array{PyObject}, value::Array, args...;kwargs...) = group_assign(o, va
 
 
 @deprecate group_assign assign
-"""
-group_assign(os::Array{PyObject}, values, args...; kwargs...)
-
-apply `assign` to each element of `os` and `values`
-"""
 function group_assign(os::Array{PyObject}, values, args...; kwargs...)
     ops = Array{PyObject}(undef, length(os))
     for i = 1:length(os)

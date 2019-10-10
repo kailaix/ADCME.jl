@@ -7,8 +7,7 @@ lsgan,
 sample,
 predict
 """
-`GAN(dat::PyObject, generator::Function, gan::GAN,
-loss::Union{String, Function, Missing}=missing; latent_dim::Union{Missing, Int64}=missing, batch_size::Union{Missing, Int64}=missing)`
+    GAN(dat::PyObject, generator::Function, gan::GAN,loss::Union{String, Function, Missing}=missing; latent_dim::Union{Missing, Int64}=missing, batch_size::Union{Missing, Int64}=missing)
 
 Users must provide: `dat`, `generator`, `discriminator`, `loss` (string or function) 
 Alternative argument: `latent_dim`, `batch_size`

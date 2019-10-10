@@ -44,49 +44,34 @@ function minimize(o::PyObject, loss::PyObject; kwargs...)
 end
 
 """
-ScipyOptimizerInterface(
-    loss,
-    var_list=None,
-    equalities=None,
-    inequalities=None,
-    var_to_bounds=None,
-    **optimizer_kwargs
-)
-https://www.tensorflow.org/api_docs/python/tf/contrib/opt/ScipyOptimizerInterface
+    ScipyOptimizerInterface(loss; method="L-BFGS-B", options=Dict("maxiter"=> 15000, "ftol"=>1e-12, "gtol"=>1e-12), kwargs...)
+
+A simple interface for Scipy Optimizer. See also [`ScipyOptimizerMinimize`](@ref) and [`BFGS!`](@ref).
 """
 ScipyOptimizerInterface(loss; method="L-BFGS-B", options=Dict("maxiter"=> 15000, "ftol"=>1e-12, "gtol"=>1e-12), kwargs...) = 
             tf.contrib.opt.ScipyOptimizerInterface(loss; method = method, options=options, kwargs...)
 
 """
-ScipyOptimizerMinimize(
-    session=None,
-    feed_dict=None,
-    fetches=None,
-    step_callback=None,
-    loss_callback=None,
-    **run_kwargs
-)
-Minimize a scalar Tensor.
+    ScipyOptimizerMinimize(sess::PyObject, opt::PyObject; kwargs...)
 
-Variables subject to optimization are updated in-place at the end of optimization.
+Minimizes a scalar Tensor. Variables subject to optimization are updated in-place at the end of optimization.
 
 Note that this method does not just return a minimization Op, unlike `minimize`; instead it actually performs minimization by executing commands to control a Session
-https://www.tensorflow.org/api_docs/python/tf/contrib/opt/ScipyOptimizerInterface
+https://www.tensorflow.org/api_docs/python/tf/contrib/opt/ScipyOptimizerInterface. See also [`ScipyOptimizerInterface`](@ref) and [`BFGS!`](@ref).
 
-kwargs
-======
--- feed_dict: A feed dict to be passed to calls to session.run.
--- fetches: A list of Tensors to fetch and supply to loss_callback as positional arguments.
--- step_callback: A function to be called at each optimization step; arguments are the current values of all optimization variables flattened into a single vector.
--- loss_callback: A function to be called every time the loss and gradients are computed, with evaluated fetches supplied as positional arguments.
--- run_kwargs: kwargs to pass to session.run.
+
+- feed_dict: A feed dict to be passed to calls to session.run.
+- fetches: A list of Tensors to fetch and supply to loss_callback as positional arguments.
+- step_callback: A function to be called at each optimization step; arguments are the current values of all optimization variables flattened into a single vector.
+- loss_callback: A function to be called every time the loss and gradients are computed, with evaluated fetches supplied as positional arguments.
+- run_kwargs: kwargs to pass to session.run.
 """
 function ScipyOptimizerMinimize(sess::PyObject, opt::PyObject; kwargs...)
     opt.minimize(sess;kwargs...)
 end
 
 @doc """
-CustomOptimizer(opt::Function, name::String)
+    CustomOptimizer(opt::Function, name::String)
 
 creates a custom optimizer with struct name `name`. For example, we can integrate `Optim.jl` with `ADCME` by 
 constructing a new optimizer
@@ -166,9 +151,16 @@ end
 
 
 @doc """
-BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
+    BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
 
-`BFGS!` is a simplified interface for BFGS optimizer. 
+`BFGS!` is a simplified interface for BFGS optimizer. See also [`ScipyOptimizerInterface`](@ref).
+
+# example
+```julia
+a = Variable(1.0)
+loss = (a - 10.0)^2
+BFGS!(sess, loss)
+```
 """->
 function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
     __cnt = 0

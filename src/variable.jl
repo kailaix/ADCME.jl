@@ -123,13 +123,24 @@ function PyCall.:length(o::PyObject)
 end
 
 """
-gradients compute the gradients of ys w.r.t xs
-It incoperates `jacobian` and `hessian`
+    gradients(ys::PyObject, xs::PyObject; kwargs...)
+
+Computes the gradients of `ys` w.r.t `xs`. 
+
+- If `ys` is a scalar, `gradients` returns the gradients with the same shape as `xs`.
+- If `ys` is a vector, `gradients` returns the Jacobian $$\\frac{\\partial y}{\\partial x}$$
+
+!!! 
+```
+The second usage is not suggested since `ADCME` adopts reverse mode automatic differentiation. 
+Although in the case `ys` is a vector and `xs` is a scalar, `gradients` cleverly uses forward mode automatic differentiation,
+it requires that the second order gradients are implemented for relevant operators. 
+```
 """
 function gradients(ys::PyObject, xs::PyObject; kwargs...)
     s1 = size(ys)
     s2 = size(xs)
-    if s1==nothing && s2 == nothing
+    if isnothing(s1) && isnothing(s2)
         error("s1, s2 should be rank 0, 1, 2")
     end
     if length(s1)==0
@@ -167,12 +178,6 @@ function gradients(ys::Array{T}, xs::PyObject; kwargs...) where T <: Union{Any, 
     zs
 end
 
-
-"""
-gradients_v computes the gradients of a vector function f(x) w.r.t. a single variable x
-`ys` is the n dimensional vector function 
-`xs` is a scalar 
-"""
 function gradients10(ys::PyObject, xs::PyObject; kwargs...)
     try
         u = Variable(rand(length(ys)), trainable=false)
@@ -206,10 +211,6 @@ function gradients_v(ys::PyObject, xs::PyObject;kwargs...)
 end
 
 # https://stackoverflow.com/questions/50244270/computing-jacobian-matrix-in-tensorflow
-"""
-`jacobian` computes the jacobian of a vector function f with respect to a vector variable x
-the output is |f| x |x| matrix
-"""
 function gradients11(ys::PyObject, xs::PyObject; kwargs...)
     n = size(ys,1)
     function condition(i, ta)

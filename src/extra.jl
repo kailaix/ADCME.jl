@@ -147,7 +147,7 @@ end
 end
 
 """
-function load_system_op(s::String, oplib::String, grad::Bool=true)
+    load_system_op(s::String, oplib::String, grad::Bool=true)
 
 Load custom operator from CustomOps directory (shipped with ADCME instead of TensorFlow)
 For example 
@@ -183,8 +183,9 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
 end
 
 """
-compile(s::String)
-Compile the library `s` by force.
+    compile(s::String)
+
+Compiles the library `s` by force.
 """
 function compile(s::String)
     PWD = pwd()
@@ -282,7 +283,18 @@ end
 """
     tic(o::PyObject, i::Union{PyObject, Integer}=0)
 
-Construts a TensorFlow timer with index `i`. The start time record is right before `o` is executed.
+Construts a TensorFlow timer with index `i`. The start time record is right before `o` is executed. See also [`toc`](@ref).
+
+#example
+```julia
+A = constant(rand(100,100))
+t = tic(A)
+SVD = svd(A)
+S, t = toc(A.S, t)
+
+run(sess, S);
+run(sess, t) # print the execution time for SVD
+```
 """
 function tic(o::PyObject, i::Union{PyObject, Integer}=0)
     set_tensor_flow_timer = load_system_op(COLIB["set_tensor_flow_timer"]...)

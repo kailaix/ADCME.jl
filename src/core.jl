@@ -179,6 +179,12 @@ end
     has_gpu()
 
 Checks if GPU is available.
+
+!!! note
+```
+ADCME will use GPU automatically if GPU is available. To disable GPU, set the environment variable `ENV["CUDA_VISIBLE_DEVICES"]=""`
+before importing ADCME 
+```
 """
 function has_gpu()
     s = tf.test.gpu_device_name()
@@ -189,6 +195,12 @@ function has_gpu()
     end
 end
 
+
+""" 
+    stop_gradient(o::PyObject, args...;kwargs...)
+
+Disconnects `o` from gradients backpropagation. 
+"""
 function stop_gradient(o::PyObject, args...;kwargs...)
     tf.stop_gradient(o, args...;kwargs...)
 end
