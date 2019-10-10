@@ -122,13 +122,13 @@ function PyCall.:length(o::PyObject)
     end
 end
 
-"""
+@doc raw"""
     gradients(ys::PyObject, xs::PyObject; kwargs...)
 
 Computes the gradients of `ys` w.r.t `xs`. 
 
 - If `ys` is a scalar, `gradients` returns the gradients with the same shape as `xs`.
-- If `ys` is a vector, `gradients` returns the Jacobian $$\\frac{\\partial y}{\\partial x}$$
+- If `ys` is a vector, `gradients` returns the Jacobian $\frac{\partial y}{\partial x}$
 
 !!! 
 ```
