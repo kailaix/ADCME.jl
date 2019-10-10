@@ -35,11 +35,11 @@ end
 
 
 ############### custom operators ##################
-function cmake()
+function cmake(DIR::String="..")
     if Sys.islinux()
-        run(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..`)
+        run(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`)
     else
-        run(`$CMAKE ..`)
+        run(`$CMAKE $DIR`)
     end
 end
 

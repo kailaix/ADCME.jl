@@ -33,6 +33,40 @@ if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
     run(`$PIP install tensorflow-gpu==$tf_ver`)
 end
 
+# useful command for debug
+# readelf -p .comment libtensorflow_framework.so 
+# strings libstdc++.so.6 | grep GLIBCXX
+if Sys.islinux() 
+    tflib = nothing
+    if occursin("3.6", PyCall.libpython)
+        tflib = joinpath(Conda.LIBDIR, "python3.6/site-packages/tensorflow/libtensorflow_framework.so")
+    elseif occursin("3.7", PyCall.libpython)
+        tflib = joinpath(Conda.LIBDIR, "python3.7/site-packages/tensorflow/libtensorflow_framework.so")
+    end
+    verinfo = read(`readelf -p .comment $tflib`, String)
+    if occursin("5.4.", verinfo)
+        if !("gcc-5" in Conda._installed_packages())
+            Conda.add("gcc-5", channel="psi4")
+            Conda.add("libgcc")
+        end
+    elseif occursin("4.8.", verinfo)
+        if !("gcc" in Conda._installed_packages())
+            Conda.add("gcc", channel="anaconda")
+            Conda.add("libgcc")
+        end
+    else
+        error("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
+1. Continue using ADCME. You are responsible for the compatible issue of GCC versions for custom operators.
+2. Report to the author of ADCME by opening an issue in https://github.com/kailaix/ADCME.jl/
+Compiler information:
+$verinfo
+")
+    end
+    rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
+    @info "Making a symbolic link for libgcc"
+    symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
+end
+
 
 @info "Fix libtensorflow_framework.so..."
 if haskey(ENV, "LD_LIBRARY_PATH")
@@ -100,36 +134,3 @@ end
 
 install_custom_op_dependency()
 
-# useful command for debug
-# readelf -p .comment libtensorflow_framework.so 
-# strings libstdc++.so.6 | grep GLIBCXX
-if Sys.islinux() 
-    tflib = nothing
-    if occursin("3.6", PyCall.libpython)
-        tflib = joinpath(Conda.LIBDIR, "python3.6/site-packages/tensorflow/libtensorflow_framework.so")
-    elseif occursin("3.7", PyCall.libpython)
-        tflib = joinpath(Conda.LIBDIR, "python3.7/site-packages/tensorflow/libtensorflow_framework.so")
-    end
-    verinfo = read(`readelf -p .comment $tflib`, String)
-    if occursin("5.4.", verinfo)
-        if !("gcc-5" in Conda._installed_packages())
-            Conda.add("gcc-5", channel="psi4")
-            Conda.add("libgcc")
-        end
-    elseif occursin("4.8.", verinfo)
-        if !("gcc" in Conda._installed_packages())
-            Conda.add("gcc", channel="anaconda")
-            Conda.add("libgcc")
-        end
-    else
-        error("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
-1. Continue using ADCME. You are responsible for the compatible issue of GCC versions for custom operators.
-2. Report to the author of ADCME by opening an issue in https://github.com/kailaix/ADCME.jl/
-Compiler information:
-$verinfo
-")
-    end
-    rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
-    @info "Making a symbolic link for libgcc"
-    symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
-end
