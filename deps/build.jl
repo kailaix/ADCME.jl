@@ -13,7 +13,7 @@ if !PyCall.conda
     error("""ADCME requires that PyCall use the Conda.jl Python.
 Rebuild PyCall with
 
-julia> ENV["PYTHON"] = ""
+julia> ENV["PYTHON"] = "$PYTHON"
 julia> using Pkg; Pkg.build("PyCall")
 
 """)
@@ -21,11 +21,11 @@ end
 
 @info "Install CONDA dependencies..."
 pkgs = Conda._installed_packages()
-for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7"]
+for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7",
+            "matplotlib"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
-run(`$PIP install matplotlib`)
 
 if haskey(ENV, "GPU") && ENV["GPU"] && !("tensorflow-gpu" in pkgs)
     @info "Add tensorflow-gpu"
@@ -46,7 +46,7 @@ if Sys.islinux()
     verinfo = read(`readelf -p .comment $tflib`, String)
     if occursin("5.4.", verinfo)
         if !("gcc-5" in Conda._installed_packages())
-            Conda.add("gcc-5", channel="psi4")
+            Conda.add("gcc-5", channel="3dhubs")
             Conda.add("libgcc")
         end
     elseif occursin("4.8.", verinfo)
@@ -56,7 +56,7 @@ if Sys.islinux()
         end
     else
         error("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
-1. Continue using ADCME. You are responsible for the compatible issue of GCC versions for custom operators.
+1. Continue using ADCME. But you are responsible for the compatible issue of GCC versions for custom operators.
 2. Report to the author of ADCME by opening an issue in https://github.com/kailaix/ADCME.jl/
 Compiler information:
 $verinfo
@@ -70,7 +70,7 @@ end
 
 @info "Fix libtensorflow_framework.so..."
 if haskey(ENV, "LD_LIBRARY_PATH")
-    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*"$(Conda.LIBDIR)"))
+    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*":$(Conda.LIBDIR)"))
 else
     run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>"$(Conda.LIBDIR)"))
 end
