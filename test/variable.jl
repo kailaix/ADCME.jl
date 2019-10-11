@@ -11,7 +11,7 @@ using LinearAlgebra
     ind[3] = zeros(Bool,10)
     ind[3][3:4] .= true
     ind[4] = [3;4;5]
-    run(sess, global_variables_initializer())
+    init(sess)
 
     for i = 1:4
         @test A1[ind[i]] ≈ run(sess, B1[ind[i]])
@@ -47,7 +47,7 @@ end
     g_gv = gradients(2sum(gv), v)
     Gv = tensor(G;sparse=true)
     G_gv = gradients(sum(Gv), v)
-    run(sess, global_variables_initializer())
+    init(sess)
     @test run(sess, g_gv) ≈ 2.0
     @test run(sess, G_gv) ≈ 1.5
 end
@@ -61,7 +61,7 @@ end
     gv = rand(Float32,2)
     hess_v =  hessian_vector(f, g, gv)
     val = [[2.;2.] [2.;6.]] * gv
-    run(sess, global_variables_initializer())
+    init(sess)
     @test run(sess, hess) ≈ [[2.;2.] [2.;6.]]
     @test run(sess, hess_v)≈val
 end

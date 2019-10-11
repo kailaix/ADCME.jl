@@ -20,6 +20,7 @@ module ADCME
     tfp = PyNULL()
     tfops = PyNULL()
     pickle = PyNULL()
+    timeline = PyNULL()
     gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
     # a list of custom operators 
@@ -42,6 +43,8 @@ module ADCME
     CMAKE = joinpath(Conda.BINDIR, "cmake")
     MAKE = joinpath(Conda.BINDIR, "make")
     TFLIB = nothing
+    run_metadata = nothing
+    
     
 
     function __init__()
@@ -71,6 +74,7 @@ julia> using Pkg; Pkg.build("PyCall")
         copy!(tfp, (@suppress pyimport_conda("tensorflow_probability","tensorflow_probability")))
         copy!(gradients_impl, (@suppress pyimport_conda("tensorflow.python.ops.gradients_impl","tensorflow")))
         copy!(pickle, (@suppress pyimport_conda("pickle", "pickle")))
+        copy!(timeline, (@suppress pyimport_conda("tensorflow.python.client.timeline","tensorflow")))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,

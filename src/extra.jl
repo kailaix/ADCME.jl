@@ -5,8 +5,6 @@ xavier_init,
 load_op_and_grad,
 load_op,
 compile_op,
-tic,
-toc,
 test_custom_op
 
 function torchexample()
@@ -278,44 +276,6 @@ link_directories(\${TF_LIB} \${JULIA_LIB})"""
 
 end
 
-
-
-"""
-    tic(o::PyObject, i::Union{PyObject, Integer}=0)
-
-Construts a TensorFlow timer with index `i`. The start time record is right before `o` is executed. See also [`toc`](@ref).
-
-#example
-```julia
-A = constant(rand(100,100))
-t = tic(A)
-SVD = svd(A)
-S, t = toc(A.S, t)
-
-run(sess, S);
-run(sess, t) # print the execution time for SVD
-```
-"""
-function tic(o::PyObject, i::Union{PyObject, Integer}=0)
-    set_tensor_flow_timer = load_system_op(COLIB["set_tensor_flow_timer"]...)
-    i = convert_to_tensor(i, dtype=Int32)
-    start_timer = set_tensor_flow_timer(i)
-    o = bind(o, start_timer)
-end
-
-
-"""
-    toc(o::PyObject, i::Union{PyObject, Integer}=0)
-
-Returns the elapsed time from last [`tic`](@ref) call with index `i` (default=0). The terminal time record is right before `o` is executed.
-"""
-function toc(o::PyObject, i::Union{PyObject, Integer}=0)
-    get_tensor_flow_timer = load_system_op(COLIB["get_tensor_flow_timer"]...)
-    i = convert_to_tensor(i, dtype=Int32)
-    end_timer = get_tensor_flow_timer(i)
-    o = bind(o, end_timer)
-    o, end_timer
-end
 
 function test_custom_op()
     PWD = pwd()

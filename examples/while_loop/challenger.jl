@@ -70,7 +70,7 @@ states,is_accepted_, kernel_results = sample_chain(
     kernel=ham
     )
 
-run(sess, global_variables_initializer())
+init(sess)
 posterior_α, posterior_β, is_accepted =  run(sess, [states[1], states[2], is_accepted_])
 
 println("Accepted rate=", sum(is_accepted)/length(is_accepted))

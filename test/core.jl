@@ -118,3 +118,12 @@ end
 @testset "has_gpu" begin
     @test has_gpu()==false
 end
+
+@testset "timeline" begin
+    a = normal(2000, 5000)
+    b = normal(5000, 1000)
+    res = a*b 
+    run_profile(sess, res)
+    save_profile("test.json")
+    rm("test.json")
+end
