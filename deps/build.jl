@@ -117,8 +117,8 @@ if Sys.islinux()
             try
                 # a workaround
                 Conda.add("mpfr", channel="anaconda")
-                if !isfile(joinpath((Conda.LIBDIR), "libmpfr.so.4")) && isfile(symlink(joinpath((Conda.LIBDIR), "libmpfr.so.6")))
-                    symlink(joinpath((Conda.LIBDIR), "libmpfr.so.6"), joinpath((Conda.LIBDIR), "libmpfr.so.4"))
+                if !isfile(joinpath(Conda.LIBDIR, "libmpfr.so.4")) && isfile(joinpath(Conda.LIBDIR, "libmpfr.so.6"))
+                    symlink(joinpath(Conda.LIBDIR, "libmpfr.so.6"), joinpath(Conda.LIBDIR, "libmpfr.so.4"))
                 end
                 Conda.add("gcc-5", channel="psi4")
                 Conda.add("libgcc")
