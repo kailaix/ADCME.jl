@@ -140,6 +140,123 @@ readelf -p .comment libtensorflow_framework.so
 Compatibility issues are frustrating. We hope you can submit an issue to ADCME developers; we are happy to resolve the compatibility issue and improve the robustness of ADCME.
 
 
+## GPU Operators
+
+
+### Dependencies
+To create a GPU custom operator, you must have NVCC compiler and CUDA toolkit installed on your system. To install NVCC, see [the installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html). To check you have successfully installed NVCC, type
+```bash
+which nvcc
+```
+It should gives you the location of `nvcc` compiler.
+
+For quick installation, you can try
+```julia
+using ADCME
+ADCME.install_gpu_dependencies()
+```
+
+This function basically implements the following steps
+
+- To install CUDA toolkit (if you do not have one), you can install via conda
+```julia
+using Conda
+Conda.add("cudatoolkit", channel="anaconda")
+```
+
+- The next step is to cp the CUDA include file to tensorflow include directory. This could be done with 
+```julia
+using ADCME
+gpus = joinpath(splitdir(tf.__file__)[1], "include/third_party/gpus")
+if !isdir(gpus)
+  mkdir(gpus)
+end
+gpus = joinpath(gpus, "cuda")
+if !isdir(gpus)
+  mkdir(gpus)
+end
+incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
+if !isdir(joinpath(gpus, "include"))
+    mv(incpath, gpus)
+end
+```
+
+- Finally, add the CUDA library path to `LD_LIBRARY_PATH`. This can be done by adding the following line to `.bashrc`
+```bash
+export LD_LIBRARY_PATH=<path>:\$LD_LIBRARY_PATH
+```
+where `<path>` is 
+```julia
+joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
+```
+
+### File Organization
+There should be three files in your source directories
+- `MyOp.cpp`: driver file
+- `MyOp.h`: CPU implementation
+- `MyOp.cu`: GPU implementation
+
+In `MyOp.cu`, the structure of the file is (only the forward is shown)
+```c++
+#define GOOGLE_CUDA 1
+#define EIGEN_USE_GPU
+
+#include "tensorflow/core/framework/register_types.h"
+#include "tensorflow/core/framework/tensor_types.h"
+#include "tensorflow/core/util/gpu_kernel_helper.h"
+
+namespace tensorflow{
+  typedef Eigen::GpuDevice GPUDevice;
+
+__global__ void forward_(const int nthreads, double *out, const double *y, const double *H0, int n){
+  for(int i : CudaGridRangeX(nthreads)) {
+      // do something here
+  }
+}
+
+void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice& d){
+  // forward_<<<(n+255)/256, 256>>>(out, y, H0, n);
+  GpuLaunchConfig config = GetGpuLaunchConfig(n, d);
+  TF_CHECK_OK(GpuLaunchKernel(
+      forward_, config.block_count, config.thread_per_block, 0,
+      d.stream(), config.virtual_thread_count, out, y, H0, n));
+  }
+}
+```
+
+In `MyOp.cpp`, you should add the following lines
+```c++
+namespace tensorflow{
+  typedef Eigen::GpuDevice GPUDevice;
+  void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice &d);
+  void backwardGPU(double *d_y, const double *d_out, const double *y, const double *H0, int n, const GPUDevice &d);
+}
+```
+and for GPU implementation, use the guard
+```c++
+#ifndef NOGPU
+#endif
+```
+
+### CMakeLists
+The following lines should be added to the generated `CMakeLists.txt`
+```txt
+find_package(CUDA QUIET)
+
+# C++11 required for tensorflow
+SET(CUDA_PROPAGATE_HOST_FLAGS ON)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
+
+find_program(_nvidia_smi "nvidia-smi")
+if (_nvidia_smi)
+  cuda_add_library(MyOp SHARED MyOp.cpp MyOp.cu OPTIONS -std=c++11)
+else()
+  add_library(MyOp SHARED MyOp.cpp)
+  add_definitions(-DNOGPU)
+endif()
+```
+
+
 ## Best Practice and Caveats
 
 
