@@ -289,3 +289,34 @@ function test_custom_op()
     cd(PWD)
     true
 end
+
+function install_gpu_dependencies()
+    Conda.add("cudatoolkit", channel="anaconda")
+
+    if !("tensorflow-gpu" in Conda._installed_packages())
+        Conda.add("tensorflow-gpu=1.14")
+    end
+    
+    if !("cudatoolkit" in Conda._installed_packages())
+        Conda.add("cudatoolkit", channel="anaconda")
+    end
+
+    gpus = joinpath(splitdir(tf.__file__)[1], "include/third_party/gpus")
+    if !isdir(gpus)
+    mkdir(gpus)
+    end
+    gpus = joinpath(gpus, "cuda")
+    if !isdir(gpus)
+    mkdir(gpus)
+    end
+    incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
+    if !isdir(joinpath(gpus, "include"))
+        mv(incpath, gpus)
+    end
+
+    pth = joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
+    
+    println("Run the following command in shell
+
+export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH >> ~/.bashrc")
+end
