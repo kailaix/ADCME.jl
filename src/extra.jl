@@ -206,7 +206,7 @@ function compile(s::String)
 end
 
 """
-    customop(torch=false; julia=false)
+    customop()
 
 Create a new custom operator.
 
@@ -218,9 +218,8 @@ julia> customop() # create an editable `customop.txt` file
 julia> customop() # after editing `customop.txt`, call it again to generate interface files.
 [ Info: Custom operator wrapper generated; Torch is disabled
 ```
-The option `torch` adds support for `PyTorch` backend in `CMakeLists.txt`
 """
-function customop(torch=false; julia=false)
+function customop()
     # install_custom_op_dependency()
     py_dir = "$(@__DIR__)/../examples/custom_op/template"
     if !("custom_op.txt" in readdir("."))
@@ -230,50 +229,7 @@ function customop(torch=false; julia=false)
     else
         python = PyCall.python
         run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $(torch ? "" : "# ")`)
-        @info "Custom operator wrapper generated; Torch is $(torch ? "enabled" : "disabled")"
     end
-
-    if julia
-        cmakelist = read("CMakeLists.txt", String)
-        s1 = """set(CMAKE_CXX_FLAGS "-std=c++11 \${CMAKE_CXX_FLAGS}")"""
-        s2 = """execute_process(COMMAND python -c "from sysconfig import get_paths as gp; import sys; sys.stdout.write(gp()['include'])" OUTPUT_VARIABLE PYTHON_INC)
-execute_process(COMMAND julia -e "using PyCall; print(PyCall.libpython)" OUTPUT_VARIABLE PYTHON_LIB)
-execute_process(COMMAND julia -e "abspath(joinpath(Sys.BINDIR, \\"../lib\\"))|>print" OUTPUT_VARIABLE JULIA_LIB)
-execute_process(COMMAND julia -e "abspath(joinpath(Sys.BINDIR, \\"../include/julia\\"))|>print" OUTPUT_VARIABLE JULIA_INC)
-add_definitions( -DJULIA_ENABLE_THREADING=1 )
-"""
-        cmakelist = replace(cmakelist, s1=>s2)
-        s1 = """link_directories(\${TF_LIB})"""
-        s2 = """include_directories(\${JULIA_INC} \${PYTHON_INC})
-link_directories(\${TF_LIB} \${JULIA_LIB})"""
-        cmakelist = replace(cmakelist, s1=>s2)
-        s1 = """{TF_LIB_FILE}"""
-        s2 = """{TF_LIB_FILE} julia \${PYTHON_LIB}"""
-        cmakelist = replace(cmakelist, s1=>s2)
-        write("CMakeLists.txt", cmakelist)
-
-        gradtest = read("gradtest.jl", String)
-        gradtest = replace(gradtest, "load_op_and_grad"=>"load_op")
-        gradtest = replace(gradtest, ", multiple=true"=>"")
-        m = match(r"(\# TODO: change your test parameter to `m`.*)"s, gradtest)
-        s = m.captures[1]
-        gradtest = replace(gradtest, s=>"")
-        write("gradtest.jl", gradtest)
-
-        opname = strip(readline("custom_op.txt"))
-        cpp = read("$opname.cpp", String)
-        s = "(REGISTER_OP\\(\"$(opname)Grad\"\\).*)"
-        r = Regex(s, "s")
-        m = match(r, cpp)
-        cpp = replace(cpp, m.captures[1]=>"")
-        cpp = replace(cpp, "using namespace tensorflow;"=>"using namespace tensorflow;
-#include \"julia.h\"\n#include \"Python.h\"")
-        write("$opname.cpp", cpp)
-
-        cp("$(py_dir)/julia_op_example.h", "example.h")
-        
-    end
-
 end
 
 

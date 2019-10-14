@@ -17,6 +17,12 @@ ${ForwardInputOutput}
     ${SetShapeFn}
     return Status::OK();
   });
+
+REGISTER_OP("${OperatorName}Grad")
+${AttributesReg}
+${BackwardInputOutput}
+
+
 class ${OperatorName}Op : public OpKernel {
 private:
   ${AttributesDef}
@@ -54,9 +60,7 @@ ${AttributesParse2}
 REGISTER_KERNEL_BUILDER(Name("${OperatorName}").Device(DEVICE_CPU), ${OperatorName}Op);
 
 
-REGISTER_OP("${OperatorName}Grad")
-  ${AttributesReg}
-  ${BackwardInputOutput}
+
 class ${OperatorName}GradOp : public OpKernel {
 private:
   ${AttributesDef}
@@ -93,3 +97,79 @@ public:
 };
 REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_CPU), ${OperatorName}GradOp);
 
+#ifdef USE_GPU
+class ${OperatorName}OpGPU : public OpKernel {
+private:
+  ${AttributesDef}
+public:
+  explicit ${OperatorName}OpGPU(OpKernelConstruction* context) : OpKernel(context) {
+${AttributesParse2}
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(${ForwarInputNum}, context->num_inputs());
+    
+    ${ForwardTensor}
+    
+    ${ForwardTensorShape}
+    
+    ${ForwardCheckShape}
+
+    // extra check
+        
+    // create output shape
+    ${ForwardOutputShape}
+            
+    // create output tensor
+    ${ForwardOutput}
+    
+    // get the corresponding Eigen tensors for data access
+    ${ForwardGetData}   
+
+    // implement your forward function here 
+
+    // TODO:
+
+  }
+};
+REGISTER_KERNEL_BUILDER(Name("${OperatorName}").Device(DEVICE_GPU), ${OperatorName}OpGPU);
+
+
+
+class ${OperatorName}GradOpGPU : public OpKernel {
+private:
+  ${AttributesDef}
+public:
+  explicit ${OperatorName}GradOpGPU(OpKernelConstruction* context) : OpKernel(context) {
+    ${AttributesParse2}
+  }
+  
+  void Compute(OpKernelContext* context) override {
+    
+    ${BackwardTensor}
+    
+    ${BackwardTensorShape}
+    
+    ${BackwardCheckShape}
+
+    // extra check
+    // int m = Example.dim_size(0);
+        
+    // create output shape
+    ${BackwardOutputShape}
+            
+    // create output tensor
+    ${BackwardOutput}
+    
+    // get the corresponding Eigen tensors for data access
+    ${BackwardGetData}   
+
+    // implement your backward function here 
+
+    // TODO:
+    
+  }
+};
+REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_GPU), ${OperatorName}GradOpGPU);
+
+#endif

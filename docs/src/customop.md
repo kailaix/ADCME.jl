@@ -183,7 +183,7 @@ end
 
 - Finally, add the CUDA library path to `LD_LIBRARY_PATH`. This can be done by adding the following line to `.bashrc`
 ```bash
-export LD_LIBRARY_PATH=<path>:\$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=<path>:$LD_LIBRARY_PATH
 ```
 where `<path>` is 
 ```julia

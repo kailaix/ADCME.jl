@@ -16,9 +16,9 @@ op = tf.print(a)
 b = bind(b, op)
 ```
 
-## Benchmarking
+## Profiling
 
-Benchmarking can be done with the help of [`run_profile`](@ref) and [`save_profile`](@ref)
+Profiling can be done with the help of [`run_profile`](@ref) and [`save_profile`](@ref)
 ```julia
 a = normal(2000, 5000)
 b = normal(5000, 1000)
@@ -28,6 +28,10 @@ save_profile("test.json")
 ```
 - Open Chrome and navigate to chrome://tracing
 - Load the timeline file
+
+Below shows an example of profiling results.
+
+![](./asset/profile.png)
 
 ## Save and Load Python Object
 ```@docs
