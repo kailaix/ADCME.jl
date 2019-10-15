@@ -4,7 +4,7 @@
 
 ```@autodocs
 Modules = [ADCME]
-Pages   = ["ADCME.jl", "core.jl", "run.jl]
+Pages   = ["ADCME.jl", "core.jl", "run.jl"]
 ```
 
 ## Variables

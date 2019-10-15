@@ -228,7 +228,7 @@ function customop()
         return
     else
         python = PyCall.python
-        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $(torch ? "" : "# ")`)
+        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir`)
     end
 end
 
