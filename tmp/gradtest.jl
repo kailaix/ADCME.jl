@@ -5,10 +5,10 @@ using PyPlot
 using Random
 Random.seed!(233)
 
-${operator_name} = load_op_and_grad("./build/lib${OperatorName}","${operator_name}"${multiple})
+test_fun = load_op_and_grad("./build/libTestFun","test_fun", multiple=true)
 
 # TODO: specify your input parameters
-u = ${operator_name}(${ARGS})
+u = test_fun(u,v)
 sess = tf.Session()
 init(sess)
 run(sess, u)
@@ -17,7 +17,7 @@ run(sess, u)
 # TODO: change your test parameter to `m`
 # gradient check -- v
 function scalar_function(m)
-    return sum(${operator_name}(${ARGS}))
+    return sum(test_fun(u,v))
 end
 
 # TODO: change `m_` and `v_` to appropriate values
@@ -46,10 +46,10 @@ wval_ = run(sess, w_)
 close("all")
 loglog(gs_, abs.(sval_), "*-", label="finite difference")
 loglog(gs_, abs.(wval_), "+-", label="automatic differentiation")
-loglog(gs_, gs_.^2 * 0.5*abs(wval_[1])/gs_[1]^2, "--",label="\$$\\mathcal{O}(\\gamma^2)\$$")
-loglog(gs_, gs_ * 0.5*abs(sval_[1])/gs_[1], "--",label="\$$\\mathcal{O}(\\gamma)\$$")
+loglog(gs_, gs_.^2 * 0.5*abs(wval_[1])/gs_[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
+loglog(gs_, gs_ * 0.5*abs(sval_[1])/gs_[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
 
 plt.gca().invert_xaxis()
 legend()
-xlabel("\$$\\gamma\$$")
+xlabel("\$\\gamma\$")
 ylabel("Error")

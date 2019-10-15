@@ -1,0 +1,6 @@
+TestFun
+float u(?,100)
+int32 v()
+float g(10) -> output
+double w(10,10) -> output 
+double s() -> output

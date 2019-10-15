@@ -6,14 +6,7 @@ rklgan,
 lsgan,
 sample,
 predict
-"""
-    GAN(dat::PyObject, generator::Function, gan::GAN,loss::Union{String, Function, Missing}=missing; latent_dim::Union{Missing, Int64}=missing, batch_size::Union{Missing, Int64}=missing)
 
-Users must provide: `dat`, `generator`, `discriminator`, `loss` (string or function) 
-Alternative argument: `latent_dim`, `batch_size`
-Training process is the most creative part and therefore no built-in algorithm is provided. 
-Users have access to `d_loss`, `g_loss`, `d_vars`, `g_vars`, which are sufficient for designing training algorithms.
-"""
 mutable struct GAN
     latent_dim::Int64
     batch_size::Int64
@@ -36,6 +29,23 @@ mutable struct GAN
 end
 
 
+@doc raw"""
+    GAN(dat::PyObject, 
+        generator::Function, 
+        gan::GAN,
+        loss::Union{String, Function, Missing}=missing; 
+        latent_dim::Union{Missing, Int64}=missing, 
+        batch_size::Union{Missing, Int64}=missing)
+
+Creates a GAN instance. 
+
+- `dat` ``\in \mathbb{R}^{n\times d}`` is the training data for the GAN, where ``n`` is the number of training data, and ``d`` is the dimension per training data.
+- `generator```:\mathbb{R}^{d'} \rightarrow \mathbb{R}^d`` is the generator function, ``d'`` is the hidden dimension.
+- `discriminator```:\mathbb{R}^{d} \rightarrow \mathbb{R}`` is the discriminator function. 
+- `loss` is the loss function. See [`klgan`](@ref), [`rklgan`](@ref), [`wgan`](@ref), [`lsgan`](@ref) for examples.
+- `latent_dim` (default=``d``) is the latent dimension.
+- `batch_size` (default=32) is the batch size in training.
+"""
 function GAN(dat::Union{Array,PyObject}, generator::Function, discriminator::Function,
     loss::Union{String, Function, Missing}=missing; latent_dim::Union{Missing, Int64}=missing,
         batch_size::Union{Missing, Int64}=missing)
@@ -55,6 +65,11 @@ function Base.:show(io::IO, gan::GAN)
     print("GAN(id=$(gan.ganid), dat(shape=$(size(gan.dat)), type=$(get_dtype(gan.dat)), latent_dim=$(gan.latent_dim), batch_size=$(gan.batch_size), $(length(gan.d_vars)) d_vars, $(length(gan.g_vars)) g_vars, $(length(gan.update)) update ops, fake_data(shape=$(size(gan.fake_data))), true_data(shape=$(size(gan.true_data))))")
 end
 ##################### GAN Library #####################
+"""
+    klgan(gan::GAN)
+
+Computes the KL-divergence GAN loss function.
+"""
 function klgan(gan::GAN)
     P, Q = gan.true_data, gan.fake_data
     D_real = gan.discriminator(P, gan)
@@ -64,6 +79,11 @@ function klgan(gan::GAN)
     D_loss, G_loss
 end
 
+"""
+    jsgan(gan::GAN)
+
+Computes the vanilla GAN loss function.
+"""
 function jsgan(gan::GAN)
     P, Q = gan.true_data, gan.fake_data
     D_real = gan.discriminator(P, gan)
@@ -73,6 +93,11 @@ function jsgan(gan::GAN)
     D_loss, G_loss
 end
 
+"""
+    wgan(gan::GAN)
+
+Computes the Wasserstein GAN loss function.
+"""
 function wgan(gan::GAN)
     P, Q = gan.true_data, gan.fake_data
     D_real = gan.discriminator(P, gan)
@@ -82,6 +107,11 @@ function wgan(gan::GAN)
     D_loss, G_loss
 end
 
+"""
+    rklgan(gan::GAN)
+
+Computes the reverse KL-divergence GAN loss function.
+"""
 function rklgan(gan::GAN)
     P, Q = gan.true_data, gan.fake_data
     D_real = gan.discriminator(P, gan)
@@ -91,6 +121,11 @@ function rklgan(gan::GAN)
     D_loss, G_loss
 end
 
+"""
+    lsgan(gan::GAN)
+
+Computes the least square GAN loss function.
+"""
 function lsgan(gan::GAN)
     P, Q = gan.true_data, gan.fake_data
     D_real = gan.discriminator(P, gan)
@@ -101,6 +136,11 @@ function lsgan(gan::GAN)
 end
 #######################################################
 
+"""
+    build!(gan::GAN)
+
+Builds the GAN instances. This function returns `gan` for convenience.
+"""
 function build!(gan::GAN)
     gan.noise = placeholder(get_dtype(gan.dat), shape=(gan.batch_size, gan.latent_dim))
     gan.ids = placeholder(Int32, shape=(gan.batch_size,))
@@ -118,8 +158,14 @@ function build!(gan::GAN)
     gan.d_vars = Array{PyObject}(get_collection("discriminator_$(gan.ganid)"))
     gan.g_vars = Array{PyObject}(get_collection("generator_$(gan.ganid)"))
     gan.update = Array{PyCall.PyObject}(get_collection(UPDATE_OPS))
+    gan
 end 
 
+"""
+    sample(gan::GAN, n::Int64)
+
+Samples `n` instances from `gan`.
+"""
 function sample(gan::GAN, n::Int64)
     local out
     noise = normal(n, gan.latent_dim)
@@ -131,6 +177,11 @@ function sample(gan::GAN, n::Int64)
     out
 end
 
+"""
+    predict(gan::GAN, input::Union{PyObject, Array}) 
+
+Predicts the GAN `gan` output given input `input`. 
+"""
 function predict(gan::GAN, input::Union{PyObject, Array})
     local out
     flag = false

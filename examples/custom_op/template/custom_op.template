@@ -5,10 +5,18 @@
 #include<cmath>
 #include<string> 
 using std::string;
-using namespace tensorflow;
-// If you want to use the PyTorch feature, uncomment the following line
-// #include "la.h" 
 #include "${OperatorName}.h"
+
+#ifdef USE_GPU
+#include "tensorflow/core/util/gpu_kernel_helper.h"
+namespace tensorflow{
+  typedef Eigen::GpuDevice GPUDevice;
+  void forwardGPU(const GPUDevice &d);
+  void backwardGPU(const GPUDevice &d);
+}
+#endif
+
+using namespace tensorflow;
 
 REGISTER_OP("${OperatorName}")
 ${AttributesReg}

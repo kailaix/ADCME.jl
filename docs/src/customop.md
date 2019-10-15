@@ -96,7 +96,8 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 }
 ```
 
-In this implementation we have used `Eigen` library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable `SpMat A;`. This is not recommend if you want to run the code concurrently. 
+!!! note
+    In this implementation we have used `Eigen` library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable `SpMat A;`. This is not recommend if you want to run the code concurrently. 
 
 **Step 3: Compile**
 
@@ -109,21 +110,23 @@ It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`
 | `ADCME.CMAKE` | Cmake binary location                 |
 | `ADCME.MAKE`  | Make binary location                  |
 
-A simple way is to set the environment by
-```bash
-export CC=<CC>
-export CXX=<CXX>
-alias cmake=<CMAKE>
-alias make=<MAKE>
-```
-The values such as `<CC>` are obtained from the last table. Run the following command
-
+- Make a `build` directory in bash.
 ```bash
 mkdir build
 cd build
-cmake ..
+```
+- Configure CMake files.
+```julia-repl
+julia> using ADCME
+julia> ADCME.cmake()
+```
+- Build. 
+```bash
 make -j
 ```
+
+!!! note
+    If the system `make` command is not compatible, try the pre-installed ADCME `make` located at `ADCME.MAKE`. 
 
 Based on your operation system, you will create `libMySparseSolver.{so,dylib,dll}`. This will be the dynamic library to link in `TensorFlow`. 
 
@@ -193,69 +196,37 @@ joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
 ### File Organization
 There should be three files in your source directories
 - `MyOp.cpp`: driver file
-- `MyOp.h`: CPU implementation
 - `MyOp.cu`: GPU implementation
+- `MyOp.h`: CPU implementation
 
-In `MyOp.cu`, the structure of the file is (only the forward is shown)
-```c++
-#define GOOGLE_CUDA 1
-#define EIGEN_USE_GPU
+The first two files have been generated for you by `customop()`. The following are two important notes on the implementation.
 
-#include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/framework/tensor_types.h"
-#include "tensorflow/core/util/gpu_kernel_helper.h"
+- In `MyOp.cu`, the implementation usually has the structure
 
-namespace tensorflow{
-  typedef Eigen::GpuDevice GPUDevice;
-
-__global__ void forward_(const int nthreads, double *out, const double *y, const double *H0, int n){
-  for(int i : CudaGridRangeX(nthreads)) {
-      // do something here
-  }
-}
-
-void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice& d){
-  // forward_<<<(n+255)/256, 256>>>(out, y, H0, n);
-  GpuLaunchConfig config = GetGpuLaunchConfig(n, d);
-  TF_CHECK_OK(GpuLaunchKernel(
-      forward_, config.block_count, config.thread_per_block, 0,
-      d.stream(), config.virtual_thread_count, out, y, H0, n));
-  }
-}
-```
-
-In `MyOp.cpp`, you should add the following lines
 ```c++
 namespace tensorflow{
   typedef Eigen::GpuDevice GPUDevice;
-  void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice &d);
-  void backwardGPU(double *d_y, const double *d_out, const double *y, const double *H0, int n, const GPUDevice &d);
+
+    __global__ void forward_(const int nthreads, double *out, const double *y, const double *H0, int n){
+      for(int i : CudaGridRangeX(nthreads)) {
+          // do something here
+      }
+    }
+
+    void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice& d){
+      // forward_<<<(n+255)/256, 256>>>(out, y, H0, n);
+      GpuLaunchConfig config = GetGpuLaunchConfig(n, d);
+      TF_CHECK_OK(GpuLaunchKernel(
+          forward_, config.block_count, config.thread_per_block, 0,
+          d.stream(), config.virtual_thread_count, out, y, H0, n));
+      }
 }
 ```
-and for GPU implementation, use the guard
+
+- In `MyOp.cpp`, the device information (`const GPUDevice& d` above) is obtained with 
 ```c++
-#ifndef NOGPU
-#endif
+context->eigen_device<GPUDevice>()
 ```
-
-### CMakeLists
-The following lines should be added to the generated `CMakeLists.txt`
-```txt
-find_package(CUDA QUIET)
-
-# C++11 required for tensorflow
-SET(CUDA_PROPAGATE_HOST_FLAGS ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
-
-find_program(_nvidia_smi "nvidia-smi")
-if (_nvidia_smi)
-  cuda_add_library(MyOp SHARED MyOp.cpp MyOp.cu OPTIONS -std=c++11)
-else()
-  add_library(MyOp SHARED MyOp.cpp)
-  add_definitions(-DNOGPU)
-endif()
-```
-
 
 ## Best Practice and Caveats
 

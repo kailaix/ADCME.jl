@@ -35,12 +35,6 @@ Modules = [ADCME]
 Pages   = ["ops.jl"]
 ```
 
-## Neural Network Utilities
-
-```@autodocs
-Modules = [ADCME]
-Pages   = ["layers.jl"]
-```
 
 ## IO
 
@@ -54,6 +48,13 @@ Pages   = ["io.jl"]
 ```@autodocs
 Modules = [ADCME]
 Pages   = ["optim.jl"]
+```
+
+## Neural Networks
+
+```@autodocs
+Modules = [ADCME]
+Pages   = ["layers.jl"]
 ```
 
 ## Generative Neural Nets

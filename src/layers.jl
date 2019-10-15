@@ -183,6 +183,11 @@ $(nn_code)\treturn net\nend """
     nn_code
 end
 
+"""
+    ae_to_code(file::String, scope::String)
+
+Return the code string from the feed-forward neural network data in `file`.
+"""
 function ae_to_code(file::String, scope::String)
     d = matread(file)
     s = "aedict$scope = matread(\"$file\");"*ae_to_code(d, scope)
@@ -244,18 +249,31 @@ function dense(inputs, units, args...; activation = nothing, kwargs...)
 end
 
 """
-example:
+    bn(args...;center = true, scale=true, kwargs...)
+
+# example
+```julia
 bn(inputs, name="batch_norm", is_training=true)
+```
+
+!!! note
+    `bn` should be used with `control_dependency`
+    ```julia
+    update_ops = get_collection(UPDATE_OPS)
+    control_dependencies(update_ops) do 
+        global train_step = AdamOptimizer().minimize(loss)
+    end 
+    ```
 """
 function bn(args...;center = true, scale=true, kwargs...)
     @warn  """
 `bn` should be used with `control_dependency`
-Example
-=======
+```julia
 update_ops = get_collection(UPDATE_OPS)
 control_dependencies(update_ops) do 
     global train_step = AdamOptimizer().minimize(loss)
-end
+end 
+```
 """ maxlog=1
     kwargs = Dict{Any, Any}(kwargs)
     if :is_training in keys(kwargs)

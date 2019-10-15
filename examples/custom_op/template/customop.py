@@ -451,3 +451,10 @@ with open("{}/gradtest.template".format(dirname),"r") as fp:
     jl = s.substitute(d)
 with open("gradtest.jl", "w") as fp:
     fp.write(jl)
+
+with open("{}/custom_op_cu.template".format(dirname),"r") as fp:
+    cnt = fp.read()
+    s = Template(cnt)
+    jl = s.substitute(d)
+with open("{}.cu".format(op), "w") as fp:
+    fp.write(jl)
