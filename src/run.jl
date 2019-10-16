@@ -48,9 +48,9 @@ Save the timeline information to file `filename`.
 - Open Chrome and navigate to chrome://tracing
 - Load the timeline file
 """
-function save_profile(filename::String="default_timeline.json")
+function save_profile(filename::String="default_timeline.json"; kwargs...)
     fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-    chrome_trace = fetched_timeline.generate_chrome_trace_format()
+    chrome_trace = fetched_timeline.generate_chrome_trace_format(;kwargs...)
     open(filename,"w") do io
         write(io, chrome_trace)
     end

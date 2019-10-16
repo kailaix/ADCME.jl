@@ -5,6 +5,12 @@ version = "0.3.1"
 
 [compat]
 julia = "1"
+Conda = "1.0"
+FFTW = "1.0"
+PyCall = "≥ 1.19"
+Suppressor = "0.1"
+PyPlot = "2.8"
+MAT = "0.5"
 
 [deps]
 Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
