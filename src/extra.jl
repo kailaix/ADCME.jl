@@ -44,15 +44,18 @@ load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
 
 """
-    compile_op(oplibpath::String, opname::String)
+    compile_op(oplibpath::String; check::Bool=false)
 
 Compile the library operator by force.
 """
-function compile_op(oplibpath::String)
+function compile_op(oplibpath::String; check::Bool=false)
     PWD = pwd()
     if splitext(oplibpath)[2]==""
         oplibpath = abspath(oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll"))
+    end
+    if check && isfile(oplibpath)
+        return 
     end
     DIR, FILE = splitdir(oplibpath)
     if !isdir(DIR); mkdir(DIR); end 
@@ -137,6 +140,7 @@ lib$$fn_name = tf.load_op_library($oplibpath)
 def $$fn_name(*args):
     u = lib$$fn_name.$$opname(*args)
     def grad(*dy):
+        dy = [y for y in dy if y is not None]
         return lib$$fn_name.$$opname_grad(*dy, *u, *args)
     return u, grad
 """
