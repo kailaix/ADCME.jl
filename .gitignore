@@ -11,3 +11,6 @@ deps/CustomOps/SparseAccumulate/README*
 !docs/build.jl
 deps/CustomOps/SparseIndexing/temp
 !deps/build.py
+test/fem/data/
+test/fem/*.txt
+test/fem/*.dat

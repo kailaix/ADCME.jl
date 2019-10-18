@@ -11,7 +11,6 @@ using namespace tensorflow;
 #include "SparseSolver.h"
 
 REGISTER_OP("SparseSolver")
-  
   .Input("ii : int64")
   .Input("jj : int64")
   .Input("vv : double")
@@ -21,18 +20,18 @@ REGISTER_OP("SparseSolver")
   .Output("u : double")
   .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
     
-        // shape_inference::ShapeHandle ii_shape;
-        // TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 1, &ii_shape));
-        // shape_inference::ShapeHandle jj_shape;
-        // TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 1, &jj_shape));
-        // shape_inference::ShapeHandle vv_shape;
-        // TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 1, &vv_shape));
-        // shape_inference::ShapeHandle kk_shape;
-        // TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 1, &kk_shape));
-        // shape_inference::ShapeHandle ff_shape;
-        // TF_RETURN_IF_ERROR(c->WithRank(c->input(4), 1, &ff_shape));
-        // shape_inference::ShapeHandle d_shape;
-        // TF_RETURN_IF_ERROR(c->WithRank(c->input(5), 0, &d_shape));
+        shape_inference::ShapeHandle ii_shape;
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 1, &ii_shape));
+        shape_inference::ShapeHandle jj_shape;
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 1, &jj_shape));
+        shape_inference::ShapeHandle vv_shape;
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 1, &vv_shape));
+        shape_inference::ShapeHandle kk_shape;
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 1, &kk_shape));
+        shape_inference::ShapeHandle ff_shape;
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(4), 1, &ff_shape));
+        shape_inference::ShapeHandle d_shape;
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(5), 0, &d_shape));
 
         c->set_output(0, c->Vector(-1));
     return Status::OK();

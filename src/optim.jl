@@ -419,3 +419,64 @@ function verify_NonlinearConstrainedProblem(sess::PyObject, f::Function, L::Func
     xlabel("\$\\gamma\$")
     ylabel("Error")
 end
+
+@doc raw"""
+    BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyObject}, 
+        vars::Union{Array{PyObject},PyObject}; kwargs...) where T<:Union{Nothing, PyObject}
+
+Running BFGS algorithm
+``\min_{\texttt{vars}} \texttt{loss}(\texttt{vars})``
+The gradients `grads` must be provided. Typically, `grads[i] = gradients(loss, vars[i])`. 
+`grads[i]` can exist on different devices (GPU or CPU). 
+"""
+function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyObject}, 
+        vars::Union{Array{PyObject},PyObject}; kwargs...) where T<:Union{Nothing, PyObject}
+    if isa(grads, PyObject); grads = [grads]; end
+    if isa(vars, PyObject); vars = [vars]; end
+    if length(grads)!=length(vars); error("ADCME: length of grads and vars do not match"); end
+
+    idx = ones(Bool, length(grads))
+    for i = 1:length(grads)
+        if isnothing(grads[i])
+            idx[i] = false
+        end
+    end
+    grads = grads[idx]
+    vars = vars[idx]
+
+    sizes = []
+    for v in vars
+        push!(sizes, size(v))
+    end
+    grds = vcat([tf.reshape(g, (-1,)) for g in grads]...)
+    vs = vcat([tf.reshape(v, (-1,)) for v in vars]...); x0 = run(sess, vs)
+    pl = placeholder(x0)
+    n = 0
+    assign_ops = PyObject[]
+    for (k,v) in enumerate(vars)
+        push!(assign_ops, assign(v, tf.reshape(pl[n+1:n+prod(sizes[k])], sizes[k])))
+        n += prod(sizes[k])
+    end
+    
+    __loss = 0.0
+    __losses = Float64[]
+    function f(x)
+        run(sess, assign_ops, pl=>x)
+        __loss = run(sess, loss)
+        return __loss
+    end
+
+    function g!(G, x)
+        run(sess, assign_ops, pl=>x)
+        G[:] = run(sess, grds)
+    end
+
+    function callback(x)
+        push!(__losses, __loss)
+        false
+    end
+
+    Optim.optimize(f, g!, x0, Optim.LBFGS(), Optim.Options(show_trace=true, callback=callback,
+         kwargs...))
+    return __losses
+end

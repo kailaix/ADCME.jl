@@ -1,0 +1,7 @@
+AssembleOp
+int64 index(?,?)
+double ks(?,?,?)
+int64 sdof()
+int64 ii(?) -> output
+int64 jj(?) -> output
+double vv(?) -> output

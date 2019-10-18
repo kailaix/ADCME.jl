@@ -14,7 +14,7 @@ module ADCME
     using LinearAlgebra
     using PyPlot
     using Conda
-    
+    import Optim
 
     tf = PyNULL()
     tfp = PyNULL()
@@ -102,4 +102,7 @@ julia> using Pkg; Pkg.build("PyCall")
     include("sparse.jl")
     include("random.jl")
     include("gan.jl")
+
+    # applications
+    include("apps/fem.jl")
 end

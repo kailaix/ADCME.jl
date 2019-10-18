@@ -1,0 +1,6 @@
+DirichletBd
+int64 ii(?)
+int64 jj(?)
+int64 dof(?)
+double vv(?)
+double uu(?) -> output
