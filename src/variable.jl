@@ -23,6 +23,11 @@ convert_to_tensor,
 hessian_vector,
 TensorArray
 
+"""
+    constant(value; kwargs...)
+
+Constructs a non-trainable tensor from `value`.
+"""
 function constant(value; kwargs...)
     if isa(value, PyObject)
         return value
@@ -34,6 +39,11 @@ function constant(value; kwargs...)
     tf.constant(value; kwargs...)
 end
 
+"""
+    Variable(initial_value;kwargs...)
+
+Constructs a ref tensor from `value`. 
+"""
 function Variable(initial_value;kwargs...)
     kwargs = jlargs(kwargs)
     if !(:dtype in keys(kwargs))
@@ -360,6 +370,9 @@ function SPDMatrix(m::Int64)
 end
 
 
+"""
+    tensor(v::Array{T,2}; dtype=Float64, sparse=false) where T
+"""
 function tensor(v::Array{T,1}; dtype=Float64, sparse=false) where T
     local ret
     N = length(v)
@@ -376,6 +389,19 @@ function tensor(v::Array{T,1}; dtype=Float64, sparse=false) where T
     ret
 end
 
+"""
+    tensor(v::Array{T,2}; dtype=Float64, sparse=false) where T
+    
+Convert a generic array `v` to a tensor. For example, 
+```julia
+v = [0.0 constant(1.0) 2.0
+    constant(2.0) 0.0 1.0]
+u = tensor(v)
+```
+`u` will be a ``2\\times 3`` tensor. 
+!!! note 
+    This function is expensive. Use with caution.
+"""
 function tensor(v::Array{T,2}; dtype=Float64, sparse=false) where T
     local ret
     M, N = size(v)
@@ -394,6 +420,11 @@ function tensor(v::Array{T,2}; dtype=Float64, sparse=false) where T
     ret
 end
 
+"""
+    TensorArray(size_::Int64=0, args...;kwargs...)
+
+Constructs a tensor array for [`while_loop`](@ref).  
+"""
 function TensorArray(size_::Int64=0, args...;kwargs...)
     kwargs = jlargs(kwargs)
     if !(haskey(kwargs, :dtype))
@@ -409,14 +440,30 @@ function TensorArray(size_::Int64=0, args...;kwargs...)
     tf.TensorArray(args...;kwargs...)
 end
 
+""" 
+    read(ta::PyObject, i::Union{PyObject,Integer})
+
+Reads data from [`TensorArray`](@ref) at index `i`.
+"""
 function Base.:read(ta::PyObject, i::Union{PyObject,Integer})
     ta.read(i-1)
 end
 
-function Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj)
+""" 
+    write(ta::PyObject, i::Union{PyObject,Integer}, obj)
+
+Writes data `obj` to [`TensorArray`](@ref) at index `i`.
+"""
+function Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj::PyObject)
     ta.write(i-1, obj)
 end
 
+"""
+    convert_to_tensor(o::Union{PyObject, Number, Array{T}, Missing, Nothing}; dtype::Union{Type, Missing}=missing) where T<:Number
+
+Converts the input `o` to tensor. If `o` is already a tensor and `dtype` (if provided) is the same as that of `o`, the operator does nothing.
+Otherwise, `convert_to_tensor` converts the numerical array to a constant tensor or casts the data type.
+"""
 function convert_to_tensor(o::Union{PyObject, Number, Array{T}, Missing, Nothing}; 
     dtype::Union{Type, Missing}=missing) where T<:Number
     if ismissing(o) || isnothing(o)

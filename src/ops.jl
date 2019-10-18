@@ -570,6 +570,19 @@ struct TFSVD
     Vt::PyObject
 end
 
+"""
+    svd(o::PyObject, args...; kwargs...)
+
+Returns a `TFSVD` structure which holds the following data structures
+```julia
+S::PyObject
+U::PyObject
+V::PyObject
+Vt::PyObject
+```
+We have the equality
+``o = USV'``
+"""
 function svd(o::PyObject, args...; kwargs...)
     s,u,v = tf.linalg.svd(o)
     TFSVD(s, u, v, v')
