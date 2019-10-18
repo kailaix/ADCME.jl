@@ -1,3 +1,6 @@
+
+
+
 @testset "NLopt" begin
 ######################### integration with NLopt.jl #########################
 
@@ -187,14 +190,16 @@ end
 
 
 @testset "Custom BFGS!" begin
+    reset_default_graph()
     x = Variable(rand(10))
     z = Variable(1.0)
     w = Variable(rand(20,30,10))
     loss = sum((x-1.0)^2+z^2+w^2)
     grads = [gradients(loss, x), gradients(loss, z), gradients(loss, w)]
     vars = [x,z, w]
-    init(sess)
-    BFGS!(sess, loss, grads, vars)
+    global sess = Session(); init(sess)
+    l = BFGS!(sess, loss, grads, vars)
+    @test l[end]<1e-5
 end
 
 
