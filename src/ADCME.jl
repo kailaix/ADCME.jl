@@ -14,7 +14,7 @@ module ADCME
     using LinearAlgebra
     using PyPlot
     using Conda
-    
+    import Optim
 
     tf = PyNULL()
     tfp = PyNULL()
