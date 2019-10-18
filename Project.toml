@@ -5,6 +5,7 @@ version = "0.3.1"
 
 [compat]
 julia = "1"
+
 [deps]
 Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
