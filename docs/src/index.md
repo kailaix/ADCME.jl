@@ -31,7 +31,7 @@ $$-bu''(x)+u(x)=f(x)\quad x\in[0,1], u(0)=u(1)=0$$
 where 
 $$f(x) = 8 + 4x - 4x^2$$
 Assume that we have observed $u(0.5)=1$, we want to estimate $b$. The true value in this case should be $b=1$. We can discretize the system using finite difference method, and the resultant linear system will be
-$$(bA+I)\bu = \mathbf{f}$$
+$$(bA+I)\mathbf{u} = \mathbf{f}$$
 where
 $$A = \begin{bmatrix}
         \frac{2}{h^2} & -\frac{1}{h^2} & \dots & 0\\
@@ -50,7 +50,7 @@ $$A = \begin{bmatrix}
         f(x_{n})
     \end{bmatrix}$$
 
-The idea for implementing the inverse modeling method in ADCME is that making the unknown $b$ a `Variable` and then solve the forward problem pretending $b$ is known. The following code snippet shows the implementation
+The idea for implementing the inverse modeling method in ADCME is that we make the unknown $b$ a `Variable` and then solve the forward problem pretending $b$ is known. The following code snippet shows the implementation
 ```julia
 using LinearAlgebra
 using ADCME
@@ -74,7 +74,7 @@ BFGS!(sess, loss)
 
 println("Estimated b = ", run(sess, b))
 ```
-We obtained the expected output 
+The expected output is
 ```
 Estimated b = 0.9995582304494237
 ```
