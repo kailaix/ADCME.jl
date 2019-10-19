@@ -1,6 +1,5 @@
 import Conda
 using PyCall
-using Pkg
 # assumption: PyCall and Conda are installed, and PyCall.conda==true 
 
 tf_ver = "1.14"
