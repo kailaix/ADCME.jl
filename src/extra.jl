@@ -4,7 +4,8 @@ xavier_init,
 load_op_and_grad,
 load_op,
 compile_op,
-test_custom_op
+test_custom_op,
+enable_gpu
 
 """
     xavier_init(size, dtype=Float64)
@@ -251,14 +252,14 @@ function test_custom_op()
     true
 end
 
-function install_gpu_dependencies()
-    Conda.add("cudatoolkit", channel="anaconda")
+function enable_gpu()
+    pkgs = Conda._installed_packages()
 
-    if !("tensorflow-gpu" in Conda._installed_packages())
+    if !("tensorflow-gpu" in pkgs)
         Conda.add("tensorflow-gpu=1.14")
     end
     
-    if !("cudatoolkit" in Conda._installed_packages())
+    if !("cudatoolkit" in pkgs)
         Conda.add("cudatoolkit", channel="anaconda")
     end
 
@@ -272,12 +273,33 @@ function install_gpu_dependencies()
     end
     incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
     if !isdir(joinpath(gpus, "include"))
-        mv(incpath, gpus)
+        cp(incpath, joinpath(gpus, "include"))
     end
 
     pth = joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
+    # compatible 
+    files = readdir(pth)
+    for f in files
+        if f[end-2:end]==".10" && !isfile(joinpath(pth, f*".0"))
+            symlink(joinpath(pth, f), joinpath(pth, f*".0"))
+        end
+        if f[end-4:end]==".10.1" && !isfile(joinpath(pth, f[1:end-2]*".0"))
+            symlink(joinpath(pth, f), joinpath(pth, f[1:end-2]*".0"))
+        end
+    end
     
     println("Run the following command in shell
 
-export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH >> ~/.bashrc")
+echo 'export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH' >> ~/.bashrc")
 end
+
+function use_gpu(i::Union{Nothing,Int64}=nothing)
+    if isnothing(i)
+        return 
+    end
+    i = join(collect(0:i-1),',')
+    ENV["CUDA_VISIBLE_DEVICES"] = i 
+    dl = pyimport("tensorflow.python.client.device_lib")
+    return dl.list_local_devices()
+end
+

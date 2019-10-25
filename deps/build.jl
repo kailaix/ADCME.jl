@@ -26,12 +26,6 @@ for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-p
     Conda.add(pkg)
 end
 
-if Sys.islinux() && haskey(ENV, "GPU") && !("tensorflow-gpu" in pkgs)
-    @info "Add tensorflow-gpu"
-    # Conda.add("tensorflow-gpu=$tf_ver")
-    run(`$PIP install tensorflow-gpu==$tf_ver`)
-end
-
 @info "Fix libtensorflow_framework.so..."
 if haskey(ENV, "LD_LIBRARY_PATH")
     run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*":$(Conda.LIBDIR)"))
@@ -56,48 +50,9 @@ function install_custom_op_dependency()
         run(`$UNZIP $LIBDIR/eigen.zip`)
         mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
     end
-
-    # Install Torch library
-    #=
-    if Sys.isapple()
-        if !isfile("$LIBDIR/libtorch.zip")
-            download("https://download.pytorch.org/libtorch/cpu/libtorch-macos-latest.zip","$LIBDIR/libtorch.zip")
-        end
-        if !isdir("$LIBDIR/libtorch")
-            run(`$UNZIP $LIBDIR/libtorch.zip`)
-            mv("libtorch", "$LIBDIR/libtorch", force=true)
-            if !isdir("$LIBDIR/libtorch/lib/")
-                mkdir("$LIBDIR/libtorch/lib/")
-            end
-            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_mac_2019.0.5.20190502.tgz","$LIBDIR/mklml_mac_2019.0.5.20190502.tgz")
-            run(`tar -xvzf $LIBDIR/mklml_mac_2019.0.5.20190502.tgz`)
-            mv("mklml_mac_2019.0.5.20190502/lib/libiomp5.dylib","$LIBDIR/libtorch/lib/libiomp5.dylib", force=true)
-            mv("mklml_mac_2019.0.5.20190502/lib/libmklml.dylib","$LIBDIR/libtorch/lib/libmklml.dylib", force=true)
-            rm("mklml_mac_2019.0.5.20190502/", force=true, recursive=true)
-        end
-    elseif Sys.islinux()
-        if !isfile("$LIBDIR/libtorch.zip")
-            download("https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip","$LIBDIR/libtorch.zip")
-        end
-        if !isdir("$LIBDIR/libtorch")
-            run(`$UNZIP $LIBDIR/libtorch.zip`)
-            mv("libtorch", "$LIBDIR/libtorch")
-            if !isdir("$LIBDIR/libtorch/lib/")
-                mkdir("$LIBDIR/libtorch/lib/")
-            end
-            download("https://github.com/intel/mkl-dnn/releases/download/v0.19/mklml_lnx_2019.0.5.20190502.tgz","$LIBDIR/mklml_lnx_2019.0.5.20190502.tgz")
-            run(`tar -xvzf $LIBDIR/mklml_lnx_2019.0.5.20190502.tgz`)
-            mv("mklml_lnx_2019.0.5.20190502/lib/libiomp5.so", "$LIBDIR/libtorch/lib/libiomp5.so", force=true)
-            mv("mklml_lnx_2019.0.5.20190502/lib/libmklml_gnu.so", "$LIBDIR/libtorch/lib/libmklml_gnu.so", force=true)
-            mv("mklml_lnx_2019.0.5.20190502/lib/libmklml_intel.so", "$LIBDIR/libtorch/lib/libmklml_intel.so", force=true)
-            rm("mklml_lnx_2019.0.5.20190502/", force=true, recursive=true)
-        end
-    end
-    =#
 end
 
 install_custom_op_dependency()
-
 
 # useful command for debug
 # readelf -p .comment libtensorflow_framework.so 

@@ -156,10 +156,12 @@ It should gives you the location of `nvcc` compiler.
 For quick installation, you can try
 ```julia
 using ADCME
-ADCME.install_gpu_dependencies()
+enable_gpu()
 ```
 
-This function basically implements the following steps
+#### Manual Installation
+
+In case 
 
 - To install CUDA toolkit (if you do not have one), you can install via conda
 ```julia
