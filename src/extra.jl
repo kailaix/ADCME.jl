@@ -294,12 +294,14 @@ echo 'export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH' >> ~/.bashrc")
 end
 
 function use_gpu(i::Union{Nothing,Int64}=nothing)
-    if isnothing(i)
-        return 
-    end
-    i = join(collect(0:i-1),',')
-    ENV["CUDA_VISIBLE_DEVICES"] = i 
     dl = pyimport("tensorflow.python.client.device_lib")
-    return dl.list_local_devices()
+    if !isnothing(i) && i>=1
+        i = join(collect(0:i-1),',') 
+    else
+        i = ""
+    end
+    ENV["CUDA_VISIBLE_DEVICES"] = i 
+    local_device_protos = dl.list_local_devices()
+    return [x.name for x in local_device_protos if x.device_type == "GPU"]
 end
 
