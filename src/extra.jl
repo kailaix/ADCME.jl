@@ -5,7 +5,8 @@ load_op_and_grad,
 load_op,
 compile_op,
 test_custom_op,
-enable_gpu
+enable_gpu,
+use_gpu
 
 """
     xavier_init(size, dtype=Float64)
