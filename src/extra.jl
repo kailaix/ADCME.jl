@@ -298,10 +298,8 @@ function use_gpu(i::Union{Nothing,Int64}=nothing)
     dl = pyimport("tensorflow.python.client.device_lib")
     if !isnothing(i) && i>=1
         i = join(collect(0:i-1),',') 
-    else
-        i = ""
+        ENV["CUDA_VISIBLE_DEVICES"] = i 
     end
-    ENV["CUDA_VISIBLE_DEVICES"] = i 
     local_device_protos = dl.list_local_devices()
     return [x.name for x in local_device_protos if x.device_type == "GPU"]
 end
