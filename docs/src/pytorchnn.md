@@ -37,6 +37,7 @@ auto out = nn->forward(in);
 Here we required gradients with respect to the input `in` and put `optf.requires_grad(true)` in the argument.
 
 **Compute Gradients**
+
 To compute gradients, we need to call `backward` of a **scalar** to populate the gradient entries. For example, assume our neural network model is
 ``y = f_\theta(x)``
 and we want to compute $\frac{\partial y}{\partial x}$. In our case, `x` is a $8\times 3$ matrix (8 instances of data, each with 3 features). Each output is 10 dimensional. For each input $x_i\in\mathbb{R}^3$ and each output feature $y_j\in\mathbb{R}$, we want to compute  
@@ -50,6 +51,7 @@ in.grad().fill_(0.0);
 where we compute 8 vectors of $\mathbb{R}^3$, i.e., `in.grad()` is a $8\times 3$ matrix (the same size as `in`). 
 
 **Access Neural Network Weights and Biases**
+
 The neural network weights and biases can be assessed with 
 ```c++
 std::cout << nn->fc1->bias << std::endl;
@@ -65,6 +67,7 @@ std::cout <<  nn->fc1->weight.grad() << std::endl;
 ```
 
 **Compile**
+
 To compile the script, in `CMakeLists.txt`, we have
 ```txt
 cmake_minimum_required(VERSION 3.5)
