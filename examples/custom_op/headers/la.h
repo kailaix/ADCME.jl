@@ -1,14 +1,17 @@
 #include <functional>
 #include <cmath>
+#include <iostream>
 #include <torch/torch.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+
+using std::cout;
+using std::cin;
 typedef Eigen::MatrixXd MatrixXd;
 typedef Eigen::VectorXd VectorXd;
 
 auto optd = torch::TensorOptions().dtype(torch::kDouble).layout(torch::kStrided).requires_grad(false);
 auto optf = torch::TensorOptions().dtype(torch::kFloat).layout(torch::kStrided).requires_grad(false);
-static std::function<Eigen::VectorXd(const Eigen::VectorXd&)> NoPreconditioner = [](const Eigen::VectorXd& x){return x;};
 
 VectorXd dtorch2eigen(const torch::Tensor &v){
     int n = v.size(0);
@@ -32,6 +35,8 @@ torch::Tensor darray2torch( double *v, int n, bool grad=false){
 }
 
 /** GMRES **/
+static std::function<Eigen::VectorXd(const Eigen::VectorXd&)> NoPreconditioner = [](const Eigen::VectorXd& x){return x;};
+
 void rotmat(double a, double b, double &c, double &s){
     if ( fabs(b) < 1e-10 ){
         c = 1.0;
@@ -51,7 +56,6 @@ void rotmat(double a, double b, double &c, double &s){
 
 template <typename Operation, typename Preconditioner>
 VectorXd gmres(Operation & A, const VectorXd &b, Preconditioner &M, int m, int max_it, double tol){
-    int iter = 0;
     int n = b.size();
     VectorXd x = VectorXd::Zero(n); // initial guess
     double bnrm2 = b.norm();
