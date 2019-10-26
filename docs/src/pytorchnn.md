@@ -23,6 +23,8 @@ struct Net : torch::nn::Module {
   torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
 };
 ```
+!!! info 
+    To create a linear layer with double precison, run `fc1->to(torch::kDouble)` after construction. 
 
 **Create a Neural Network**
 ```c++
