@@ -7,7 +7,9 @@ pages = Any[
     "index.md",
     "Inverse Modeling" => ["inverse_modeling.md"],
     "Automatic Differentiation" => ["four_types.md"],
-    "Resources" => ["customop.md", "while_loop.md", "julia_customop.md", "pytorchnn.md", "extra.md"],
+    "Resources" => ["customop.md", "while_loop.md", 
+            "julia_customop.md", "pytorchnn.md", "extra.md",
+            "array.md"],
     "Applications" => [],
     "api.md"
 ],

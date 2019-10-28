@@ -30,19 +30,24 @@ Several features of the library are
 
 1. Install [Julia](https://julialang.org/)
 
-2. Install `ADCME`
+2. (Suggested) Configure [PyCall](https://github.com/JuliaPy/PyCall.jl/) to use the private Conda Python
+```
+julia> using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")
+```
+
+3. Install `ADCME`
 ```
 julia> ]
 pkg> add ADCME
 ```
 
-3. (Optional) Test `ADCME.jl`
+4. (Optional) Test `ADCME.jl`
 ```
 julia> ]
 pkg> test ADCME
 ```
 
-4. (Optional) Additional Test
+5. (Optional) Additional Test
 If you want to use `customop()` and test the utility, test with the following command
 ```
 julia> test_custom_op()

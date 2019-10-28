@@ -1,3 +1,6 @@
+#ifndef __LA_H__
+#define __LA_H__
+
 #include <functional>
 #include <cmath>
 #include <iostream>
@@ -109,3 +112,5 @@ VectorXd gmres(Operation & A, const VectorXd &b, Preconditioner &M, int m, int m
     }
     return x;
 }
+
+#endif
