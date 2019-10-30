@@ -316,11 +316,6 @@ end
 Testing the gradients of a vector function `f`:
 `y, J = f(x)` where `y` is a vector output and `J` is the Jacobian.
 """
-"""
-    gradtest(f::Function, x0::Array{Float64}; scale::Float64 = 1.0)
-
-Testing the gradients of a vector function `f`. 
-"""
 function test_jacobian(f::Function, x0::Array{Float64}; scale::Float64 = 1.0)
     v0 = rand(Float64,size(x0))
     γs = scale ./10 .^(1:5)
