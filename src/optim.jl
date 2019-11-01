@@ -210,12 +210,79 @@ function Base.:run(sess::PyObject, nr::NRResult)
     NRResult(run(sess, [nr.x, nr.res, nr.u, nr.converged, nr.iter])...)
 end
 
+
+function backtracking(compute_gradient::Function , u::PyObject, options::Dict)
+    f0, r0, _, δ0 = compute_gradient(u)
+    df0 = -sum(r0.*δ0) 
+    c1 = haskey(options, "ls_c1") ? options["ls_c1"] : 1e-4
+    ρ_hi = haskey(options, "ls_ρ_hi") ? options["ls_ρ_hi"] : 0.5
+    ρ_lo = haskey(options, "ls_ρ_lo") ? options["ls_ρ_lo"] : 0.1
+    iterations = haskey(options, "ls_iterations") ? options["ls_iterations"] : 1000
+    maxstep = haskey(options, "ls_maxstep") ? options["ls_maxstep"] : Inf
+    αinitial = haskey(options, "ls_αinitial") ? options["ls_αinitial"] : 1.0
+
+    @assert !isnothing(f0)
+    @assert ρ_lo < ρ_hi
+    @assert iterations > 0
+
+    function condition(i, ta_α, ta_f)
+        f = read(ta_f, i)
+        α = read(ta_α, i)
+        tf.logical_and(f > f0 + c1 * α * df0, i<=iterations)
+    end
+
+    function body(i, ta_α, ta_f)
+        α_1 = read(ta_α, i-1)
+        α_2 = read(ta_α, i)
+        d = 1/(α_1^2*α_2^2*(α_2-α_1))
+        f = read(ta_f, i)
+        a = (α_1^2*(f - f0 - df0*α_2) - α_2^2*(df0 - f0 - df0*α_1))*d
+        b = (-α_1^3*(f - f0 - df0*α_2) + α_2^3*(df0 - f0 - df0*α_1))*d
+
+        α_tmp = tf.cond(abs(a)<1e-10,
+            ()->df0/(2b),
+            ()->begin
+                d = max(b^2-3a*df0, constant(0.0))
+                (-b + sqrt(d))/(3a)
+            end)
+
+
+        α_2 = tf.cond(tf.math.is_nan(α_tmp),
+                ()->α_2*ρ_hi,
+                ()->begin
+                    α_tmp = min(α_tmp, α_2*ρ_hi)
+                    α_2 = max(α_tmp, α_2*ρ_lo)
+                end)
+
+        fnew, _, _, _ = compute_gradient(u - α_2*δ0)
+        ta_f = write(ta_f, i+1, fnew)
+        ta_α = write(ta_α, i+1, α_2)
+        i+1, ta_α, ta_f
+    end
+
+    ta_α = TensorArray(iterations)
+    ta_α = write(ta_α, 1, constant(αinitial))
+    ta_α = write(ta_α, 2, constant(αinitial))
+
+    ta_f = TensorArray(iterations)
+    ta_f = write(ta_f, 1, constant(0.0))
+    ta_f = write(ta_f, 2, f0)
+
+    i = constant(2, dtype=Int32)
+
+    iter, out_α, out_f = while_loop(condition, body, [i, ta_α, ta_f]; back_prop=false)
+    α = read(out_α, iter)
+    return α
+end
+
 """
     newton_raphson(f::Function, u::Union{Array,PyObject}, θ::Union{Missing,PyObject}; options::Union{Dict{String, T}, Missing}=missing)
 
 Newton Raphson solver for solving a nonlinear equation. 
-`f` has the signature `f(u::PyObject, θ::Union{Missing,PyObject})->(r::PyObject, A::Union{PyObject,SparseTensor})`
-where `r` is the residual and `A` is the Jacobian matrix. 
+`f` has the signature 
+- `f(u::PyObject, θ::Union{Missing,PyObject})->(r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is off)
+- `f(u::PyObject, θ::Union{Missing,PyObject})->(fval::PyObject, r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is on)
+where `r` is the residual and `A` is the Jacobian matrix; in the case where `linesearch` is on, the function value `fval` must also be supplied.
 `θ` are external parameters.
 `u0` is the initial guess for `u`
 `options`:
@@ -223,13 +290,27 @@ where `r` is the residual and `A` is the Jacobian matrix.
 - "verbose": whether details are printed (default=false)
 - "rtol": relative tolerance for termination (default=1e-12)
 - "tol": absolute tolerance for termination (default=1e-12)
+- "LM": a float number, Levenberg-Marquardt modification ``x^(k+1) = x^k - (J^k + \\mu^k)^{-1}g^k`` (default=0.0)
+- "linesearch": whether linesearch is used (default=false)
+
+Currently, the backtracing algorithm is implemented.
+The parameters for `linesearch` are also supplied via `options`
+
+- "ls_c1": stop criterion, ``f(x^k) < f(0) + \\alpha * c_1 * f'(0)``
+- "ls_ρ_hi": the new step size ``\\alpha_1\\leq \\rho_{hi}*\\alpha_0`` 
+- "ls_ρ_lo": the new step size ``\\alpha_1\\geq \\rho_{lo}*\\alpha_0`` 
+- "ls_iterations": maximum number of iterations for linesearch
+- "ls_maxstep": maximum allowable steps
+- "ls_αinitial": initial guess for the step size \\alpha
 """
-function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject, Array{<:Real}}=missing; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject, Array{<:Real}}=missing; 
+    options::Union{Dict{String, T}, Missing}=missing) where T<:Real
     options_ = Dict(
             "max_iter"=>100,
             "verbose"=>false,
             "rtol"=>1e-12,
-            "tol"=>1e-12
+            "tol"=>1e-12,
+            "linesearch"=>false
         )
     if !ismissing(options)
         for k in keys(options)
@@ -265,21 +346,53 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
         )
     end
     function body(i, ta_r, ta_u)
+        local δ, val, r_
         if options["verbose"]; @info "(3/4)Parsing Main Loop..."; end
         u_ = read(ta_u, i-1)
-        r_, J = f(θ, u_)
+
+        function compute_gradients(x)
+            val = nothing
+            out = f(θ, x)
+            if length(out)==2
+                r_, J = out
+            else
+                val, r_, J = out
+            end
+            if haskey(options, "LM") # Levenberg-Marquardt
+                μ = options["LM"]
+                μ = convert_to_tensor(μ)
+                δ = (J + μ*spdiag(size(J,1)))\r_ 
+            else
+                δ = J\r_
+            end
+            return val, r_, J, δ
+        end
+
+
+
+        if options["linesearch"]
+            if options["verbose"]; @info "Perform Linesearch..."; end
+            step_size = backtracking(compute_gradients, u_, options)
+        else
+            step_size = 1.0
+        end
+        val, r_, _, δ = compute_gradients(u_)
         ta_r = write(ta_r, i, norm(r_))
-        δ = J\r_
+        δ = step_size * δ
         new_u = u_ - δ
-        # op = tf.print(i,"==>\n", u_, "\n", norm(r_),"\n", summarize=-1)
-        # i = bind(i, op)
+
+        if options["verbose"]
+            op = tf.print(i," step size = ", step_size)
+            new_u = bind(new_u, op)
+        end
         ta_u = write(ta_u, i, new_u)     
         i+1, ta_r, ta_u
     end
     
     
     if options["verbose"]; @info "(1/4)Intializing TensorArray..."; end
-    r0, _ = f(θ, u)
+    out = f(θ, u)
+    r0 = length(out)==2 ? out[1] : out[2]
     tol0 = norm(r0)
     if options["verbose"]
         op = tf.print("Iteration = 1", "| Tol =", tol0, "( $(options["tol"]) )", "| Rel_Tol = ---", 
