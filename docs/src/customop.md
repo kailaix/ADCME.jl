@@ -102,6 +102,7 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 **Step 3: Compile**
 
 It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`. 
+
 | Variable      | Description                           |
 | ------------- | ------------------------------------- |
 | `ADCME.CXX`   | C++ Compiler                          |
@@ -230,19 +231,55 @@ namespace tensorflow{
 context->eigen_device<GPUDevice>()
 ```
 
-## Best Practice and Caveats
+## Mutable Inputs
 
+Sometimes we want to modify tensors in place. In this case we can use mutable inputs. Mutable inputs must be [`Variable`](@ref) and it must be forwarded to one of the output. We consider implement a `my_assign` operator, with signature
 
-### Allocating Memories
-
-Whenever memory is needed, one should allocate memory by TensorFlow context. 
-```cpp
-Tensor* tmp_var = nullptr;
-TensorShae tmp_shape({10,10});
-OP_REQUIRES_OK(ctx, ctx->allocate_temp(DT_FLOAT, tmp_shape, &tmp_var));
+```
+my_assign(u::PyObject, v::PyObject)::PyObject
 ```
 
-There are three methods to allocate Tensors when an Op kernel executes ([details](https://github.com/tensorflow/tensorflow/blob/584876113e6248639d18d4e16c77b47cb1b251c1/tensorflow/core/framework/op_kernel.h#L753-L801))
-- `allocate_persistent`: if the memory is used between Op invocations.
-- `allocate_temp`: if the memory is used only within `Compute`.
-- `allocate_output`: if the memory will be used as output
+Here `u` is a `Variable` and we copy the data from `v` to `u`. In the `MyAssign.cpp` file, we modify the input and output specifications to 
+```c++
+.Input("u : Ref(double)")
+.Input("v : double")
+.Output("w : Ref(double)")
+```
+
+In addition, the input tensor is obtained through
+```c++
+Tensor u = context->mutable_input(0, true);
+```
+The second argument `lock_held` specifies whether the input mutex is acquired (false) before the operation. Note the output must be a `Tensor` instead of a reference. 
+
+To forward the input, use
+```c++
+context->forward_ref_input_to_ref_output(0,0);
+```
+
+We use the following code snippet to test the program
+```julia
+my_assign = load_op("./build/libMyAssign","my_assign")
+u = Variable([0.1,0.2,0.3])
+v = constant(Array{Float64}(1:3))
+u2 = u^2
+w = my_assign(u,v)
+sess = tf.Session()
+init(sess)
+@show run(sess, u)
+@show run(sess, u2)
+@show run(sess, w)
+@show run(sess, u2)
+```
+
+The output is 
+```
+[0.1,0.2,0.3]
+[0.1,0.04,0.09]
+[1.0,2.0,3.0]
+[1.0,4.0,9.0]
+```
+We can see that the tensors depending on `u` are also aware of the assign operator. The complete programs can be downloaded here: [CMakeLists.txt](https://kailaix.github.io/ADCME.jl/dev/codes/mutable/CMakeLists.txt), [MyAssign.cpp](https://kailaix.github.io/ADCME.jl/dev/codes/mutable/MyAssign.cpp), [gradtest.jl](https://kailaix.github.io/ADCME.jl/dev/codes/mutable/gradtest.jl).
+
+
+

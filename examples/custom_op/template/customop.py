@@ -425,6 +425,7 @@ d = {"include": tf.sysconfig.get_compile_flags()[0][2:],
     "OperatorName": op,
     "HEADERS": os.path.join(pypath, "../headers")}
 with open("{}/CMakeLists.template".format(dirname),"r") as fp:
+    print("CMakeLists.txt template: {}/CMakeLists.template".format(dirname))
     cnt = fp.read()
     s = Template(cnt)
     cmake = s.substitute(d)
