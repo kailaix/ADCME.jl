@@ -10,7 +10,7 @@ pages = Any[
     "Resources" => ["customop.md", "while_loop.md", 
             "julia_customop.md", "pytorchnn.md", "extra.md",
             "array.md"],
-    "Applications" => [],
+    "Applications" => ["apps.md"],
     "api.md"
 ],
 authors = "Kailai Xu")

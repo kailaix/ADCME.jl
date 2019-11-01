@@ -1,4 +1,4 @@
-![](examples/md/icon.jpg)
+![](docs/src/asset/icon.jpg)
 
 ---
 
@@ -8,9 +8,9 @@
 ![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
 
 
-![](examples/md/demo.png)
+![](docs/src/asset/demo.png)
 
-The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling with gradient based optimization techniques. It has [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/) as the automatic differentiation backends. The dataflow model adopted by the framework enables researchers to do efficient inverse modeling *without substantial effort after implementing the forward simulation*.
+The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling with gradient based optimization techniques. It has [TensorFlow](https://www.tensorflow.org/) as the automatic differentiation and parallel computing backends. The dataflow model adopted by the framework enables researchers to do high performance inverse modeling *without substantial effort after implementing the forward simulation*.
 
 Several features of the library are
 
@@ -19,6 +19,8 @@ Several features of the library are
 * *Numerical Scheme*. Easy to implement numerical shemes for solving PDEs.
 * *Static graphs*. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
 * *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorate optimizer. 
+
+Start building your forward and inverse modeling on top of the million-dollar [TensorFlow](https://www.tensorflow.org/) project with ADCME today!
 
 | Documentation                                                |
 | ------------------------------------------------------------ |
@@ -110,14 +112,30 @@ PyObject <tf.Tensor 'gradients_1/Mul_grad/Reshape:0' shape=() dtype=float64>
 
 Under the hood, a computational graph is created for gradients back-propagation.
 
-![](examples/md/code.png)
+![](docs/src/asset/code.png)
 
 
 For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
 # Research Work
 
-[1] Huang, D.Z., Xu, K., Farhat, C. and Darve, E., 2019. Predictive Modeling with Learned Constitutive Laws from Indirect Observations. arXiv preprint arXiv:1905.12530.
+Click the images for short descriptions!
+
+[1] Kailai Xu, and Eric Darve. "[Adversarial Numerical Analysis for Inverse Problems](https://arxiv.org/abs/1910.06936)"
+
+[![](docs/src/asset/ana.png)](https://kailaix.github.io/ADCME.jl/dev/apps/#Adversarial-Numerical-Analysis-1)
+
+[2] Kailai Xu and Eric Darve. "[Calibrating Multivariate Lévy Processes with Neural Networks](https://arxiv.org/abs/1812.08883)"
+
+[![](docs/src/asset/levy.png)](https://kailaix.github.io/ADCME.jl/dev/apps/#Calibrating-Multivariate-Lévy-Processes-with-Neural-Networks-1)
+
+
+[3] Kailai Xu (**co-first author**), Huang, Daniel Z. (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
+
+[![image-20191031200808697](docs/src/asset/law.png)](https://kailaix.github.io/ADCME.jl/dev/apps/#Learning-Constitutive-Relations-from-Indirect-Observations-Using-Deep-Neural-Networks-1)
+
+
+
 
 # LICENSE
 
