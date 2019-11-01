@@ -2,7 +2,7 @@
 
 There are many handy tools implemented in `ADCME` for analysis, benchmarking, input/output, etc. 
 
-## Debugging and printing
+## Debugging and Printing
 
 Add the following line before `Session` and change `tf.Session` to see verbose printing (such as GPU/CPU information)
 ```julia
@@ -15,6 +15,20 @@ tf.debugging.set_log_device_placement(true)
 op = tf.print(a)
 b = bind(b, op)
 ```
+
+## Debugging Python Codes
+
+If the error comes from Python (through PyCall), we can print out the Python trace with the following commands
+
+```python
+import traceback
+try:
+    # Your codes here 
+except Exception:
+    print(traceback.format_exc())
+```
+
+This Python script can be inserted to Julia and use interpolation to invoke Julia functions (in the comment line).
 
 ## Profiling
 
@@ -39,12 +53,6 @@ psave
 pload
 ```
 
-## Save and Load TensorFlow Session
-```@docs
-load
-save
-```
-
 ## Save and Load Diary
 
 We can use TensorBoard to track a scalar value easily
@@ -59,11 +67,3 @@ end
 activate(d)
 ```
 
-```@docs
-Diary
-scalar
-activate
-load
-save
-write
-```

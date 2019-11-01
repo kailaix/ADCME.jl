@@ -15,7 +15,7 @@ To do automatic differentiation in ADCME, direct implemnetation in the above way
 
 `TensorFlow` provides us a clever way to do loops, where only one graph is created for the whole loops. The basic idea is to create a `while_loop` graph based on five primitives, and the corresponding graph for backpropagation is constructed thereafter. 
 
-## A Simple Example
+## A Basic Example
 
 As a simple example, we consider assemble the external load vector for linear finite elements in 1D. Assume that the load distribution is $f(x)=1-x^2$, $x\in[0,1]$. The goal is to compute a vector $\mathbf{v}$ with $v_i=\int_{0}^1 f(x)\phi_i(x)dx$, where $\phi_i(x)$ is the $i$-th linear element. 
 
@@ -59,22 +59,30 @@ F0 = run(sess, F)
 
 
 
-## A practical application
+## Finite Element Analysis
 
 In this section, we demonstrate how to assemble a finite element matrix based on `while_loop` for a 2D Poisson problem. We consider the following problem
-$$\begin{aligned}
+```math
+\begin{aligned}
 \nabla \cdot ( D\nabla u(\mathbf{x}) ) &= f(\mathbf{x})& \mathbf{x}\in \Omega\\
 u(\mathbf{x}) &= 0 & \mathbf{x}\in \partial \Omega
-\end{aligned}$$
+\end{aligned}
+```
 Here $\Omega$ is the unit disk. We consider a simple case, where
-$$\begin{aligned}
+```math
+\begin{aligned}
 D&=\mathbf{I}\\
 f(\mathbf{x})&=-4
-\end{aligned}$$
+\end{aligned}
+```
 Then the exact solution will be 
-$$u(\mathbf{x}) = 1-x^2-y^2$$
+```math
+u(\mathbf{x}) = 1-x^2-y^2
+```
 The weak formulation is
-$$\langle \nabla v(\mathbf{x}), D\nabla u(\mathbf{x}) \rangle = \langle f(\mathbf{x}),v(\mathbf{x}) \rangle$$
+```math
+\langle \nabla v(\mathbf{x}), D\nabla u(\mathbf{x}) \rangle = \langle f(\mathbf{x}),v(\mathbf{x}) \rangle
+```
 We  split $\Omega$ into triangles $\mathcal{T}$ and use piecewise linear basis functions. Typically, we would iterate over all elements and compute the local stiffness matrix for each element. However, this could result in a large loop if we use a fine mesh. Instead, we can use `while_loop` to complete the task. In `ADCME`, the syntax for `while_loop` is 
 
 ```julia
@@ -119,7 +127,7 @@ function assemble_FEM(Ds, Fs, nodes, elem)
 end
 ```
 
-## Code detail explained
+## Explanation
 
 We now explain the codes. 
 
@@ -166,7 +174,7 @@ Finally, we stack the `TensorArray` into a tensor and vectorized it according to
 
 ![Result for the Poisson Problem](asset/while_loop.png)
 
-## Gradients that backpropagate through loops
+## Gradients through `while_loop`
 
 To inspect the gradients through the loops, we can run 
 

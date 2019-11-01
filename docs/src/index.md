@@ -16,24 +16,39 @@ The package inherents the scalability and efficiency from the well-optimized bac
 
 ## Getting Started 
 
-To install ADCME, use the following command:
-```julia
-using Pkg
-Pkg.add("ADCME")
+
+1. Configure [PyCall](https://github.com/JuliaPy/PyCall.jl/) to use the private Conda Python
 ```
-to load the package, use
+julia> using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")
+```
+
+2. Install `ADCME`
+```
+julia> ]
+pkg> add ADCME
+```
+
+To enable GPU support for custom operators (if you do not need to compile custom operators, you do not need this step), make sure `nvcc` command is available on your machine, then
 ```julia
 using ADCME
+enable_gpu()
 ```
 
 We consider a simple inverse modeling problem: consider the following partial differential equation
-$$-bu''(x)+u(x)=f(x)\quad x\in[0,1], u(0)=u(1)=0$$
+```math
+-bu''(x)+u(x)=f(x)\quad x\in[0,1], u(0)=u(1)=0
+```
 where 
-$$f(x) = 8 + 4x - 4x^2$$
+```math
+f(x) = 8 + 4x - 4x^2
+```
 Assume that we have observed $u(0.5)=1$, we want to estimate $b$. The true value in this case should be $b=1$. We can discretize the system using finite difference method, and the resultant linear system will be
-$$(bA+I)\mathbf{u} = \mathbf{f}$$
+```math
+(bA+I)\mathbf{u} = \mathbf{f}
+```
 where
-$$A = \begin{bmatrix}
+```math
+A = \begin{bmatrix}
         \frac{2}{h^2} & -\frac{1}{h^2} & \dots & 0\\
          -\frac{1}{h^2} & \frac{2}{h^2} & \dots & 0\\
          \dots \\
@@ -48,7 +63,8 @@ $$A = \begin{bmatrix}
         f(x_3)\\
         \vdots\\
         f(x_{n})
-    \end{bmatrix}$$
+    \end{bmatrix}
+```
 
 The idea for implementing the inverse modeling method in ADCME is that we make the unknown $b$ a `Variable` and then solve the forward problem pretending $b$ is known. The following code snippet shows the implementation
 ```julia
@@ -78,6 +94,3 @@ The expected output is
 ```
 Estimated b = 0.9995582304494237
 ```
-
-
-

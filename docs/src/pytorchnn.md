@@ -1,6 +1,10 @@
-# Neural Network in PyTorch C++
+# Neural Network in C++
 
-In this section, we describe how we can implement a neural network in C++ with PyTorch APIs. This is useful when we want to create a custom operator in ADCME and a neural network is embedded in the operator (we cannot simply "pass" the neural network to the C++ backend). 
+In this section, we describe how we can implement a neural network in C++. This is useful when we want to create a custom operator in ADCME and a neural network is embedded in the operator (we cannot simply "pass" the neural network to the C++ backend). 
+
+## PyTorch 
+
+The first method is by using PyTorch C++ APIs.
 
 We first need to download [LibTorch](https://pytorch.org/) source. Uncompress the library to your working directory. I have created a simple wrapper for some utility functions in ADCME. To use the wrapper, simply add [la.h](https://github.com/kailaix/ADCME.jl/blob/master/examples/custom_op/headers/la.h) to your include directories.
 
@@ -23,7 +27,7 @@ struct Net : torch::nn::Module {
   torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
 };
 ```
-!!! info 
+!!! note 
     To create a linear layer with double precison, run `fc1->to(torch::kDouble)` after construction. 
 
 **Create a Neural Network**
@@ -130,3 +134,127 @@ int main(){
     return 1;
 }
 ```
+
+
+## Adept-2
+
+The second approach is to use a third-party automatic differentiation library. Here we use [Adept-2](https://github.com/rjhogan/Adept-2). The idea is that we code a neural network in `C++` using array operations. 
+
+To start with, download and compile Adept-2 with the following command
+```bash
+if [ ! -d "Adept-2" ]; then
+  git clone https://github.com/rjhogan/Adept-2
+fi
+cd Adept-2
+autoreconf -i
+./configure
+make -j
+make check
+make install
+```
+
+All the libraries should be available in `Adept-2/adept/.libs`. The following script shows a simple neural network implementation
+```c++
+#include "adept.h"
+#include "adept_arrays.h"
+#include <iostream>
+using namespace adept;
+using namespace std;
+
+int main()
+{
+  Stack stack;
+  Array<2, double, true> X(100,3), W1(3,20), W2(20,20), W3(20,4);
+  Array<1, double, true> b1(20), b2(20), b3(4);
+  double V[400];
+  for(int i=0;i<300;i++) X[i] = 0.01*i;
+  for(int i=0;i<60;i++) W1[i] = 0.01*i;
+  for(int i=0;i<400;i++) W2[i] = 0.01*i;
+  for(int i=0;i<80;i++) W3[i] = 0.01*i;
+  for(int i=0;i<20;i++) b1[i] = 0.01*i;
+  for(int i=0;i<20;i++) b2[i] = 0.01*i;
+  for(int i=0;i<4;i++) b3[i] = 0.01*i;
+
+  stack.new_recording();
+  auto x = X**W1;
+  Array<2, double, true> y1(x.size(0),x.size(1));
+  for(int i=0;i<x.size(0);i++) 
+    for(int j=0;j<x.size(1);j++)
+        y1(i,j) = tanh(x(i,j)+b1(j));
+    
+  auto w = y1**W2;
+  Array<2, double, true> y2(w.size(0),w.size(1));
+  for(int i=0;i<w.size(0);i++) 
+    for(int j=0;j<w.size(1);j++)
+        y2(i,j) = tanh(w(i,j)+b2(j));
+
+  auto z = y2**W3;
+  Array<2, double, true> y3(z.size(0),z.size(1));
+  for(int i=0;i<z.size(0);i++) 
+    for(int j=0;j<z.size(1);j++)
+        y3(i,j) = z(i,j)+b3(j);
+  
+  auto out = sum(y3, 0);
+  
+  out[0].set_gradient(1.0);
+  stack.compute_adjoint();
+  auto g1 = X.get_gradient();
+  cout << g1 << endl;
+
+  auto g2 = W3.get_gradient();
+  cout << g2 << endl;
+
+  out[1].set_gradient(1.0);
+  stack.compute_adjoint();
+  auto g1_ = X.get_gradient();
+  cout << g1_ << endl;
+
+  auto g2_ = W3.get_gradient();
+  cout << g2_ << endl;
+
+
+  y3(0,0).set_gradient(1.0);
+  stack.compute_adjoint();
+  auto g1__ = X.get_gradient();
+  cout << g1__ << endl;
+  auto g2__ = W3.get_gradient();
+  cout << g2__ << endl;
+}
+```
+
+The following codes might be useful 
+```c++
+typedef Array<2, double, true> Array2D;
+typedef Array<1, double, true> Array1D;
+
+void setv(Array1D& v,  const double *val){
+    int n = v.size(0);
+    for(int i=0;i<n;i++) v(i).set_value(val[i]);
+}
+
+void setv(Array2D& v, const double *val){
+    int k = 0;
+    int m = v.size(0), n = v.size(1);
+    for(int i=0;i<m;i++){
+        for(int j=0;j<n;j++)
+            v(i,j).set_value(val[k++]);
+    }
+}
+
+void getg(Array1D& v, double *val){
+    int n = v.size(0);
+    auto gv = v.get_gradient();
+    for(int i=0;i<n;i++) val[i] = value(gv(i));
+}
+
+void getg(Array2D& v, double *val){
+    int k = 0;
+    int m = v.size(0), n = v.size(1);
+    auto gv = v.get_gradient();
+    for(int i=0;i<m;i++){
+        for(int j=0;j<n;j++)
+            val[k++] = value(gv(i, j));
+    }
+}
+```
+

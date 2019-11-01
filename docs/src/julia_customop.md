@@ -1,5 +1,8 @@
 # Julia Custom Operators
 
+!!! warning
+    Currently, embedding Julia suffers from multithreading issues: calling Julia from a non-Julia thread is not supported in ADCME. When TensorFlow kernel codes are executed concurrently, it is difficult to invoke the Julia functions. See [issue](https://github.com/kailaix/ADCME.jl/issues/8).
+
 In scientific and engineering applications, the operators provided by `TensorFlow` are not sufficient for high performance computing. In addition, constraining oneself to `TensorFlow` environment sacrifices the powerful scientific computing ecosystems provided by other languages such as `Julia` and `Python`. For example, one might want to code a finite volume method for a sophisticated fluid dynamics problem; it is hard to have the flexible syntax to achieve this goal, obtain performance boost from existing fast solvers such as AMG, and benefit from many other third-party packages within `TensorFlow`. This motivates us to find a way to "plugin" custom operators to `TensorFlow`.
 
 
@@ -85,7 +88,7 @@ double y(?) -> output
 and run 
 
 ```julia
-customop(;julia=true)
+customop()
 ```
 
 Three files are generated`CMakeLists.txt`, `TwoLayer.cpp` and `gradtest.jl`. Now create a new file `TwoLayer.h`
@@ -142,7 +145,7 @@ J0 = run(sess, y)
 
 
 
-## Usage in a Module
+## Embedded in Modules
 
 If the custom operator is intended to be used in a precompiled module, we can load the dynamic library at initialization
 

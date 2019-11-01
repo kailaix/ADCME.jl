@@ -28,8 +28,6 @@ module ADCME
         "sparse_solver"=>("SparseSolver", "libSparseSolver", "sparse_solver", true),
         "sparse_assembler"=>("SparseAccumulate", "libSparseAccumulate", "", false),
         "sparse_least_square"=>("SparseLeastSquare", "libSparseLeastSquare", "sparse_least_square", true),
-        "get_tensor_flow_timer"=>("Timer", "libTensorFlowTimer", "get_tensor_flow_timer", false),
-        "set_tensor_flow_timer"=>("Timer", "libTensorFlowTimer", "set_tensor_flow_timer", false),
         "sparse_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
         "diag_sparse_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
         "sparse_diag_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),

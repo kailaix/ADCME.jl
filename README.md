@@ -123,16 +123,16 @@ Click the images for short descriptions!
 
 [1] Kailai Xu, and Eric Darve. "[Adversarial Numerical Analysis for Inverse Problems](https://arxiv.org/abs/1910.06936)"
 
-[![](docs/src/asset/ana.png)](https://kailaix.github.io/ADCME.jl/dev/apps/#Adversarial-Numerical-Analysis-1)
+[![](docs/src/asset/ana.png)](https://kailaix.github.io/ADCME.jl/dev/apps/apps_ana)
 
 [2] Kailai Xu and Eric Darve. "[Calibrating Multivariate Lévy Processes with Neural Networks](https://arxiv.org/abs/1812.08883)"
 
-[![](docs/src/asset/levy.png)](https://kailaix.github.io/ADCME.jl/dev/apps/#Calibrating-Multivariate-Lévy-Processes-with-Neural-Networks-1)
+[![](docs/src/asset/levy.png)](https://kailaix.github.io/ADCME.jl/dev/apps/apps_levy)
 
 
 [3] Huang, Daniel Z. (**co-first author**), Kailai Xu (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
 
-[![image-20191031200808697](docs/src/asset/law.png)](https://kailaix.github.io/ADCME.jl/dev/apps/#Learning-Constitutive-Relations-from-Indirect-Observations-Using-Deep-Neural-Networks-1)
+[![image-20191031200808697](docs/src/asset/law.png)](https://kailaix.github.io/ADCME.jl/dev/apps/apps_constitutive_law)
 
 
 

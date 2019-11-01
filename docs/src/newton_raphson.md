@@ -6,7 +6,9 @@ newton_raphson
 ```
 
 As an example, assume we want to solve 
-``u_i^2 - 1 = 0, i=1,2,\ldots, 10``
+```math
+u_i^2 - 1 = 0, i=1,2,\ldots, 10
+```
 We first need to construct a function 
 ```julia
 function f(θ, u)
@@ -88,10 +90,10 @@ end
 tf_myop = tf.custom_gradient(myop_)
 ```
 
-!!! info
+!!! note
     Here `py"""lambda dy: grad_$$s(dy, y_$$s)"""` is related to a [workaround](https://github.com/JuliaPy/PyCall.jl/issues/367) for converting Julia function to Python function. 
     Also we need to explicitly put Julia object to Python. 
-    
+
 ```julia
 x = constant(8ones(5))
 y = tf_myop(x)
