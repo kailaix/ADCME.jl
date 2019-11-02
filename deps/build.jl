@@ -1,6 +1,9 @@
+using Pkg
+Pkg.add("Conda")
 using Conda
-using PyCall
-# assumption: PyCall and Conda are installed, and PyCall.conda==true 
+PYTHON = joinpath(Conda.BINDIR, "python")
+ENV["PYTHON"]=PYTHON
+Pkg.add("PyCall")
 
 tf_ver = "1.14"
 PYTHON = joinpath(Conda.BINDIR, "python")
