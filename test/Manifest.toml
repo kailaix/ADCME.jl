@@ -1,5 +1,11 @@
 # This file is machine-generated - editing it directly is not advised
 
+[[ADCME]]
+deps = ["Conda", "FFTW", "LinearAlgebra", "MAT", "Optim", "PyCall", "PyPlot", "Random", "SparseArrays", "Statistics", "Suppressor"]
+git-tree-sha1 = "a062efae807f94b8adc4e80e986beaf7e89ede9b"
+uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
+version = "0.3.1"
+
 [[AbstractFFTs]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "380e36c66edfa099cd90116b24c1ce8cafccac40"
@@ -206,9 +212,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[MAT]]
 deps = ["BufferedStreams", "HDF5", "Libz", "SparseArrays"]
-git-tree-sha1 = "6820ffc9a08bb526d03f8d33a2bdfd90de14bd61"
+git-tree-sha1 = "e18c7ab779ecd44b1d5b2245e5257cf53a3c21d2"
 uuid = "23992714-dd62-5051-b70f-ba57cb901cac"
-version = "0.5.1"
+version = "0.6.0"
 
 [[MacroTools]]
 deps = ["CSTParser", "Compat", "DataStructures", "Test", "Tokenize"]
@@ -219,6 +225,12 @@ version = "0.5.1"
 [[Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
+
+[[MathProgBase]]
+deps = ["Compat"]
+git-tree-sha1 = "3bf2e534e635df810e5f4b4f1a8b6de9004a0d53"
+uuid = "fdba3010-5040-5b88-9595-932c9decdf73"
+version = "0.7.7"
 
 [[Missings]]
 deps = ["DataAPI"]
@@ -234,6 +246,12 @@ deps = ["Calculus", "DiffEqDiffTools", "DiffResults", "Distributed", "ForwardDif
 git-tree-sha1 = "f1b8ed89fa332f410cfc7c937682eb4d0b361521"
 uuid = "d41bc354-129a-5804-8e4c-c37616107c6c"
 version = "7.5.0"
+
+[[NLopt]]
+deps = ["BinaryProvider", "CMakeWrapper", "Libdl", "MathProgBase", "Test"]
+git-tree-sha1 = "b46237debcacd4fed7bbeb31200667a75b90384f"
+uuid = "76087f3c-5699-56af-9a33-bf431cd00edd"
+version = "0.5.1"
 
 [[NaNMath]]
 deps = ["Compat"]
