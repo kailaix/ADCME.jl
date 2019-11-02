@@ -133,7 +133,7 @@ Click the images for short descriptions!
 [![](docs/src/asset/levy.png)](https://kailaix.github.io/ADCME.jl/dev/apps/apps_levy)
 
 
-[3] Huang, Daniel Z. (**co-first author**), Kailai Xu (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
+[3] Kailai Xu (**co-first author**), Huang, Daniel Z. (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
 
 [![image-20191031200808697](docs/src/asset/law.png)](https://kailaix.github.io/ADCME.jl/dev/apps/apps_constitutive_law)
 

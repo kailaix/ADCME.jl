@@ -151,9 +151,15 @@ end
 
 
 @doc """
-    BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
+    BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
+    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, kwargs...)
 
 `BFGS!` is a simplified interface for BFGS optimizer. See also [`ScipyOptimizerInterface`](@ref).
+`callback` is a callback function with signature 
+```julia
+callback(vs::Array{Float64}, iter::Int64, loss::Float64)
+```
+`vars` is an array consisting of tensors and its values will be the input to `vs`.
 
 # example
 ```julia
@@ -162,11 +168,14 @@ loss = (a - 10.0)^2
 BFGS!(sess, loss)
 ```
 """->
-function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
+function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
+    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, kwargs...)
     __cnt = 0
     __loss = 0
+    __var = nothing
     out = []
-    function print_loss(l)
+    function print_loss(l, vs...)
+        if !isnothing(callback); __var = vs; end
         if mod(__cnt,1)==0
             println("iter $__cnt, current loss=",l)
         end
@@ -178,12 +187,15 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; kwargs...)
         if mod(__iter,1)==0
             println("================ ITER $__iter ===============")
         end
+        if !isnothing(callback)
+            callback(__var, __iter, __loss)
+        end
         push!(out, __loss)
         __iter += 1
     end
     opt = ScipyOptimizerInterface(loss, method="L-BFGS-B",options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12))
     @info "Optimization starts..."
-    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss])
+    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...])
     out
 end
 
