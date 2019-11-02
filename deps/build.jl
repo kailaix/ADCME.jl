@@ -4,6 +4,8 @@ using Conda
 PYTHON = joinpath(Conda.BINDIR, "python")
 ENV["PYTHON"]=PYTHON
 Pkg.add("PyCall")
+Pkg.build("PyCall")
+
 
 tf_ver = "1.14"
 PYTHON = joinpath(Conda.BINDIR, "python")
