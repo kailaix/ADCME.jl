@@ -1,5 +1,5 @@
 push!(LOAD_PATH, "@stdlib")
-using Pkg; Pkg.add("Conda")
+using Pkg
 using Conda
 PYTHON = joinpath(Conda.BINDIR, "python")
 ENV["PYTHON"]=PYTHON
