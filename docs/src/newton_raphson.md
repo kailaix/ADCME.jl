@@ -64,7 +64,9 @@ nr = newton_raphson(f, constant(rand(10)), missing,
 
 
 Finally we consider an advanced usage of the code, where we want to create a custom operator that solves
-``y^3-x=0``
+```math
+y^3-x=0
+```
 We compute the forward using Newton-Raphson and the backward with the implicit function theorem.
 ```julia
 using Random
