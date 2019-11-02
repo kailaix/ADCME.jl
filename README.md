@@ -32,24 +32,19 @@ Start building your forward and inverse modeling on top of the million-dollar [T
 
 1. Install [Julia](https://julialang.org/)
 
-2. (Suggested) Configure [PyCall](https://github.com/JuliaPy/PyCall.jl/) to use the private Conda Python
-```
-julia> using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")
-```
-
-3. Install `ADCME`
+2. Install `ADCME`
 ```
 julia> ]
 pkg> add ADCME
 ```
 
-4. (Optional) Test `ADCME.jl`
+3. (Optional) Test `ADCME.jl`
 ```
 julia> ]
 pkg> test ADCME
 ```
 
-5. (Optional) Additional Test
+4. (Optional) Test Custom Operator Functionality
 If you want to use `customop()` and test the utility, test with the following command
 ```
 julia> test_custom_op()
@@ -63,6 +58,14 @@ For custom operators, the TensorFlow shared library compiler (see [here](https:/
 | `ADCME.TFLIB` | `libtensorflow_framework.so` location |
 | `ADCME.CMAKE` | Cmake binary location                 |
 | `ADCME.MAKE`  | Make binary location                  |
+
+5. (Optional) Enable GPU Support
+To enable GPU support, first make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).
+```julia
+using ADCME
+enable_gpu()
+```
+
 
 # Tutorial
 

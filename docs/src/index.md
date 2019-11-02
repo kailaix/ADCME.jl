@@ -16,16 +16,9 @@ The package inherents the scalability and efficiency from the well-optimized bac
 
 ## Getting Started 
 
-
-1. Configure [PyCall](https://github.com/JuliaPy/PyCall.jl/) to use the private Conda Python
+To install ADCME, simply type the following commands in Julia REPL
 ```
-julia> using Pkg; Pkg.add("Conda"); using Conda; PYTHON = joinpath(Conda.BINDIR, "python"); ENV["PYTHON"]=PYTHON; Pkg.build("PyCall")
-```
-
-2. Install `ADCME`
-```
-julia> ]
-pkg> add ADCME
+julia> using Pkg; Pkg.add("ADCME")
 ```
 
 To enable GPU support for custom operators (if you do not need to compile custom operators, you do not need this step), make sure `nvcc` command is available on your machine, then
