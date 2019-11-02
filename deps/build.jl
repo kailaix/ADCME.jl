@@ -1,4 +1,4 @@
-import Conda
+using Conda
 using PyCall
 # assumption: PyCall and Conda are installed, and PyCall.conda==true 
 
