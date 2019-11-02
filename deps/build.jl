@@ -1,27 +1,17 @@
-using Pkg
-Pkg.add("Conda")
+push!(LOAD_PATH, "@stdlib")
+using Pkg; Pkg.add("Conda")
 using Conda
 PYTHON = joinpath(Conda.BINDIR, "python")
 ENV["PYTHON"]=PYTHON
-Pkg.add("PyCall")
-Pkg.build("PyCall")
-
+Pkg.add("PyCall"); Pkg.build("PyCall")
+using PyCall
+println("PyCall Python: $(PyCall.python)
+Conda Python: $(PYTHON)")
 
 tf_ver = "1.14"
-PYTHON = joinpath(Conda.BINDIR, "python")
 PIP = joinpath(Conda.BINDIR, "pip")
 ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
-
-if !PyCall.conda
-    error("""ADCME requires that PyCall use the Conda.jl Python.
-Rebuild PyCall with
-
-julia> ENV["PYTHON"] = "$PYTHON"
-julia> using Pkg; Pkg.build("PyCall")
-
-""")
-end
 
 @info "Install CONDA dependencies..."
 pkgs = Conda._installed_packages()

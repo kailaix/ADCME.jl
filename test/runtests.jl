@@ -1,11 +1,3 @@
-using Pkg
-Pkg.add("Conda")
-using Conda
-PYTHON = joinpath(Conda.BINDIR, "python")
-ENV["PYTHON"]=PYTHON
-Pkg.add("PyCall")
-Pkg.build("PyCall")
-
 using NLopt
 using Optim
 using ADCME
