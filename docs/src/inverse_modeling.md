@@ -1,4 +1,4 @@
-# Overview
+## Overview
 
 **Inverse modeling** (IM) identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement. IM can usually be solved by formulating it as an optimization problem. But the major difference is that IM aims at getting information not accessible to forward analysis, instead of obtaining an optimal value of a fixed objective function and set of constraints. In IM, the objective function and constraints can be adjusted, and prior information of the unknown parameters or functions can be imposed in the form of regularizers, to better reflect the physical laws. 
 
@@ -51,14 +51,9 @@ Note  the operator $y=f(x)$ may be implicit in the sense that $f$ is not given d
 For automatic differentiation, besides the well-definedness of $F$, we also require that we can compute $\frac{\partial J}{\partial x}$ given $\frac{\partial J}{\partial y}$. It is easy to see that
 
 ```math
-
 \frac{\partial J}{\partial x} = -\frac{\partial J}{\partial y}F_y^{-1}F_x
-
 ```
-
 Therefore, we call an operator $F$ is **well-posed** if $F_y^{-1}$ exists. 
-
-
 
 All operators can be classified into four types based on the linearity and explicitness.
 
@@ -68,33 +63,23 @@ All operators can be classified into four types based on the linearity and expli
 
 
 
-  This type of operators has the form 
-
+This type of operators has the form 
 ```math
-  y = Ax
+y = Ax
 ```
-
-  where $A$ is a matrix. In this case, 
-
+where $A$ is a matrix. In this case, 
 ```math
-  F(x,y) = Ax-y
+F(x,y) = Ax-y
 ```
-
-  and therefore 
-
+and therefore 
 ```math
-  \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y}A
+\frac{\partial J}{\partial x} = \frac{\partial J}{\partial y}A
 ```
-
-
-
-  In Tensorflow, such an operator can be implemented as (assuming `A` is )
-
-
+In Tensorflow, such an operator can be implemented as (assuming `A` is )
 ```python
-  import tensorflow as tf
-  @tf.custom_gradient
-  def F(x):
+import tensorflow as tf
+@tf.custom_gradient
+def F(x):
 ​      u = tf.linalg.matvec(A, x)
 ​      def grad(dy):
 ​          return tf.linalg.matvec(tf.transpose(A), dy)
@@ -105,47 +90,38 @@ All operators can be classified into four types based on the linearity and expli
 
 **Nonlinear and explicit**
 
-  In this case, we have 
+In this case, we have 
 ```math
-  y = F(x)
+y = F(x)
+```
+where $F$ is explicitly given. We have
+```math
+F(x,y) = F(x)-y\Rightarrow \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y} F_x(x)
 ```
 
-  where $F$ is explicitly given. We have
-
-```math
-  F(x,y) = F(x)-y\Rightarrow \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y} F_x(x)
-```
 
 
-
-  One challenge here is we need to implement the matrix vector production $\frac{\partial J}{\partial y} F_x(x)$ for `grad`. 
+One challenge here is we need to implement the matrix vector production $\frac{\partial J}{\partial y} F_x(x)$ for `grad`. 
 
 
 
 **Linear and implicit**
 
-  In this case 
-
+In this case 
 ```math
-  Ay = x
+Ay = x
 ```
-
-
-
-  We have $F(x,y) = x-Ay$ and 
-
+We have $F(x,y) = x-Ay$ and 
 ```math
-  \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y}A^{-1}
+\frac{\partial J}{\partial x} = \frac{\partial J}{\partial y}A^{-1}
 ```
 
 
 
 **Nonlinear and implicit**
 
-  In this case $F(x,y)=0$ and the corresponding gradient is 
-
+In this case $F(x,y)=0$ and the corresponding gradient is 
 ```math
-  \frac{\partial J}{\partial x} = -\frac{\partial J}{\partial y}F_y^{-1}F_x
+\frac{\partial J}{\partial x} = -\frac{\partial J}{\partial y}F_y^{-1}F_x
 ```
-
- This case is the most challenging of the four but widely seen in scientific computing code. In many numerical simulation code, $F_y$ is usually sparse and therefore it is rewarding to exploit the sparse structure for computation acceleration in practice.
+This case is the most challenging of the four but widely seen in scientific computing code. In many numerical simulation code, $F_y$ is usually sparse and therefore it is rewarding to exploit the sparse structure for computation acceleration in practice.
