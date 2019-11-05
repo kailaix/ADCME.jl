@@ -50,11 +50,11 @@ Note  the operator $y=f(x)$ may be implicit in the sense that $f$ is not given d
 
 For automatic differentiation, besides the well-definedness of $F$, we also require that we can compute $\frac{\partial J}{\partial x}$ given $\frac{\partial J}{\partial y}$. It is easy to see that
 
-\```math
+```math
 
 \frac{\partial J}{\partial x} = -\frac{\partial J}{\partial y}F_y^{-1}F_x
 
-\```
+```
 
 Therefore, we call an operator $F$ is **well-posed** if $F_y^{-1}$ exists. 
 
@@ -70,67 +70,51 @@ All operators can be classified into four types based on the linearity and expli
 
   This type of operators has the form 
 
-  \```math
-
+```math
   y = Ax
-
-  \```
+```
 
   where $A$ is a matrix. In this case, 
 
-  \```math
-
+```math
   F(x,y) = Ax-y
-
-  \```
+```
 
   and therefore 
 
-  \```math
-
+```math
   \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y}A
-
-  \```
+```
 
 
 
   In Tensorflow, such an operator can be implemented as (assuming `A` is )
 
 
-
-  \```python
-
+```python
   import tensorflow as tf
-
   @tf.custom_gradient
-
   def F(x):
-
 ​      u = tf.linalg.matvec(A, x)
-
 ​      def grad(dy):
-
 ​          return tf.linalg.matvec(tf.transpose(A), dy)
-
 ​      return u, grad
-
-  \```
+```
 
 
 
 **Nonlinear and explicit**
 
   In this case, we have 
-
-  $$y = F(x)$$
+```math
+  y = F(x)
+```
 
   where $F$ is explicitly given. We have
 
-  \```math
-
+```math
   F(x,y) = F(x)-y\Rightarrow \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y} F_x(x)
-
-  \```
+```
 
 
 
@@ -142,21 +126,17 @@ All operators can be classified into four types based on the linearity and expli
 
   In this case 
 
-  \```math
-
+```math
   Ay = x
-
-  \```
+```
 
 
 
   We have $F(x,y) = x-Ay$ and 
 
-  \```math
-
+```math
   \frac{\partial J}{\partial x} = \frac{\partial J}{\partial y}A^{-1}
-
-  \```
+```
 
 
 
@@ -164,10 +144,8 @@ All operators can be classified into four types based on the linearity and expli
 
   In this case $F(x,y)=0$ and the corresponding gradient is 
 
-  \```math
-
+```math
   \frac{\partial J}{\partial x} = -\frac{\partial J}{\partial y}F_y^{-1}F_x
-
-  \```
+```
 
  This case is the most challenging of the four but widely seen in scientific computing code. In many numerical simulation code, $F_y$ is usually sparse and therefore it is rewarding to exploit the sparse structure for computation acceleration in practice.

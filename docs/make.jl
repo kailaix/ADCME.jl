@@ -5,7 +5,7 @@ using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any[
     "index.md",
-    "Inverse Modeling" => ["inverse_modeling.md"],
+    "Inverse Modeling" => "inverse_modeling.md",
     "Resources" => ["customop.md", "while_loop.md", "newton_raphson.md",
             "julia_customop.md", "pytorchnn.md", "extra.md",
             "array.md"],
