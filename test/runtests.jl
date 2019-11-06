@@ -7,10 +7,7 @@ using PyCall
 using SparseArrays
 using Test
 
-
-
 sess = Session()
-
 
 include("sparse.jl")
 include("random.jl")

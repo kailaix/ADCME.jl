@@ -205,7 +205,8 @@ public:
     // implement your backward function here 
 
     // TODO:
-    backward(grad_vv_tensor, grad_u_tensor, ii_tensor, jj_tensor, vv_tensor, u_tensor, nv, *d_tensor);
+    backward(grad_ff_tensor, grad_vv_tensor, grad_u_tensor, 
+        ii_tensor, jj_tensor, vv_tensor, u_tensor, nv, *d_tensor, kk_tensor, nf);
   }
 };
 REGISTER_KERNEL_BUILDER(Name("SparseSolverGrad").Device(DEVICE_CPU), SparseSolverGradOp);

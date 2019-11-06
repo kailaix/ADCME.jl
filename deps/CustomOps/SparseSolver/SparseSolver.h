@@ -26,7 +26,9 @@ void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int6
     for(int64 i=0;i<d;i++) u[i] = x[i];
 }
 
-void backward(double *grad_vv, const double *grad_u, const int64 *ii, const int64 *jj, const double *vv, const double *u, int64 nv, int64 d){
+void backward(double *grad_ff, double *grad_vv, const double *grad_u, 
+    const int64 *ii, const int64 *jj, const double *vv, const double *u, 
+      int64 nv, int64 d, const int64 *kk, int64 nf){
     Eigen::VectorXd g(d);
     for(int64 i=0;i<d;i++) g[i] = grad_u[i];
 
@@ -48,5 +50,9 @@ void backward(double *grad_vv, const double *grad_u, const int64 *ii, const int6
     for(int64 i=0;i<nv;i++){
       grad_vv[i] -= x[ii[i]-1]*u[jj[i]-1];
     }
+
+    for(int64 i=0;i<nf;i++) grad_ff[i] = 0.0;
+    for(int64 i=0;i<nf;i++) grad_ff[i] += x[kk[i]-1];
+
 }
 

@@ -1,4 +1,4 @@
-# Array Operations
+# Tensor Operations
 
 | Description                       | API                                             |
 | --------------------------------- | ----------------------------------------------- |
@@ -27,8 +27,8 @@
 | Maximum/Minimum of all elements   | `maximum(x)`, `minimum(x)`                      |
 | Squeeze all single dimensions     | `squeeze(x)`                                    |
 | Squeeze along dimension           | `squeeze(x, dims=1)`, `squeeze(x, dims=[1;2])`  |
-|                                   |                                                 |
-|                                   |                                                 |
-|                                   |                                                 |
-|                                   |                                                 |
+| Reduction (along dimension)       | `norm(a)`, `sum(a, dims=1)`                     |
+| Elementwise Multiplication        | `a.*b`                                          |
+| Elementwise Power                 | `a^2`                                           |
+| SVD                               | `svd(a)`                                        |
 

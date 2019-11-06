@@ -5,50 +5,9 @@ using PyPlot
 using Random
 using SparseArrays
 Random.seed!(233)
-if Sys.isapple()
-    matplotlib.use("macosx")
-end
-# ################## Load Operator ##################
-# if Sys.islinux()
-# py"""
-# import tensorflow as tf
-# libSparseSolver = tf.load_op_library('build/libSparseSolver.so')
-# @tf.custom_gradient
-# def sparse_solver(ii,jj,vv,kk,ff,d):
-#     u = libSparseSolver.sparse_solver(ii,jj,vv,kk,ff,d)
-#     def grad(dy):
-#         return libSparseSolver.sparse_solver_grad(dy, u, ii,jj,vv,kk,ff,d)
-#     return u, grad
-# """
-# elseif Sys.isapple()
-# py"""
-# import tensorflow as tf
-# libSparseSolver = tf.load_op_library('build/libSparseSolver.dylib')
-# @tf.custom_gradient
-# def sparse_solver(ii,jj,vv,kk,ff,d):
-#     u = libSparseSolver.sparse_solver(ii,jj,vv,kk,ff,d)
-#     def grad(dy):
-#         return libSparseSolver.sparse_solver_grad(dy, u, ii,jj,vv,kk,ff,d)
-#     return u, grad
-# """
-# elseif Sys.iswindows()
-# py"""
-# import tensorflow as tf
-# libSparseSolver = tf.load_op_library('build/libSparseSolver.dll')
-# @tf.custom_gradient
-# def sparse_solver(ii,jj,vv,kk,ff,d):
-#     u = libSparseSolver.sparse_solver(ii,jj,vv,kk,ff,d)
-#     def grad(dy):
-#         return libSparseSolver.sparse_solver_grad(dy, u, ii,jj,vv,kk,ff,d)
-#     return u, grad
-# """
-# end
 
-# sparse_solver = py"sparse_solver"
-# ################## End Load Operator ##################
 sparse_solver = load_op_and_grad("$(@__DIR__)/build/libSparseSolver", "sparse_solver")
 
-# TODO:
 d0 = 30
 nv = 100
 nf = 100
@@ -87,11 +46,13 @@ init(sess)
 # TODO: change your test parameter to `m`
 # gradient check -- v
 function scalar_function(m)
-    return sum(tanh(sparse_solver(ii,jj,m,kk,ff,d)))
+    return sum(tanh(sparse_solver(ii,jj,vv,kk,m,d)))
 end
 
-m_ = vv
-v_ = rand(nv+d0)
+# m_ = vv
+# v_ = rand(nv+d0)
+m_ = ff
+v_ = rand(length(m_))
 y_ = scalar_function(m_)
 dy_ = gradients(y_, m_)
 ms_ = Array{Any}(undef, 5)
