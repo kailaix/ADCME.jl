@@ -101,9 +101,9 @@ There are also special constructors.
    sol = s\rhs
    ```
 
-   !!! note
-   The least square solvers are implemented using Eigen sparse linear packages, and the gradients are also implemented. Thus, the following codes will work as expected (the gradients functions will correctly compute the gradients):
-   ```julia
+!!! note
+    The least square solvers are implemented using Eigen sparse linear packages, and the gradients are also implemented. Thus, the following codes will work as expected (the gradients functions will correctly compute the gradients):
+    ```julia
     ii = [1;2;3;4]
     jj = [1;2;3;4]
     vv = constant([1.0;1.0;1.0;1.0])
@@ -113,4 +113,4 @@ There are also special constructors.
     run(sess, sol)
     run(sess, gradients(sum(sol), rhs))
     run(sess, gradients(sum(sol), vv))
-   ```
+    ```
