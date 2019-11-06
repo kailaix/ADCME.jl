@@ -9,12 +9,12 @@ s = dense_to_sparse(d)</code></pre><p>There are also special constructors. </p><
 size(s,1) # 10</code></pre></li><li><p>Return <code>row</code>, <code>col</code>, <code>val</code> arrays (also known as COO arrays)</p><pre><code class="language-julia">ii,jj,vv = find(s)</code></pre></li></ol><h2><a class="nav-anchor" id="Arithmetic-Operations-1" href="#Arithmetic-Operations-1">Arithmetic Operations</a></h2><ol><li><p>Add Subtract</p><pre><code class="language-julia">s = s1 + s2
 s = s1 - s2
 </code></pre></li><li><p>Scalar Product</p><pre><code class="language-julia">s = 2.0 * s1
-s = s1 / 2.0</code></pre></li><li><p>Sparse Product</p><pre><code class="language-julia">s = s1 * s2</code></pre></li><li><p>Transposition</p><pre><code class="language-julia">s = s1&#39;</code></pre></li></ol><h2><a class="nav-anchor" id="Sparse-Solvers-1" href="#Sparse-Solvers-1">Sparse Solvers</a></h2><ol><li><p>Solve a linear system (<code>s</code> is a square matrix)</p><pre><code class="language-julia">sol = s\rhs</code></pre></li><li><p>Solve a least square system (<code>s</code> is a tall matrix)</p><pre><code class="language-julia">sol = s\rhs</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"></div></div><p>The least square solvers are implemented using Eigen sparse linear packages, and the gradients are also implemented. Thus, the following codes will work as expected (the gradients functions will correctly compute the gradients):</p><pre><code class="language-julia"> ii = [1;2;3;4]
- jj = [1;2;3;4]
- vv = constant([1.0;1.0;1.0;1.0])
- rhs = constant(rand(4))
- s = SparseTensor(ii, jj, vv, 4, 4)
- sol = s\rhs
- run(sess, sol)
- run(sess, gradients(sum(sol), rhs))
- run(sess, gradients(sum(sol), vv))</code></pre></li></ol><footer><hr/><a class="previous" href="../array/"><span class="direction">Previous</span><span class="title">Tensor Operations</span></a><a class="next" href="../newton_raphson/"><span class="direction">Next</span><span class="title">Newton Raphson</span></a></footer></article></body></html>
+s = s1 / 2.0</code></pre></li><li><p>Sparse Product</p><pre><code class="language-julia">s = s1 * s2</code></pre></li><li><p>Transposition</p><pre><code class="language-julia">s = s1&#39;</code></pre></li></ol><h2><a class="nav-anchor" id="Sparse-Solvers-1" href="#Sparse-Solvers-1">Sparse Solvers</a></h2><ol><li><p>Solve a linear system (<code>s</code> is a square matrix)</p><pre><code class="language-julia">sol = s\rhs</code></pre></li><li><p>Solve a least square system (<code>s</code> is a tall matrix)</p><pre><code class="language-julia">sol = s\rhs</code></pre></li></ol><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>The least square solvers are implemented using Eigen sparse linear packages, and the gradients are also implemented. Thus, the following codes will work as expected (the gradients functions will correctly compute the gradients):</p><pre><code class="language-julia">ii = [1;2;3;4]
+jj = [1;2;3;4]
+vv = constant([1.0;1.0;1.0;1.0])
+rhs = constant(rand(4))
+s = SparseTensor(ii, jj, vv, 4, 4)
+sol = s\rhs
+run(sess, sol)
+run(sess, gradients(sum(sol), rhs))
+run(sess, gradients(sum(sol), vv))</code></pre></div></div><footer><hr/><a class="previous" href="../array/"><span class="direction">Previous</span><span class="title">Tensor Operations</span></a><a class="next" href="../newton_raphson/"><span class="direction">Next</span><span class="title">Newton Raphson</span></a></footer></article></body></html>
