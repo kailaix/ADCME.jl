@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Custom Operators · ADCME</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../"><img class="logo" src="../assets/logo.png" alt="ADCME logo"/></a><h1>ADCME</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Overview</a></li><li><a class="toctext" href="../inverse_modeling/">Inverse Modeling</a></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="../array/">Tensor Operations</a></li><li><a class="toctext" href="../sparse/">Sparse Linear Algebra</a></li><li><a class="toctext" href="../newton_raphson/">Newton Raphson</a></li></ul></li><li><span class="toctext">Resources</span><ul><li class="current"><a class="toctext" href>Custom Operators</a><ul class="internal"><li><a class="toctext" href="#Basic-Usage-1">Basic Usage</a></li><li><a class="toctext" href="#GPU-Operators-1">GPU Operators</a></li><li><a class="toctext" href="#Mutable-Inputs-1">Mutable Inputs</a></li></ul></li><li><a class="toctext" href="../while_loop/">While Loops</a></li><li><a class="toctext" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="toctext" href="../pytorchnn/">Neural Network in C++</a></li><li><a class="toctext" href="../extra/">Miscellaneous Tools</a></li></ul></li><li><span class="toctext">Applications</span><ul><li><a class="toctext" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="toctext" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="toctext" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li></ul></li><li><a class="toctext" href="../api/">API Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Resources</li><li><a href>Custom Operators</a></li></ul><a class="edit-page" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/customop.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Custom Operators</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Custom-Operators-1" href="#Custom-Operators-1">Custom Operators</a></h1><h2><a class="nav-anchor" id="Basic-Usage-1" href="#Basic-Usage-1">Basic Usage</a></h2><p>Custom operators are ways to add missing features in ADCME. Typically users do not have to worry about custom operators. However, in the following situation custom opreators might be very useful</p><ul><li>Direct implementation in ADCME is inefficient (bottleneck). </li><li>There are legacy codes users want to reuse, such as GPU-accelerated codes. </li><li>Special acceleration techniques such as checkpointing scheme. </li></ul><p>In the following, we present an example of implementing the sparse solver custom operator for <span>$Ax=b$</span>.</p><p><strong>Input</strong>: row vector <code>ii</code>, column vector<code>jj</code> and value vector <code>vv</code> for the sparse coefficient matrix; row vector <code>kk</code> and value vector <code>ff</code>, matrix dimension <span>$d$</span></p><p><strong>Output</strong>: solution vector <span>$u$</span></p><p><strong>Step 1: Create and modify the template file</strong></p><p>The following command helps create the wrapper</p><pre><code class="language-julia">customop()</code></pre><p>There will be a <code>custom_op.txt</code> in the current directory. Modify the template file </p><pre><code class="language-txt">MySparseSolver
+int32 ii(?)
+int32 jj(?)
+double vv(?)
+int32 kk(?)
+double ff(?)
+int32 d()
+double u(?) -&gt; output</code></pre><p>The first line is the name of the operator. It should always be in the camel case. </p><p>The 2nd to the 7th lines specify the input arguments, the signature is <code>type</code>+<code>variable name</code>+<code>shape</code>. For the shape, <code>()</code> corresponds to a scalar, <code>(?)</code> to a vector and <code>(?,?)</code> to a matrix. </p><p>The last line is the output, denoted by <code>-&gt; output</code>. Note there must be a space before and after <code>-&gt;</code>. </p><p>The following types are accepted: <code>int32</code>, <code>int64</code>, <code>double</code>, <code>float</code>, <code>string</code>, <code>bool</code>. The name of the arguments must all be in <em>lower cases</em>. </p><p><strong>Step 2: Implement core codes</strong></p><p>Run <code>customop()</code> again and there will be <code>CMakeLists.txt</code>, <code>gradtest.jl</code>, <code>MySparseSolver.cpp</code> appearing in the current directory. <code>MySparseSolver.cpp</code> is the main wrapper for the codes and <code>gradtest.jl</code> is used for testing the operator and its gradients. <code>CMakeLists.txt</code> is the file for compilation. </p><p>Create a new file <code>MySparseSolver.h</code> and implement both the forward simulation and backward simulation (gradients)</p><pre><code class="language-cpp">#include &lt;eigen3/Eigen/Sparse&gt;
+#include &lt;eigen3/Eigen/SparseLU&gt;
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+using namespace std;
+typedef Eigen::SparseMatrix&lt;double&gt; SpMat; // declares a column-major sparse matrix type of double
+typedef Eigen::Triplet&lt;double&gt; T;
+
+SpMat A;
+
+void forward(double *u, const int *ii, const int *jj, const double *vv, int nv, const int *kk, const double *ff,int nf,  int d){
+    vector&lt;T&gt; triplets;
+    Eigen::VectorXd rhs(d); rhs.setZero();
+    for(int i=0;i&lt;nv;i++){
+      triplets.push_back(T(ii[i]-1,jj[i]-1,vv[i]));
+    }
+    for(int i=0;i&lt;nf;i++){
+      rhs[kk[i]-1] += ff[i];
+    }
+    A.resize(d, d);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    auto C = Eigen::MatrixXd(A);
+    Eigen::SparseLU&lt;SpMat&gt; solver;
+    solver.analyzePattern(A);
+    solver.factorize(A);
+    auto x = solver.solve(rhs);
+    for(int i=0;i&lt;d;i++) u[i] = x[i];
+}
+
+void backward(double *grad_vv, const double *grad_u, const int *ii, const int *jj, const double *u, int nv, int d){
+    Eigen::VectorXd g(d);
+    for(int i=0;i&lt;d;i++) g[i] = grad_u[i];
+    auto B = A.transpose();
+    Eigen::SparseLU&lt;SpMat&gt; solver;
+    solver.analyzePattern(B);
+    solver.factorize(B);
+    auto x = solver.solve(g);
+    // cout &lt;&lt; x &lt;&lt; endl;
+    for(int i=0;i&lt;nv;i++) grad_vv[i] = 0.0;
+    for(int i=0;i&lt;nv;i++){
+      grad_vv[i] -= x[ii[i]-1]*u[jj[i]-1];
+    }
+}</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>In this implementation we have used <code>Eigen</code> library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable <code>SpMat A;</code>. This is not recommend if you want to run the code concurrently. </p></div></div><p><strong>Step 3: Compile</strong></p><p>It is recommended that you use the <code>cmake</code>, <code>make</code> and <code>gcc</code> provided by <code>ADCME</code>. </p><table><tr><th style="text-align: right">Variable</th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right"><code>ADCME.CXX</code></td><td style="text-align: right">C++ Compiler</td></tr><tr><td style="text-align: right"><code>ADCME.CC</code></td><td style="text-align: right">C Compiler</td></tr><tr><td style="text-align: right"><code>ADCME.TFLIB</code></td><td style="text-align: right"><code>libtensorflow_framework.so</code> location</td></tr><tr><td style="text-align: right"><code>ADCME.CMAKE</code></td><td style="text-align: right">Cmake binary location</td></tr><tr><td style="text-align: right"><code>ADCME.MAKE</code></td><td style="text-align: right">Make binary location</td></tr></table><ul><li>Make a <code>build</code> directory in bash.</li></ul><pre><code class="language-bash">mkdir build
+cd build</code></pre><ul><li>Configure CMake files.</li></ul><pre><code class="language-julia-repl">julia&gt; using ADCME
+julia&gt; ADCME.cmake()</code></pre><ul><li>Build. </li></ul><pre><code class="language-bash">make -j</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>If the system <code>make</code> command is not compatible, try the pre-installed ADCME <code>make</code> located at <code>ADCME.MAKE</code>. </p></div></div><p>Based on your operation system, you will create <code>libMySparseSolver.{so,dylib,dll}</code>. This will be the dynamic library to link in <code>TensorFlow</code>. </p><p><strong>Step 4: Test</strong></p><p>Finally, you could use <code>gradtest.jl</code> to test the operator and its gradients (specify appropriate data in <code>gradtest.jl</code> first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. </p><p><img src="../asset/custom_op.png" alt="custom_op"/></p><p>If the process fails, it is most probability the GCC compiler is not compatible with which was used to compile <code>libtensorflow_framework.{so,dylib}</code>. In the Linux system, you can check the compiler using </p><pre><code class="language-bash">readelf -p .comment libtensorflow_framework.so</code></pre><p>Compatibility issues are frustrating. We hope you can submit an issue to ADCME developers; we are happy to resolve the compatibility issue and improve the robustness of ADCME.</p><h2><a class="nav-anchor" id="GPU-Operators-1" href="#GPU-Operators-1">GPU Operators</a></h2><h3><a class="nav-anchor" id="Dependencies-1" href="#Dependencies-1">Dependencies</a></h3><p>To create a GPU custom operator, you must have NVCC compiler and CUDA toolkit installed on your system. To install NVCC, see <a href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html">the installation guide</a>. To check you have successfully installed NVCC, type</p><pre><code class="language-bash">which nvcc</code></pre><p>It should gives you the location of <code>nvcc</code> compiler.</p><p>For quick installation, you can try</p><pre><code class="language-julia">using ADCME
+enable_gpu()</code></pre><h4><a class="nav-anchor" id="Manual-Installation-1" href="#Manual-Installation-1">Manual Installation</a></h4><p>In case </p><ul><li>To install CUDA toolkit (if you do not have one), you can install via conda</li></ul><pre><code class="language-julia">using Conda
+Conda.add(&quot;cudatoolkit&quot;, channel=&quot;anaconda&quot;)</code></pre><ul><li>The next step is to cp the CUDA include file to tensorflow include directory. This could be done with </li></ul><pre><code class="language-julia">using ADCME
+gpus = joinpath(splitdir(tf.__file__)[1], &quot;include/third_party/gpus&quot;)
+if !isdir(gpus)
+  mkdir(gpus)
+end
+gpus = joinpath(gpus, &quot;cuda&quot;)
+if !isdir(gpus)
+  mkdir(gpus)
+end
+incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], &quot;../include/&quot;)
+if !isdir(joinpath(gpus, &quot;include&quot;))
+    mv(incpath, gpus)
+end</code></pre><ul><li>Finally, add the CUDA library path to <code>LD_LIBRARY_PATH</code>. This can be done by adding the following line to <code>.bashrc</code></li></ul><pre><code class="language-bash">export LD_LIBRARY_PATH=&lt;path&gt;:$LD_LIBRARY_PATH</code></pre><p>where <code>&lt;path&gt;</code> is </p><pre><code class="language-julia">joinpath(Conda.ROOTENV, &quot;pkgs/cudatoolkit-10.1.168-0/lib/&quot;)</code></pre><h3><a class="nav-anchor" id="File-Organization-1" href="#File-Organization-1">File Organization</a></h3><p>There should be three files in your source directories</p><ul><li><code>MyOp.cpp</code>: driver file</li><li><code>MyOp.cu</code>: GPU implementation</li><li><code>MyOp.h</code>: CPU implementation</li></ul><p>The first two files have been generated for you by <code>customop()</code>. The following are two important notes on the implementation.</p><ul><li>In <code>MyOp.cu</code>, the implementation usually has the structure</li></ul><pre><code class="language-c">namespace tensorflow{
+  typedef Eigen::GpuDevice GPUDevice;
+
+    __global__ void forward_(const int nthreads, double *out, const double *y, const double *H0, int n){
+      for(int i : CudaGridRangeX(nthreads)) {
+          // do something here
+      }
+    }
+
+    void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice&amp; d){
+      // forward_&lt;&lt;&lt;(n+255)/256, 256&gt;&gt;&gt;(out, y, H0, n);
+      GpuLaunchConfig config = GetGpuLaunchConfig(n, d);
+      TF_CHECK_OK(GpuLaunchKernel(
+          forward_, config.block_count, config.thread_per_block, 0,
+          d.stream(), config.virtual_thread_count, out, y, H0, n));
+      }
+}</code></pre><ul><li>In <code>MyOp.cpp</code>, the device information (<code>const GPUDevice&amp; d</code> above) is obtained with </li></ul><pre><code class="language-c">context-&gt;eigen_device&lt;GPUDevice&gt;()</code></pre><h2><a class="nav-anchor" id="Mutable-Inputs-1" href="#Mutable-Inputs-1">Mutable Inputs</a></h2><p>Sometimes we want to modify tensors in place. In this case we can use mutable inputs. Mutable inputs must be <a href="../api/#ADCME.Variable-Tuple{Any}"><code>Variable</code></a> and it must be forwarded to one of the output. We consider implement a <code>my_assign</code> operator, with signature</p><pre><code class="language-none">my_assign(u::PyObject, v::PyObject)::PyObject</code></pre><p>Here <code>u</code> is a <code>Variable</code> and we copy the data from <code>v</code> to <code>u</code>. In the <code>MyAssign.cpp</code> file, we modify the input and output specifications to </p><pre><code class="language-c">.Input(&quot;u : Ref(double)&quot;)
+.Input(&quot;v : double&quot;)
+.Output(&quot;w : Ref(double)&quot;)</code></pre><p>In addition, the input tensor is obtained through</p><pre><code class="language-c">Tensor u = context-&gt;mutable_input(0, true);</code></pre><p>The second argument <code>lock_held</code> specifies whether the input mutex is acquired (false) before the operation. Note the output must be a <code>Tensor</code> instead of a reference. </p><p>To forward the input, use</p><pre><code class="language-c">context-&gt;forward_ref_input_to_ref_output(0,0);</code></pre><p>We use the following code snippet to test the program</p><pre><code class="language-julia">my_assign = load_op(&quot;./build/libMyAssign&quot;,&quot;my_assign&quot;)
+u = Variable([0.1,0.2,0.3])
+v = constant(Array{Float64}(1:3))
+u2 = u^2
+w = my_assign(u,v)
+sess = tf.Session()
+init(sess)
+@show run(sess, u)
+@show run(sess, u2)
+@show run(sess, w)
+@show run(sess, u2)</code></pre><p>The output is </p><pre><code class="language-none">[0.1,0.2,0.3]
+[0.1,0.04,0.09]
+[1.0,2.0,3.0]
+[1.0,4.0,9.0]</code></pre><p>We can see that the tensors depending on <code>u</code> are also aware of the assign operator. The complete programs can be downloaded here: <a href="https://kailaix.github.io/ADCME.jl/dev/codes/mutable/CMakeLists.txt">CMakeLists.txt</a>, <a href="https://kailaix.github.io/ADCME.jl/dev/codes/mutable/MyAssign.cpp">MyAssign.cpp</a>, <a href="https://kailaix.github.io/ADCME.jl/dev/codes/mutable/gradtest.jl">gradtest.jl</a>.</p><footer><hr/><a class="previous" href="../newton_raphson/"><span class="direction">Previous</span><span class="title">Newton Raphson</span></a><a class="next" href="../while_loop/"><span class="direction">Next</span><span class="title">While Loops</span></a></footer></article></body></html>
