@@ -14,3 +14,8 @@ deps/CustomOps/SparseIndexing/temp
 test/fem/data/
 test/fem/*.txt
 test/fem/*.dat
+docs/src/asset/Slide/.texpadtmp
+docs/src/asset/Slide/*.aux
+docs/src/asset/Slide/*.log
+docs/src/asset/Slide/*.nav
+docs/src/asset/Slide/*.out
