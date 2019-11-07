@@ -204,8 +204,8 @@
 \begin{frame}
 	\frametitle{Physics Based Machine Learning}
 	\begin{itemize}
-		\item Traditional inverse modeling methods utilizes efficient numerical schemes and incorporates physical knowledge (first principles); deep learning learns statistical relations from large amounts of training data.
-		\item We combine the best of the two worlds and create \textbf{physics based machine learning}. 
+		\item Traditional inverse modeling methods utilize efficient numerical schemes and incorporate physical knowledge (first principles); deep learning learns statistical relations from large amounts of training data.
+		\item We combine the best of the two worlds and invent \textbf{physics based machine learning}. 
 	\end{itemize}
 	\begin{figure}[hbt]
   \includegraphics[width=0.9\textwidth]{../physics_based_machine_learning.png}
@@ -230,7 +230,7 @@
 \begin{frame}
 	\frametitle{AD Implementation in ADCME}
 	\begin{itemize}
-		\item ADCME allows users to use high level script language Julia to implement numerical simulation codes, but obtain the extremely powerful parallelism and scalability provided by TensorFlow and Julia itself.
+		\item ADCME allows users to use high level script language Julia to implement numerical simulation codes, but obtain the powerful parallelism and scalability provided by TensorFlow and Julia itself.
 		\item Gradients are computed automatically. 
 	\end{itemize}
 	\begin{figure}[hbt]
@@ -274,7 +274,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 \end{frame}
 
 \begin{frame}
-	\frametitle{Framework}
+	\frametitle{ADCME Solutions}
 	% Please add the following required packages to your document preamble:
 % \usepackage{booktabs}
 \begin{itemize}
@@ -290,7 +290,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 \begin{tabular}{@{}llll@{}}
 \toprule
 Expression                                       & Description                & ADCME Solution                         & Note                                     \\ \midrule
-$\nabla \cdot (\textcolor{red}{a} \nabla u) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & Direct Optimize $a$                      \\ \hline
+$\nabla \cdot (\textcolor{red}{c} \nabla u) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & Direct optimize the constant $c$                      \\ \hline
 $\nabla \cdot (\textcolor{red}{f(x)} \nabla u) = 0$ & Functional Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx f_{\theta}(x)$             \\ \hline
 $\nabla \cdot (\textcolor{red}{f(u)} \nabla u) = 0$ & Relation Inverse Problem   & \makecell{Deep Learning for\\ Indirect Data}        & $f(u) \approx f_{\theta}(u)$             \\ \hline
 $\nabla \cdot (\textcolor{red}{\varpi} \nabla u) = 0$ & Stochastic Inverse Problem & \makecell{Adversarial Numerical\\ Analysis}         & \makecell{Generative Neural Nets for $\varpi$\\ (unknown random processes)} \\ \bottomrule
@@ -322,6 +322,21 @@ $\nabla \cdot (\textcolor{red}{\varpi} \nabla u) = 0$ & Stochastic Inverse Probl
 
 \begin{frame}
 	\frametitle{Relation Inverse Problem: Learning Constitutive Relations}
+	\begin{itemize}
+		\item Equilibrium equation
+		\begin{equation*}
+		\mathcal{P}(u(\mathbf{x}), \mathcal{M}(u(\mathbf{x}),\dot u(\mathbf{x}), \mathbf{x})) = \mathcal{F}(u(\mathbf{x}), \mathbf{x}, p)
+	\end{equation*}
+		\item Neural Network Approximation:
+		\begin{equation*}
+			\mathcal{M}_{\theta}(\mathbf{u}) \approx \mathcal{M}(u(\mathbf{x}),\dot u(\mathbf{x}),\mathbf{x})
+		\end{equation*}
+	\end{itemize}
+	
+	
+	\begin{equation*}
+		\boxed{\min_{\theta}\|\mathcal{P}(\mathbf{u}, \mathcal{M}_{\theta}(\mathbf{u})) - \mathcal{F}(\mathbf{u}, \mathbf{x}, p) \|^2_2}
+	\end{equation*}
 		\begin{figure}[hbt]
 	 \includegraphics[width=1.0\textwidth]{../law.png}
 \end{figure}
@@ -345,7 +360,7 @@ $\nabla \cdot (\textcolor{red}{\varpi} \nabla u) = 0$ & Stochastic Inverse Probl
 \end{frame}
 
 \begin{frame}
-	\frametitle{A Cool Application: \texttt{ADSeismic.jl}}
+	\frametitle{A Cool Application: \texttt{ADSeismic.jl} (Coming soon)}
 	\begin{itemize}
 		\item An Open Source High Performance Package for General Seismic Inversion Problems
 		\item Problems include:
