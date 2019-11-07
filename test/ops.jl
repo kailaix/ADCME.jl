@@ -301,3 +301,44 @@ end
     @test run(sess, repeat(A, 2)) ≈ repeat(a, 2)
     @test run(sess, repeat(A, 3, 2)) ≈ repeat(a, 3, 2)
 end
+
+@testset "pmap" begin
+    x = constant(ones(10))
+    y1 = pmap(x->2.0*x, x)
+    y2 = pmap(x->x[1]+x[2], [x,x])
+    y3 = pmap(1:10, x) do z
+        i = z[1]
+        xi = z[2]
+        xi + cast(Float64, i)
+    end
+    @test run(sess, y1)≈[ 2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0]
+    @test run(sess, y2)≈[ 2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0
+                    2.0]
+    @test run(sess, y3)≈[ 2.0
+                    3.0
+                    4.0
+                    5.0
+                    6.0
+                    7.0
+                    8.0
+                    9.0
+                    10.0
+                    11.0]
+end
