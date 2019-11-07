@@ -5,7 +5,9 @@ wgan,
 rklgan,
 lsgan,
 sample,
-predict
+predict,
+dcgan_generator,
+dcgan_discriminator
 
 mutable struct GAN
     latent_dim::Int64
@@ -197,3 +199,43 @@ function predict(gan::GAN, input::Union{PyObject, Array})
     out
 end
 
+# adapted from https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/dcgan.py
+function dcgan_generator(x::PyObject)
+    if length(size(x))!=3
+        error("ADCME: input must have rank 3, rank $(length(size(x))) received")
+    end
+    variable_scope("generator", reuse=AUTO_REUSE) do 
+        # TensorFlow Layers automatically create variables and calculate their
+        # shape, based on the input.
+        x = tf.layers.dense(x, units=6 * 6 * 128)
+        x = tf.nn.tanh(x)
+        # Reshape to a 4-D array of images: (batch, height, width, channels)
+        # New shape: (batch, 6, 6, 128)
+        x = tf.reshape(x, shape=[-1, 6, 6, 128])
+        # Deconvolution, image shape: (batch, 14, 14, 64)
+        x = tf.layers.conv2d_transpose(x, 64, 4, strides=2)
+        # Deconvolution, image shape: (batch, 28, 28, 1)
+        x = tf.layers.conv2d_transpose(x, 1, 2, strides=2)
+        # Apply sigmoid to clip values between 0 and 1
+        x = tf.nn.sigmoid(x)
+    end
+    return squeeze(x)
+end
+
+function dcgan_discriminator(x)
+    variable_scope("Discriminator", reuse=AUTO_REUSE) do
+        # Typical convolutional neural network to classify images.
+        x = tf.layers.conv2d(x, 64, 5)
+        x = tf.nn.tanh(x)
+        x = tf.layers.average_pooling2d(x, 2, 2)
+        x = tf.layers.conv2d(x, 128, 5)
+        x = tf.nn.tanh(x)
+        x = tf.layers.average_pooling2d(x, 2, 2)
+        x = tf.contrib.layers.flatten(x)
+        x = tf.layers.dense(x, 1024)
+        x = tf.nn.tanh(x)
+        # Output 2 classes: Real and Fake images
+        x = tf.layers.dense(x, 2)
+    end
+    return x
+end
