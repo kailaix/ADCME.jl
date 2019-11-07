@@ -57,8 +57,8 @@ fft,
 ifft,
 I,
 svd,
-vector
-
+vector,
+pmap
 
 
 function PyCall.:*(o1::PyObject, o2::PyObject)
@@ -611,6 +611,44 @@ end
 function map(fn::Function, o::PyObject; kwargs...)
     kwargs = jlargs(kwargs)
     tf.map_fn(fn, o;kwargs...)
+end
+
+"""
+    pmap(fn::Function, o::Union{Array{PyObject}, PyObject})
+
+Parallel for loop. There should be no data dependency between different iterations.
+
+# Example
+```julia
+x = constant(ones(10))
+y1 = pmap(x->2.0*x, x)
+y2 = pmap(x->x[1]+x[2], [x,x])
+y3 = pmap(1:10, x) do z
+    i = z[1]
+    xi = z[2]
+    xi + cast(Float64, i)
+end
+run(sess, y1)
+run(sess, y2)
+run(sess, y3)
+```
+"""
+function pmap(fn::Function, o::Union{Array{PyObject}, PyObject})
+    tf.compat.v1.vectorized_map(fn, o)
+end
+
+function pmap(fn::Function, range_::Union{Array{Int64},UnitRange{Int64},StepRange{Int64}, PyObject}, 
+        o::Union{Array{PyObject}, PyObject})
+    ipt = convert_to_tensor(collect(range_))
+    if isa(o, PyObject)
+        return tf.compat.v1.vectorized_map(fn, [ipt,o])
+    end
+    if length(o)==0
+        return tf.compat.v1.vectorized_map(fn, ipt)
+    end
+    if length(o)>0
+        tf.compat.v1.vectorized_map(fn, [ipt, o...])
+    end
 end
 
 dot(x::PyObject, y::PyObject) = sum(x.*y)
