@@ -195,7 +195,7 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
     end
     opt = ScipyOptimizerInterface(loss, method="L-BFGS-B",options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12))
     @info "Optimization starts..."
-    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...])
+    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...]; kwargs...)
     out
 end
 

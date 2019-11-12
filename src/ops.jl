@@ -2,7 +2,7 @@ import Base:*, broadcast, reshape, exp, log, tanh, sum,
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map, prod
 import LinearAlgebra: diag, det, norm, diagm, dot, I, svd
-import Statistics: mean
+import Statistics: mean, std
 import FFTW: fft, ifft
 export 
 *,
@@ -58,7 +58,8 @@ ifft,
 I,
 svd,
 vector,
-pmap
+pmap,
+std
 
 
 function PyCall.:*(o1::PyObject, o2::PyObject)
@@ -209,6 +210,11 @@ end
 function minimum(o::PyObject; kwargs...)
     kwargs = jlargs(kwargs)
     tf.reduce_min(o; kwargs...) 
+end
+
+function std(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.math.reduce_std(o; kwargs...) 
 end
 
 function cast(x::PyObject, dtype::Type;kwargs...)
@@ -608,7 +614,8 @@ function Base.:imag(o::PyObject, args...; kwargs...)
     tf.imag(o, args...; kwargs...)
 end
 
-function map(fn::Function, o::PyObject; kwargs...)
+function map(fn::Function, o::Union{Array{PyObject},PyObject};
+         kwargs...)
     kwargs = jlargs(kwargs)
     tf.map_fn(fn, o;kwargs...)
 end

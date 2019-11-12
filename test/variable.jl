@@ -120,3 +120,9 @@ end
     @test ismissing(convert_to_tensor(missing))
     @test isnothing(convert_to_tensor(nothing))
 end
+
+@testset "cell" begin
+    r = cell([[1.],[2.,3.]])
+    @test run(sess, r[1])≈[1.0]
+    @test run(sess, r[2])≈[2.,3.]
+end

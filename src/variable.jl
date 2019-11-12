@@ -2,6 +2,7 @@ import Base:lastindex, getindex
 export
 constant,
 Variable,
+cell,
 set_shape,
 get_dtype,
 get_variable,
@@ -51,6 +52,29 @@ function Variable(initial_value;kwargs...)
         kwargs[:dtype] = DTYPE[eltype(initial_value)]
     end
     tf.Variable(initial_value; kwargs...)
+end
+
+"""
+    cell(arr::Array, args...;kwargs...)
+
+Construct a cell tensor. 
+# Example
+=========
+julia> r = cell([[1.],[2.,3.]])
+julia> run(sess, r[1])
+1-element Array{Float32,1}:
+ 1.0
+julia> run(sess, r[2])
+2-element Array{Float32,1}:
+ 2.0
+ 3.0
+"""
+function cell(arr::Array, args...;kwargs...)
+    kwargs = jlargs(kwargs)
+    if !(:dtype in keys(kwargs))
+        kwargs[:dtype] = DTYPE[eltype(arr[1])]
+    end
+    tf.ragged.constant(arr, args...;kwargs...)
 end
 
 function Base.:copy(o::PyObject)
