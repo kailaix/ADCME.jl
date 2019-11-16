@@ -10,15 +10,15 @@
 
 ![](docs/src/asset/demo.png)
 
-The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling with gradient based optimization techniques. It has [TensorFlow](https://www.tensorflow.org/) as the automatic differentiation and parallel computing backends. The dataflow model adopted by the framework enables researchers to do high performance inverse modeling *without substantial effort after implementing the forward simulation*.
+The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling with gradient-based optimization techniques. It has [TensorFlow](https://www.tensorflow.org/) as the automatic differentiation and parallel computing backends. The dataflow model adopted by the framework enables researchers to do high-performance inverse modeling *without substantial effort after implementing the forward simulation*.
 
 Several features of the library are
 
 * *MATLAB-style syntax*. Write `A*B` for matrix production instead of `tf.matmul(A,B)`.
-* *Custom operators*. Implement operators in C/C++ for bottleneck parts; incooporate legacy code or specially designed C/C++ code in `ADCME`.
-* *Numerical Scheme*. Easy to implement numerical shemes for solving PDEs.
+* *Custom operators*. Implement operators in C/C++ for bottleneck parts; incorporate legacy code or specially designed C/C++ code in `ADCME`.
+* *Numerical Scheme*. Easy to implement numerical schemes for solving PDEs.
 * *Static graphs*. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
-* *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorate optimizer. 
+* *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. 
 
 Start building your forward and inverse modeling on top of the million-dollar [TensorFlow](https://www.tensorflow.org/) project with ADCME today!
 
@@ -49,7 +49,7 @@ If you want to use `customop()` and test the utility, test with the following co
 ```
 julia> test_custom_op()
 ```
-For custom operators, the TensorFlow shared library compiler (see [here](https://www.tensorflow.org/install/source#tested_build_configurations)) must be consistent with the compiler used for compiling custom operators. By default, `ADCME` installs Anaconda GCC on the Linux system. For custom version of TensorFlow, if you encounter problems with compiling, load error or link error, consider check GCC and `libtensorflow_framework.so` versions. The following information may be useful
+For custom operators, the TensorFlow shared library compiler (see [here](https://www.tensorflow.org/install/source#tested_build_configurations)) must be consistent with the compiler used for compiling custom operators. By default, `ADCME` installs Anaconda GCC on the Linux system. For a custom version of TensorFlow, if you encounter problems with compiling, load error or link error, consider check GCC and `libtensorflow_framework.so` versions. The following information may be useful
 
 | Variable      | Description                           |
 | ------------- | ------------------------------------- |
@@ -60,7 +60,7 @@ For custom operators, the TensorFlow shared library compiler (see [here](https:/
 | `ADCME.MAKE`  | Make binary location                  |
 
 5. (Optional) Enable GPU Support
-To enable GPU support, first make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).
+To enable GPU support, first, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).
 ```julia
 using ADCME
 enable_gpu()
@@ -77,7 +77,7 @@ where
 
 f(x) = 8 + 4x - 4x²
 
-Assume that we have observed `u(0.5)=1`, we want to estimate `b`. The true value in this case should be `b=1`.
+Assume that we have observed `u(0.5)=1`, we want to estimate `b`. The true value, in this case, should be `b=1`.
 
 ```julia
 using LinearAlgebra
