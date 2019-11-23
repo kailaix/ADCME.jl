@@ -135,7 +135,7 @@ Based on your operation system, you will create `libMySparseSolver.{so,dylib,dll
 
 Finally, you could use `gradtest.jl` to test the operator and its gradients (specify appropriate data in `gradtest.jl` first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. 
 
-![custom_op](asset/custom_op.png)
+![custom_op](assets/custom_op.png)
 
 If the process fails, it is most probability the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. In the Linux system, you can check the compiler using 
 ```bash

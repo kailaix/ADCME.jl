@@ -31,7 +31,9 @@ module ADCME
         "sparse_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
         "diag_sparse_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
         "sparse_diag_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
-        "sparse_indexing"=>("SparseIndexing", "libSparseIndexing", "sparse_indexing", false)
+        "sparse_indexing"=>("SparseIndexing", "libSparseIndexing", "sparse_indexing", false),
+        "sinkhorn_knopp"=>("OT/SinkhornKnopp", "libSinkhornKnopp", "sinkhorn_knopp", true),
+        "dist"=>("Dist", "libDist", "dist", true)
     )
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
@@ -100,6 +102,7 @@ julia> using Pkg; Pkg.build("PyCall")
     include("sparse.jl")
     include("random.jl")
     include("gan.jl")
+    include("ot.jl")
 
     # applications
     include("apps/fem.jl")

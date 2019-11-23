@@ -166,7 +166,8 @@ grad = true
 ```
 this will direct Julia to find library `CustomOps/SparseOperator/libSO.dylib` on MACOSX
 """
-function load_system_op(s::String, oplib::String, opname::String, grad::Bool=true; return_str::Bool=false)
+function load_system_op(s::String, oplib::String, opname::String, grad::Bool=true; 
+    return_str::Bool=false, multiple::Bool=false)
     dir = joinpath(joinpath("$(@__DIR__)", "../deps/CustomOps"), s)
     if !isdir(dir)
         error("Folder for the operator $s does not exist: $dir")
@@ -184,7 +185,7 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
         return oplibpath
     end
     if grad
-        load_op_and_grad(oplibpath, opname)
+        load_op_and_grad(oplibpath, opname; multiple=multiple)
     else
         load_op(oplibpath, opname)
     end

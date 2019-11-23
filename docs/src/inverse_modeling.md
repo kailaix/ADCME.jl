@@ -4,7 +4,7 @@
 
 For example, given an image $x\in\mathbb{R}^{1024\times 1024}$, the forward analysis is given by $y = F(x) = \sum_{i,j} x_{i,j}$, i.e., the summation of all pixel values. One possible IM problem requires you to estimate $x$ given the measurement $y$. It can be formulated an optimization problem $\min_x (F(x)-y)^2$, which is underdetermined. However, if we have the prior that the image is a pure color image, then the inverse problem is well-defined and has a unique solution. There are many ways to impose this prior as contraints to the optimization problem, but the IM problem itself may not be described as an optimization problem. 
 
-![](./asset/im.png)
+![](./assets/im.png)
 
 
 
@@ -18,7 +18,7 @@ For another example, the physical forward simulation is similar to the neural ne
 
 
 
-![](./asset/compare-NN-PDE.png)
+![](./assets/compare-NN-PDE.png)
 
 ## AD Implementation in ADCME
 
@@ -26,7 +26,7 @@ ADCME uses TensorFlow as the backend for automatic differentiation. However, one
 
 As an example, we show how a convoluted acoustic wave equation simulation with PML boundary condition can be translated to Julia codes with AD feature very neatly. 
 
-![](./asset/Julia.png)
+![](./assets/Julia.png)
 
 
 
@@ -36,7 +36,7 @@ All numerical simulations can be decomposed into operators that are chained toge
 
 
 
-![Operators](asset/sim.png)
+![Operators](assets/sim.png)
 
 
 
