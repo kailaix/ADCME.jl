@@ -45,7 +45,7 @@ save_profile("test.json")
 
 Below shows an example of profiling results.
 
-![](./asset/profile.png)
+![](./assets/profile.png)
 
 ## Save and Load Python Object
 ```@docs

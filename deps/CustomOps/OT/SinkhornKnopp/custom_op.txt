@@ -1,0 +1,10 @@
+SinkhornKnopp
+double a(?)
+double b(?)
+double m(?,?)
+double reg()
+int64 iter()
+double tol()
+int64 method()
+double p(?,?) -> output
+double l() -> output
