@@ -1,10 +1,16 @@
 void forward(double *m, const double *x, int nx, const double *y, int ny, int order, int d){
+    // printf("%d %d %d %d\n", nx, ny, d, order);
     for(int i=0;i<nx;i++){
         for(int j=0;j<ny;j++){
             m[i*ny+j] = 0;
             for(int k=0;k<d;k++){
-                if(order==1) m[i*ny+j] += abs(x[i*d+k]-y[j*d+k]);
-                else m[i*ny+j] += pow(abs(x[i*d+k]-y[j*d+k]), order);
+                if(order==1){
+                    // printf("%d-%d-%d %f\n", i, j, k, fabs(x[i*d+k]-y[j*d+k]));
+                    m[i*ny+j] += fabs(x[i*d+k]-y[j*d+k]);
+                }
+                else{
+                    m[i*ny+j] += pow(fabs(x[i*d+k]-y[j*d+k]), order);
+                }   
             }
             if (order!=1) m[i*ny+j] = pow(m[i*ny+j], 1.0/order);
         }
@@ -33,7 +39,7 @@ void backward(double *grad_x, double *grad_y, const double * grad_m,
                     grad_y[j*d+k] += dabsydy(x[i*d+k]-y[j*d+k])*grad_m[i*ny+j];
                 }else{
                     double cm = pow(m[i*ny+j], order*(1.0/order-1.0)) \
-                                * pow(abs(x[i*d+k]-y[j*d+k]),order-1)*grad_m[i*ny+j];
+                                * pow(fabs(x[i*d+k]-y[j*d+k]),order-1)*grad_m[i*ny+j];
                     grad_x[i*d+k] += dabsxdx(x[i*d+k]-y[j*d+k])*cm;
                     grad_y[j*d+k] += dabsydy(x[i*d+k]-y[j*d+k])*cm;
                 }
