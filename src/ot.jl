@@ -59,7 +59,8 @@ M_{ij} = ||x_i - y_j||_{o}
 function dist(x::Union{PyObject, Array{Float64}}, y::Union{PyObject, Array{Float64}}, order::Union{Int64, PyObject}=2)
     x = convert_to_tensor(x)
     y = convert_to_tensor(y)
-    order = convert_to_tensor(order)
-    ss = load_system_op(COLIB["dist"]...)
-    ss(x, y, order)
+    order = convert_to_tensor(order, dtype=Float64)
+    x = tf.expand_dims(x, axis=1)
+    y = tf.expand_dims(y, axis=0)
+    sum(abs(x-y)^order, dims=3)^(1.0/order)
 end

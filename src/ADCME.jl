@@ -33,7 +33,6 @@ module ADCME
         "sparse_diag_mat_mul"=>("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false),
         "sparse_indexing"=>("SparseIndexing", "libSparseIndexing", "sparse_indexing", false),
         "sinkhorn_knopp"=>("OT/SinkhornKnopp", "libSinkhornKnopp", "sinkhorn_knopp", true),
-        "dist"=>("Dist", "libDist", "dist", true)
     )
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
