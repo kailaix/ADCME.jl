@@ -175,6 +175,7 @@ it requires that the second order gradients are implemented for relevant operato
 function gradients(ys::PyObject, xs::PyObject; kwargs...)
     s1 = size(ys)
     s2 = size(xs)
+    kwargs = jlargs(kwargs)
     if isnothing(s1) && isnothing(s2)
         error("s1, s2 should be rank 0, 1, 2")
     end
@@ -214,6 +215,7 @@ function gradients(ys::Array{T}, xs::PyObject; kwargs...) where T <: Union{Any, 
 end
 
 function gradients10(ys::PyObject, xs::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
     try
         u = Variable(rand(length(ys)), trainable=false)
         g = tf.gradients(ys, xs, grad_ys=u; kwargs...)
@@ -225,6 +227,7 @@ function gradients10(ys::PyObject, xs::PyObject; kwargs...)
 end
 
 function gradients_v(ys::PyObject, xs::PyObject;kwargs...)
+    kwargs = jlargs(kwargs)
     if length(size(ys))!=1
         error("ys should be a n dimensional vector function")
     end
@@ -236,7 +239,7 @@ function gradients_v(ys::PyObject, xs::PyObject;kwargs...)
         i<=n
     end
     function body(i,ta)
-        ta = write(ta, i, tf.gradients(ys[i], xs, unconnected_gradients="zero")[1])
+        ta = write(ta, i, tf.gradients(ys[i], xs, unconnected_gradients="zero", kwargs...)[1])
         i+1, ta
     end
     ta = TensorArray(n)
@@ -270,12 +273,13 @@ end
 `hessian` computes the hessian of a scalar function f with respect to vector inputs xs
 """
 function hessian(ys::PyObject, xs::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
     s1 = size(ys)
     s2 = size(xs)
     if s1==nothing || s2 == nothing || (length(s1)!=0 && length(s2)!=1)
         error("Invalid input arguments")
     end
-    h = tf.gradients(ys, xs)
+    h = tf.gradients(ys, xs; kwargs...)
     if h==nothing
         return nothing
     else

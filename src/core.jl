@@ -90,6 +90,10 @@ function jlargs(kwargs)
         end
         delete!(kwargs, :dims)
     end
+    if :colocate in keys(kwargs)
+        kwargs[:colocate_gradients_with_ops] = kwargs[:colocate]
+        delete!(kwargs, :colocate)
+    end
     kwargs
 end
 

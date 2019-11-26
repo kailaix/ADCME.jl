@@ -6,7 +6,7 @@ makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any[
     "index.md",
     "inverse_modeling.md",
-    "Manual" => ["array.md", "sparse.md", "newton_raphson.md"],
+    "Manual" => ["array.md", "sparse.md", "newton_raphson.md", "parallel.md"],
     "Resources" => ["customop.md", "while_loop.md",
             "julia_customop.md", "pytorchnn.md", "extra.md"],
     "Applications" => ["apps_ana.md", "apps_levy.md", "apps_constitutive_law.md"],
