@@ -27,7 +27,14 @@ function sinkhorn(a::Union{PyObject, Array{Float64}}, b::Union{PyObject, Array{F
     sk = load_system_op(COLIB["sinkhorn_knopp"]...; multiple=true)
     if method=="sinkhorn"
         return sk(a,b,M,reg,iter,tol, constant(0))[2]
+    elseif method=="lp"
+        if !haskey(COLIB, "ot_network")
+            install("OTNetwork")
+        end
+        lp = load_system_op("ot_network"; multiple=true)
+        return lp(a, b, M, iter)[2]
     else
+        error("$method not implemented")
     end
 end
 
@@ -64,3 +71,4 @@ function dist(x::Union{PyObject, Array{Float64}}, y::Union{PyObject, Array{Float
     y = tf.expand_dims(y, axis=0)
     sum(abs(x-y)^order, dims=3)^(1.0/order)
 end
+
