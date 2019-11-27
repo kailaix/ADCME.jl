@@ -14,5 +14,9 @@ end
 end
 
 @testset "test_custom_op" begin
-    # @test test_custom_op()
+    @test test_custom_op()
+end
+
+@testset "install" begin
+    install("OTNetwork")
 end

@@ -7,7 +7,9 @@ compile_op,
 test_custom_op,
 enable_gpu,
 use_gpu,
-test_jacobian
+test_jacobian,
+install,
+load_system_op
 
 """
     xavier_init(size, dtype=Float64)
@@ -191,6 +193,8 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
     end
 end
 
+load_system_op(s::String; kwargs...) = load_system_op(COLIB[s]...; kwargs...)
+
 """
     compile(s::String)
 
@@ -341,4 +345,42 @@ function test_jacobian(f::Function, x0::Array{Float64}; scale::Float64 = 1.0)
     println("Finite difference: $err1")
     println("Automatic differentiation: $err2")
     return err1, err2
+end
+
+"""
+    install(s::String; force::Bool = false)
+
+Install a custom operator via URL. `s` can be
+- A URL. ADCME will download the directory through `git`
+- A string. ADCME will search for the associated package on https://github.com/ADCMEMarket
+"""
+function install(s::String; force::Bool = false)
+    global COLIB
+    codir = "$(@__DIR__)/../deps/CustomOps"
+    if !startswith(s, "https://github.com")
+        s = "https://github.com/ADCMEMarket/"*s
+    end
+    _, name = splitdir(s)
+    if name in readdir(codir)
+        if force
+            rm(joinpath(codir, name), recursive=true, force=true)
+        else
+            error("$name already in $codir, fix it with\n\n\tinstall(\"$s\", force=true)\n")
+        end
+    end
+    run(`$gitcmd clone $s $(joinpath(codir, name))`)
+    formula = eval(Meta.parse(read(joinpath(joinpath(codir, name),"formula.txt"), String)))
+    if isnothing(formula)
+        error("Broken package: $s does not have formula.txt.")
+    else
+        @info "Add formula $formula"
+        push!(COLIB, formula)
+    end
+
+    rm("$(@__DIR__)/../deps/CustomOps/formulas.txt")
+    open("$(@__DIR__)/../deps/CustomOps/formulas.txt", "a") do io 
+        for c in COLIB
+            write(io, string(c)*"\n")
+        end
+    end
 end

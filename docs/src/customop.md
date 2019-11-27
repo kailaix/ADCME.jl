@@ -283,3 +283,43 @@ We can see that the tensors depending on `u` are also aware of the assign operat
 
 
 
+## Third-party Plugins
+
+ADCME also allows third-party custom operators hosted on Github. To build your own custom operators, implement your own custom operators in a Github repository. The root directory of the repository should have the following files
+
+* `formula.txt`, which tells how ADCME should interact with the custom operator. It is a Julia Pair, which has the format
+
+  ```
+  signature => (source_directory, library_name, signature, has_gradient)
+  ```
+
+  For example
+
+  ```julia
+  "ot_network"=>("OTNetwork", "libOTNetwork", "ot_network", true)
+  ```
+
+* `CMakeLists.txt`, which is used for compiling the library. 
+
+Users are free to arrange other source files or other third-party libraries. 
+
+Upon using those libraries in ADCME, users first download those libraries to `deps` directory via
+
+```julia
+install("https://github.com/ADCMEMarket/OTNetwork")
+```
+
+The official plugins are hosted on `https://github.com/ADCMEMarket`. To get access to the custom operators in ADCME, use
+
+```julia
+op = load_system_op("OTNetwork")
+```
+
+
+
+### A List of Official Custom Operators
+
+| Name      | Description                               | URL                                       |
+| --------- | ----------------------------------------- | ----------------------------------------- |
+| OTNetwork | Network Flow Solver for Optimal Transport | https://github.com/ADCMEMarket/OTNetwork/ |
+
