@@ -1,6 +1,5 @@
 "sparse_diag_mat_mul" => ("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false)
 "sparse_assembler" => ("SparseAccumulate", "libSparseAccumulate", "", false)
-"ot_network" => ("OTNetwork", "libOTNetwork", "ot_network", true)
 "sparse_mat_mul" => ("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false)
 "sparse_least_square" => ("SparseLeastSquare", "libSparseLeastSquare", "sparse_least_square", true)
 "sparse_indexing" => ("SparseIndexing", "libSparseIndexing", "sparse_indexing", false)
