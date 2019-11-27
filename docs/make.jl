@@ -8,7 +8,7 @@ pages = Any[
     "inverse_modeling.md",
     "Manual" => ["array.md", "sparse.md", "newton_raphson.md", "parallel.md"],
     "Resources" => ["customop.md", "while_loop.md",
-            "julia_customop.md", "pytorchnn.md", "extra.md"],
+            "julia_customop.md", "pytorchnn.md", "extra.md", "ot.md"],
     "Applications" => ["apps_ana.md", "apps_levy.md", "apps_constitutive_law.md"],
     "api.md"
 ],

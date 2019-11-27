@@ -368,7 +368,11 @@ function install(s::String; force::Bool = false)
             error("$name already in $codir, fix it with\n\n\tinstall(\"$s\", force=true)\n")
         end
     end
-    run(`$gitcmd clone $s $(joinpath(codir, name))`)
+    try
+        run(`$gitcmd clone $s $(joinpath(codir, name))`)
+    catch
+        run(`$gitcmd clone git://$(s[9:end]).git`)
+    end
     formula = eval(Meta.parse(read(joinpath(joinpath(codir, name),"formula.txt"), String)))
     if isnothing(formula)
         error("Broken package: $s does not have formula.txt.")
