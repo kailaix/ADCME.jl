@@ -371,7 +371,7 @@ function install(s::String; force::Bool = false)
     try
         run(`$GIT clone $s $(joinpath(codir, name))`)
     catch
-        run(`$GIT clone git://$(s[9:end]).git`)
+        run(`$GIT clone git://$(s[9:end]).git $(joinpath(codir, name))`)
     end
     formula = eval(Meta.parse(read(joinpath(joinpath(codir, name),"formula.txt"), String)))
     if isnothing(formula)
