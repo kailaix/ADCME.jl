@@ -239,6 +239,17 @@
 \end{frame}
 
 \begin{frame}
+	\frametitle{Code Example}
+	\begin{itemize}
+		\item  Find $b$ such that $u(0.5)=1.0$ and
+		$$-bu''(x)+u(x) = 8 + 4x - 4x^2, x\in[0,1], u(0)=u(1)=0$$
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.8\textwidth]{../code.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}
 	\frametitle{Challenges in AD}
 	
 	
@@ -280,7 +291,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 \begin{itemize}
 	\item Most inverse modeling problems can be classified into 4 categories. For example, the PDE for describing physics is
 	\begin{equation}
-		\nabla \cdot (\textcolor{red}{X} \nabla u) = 0\quad \mathcal{B}\mathcal{C}(u) = 0
+		\nabla \cdot (\textcolor{red}{X} \nabla u(x)) = 0\quad \mathcal{B}\mathcal{C}(u(x)) = 0
 	\end{equation}
 	We observe some quantities depending on the solution $u$ and want to estimate $X$.
 \end{itemize}
@@ -290,10 +301,10 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 \begin{tabular}{@{}llll@{}}
 \toprule
 Expression                                       & Description                & ADCME Solution                         & Note                                     \\ \midrule
-$\nabla \cdot (\textcolor{red}{c} \nabla u) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & Direct optimize the constant $c$                      \\ \hline
-$\nabla \cdot (\textcolor{red}{f(x)} \nabla u) = 0$ & Functional Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx f_{\theta}(x)$             \\ \hline
-$\nabla \cdot (\textcolor{red}{f(u)} \nabla u) = 0$ & Relation Inverse Problem   & \makecell{Deep Learning for\\ Indirect Data}        & $f(u) \approx f_{\theta}(u)$             \\ \hline
-$\nabla \cdot (\textcolor{red}{\varpi} \nabla u) = 0$ & Stochastic Inverse Problem & \makecell{Adversarial Numerical\\ Analysis}         & \makecell{Generative Neural Nets for $\varpi$\\ (unknown random processes)} \\ \bottomrule
+$\nabla \cdot (\textcolor{red}{c} \nabla u(x)) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & Direct optimize the constant $c$                      \\ \hline
+$\nabla \cdot (\textcolor{red}{f(x)} \nabla u(x)) = 0$ & Functional Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx f_{\theta}(x)$             \\ \hline
+$\nabla \cdot (\textcolor{red}{f(u)} \nabla u(x)) = 0$ & Relation Inverse Problem   & \makecell{Deep Learning for\\ Indirect Data}        & $f(u) \approx f_{\theta}(u)$             \\ \hline
+$\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Problem & \makecell{Adversarial Numerical\\ Analysis}         & \makecell{Generative Neural Nets for $\varpi$\\ (unknown random processes)} \\ \bottomrule
 \end{tabular}
 \end{table}
 }
