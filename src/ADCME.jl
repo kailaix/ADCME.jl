@@ -14,7 +14,6 @@ module ADCME
     using LinearAlgebra
     using PyPlot
     using Conda
-    import Git: gitcmd
     import Optim
 
     tf = PyNULL()
@@ -33,6 +32,7 @@ module ADCME
     CXX = joinpath(Conda.BINDIR, "g++")
     CMAKE = joinpath(Conda.BINDIR, "cmake")
     MAKE = joinpath(Conda.BINDIR, "make")
+    GIT = joinpath(Conda.BINDIR, "git")
     TFLIB = nothing
     run_metadata = nothing
     

@@ -151,23 +151,11 @@ git-tree-sha1 = "4407e7b76999eca2646abdb68203bd4302476168"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
 version = "0.10.6"
 
-[[Git]]
-deps = ["BinDeps", "Homebrew", "Libdl", "Test", "VersionParsing"]
-git-tree-sha1 = "0419db5d174ec0fc26d67f05c7eaa010d4485e8a"
-uuid = "d7ba0133-e1db-5d97-8f8c-041e4b3a1eb2"
-version = "0.3.0"
-
 [[HDF5]]
 deps = ["BinaryProvider", "Blosc", "CMakeWrapper", "Libdl", "Mmap"]
 git-tree-sha1 = "d3ea5532668bf9bdd5e8d5f16571e0b520cbbb9f"
 uuid = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 version = "0.12.5"
-
-[[Homebrew]]
-deps = ["BinDeps", "InteractiveUtils", "JSON", "Libdl", "Test", "Unicode"]
-git-tree-sha1 = "f01fb2f34675f9839d55ba7238bab63ebd2e531e"
-uuid = "d9be37ee-ecc9-5288-90f1-b9ca67657a75"
-version = "0.7.1"
 
 [[InteractiveUtils]]
 deps = ["Markdown"]
