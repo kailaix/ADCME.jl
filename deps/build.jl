@@ -16,7 +16,7 @@ UNZIP = joinpath(Conda.BINDIR, "unzip")
 @info "Install CONDA dependencies..."
 pkgs = Conda._installed_packages()
 for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7",
-            "matplotlib"]
+            "matplotlib", "git"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
