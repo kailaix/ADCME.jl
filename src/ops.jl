@@ -526,6 +526,7 @@ for op = [:scatter_add, :scatter_sub, :scatter_mul, :scatter_div]
 end
 
 function norm(o::PyObject, args...;kwargs...)
+    kwargs = jlargs(kwargs)
     tf.norm(o, args...;kwargs...)
 end
 

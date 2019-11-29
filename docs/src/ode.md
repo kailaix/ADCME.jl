@@ -35,7 +35,7 @@ function f(t, y, θ)
     [10*(y[2]-y[1]);y[1]*(27-y[3])-y[2];y[1]*y[2]-8/3*y[3]]
 end
 x0 = [1.;0.;0.]
-runge_kutta(x0, 30.0, 10000, f)
+rk4(f, 30.0, 10000, x0)
 ```
 
 ![](./assets/lorentz.png)
@@ -127,7 +127,7 @@ T  = 30.0
 NT  = 500*300
 g0  = [gi0; gi1; gi2]
 
-res_ = runge_kutta(g0, T, NT, f)
+res_ = ode45(f, T, NT, g0)
 
 sess = Session(); init(sess)
 res = run(sess, res_)
