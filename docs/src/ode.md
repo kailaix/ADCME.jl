@@ -11,24 +11,23 @@ The Runge Kutta method is one of the workhorses for solving ODEs. The method is 
 where $t$ denotes time, $y$ denotes states and $\theta$ denotes parameters. 
 
 The Runge-Kutta method is defined as
-```math
-\begin{align}
+
+$\begin{aligned}
 k_1 &= \Delta t f(t_n, y_n, \theta)\\
 k_2 &= \Delta t f(t_n+\Delta t/2, y_n + k_1/2, \theta)\\
 k_3 &= \Delta t f(t_n+\Delta t/2, y_n + k_2/2, \theta)\\
 k_4 &= \Delta t f(t_n+\Delta t, y_n + k_3, \theta)\\
 y_{n+1} &= y_n + \frac{k_1}{6} +\frac{k_2}{3} +\frac{k_3}{3} +\frac{k_4}{6}
-\end{align}
-```
+\end{aligned}$
 
-ADCME provides a built-in Runge Kutta solver [`runge_kutta`](@ref). Consider an example: the Lorentz equation
-```math
-\begin{align}
+ADCME provides a built-in Runge Kutta solver [`rk4`](@ref) and [`ode45`](@ref). Consider an example: the Lorentz equation
+
+$\begin{aligned}
 \frac{dx}{dt} &= 10(y-x)\\ 
 \frac{dy}{dt} &= x(27-z)-y\\ 
 \frac{dz}{dt} &= xy -\frac{8}{3}z
-\end{align}
-```
+\end{aligned}$
+
 Let the initial condition be $x_0 = [1,0,0]$, the following code snippets solves the Lorentz equation with ADCME
 ```julia
 function f(t, y, θ)

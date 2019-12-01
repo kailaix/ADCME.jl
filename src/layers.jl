@@ -147,16 +147,16 @@ random initializers are provided
 
 - `xavier` (default). It is useful for `tanh` fully connected neural network. 
 ```math 
-W^l_i \sim sqrt{\frac{1}{n_{l-1}}}
+W^l_i \sim \sqrt{\frac{1}{n_{l-1}}}
 ```
 - `xavier_avg`. A variant of `xavier`
 ```math 
-W^l_i \sim sqrt{\frac{2}{n_l + n_{l-1}}}
+W^l_i \sim \sqrt{\frac{2}{n_l + n_{l-1}}}
 ```
 - `he`. This is the activation aware initialization of weights and helps mitigate the problem
 of vanishing/exploding gradients. 
 ```math 
-W^l_i \sim sqrt{\frac{2}{n_{l-1}}}
+W^l_i \sim \sqrt{\frac{2}{n_{l-1}}}
 ```
 """
 function ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xavier")
@@ -295,7 +295,8 @@ end
 """
     bn(args...;center = true, scale=true, kwargs...)
 
-# example
+`bn` accepts a keyword parameter `is_training`. 
+# Example
 ```julia
 bn(inputs, name="batch_norm", is_training=true)
 ```

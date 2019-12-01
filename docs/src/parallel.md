@@ -72,3 +72,14 @@ save_profile("false.json")
 ```
 
 ![](./assets/colocate.png)
+
+
+**Batch Normalization Update Operators**
+
+If you use `bn` (batch normalization) on multi-GPUs, you must be careful to update the parameters in batch normalization on CPUs. This can be done by explicitly specify 
+```julia
+@pywith tf.device("/cpu:0") begin
+  global update_ops = get_collection(tf.GraphKeys.UPDATE_OPS)
+end
+```
+and bind `update_ops` to an active operator (or explictly execute it in `run(sess,...)`).

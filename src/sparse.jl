@@ -259,7 +259,7 @@ Returns 3 functions that can be used for assembling sparse matrices concurrently
 - `accumulator` accumulates column indices and values 
 - `creator` accepts no input and outputs row indices, column indices and values for the sparse matrix
 
-Example:
+# Example
 ```
 accumulator, creater, initializer = SparseAssembler()
 initializer(5)

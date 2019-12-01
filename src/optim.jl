@@ -484,7 +484,7 @@ end
 
 Computes the gradients ``\frac{\partial L}{\partial \theta}``
 ```math
-\min & \ L(u) \quad \mathrm{s.t.} & \ F(\theta, u) = 0
+\min \ L(u) \quad \mathrm{s.t.} \ F(\theta, u) = 0
 ```
 `u0` is the initial guess for the numerical solution `u`, see [`newton_raphson`](@ref).
 
