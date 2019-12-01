@@ -24,7 +24,7 @@ Conv3DTranspose,
 BatchNormalization,
 Dropout,
 ae,
-num_ae,
+ae_num,
 ae_init,
 ae_to_code,
 sparse_softmax_cross_entropy_with_logits
@@ -86,6 +86,23 @@ end
     ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject})
 
 Creates a neural network with intermediate numbers of neurons `output_dims`. The weights are given by `θ`
+
+# Example 1: Explicitly construct weights and biases
+```julia
+x = constant(rand(10,2))
+n = ae_num([2,20,20,20,2])
+θ = Variable(randn(n)*0.001)
+y = ae(x, [20,20,20,2], θ)
+```
+
+# Example 2: Implicitly construct weights and biases
+```julia
+θ = ae_init([10,20,20,20,2]) 
+x = constant(rand(10,10))
+y = ae(x, [20,20,20,2], θ)
+```
+
+See also [`ae_num`](@ref), [`ae_init`](@ref).
 """
 function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject})
     if isa(x, Array)
@@ -122,32 +139,55 @@ function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::U
 end
 
 
-"""
-    ae_init(sess::PyObject, x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64})
+@doc raw"""
+    ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xavier")
 
-Return the initial weights and bias values by TensorFlow as a vector.
+Return the initial weights and bias values by TensorFlow as a vector. Three types of 
+random initializers are provided
+
+- `xavier` (default). It is useful for `tanh` fully connected neural network. 
+```math 
+W^l_i \sim sqrt{\frac{1}{n_{l-1}}}
+```
+- `xavier_avg`. A variant of `xavier`
+```math 
+W^l_i \sim sqrt{\frac{2}{n_l + n_{l-1}}}
+```
+- `he`. This is the activation aware initialization of weights and helps mitigate the problem
+of vanishing/exploding gradients. 
+```math 
+W^l_i \sim sqrt{\frac{2}{n_{l-1}}}
+```
 """
-function ae_init(sess::PyObject, x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64})
-    @warn "This function will destroy the current session"
-    reset_default_graph()
-    y = ae(x, output_dims, "internal")
-    vs = get_collection()
-    sess = Session()
-    init(sess)
-    vs = run(sess, vs)
-    vals = Array{Float64}[]
-    for v in vs
-        push!(vals, v[:])
+function ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xavier")
+    N = ae_num(output_dims)
+    W = zeros(T, N)
+    offset = 0
+    for i = 1:length(output_dims)-2
+        m = output_dims[i]
+        n = output_dims[i+1]
+        if method=="xavier"
+            W[offset+1:offset+m*n] = randn(T, m*n) * T(sqrt(1/m))
+        elseif method=="xavier_avg"
+            W[offset+1:offset+m*n] = randn(T, m*n) * T(sqrt(2/(n+m)))
+        elseif method=="he"
+            W[offset+1:offset+m*n] = randn(T, m*n) * T(sqrt(2/(m)))
+        else
+            error("Method $method not understood")
+        end
+        offset += m*n+n
     end
-    vcat(vals...)
+    W
 end
 
 """
-    num_ae(output_dims::Array{Int64})
+    ae_num(output_dims::Array{Int64})
 
-Estimates the number of weights for the neural network.
+Estimates the number of weights and biases for the neural network. Note the first dimension
+should be the feature dimension (this is different from [`ae`](@ref) since in `ae` the feature
+dimension can be inferred), and the last dimension should be the output dimension. 
 """
-function num_ae(output_dims::Array{Int64})
+function ae_num(output_dims::Array{Int64})
     offset = 0
     for i = 1:length(output_dims)-2
         m = output_dims[i]
@@ -160,7 +200,7 @@ function num_ae(output_dims::Array{Int64})
     return offset
 end
 
-function ae_to_code(d::Dict, scope::String)
+function _ae_to_code(d::Dict, scope::String)
     i = 0
     nn_code = ""
     while true
@@ -186,11 +226,15 @@ end
 """
     ae_to_code(file::String, scope::String)
 
-Return the code string from the feed-forward neural network data in `file`.
+Return the code string from the feed-forward neural network data in `file`. Usually we can immediately evaluate 
+the code string into Julia session by 
+```julia
+eval(Meta.parse(s))
+```
 """
 function ae_to_code(file::String, scope::String)
     d = matread(file)
-    s = "aedict$scope = matread(\"$file\");"*ae_to_code(d, scope)
+    s = "aedict$scope = matread(\"$file\");"*_ae_to_code(d, scope)
     return s
 end
 

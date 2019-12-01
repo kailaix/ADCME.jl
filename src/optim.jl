@@ -292,8 +292,8 @@ end
 
 Newton Raphson solver for solving a nonlinear equation. 
 `f` has the signature 
-- `f(u::PyObject, θ::Union{Missing,PyObject})->(r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is off)
-- `f(u::PyObject, θ::Union{Missing,PyObject})->(fval::PyObject, r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is on)
+- `f(θ::Union{Missing,PyObject}, u::PyObject)->(r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is off)
+- `f(θ::Union{Missing,PyObject}, u::PyObject)->(fval::PyObject, r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is on)
 where `r` is the residual and `A` is the Jacobian matrix; in the case where `linesearch` is on, the function value `fval` must also be supplied.
 `θ` are external parameters.
 `u0` is the initial guess for `u`
@@ -484,10 +484,7 @@ end
 
 Computes the gradients ``\frac{\partial L}{\partial \theta}``
 ```math
-\begin{align}
-\min & \ L(u)\\ 
-\mathrm{s.t.} & \ F(\theta, u) = 0
-\end{align}
+\min & \ L(u) \quad \mathrm{s.t.} & \ F(\theta, u) = 0
 ```
 `u0` is the initial guess for the numerical solution `u`, see [`newton_raphson`](@ref).
 

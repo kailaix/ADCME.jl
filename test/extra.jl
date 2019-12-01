@@ -20,3 +20,8 @@ end
 @testset "install" begin
     install("OTNetwork")
 end
+
+@testset "ae" begin
+    n = ae_num([2,20,20,20,3])
+    @test n==length(ae_init([2,20,20,20,3]))
+end
