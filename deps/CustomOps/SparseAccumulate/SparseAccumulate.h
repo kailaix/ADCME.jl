@@ -12,7 +12,7 @@ private:
   std::vector<std::vector<int>> jj; // cols
   std::vector<std::vector<double>> vv; // values
   int n; // number of rows
-  std::mutex mu; // concurrency 
+  // std::mutex mu; // concurrency 
 public:
   explicit SparseAccum(int handle_);
   
