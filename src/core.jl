@@ -99,7 +99,35 @@ end
 
 # control_dependencies can be used to fix the memory problem
 # https://stackoverflow.com/questions/39350164/tensorflow-parallel-for-loop-results-in-out-of-memory
-function control_dependencies(f, ops)
+
+"""
+    control_dependencies(f, ops::Union{Array{PyObject}, PyObject})
+
+Executes all operations in `ops` before any operations _created_ inside the block. 
+```julia
+op1 = tf.print("print op1")
+op3 = tf.print("print op3")
+control_dependencies(op1) do
+    global op2 = tf.print("print op2")
+end
+run(sess, [op2,op3])
+```
+In this example, `op1` must be executed before `op2`. But there is no guarantee when `op3` will be executed. 
+There are several possible outputs of the program such as
+
+```julia-repl
+print op3
+print op1
+print op2
+```
+or 
+```
+print op1
+print op3
+print op2
+```
+"""
+function control_dependencies(f, ops::Union{Array{PyObject}, PyObject})
     if isa(ops, PyObject)
         ops = [ops]
     end
