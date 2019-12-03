@@ -115,7 +115,7 @@ There are also special constructors.
     run(sess, gradients(sum(sol), vv))
     ```
 
-# Assembling Sparse Matrix
+## Assembling Sparse Matrix
 
 In many applications, we want to accumulate `row`, `col` and `val` to assemble a sparse matrix in iterations. For this purpose, we provide the `SparseAssembler` utilities. 
 
