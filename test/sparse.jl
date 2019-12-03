@@ -78,20 +78,53 @@ end
 end
 
 @testset "sparse_assembler" begin
-    accumulator, creater, initializer = SparseAssembler()
-    initializer(5)
-    op1 = accumulator(1, [1;2;3], ones(3))
-    op2 = accumulator(1, [3], [1.])
-    op3 = accumulator(2, [1;3], ones(2))
-    run(sess, [op1,op2,op3])
-    ii,jj,vv = creater()
-    i,j,v = run(sess, [ii,jj,vv])
-    A = sparse(i,j,v,5,5)
-    @test Array(A)≈[1.0  1.0  2.0  0.0  0.0
-                    1.0  0.0  1.0  0.0  0.0
-                    0.0  0.0  0.0  0.0  0.0
-                    0.0  0.0  0.0  0.0  0.0
-                    0.0  0.0  0.0  0.0  0.0]
+        
+    m = 20
+    n = 100
+    handle = SparseAssembler(100, m, 0.0)
+    op = PyObject[]
+    A = zeros(m, n)
+    for i = 1:1
+        ncol = rand(1:n, 10)
+        row = rand(1:m)
+        v = rand(10)
+        for (k,val) in enumerate(v)
+            @show k
+            A[row, ncol[k]] += val
+        end
+        @show v
+        push!(op, accumulate(handle, row, ncol, v))
+    end
+    op = vcat(op...)
+    J = assemble(m, n, op)
+    B = run(sess, J)
+    @test norm(A-B)<1e-8
+
+
+
+    handle = SparseAssembler(100, 5, 1.0)
+    op1 = accumulate(handle, 1, [1;2;3], [2.0;0.5;0.5])
+    J = assemble(5, 5, op1)
+    B = run(sess, J)
+    @test norm(B-[2.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0])<1e-8
+
+    handle = SparseAssembler(100, 5, 0.0)
+    op1 = accumulate(handle, 1, [1;1], [1.0;1.0])
+    op2 = accumulate(handle, 1, [1;2], [1.0;1.0])
+
+    J = assemble(5, 5, [op1;op2])
+    B = run(sess, J)
+    @test norm(B-[3.0  1.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0])<1e-8
+
+        
 end
 
 @testset "sparse_least_square" begin

@@ -1,5 +1,6 @@
 using SparseArrays
-export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse
+import Base: accumulate
+export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse, accumulate, assemble
 
 mutable struct SparseTensor
     o::PyObject
@@ -250,55 +251,96 @@ end
 Base.:\(s::SparseTensor, o::Array{Float64}) = s\constant(o)
 
 """
-accumulator, creater, initializer = SparseAssembler()
+    SparseAssembler(handle::Union{PyObject, <:Integer}, n::Union{PyObject, <:Integer}, tol::Union{PyObject, <:Real}=0.0)
 
+Creates a SparseAssembler for accumulating `row`, `col`, `val` for sparse matrices. 
+- `handle`: an integer handle for creating a sparse matrix. If the handle already exists, `SparseAssembler` return the existing sparse matrix handle. If you are creating different sparse matrices, the handles should be different. 
+- `n`: Number of rows of the sparse matrix. 
+- `tol` (optional): Tolerance. `SparseAssembler` will treats any values less than `tol` as zero. 
 
-Returns 3 functions that can be used for assembling sparse matrices concurrently.
-
-- `initializer` must be called before the working session
-- `accumulator` accumulates column indices and values 
-- `creator` accepts no input and outputs row indices, column indices and values for the sparse matrix
-
-# Example
+# Example 1
+```julia
+handle = SparseAssembler(100, 5, 1e-8)
+op1 = accumulate(handle, 1, [1;2;3], [1.0;2.0;3.0])
+op2 = accumulate(handle, 2, [1;2;3], [1.0;2.0;3.0])
+J = assemble(5, 5, [op1;op2])
 ```
-accumulator, creater, initializer = SparseAssembler()
-initializer(5)
-op1 = accumulator(1, [1;2;3], ones(3))
-op2 = accumulator(1, [3], [1.])
-op3 = accumulator(2, [1;3], ones(2))
-run(sess, [op1,op2,op3])
-ii,jj,vv = creater()
-i,j,v = run(sess, [ii,jj,vv])
-A = sparse(i,j,v,5,5)
-@assert Array(A)≈[1.0  1.0  2.0  0.0  0.0
+`J` will be a [`SparseTensor`](@ref) object. 
+
+# Example 2
+```julia
+handle = SparseAssembler(0, 5)
+op1 = accumulate(handle, 1, [1;2;3], ones(3))
+op2 = accumulate(handle, 1, [3], [1.])
+op3 = accumulate(handle, 2, [1;3], ones(2))
+J = assemble(5, 5, [op1;op2;op3]) # op1, op2, op3 are parallel
+Array(run(sess, J))≈[1.0  1.0  2.0  0.0  0.0
                 1.0  0.0  1.0  0.0  0.0
                 0.0  0.0  0.0  0.0  0.0
                 0.0  0.0  0.0  0.0  0.0
                 0.0  0.0  0.0  0.0  0.0]
 ```
 """
-function SparseAssembler()
+function SparseAssembler(handle::Union{PyObject, <:Integer}, n::Union{PyObject, <:Integer}, tol::Union{PyObject, <:Real}=0.0)
     s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
-    @show s
-    _sparse_accumulate = load_op(s, "sparse_accumulate")
-    get_sparse_accumulate = load_op(s, "get_sparse_accumulate")
-    function _clear(n)
-        @eval begin
-            ccall((:initialize_sparse_accumulate, $s), Cvoid, (Cint,), $n)
-        end
-    end
-    function sparse_accumulate(row::Union{PyObject,T}, col::Union{Array{T}, PyObject}, val::Union{PyObject, Array{S}}) where {T<:Integer, S<:Real}
-        row = cast(convert_to_tensor(row), Int32)
-        col = cast(convert_to_tensor(col), Int32)
-        val = cast(convert_to_tensor(val), Float64)
-        _sparse_accumulate(row, col,val)
-    end
-    function clear!(n::Integer)
-        n = Int32(n)
-        _clear(n)
-    end
-    return sparse_accumulate, get_sparse_accumulate, clear!
+    sparse_accumulator = load_op(s, "sparse_accumulator")
+    n = convert_to_tensor(n, dtype=Int32)
+    tol = convert_to_tensor(tol, dtype=Float64)
+    handle = convert_to_tensor(handle, dtype=Int32)
+    sparse_accumulator(tol, n, handle)
 end
+
+
+"""
+    accumulate(handle::PyObject, row::Union{PyObject, <:Integer}, cols::Union{PyObject, Array{<:Integer}}, vals::Union{PyObject, Array{<:Real}})
+
+Accumulates `row`-th row. It adds the value to the sparse matrix
+```julia
+for k = 1:length(cols)
+    A[row, cols[k]] += vals[k]
+end
+```
+`handle` is the handle created by [`SparseAssembler`](@ref). 
+
+See [`SparseAssembler`](@ref) for an example.
+
+!!! Note
+    `accumulate` returns a `op::PyObject`. Only when `op` is executed, the nonzero values are populated into the sparse matrix. 
+"""
+function accumulate(handle::PyObject, row::Union{PyObject, <:Integer}, cols::Union{PyObject, Array{<:Integer}}, 
+    vals::Union{PyObject, Array{<:Real}})
+    s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
+    sparse_accumulator_add = load_op(s, "sparse_accumulator_add")
+    row = convert_to_tensor(row, dtype=Int32)
+    cols = convert_to_tensor(cols, dtype=Int32)
+    vals = convert_to_tensor(vals, dtype=Float64)
+    return sparse_accumulator_add(handle, row, cols, vals)
+end
+
+"""
+    assemble(m::Union{PyObject, <:Integer}, n::Union{PyObject, <:Integer}, ops::PyObject)
+
+Assembles the sparse matrix from the `ops` created by [`accumulate`](@ref). `ops` is either a single output from `accumulate`, or concated from several `ops`
+```julia
+op1 = accumulate(handle, 1, [1;2;3], [1.0;2.0;3.0])
+op2 = accumulate(handle, 2, [1;2;3], [1.0;2.0;3.0])
+op = [op1;op2] # equivalent to `vcat([op1, op2]...)`
+```
+`m` and `n` are rows and columns of the sparse matrix. 
+
+See [`SparseAssembler`](@ref) for an example.
+"""
+function assemble(m::Union{PyObject, <:Integer}, n::Union{PyObject, <:Integer}, ops::PyObject)
+    s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
+    sparse_accumulator_copy = load_op(s, "sparse_accumulator_copy")
+    if length(size(ops))==0
+        ops = reshape(ops, 1)
+    end
+    ii, jj, vv = sparse_accumulator_copy(ops)
+    return SparseTensor(ii, jj, vv, m, n)
+end
+
+
 
 
 """

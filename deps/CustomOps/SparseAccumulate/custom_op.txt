@@ -1,0 +1,6 @@
+SparseAccumulatorCopy
+int32 handle()
+int32 rows(?) -> output
+int32 cols(?) -> output
+double vals(?) -> output
+

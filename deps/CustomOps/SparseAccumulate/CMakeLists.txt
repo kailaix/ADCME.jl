@@ -1,30 +1,40 @@
 cmake_minimum_required(VERSION 3.5)
-project(TFApp)
-
-
+project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
-execute_process(COMMAND julia -e "using PyCall; print(PyCall.python)" OUTPUT_VARIABLE PYTHON)
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
+execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"python\"))" OUTPUT_VARIABLE PYTHON)
+execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; \
+                                       TF_INC = tf.sysconfig.get_compile_flags()[0][2:];\
+                                       TF_LIB = tf.sysconfig.get_link_flags()[0][2:];\
+                                       TF_ABI = tf.sysconfig.get_compile_flags()[1][-1];\
+                                       TF_LIB_FILE = tf.sysconfig.get_link_flags()[1][3:];\
+                                       OUT = ';'.join([TF_INC,TF_LIB,TF_ABI,TF_LIB_FILE]);\
+                                       sys.stdout.write(OUT)" OUTPUT_VARIABLE PY_OUT)
+list(GET PY_OUT 0 TF_INC)
+list(GET PY_OUT 1 TF_LIB)
+list(GET PY_OUT 2 TF_ABI)
+list(GET PY_OUT 3 TF_LIB_FILE)
+
 message("Python path=${PYTHON}")
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_compile_flags()[0][2:])" OUTPUT_VARIABLE TF_INC)
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_link_flags()[0][2:])" OUTPUT_VARIABLE TF_LIB)
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_compile_flags()[1][-1])" OUTPUT_VARIABLE TF_ABI)
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_link_flags()[1][3:])" OUTPUT_VARIABLE TF_LIB_FILE)
+message("EIGEN_INC=${EIGEN_INC}")
+message("TF_INC=${TF_INC}")
+message("TF_LIB=${TF_LIB}")
+message("TF_ABI=${TF_ABI}")
+message("TF_LIB_FILE=${TF_LIB_FILE}")
 
 
-# https://github.com/tensorflow/tensorflow/issues/1569
-# if GCC > 5
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
   set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
 
-include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
-include_directories(${JULIA_INC} ${PYTHON_INC})
-link_directories(${TF_LIB} ${JULIA_LIB})
-
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
 
-add_library(SparseAccumulate SHARED SparseAccumulate.cpp)
-set_property(TARGET SparseAccumulate PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(SparseAccumulate ${TF_LIB_FILE} "${TORCH_LIBRARIES}")
+include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
+link_directories(${TF_LIB})
+
+add_library(SparseAccumulator SHARED SparseAccumulator.cpp Impl.cpp)
+
+set_property(TARGET SparseAccumulator PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(SparseAccumulator ${TF_LIB_FILE} "${TORCH_LIBRARIES}")

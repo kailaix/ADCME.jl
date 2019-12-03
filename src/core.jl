@@ -127,7 +127,7 @@ print op3
 print op2
 ```
 """
-function control_dependencies(f, ops::Union{Array{PyObject}, PyObject})
+function control_dependencies(f, ops::Union{Tuple, Array{PyObject}, PyObject})
     if isa(ops, PyObject)
         ops = [ops]
     end
