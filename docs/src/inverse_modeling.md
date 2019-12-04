@@ -2,7 +2,36 @@
 
 **Inverse modeling** (IM) identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement. IM can usually be solved by formulating it as an optimization problem. But the major difference is that IM aims at getting information not accessible to forward analysis, instead of obtaining an optimal value of a fixed objective function and set of constraints. In IM, the objective function and constraints can be adjusted, and prior information of the unknown parameters or functions can be imposed in the form of regularizers, to better reflect the physical laws. 
 
-For example, given an image $x\in\mathbb{R}^{1024\times 1024}$, the forward analysis is given by $y = F(x) = \sum_{i,j} x_{i,j}$, i.e., the summation of all pixel values. One possible IM problem requires you to estimate $x$ given the measurement $y$. It can be formulated an optimization problem $\min_x (F(x)-y)^2$, which is underdetermined. However, if we have the prior that the image is a pure color image, then the inverse problem is well-defined and has a unique solution. There are many ways to impose this prior as contraints to the optimization problem, but the IM problem itself may not be described as an optimization problem. 
+The inverse modeling problem can be mathematically formulated as finding an unknown parameter $\theta$ given input $x = \hat x$ and output $y = \hat y$ of a forward model
+```math
+y = F(x, \theta)
+```
+Here $x$ and $y$ can be a sample from a stochastic process. The scope of inverse problems appropriate for ADCME is differential models $F$, i.e., $\frac{\partial F}{\partial x}$ and $\frac{\partial F}{\partial \theta}$ exist and are continuous. 
+
+One iterative process for estimating $\theta$ works as follows: we start from an initial guess $\theta = \hat \theta_0$, assuming it is correct, and compute the predicted output $\hat y_0$ with the forward modeling codes implemented in ADCME. Then, we measure the discrepancy between the predicted output $\hat y_0$ and $\hat y$ and apply the regular gradient-based optimization method to update $\theta$. The gradients are computed with automatic differentiation and/or adjoint state methods. 
+
+This conceptually simple approach can solve various types of inverse problems: either $x$, $y$ are stochastic or deterministic and the unknown $\theta$ can  be a value, function and even functionals. As an example, assume the forward model is Poisson equation $\nabla \cdot (\theta\nabla y(\mathbf{x})) = 0$ with appropriate boundary condition ($x$), $y(\mathbf{x})$ is the output ($\mathbf{x}$ is the coordinate, not $x$) , the following is a list of potential classes of problems solvable with ADCME
+
+
+
+| Inverse problem                          | **Problem type**     | **Approach**                    |             **Reference**             |
+| ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
+| $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1]()                 |
+| $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function             | DNN                             | [2](https://arxiv.org/abs/1901.07758) |
+| $\nabla\cdot(f(u)\nabla u) = 0$          | Functional           | DNN Learning from indirect data | [3](https://arxiv.org/abs/1905.12530) |
+| $\nabla\cdot(\varpi\nabla u) = 0$        | Stochastic Inversion | Adversarial Learning with GAN   | [4](https://arxiv.org/abs/1910.06936) |
+
+
+
+
+
+
+
+
+
+
+
+
 
 ![](./assets/im.png)
 
@@ -125,3 +154,4 @@ In this case $F(x,y)=0$ and the corresponding gradient is
 \frac{\partial J}{\partial x} = -\frac{\partial J}{\partial y}F_y^{-1}F_x
 ```
 This case is the most challenging of the four but widely seen in scientific computing code. In many numerical simulation code, $F_y$ is usually sparse and therefore it is rewarding to exploit the sparse structure for computation acceleration in practice.
+
