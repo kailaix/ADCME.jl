@@ -14,7 +14,7 @@ This conceptually simple approach can solve various types of inverse problems: e
 
 
 
-| Inverse problem                          | **Problem type**     | **Approach**                    |             **Reference**             |
+| **Inverse problem**                          | **Problem type**     | **Approach**                    |             **Reference**             |
 | ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
 | $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1]()                 |
 | $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function             | DNN                             | [2](https://arxiv.org/abs/1901.07758) |
@@ -155,3 +155,31 @@ In this case $F(x,y)=0$ and the corresponding gradient is
 ```
 This case is the most challenging of the four but widely seen in scientific computing code. In many numerical simulation code, $F_y$ is usually sparse and therefore it is rewarding to exploit the sparse structure for computation acceleration in practice.
 
+
+## Related Algorithms
+
+
+
+### EM Algorithm
+
+We now split the parameter $\theta=(\theta_1, \theta_2)$, i.e., the inverse model is
+
+```math
+y = F(x, (\theta_1, \theta_2))
+```
+
+The expectation maximization algorithm alternates between the steps of guessing a probability distribution of a certain unknown $\theta_1$ (E-Step) given current $\theta_2$  and then re-estimating the other unknown $\theta_2$ (M-Step) assuming the guess $\theta_1$ is true. The name "expectation" comes from the fact that usually the optimal guess is the expectation over a probability distribution. The algorithm is as follows
+
+
+
+$\begin{aligned}
+\theta_2^{(0)} &= \arg\min_{\theta_2} D_1(\hat y, F(\hat x; \theta_1^{(0)}, \theta_2))\\
+\theta_1^{(1)} &= \arg\min_{\theta_1} D_2(\hat y, F(\hat x; \theta_1, \theta_2^{(0)}))\\
+\theta_2^{(1)} &= \arg\min_{\theta_2} D_1(\hat y, F(\hat x; \theta_1^{(1)}, \theta_2))\\
+\theta_1^{(2)} &= \arg\min_{\theta_1} D_1(\hat y, F(\hat x; \theta_1, \theta_2^{(1)}))\\
+\ldots
+\end{aligned}$
+
+
+
+Recall that $\hat x$ and $\hat y$ represent observations (can be stochastic). $D_1$ and $D_2$ are discrepancy metrics, such as KL divergence. 
