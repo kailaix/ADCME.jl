@@ -180,6 +180,4 @@ $\begin{aligned}
 \ldots
 \end{aligned}$
 
-
-
-Recall that $\hat x$ and $\hat y$ represent observations (can be stochastic). $D_1$ and $D_2$ are discrepancy metrics, such as KL divergence. 
+Recall that $\hat x$ and $\hat y$ represent observations (can be stochastic). $D_1$ and $D_2$ are discrepancy metrics, such as KL divergence. We immediately recognize EM algorithm as a coordinate descent method when $D_1=D_2$. 
