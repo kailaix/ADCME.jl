@@ -1,18 +1,19 @@
 # Inverse Modeling
 
-**Inverse modeling** (IM) identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement. IM can usually be solved by formulating it as an optimization problem. But the major difference is that IM aims at getting information not accessible to forward analysis, instead of obtaining an optimal value of a fixed objective function and set of constraints. In IM, the objective function and constraints can be adjusted, and prior information of the unknown parameters or functions can be imposed in the form of regularizers, to better reflect the physical laws. 
+**Inverse modeling** (IM) identifies a certain set of parameters or functions with which the outputs of the _forward model_ matches the desired result or measurement. IM can usually be solved by formulating it as an optimization problem. But the major difference is that IM aims at getting information not accessible to forward model, instead of obtaining an optimal value of a fixed objective function and set of constraints. In practice, the objective function and constraints can be adjusted and prior information of the unknown parameters or functions can be imposed in the form of regularizers to better reflect the physical laws. 
 
 The inverse modeling problem can be mathematically formulated as finding an unknown parameter $\theta$ given input $x = \hat x$ and output $y = \hat y$ of a forward model
 ```math
 y = F(x, \theta)
 ```
-Here $x$ and $y$ can be a sample from a stochastic process. The scope of inverse problems appropriate for ADCME is differential models $F$, i.e., $\frac{\partial F}{\partial x}$ and $\frac{\partial F}{\partial \theta}$ exist and are continuous. 
+Here $x$ and $y$ can be a sample from a stochastic process. The scope of inverse problems that can be tackled with ADCME is
 
-One iterative process for estimating $\theta$ works as follows: we start from an initial guess $\theta = \hat \theta_0$, assuming it is correct, and compute the predicted output $\hat y_0$ with the forward modeling codes implemented in ADCME. Then, we measure the discrepancy between the predicted output $\hat y_0$ and $\hat y$ and apply the regular gradient-based optimization method to update $\theta$. The gradients are computed with automatic differentiation and/or adjoint state methods. 
+1. The forward model must be _differentiable_,  i.e., $\frac{\partial F}{\partial x}$ and $\frac{\partial F}{\partial \theta}$ exist. However, we do not require those gradients to be implemented by users; they can be computed with automatic differentiation in ADCME.
+2. The forward model must be a _white-box_ and implemented with ADCME. ADCME is not for inverse modeling of black-box models. 
 
-This conceptually simple approach can solve various types of inverse problems: either $x$, $y$ are stochastic or deterministic and the unknown $\theta$ can  be a value, function and even functionals. As an example, assume the forward model is Poisson equation $\nabla \cdot (\theta\nabla y(\mathbf{x})) = 0$ with appropriate boundary condition ($x$), $y(\mathbf{x})$ is the output ($\mathbf{x}$ is the coordinate, not $x$) , the following is a list of potential classes of problems solvable with ADCME
+One iterative process for estimating $\theta$ works as follows: we start from an initial guess $\theta = \hat \theta_0$, assuming it is correct, and compute the predicted output $\hat y_0$ with the forward modeling codes implemented in ADCME. Then, we measure the discrepancy between the predicted output $\hat y_0$ and $\hat y$ and apply the regular gradient-based optimization method to find the optimal $\theta$ that minimizes this discrepancy. The gradients are computed with automatic differentiation, adjoint state methods or both. 
 
-
+This conceptually simple approach can solve various types of inverse problems: either $x$, $y$ are stochastic or deterministic and the unknown $\theta$ can  be a value, function and even functionals. As an example, assume the forward model is Poisson equation $\nabla \cdot (\theta\nabla y(\mathbf{x})) = 0$ with appropriate boundary condition ($x$), $y(\mathbf{x})$ is the output ($\mathbf{x}$ is the coordinate, not $x$) , the following is four kinds of potential classes of problems solvable with ADCME
 
 | **Inverse problem**                          | **Problem type**     | **Approach**                    |             **Reference**             |
 | ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
@@ -109,10 +110,10 @@ In Tensorflow, such an operator can be implemented as (assuming `A` is )
 import tensorflow as tf
 @tf.custom_gradient
 def F(x):
-​      u = tf.linalg.matvec(A, x)
-​      def grad(dy):
-​          return tf.linalg.matvec(tf.transpose(A), dy)
-​      return u, grad
+      u = tf.linalg.matvec(A, x)
+      def grad(dy):
+          return tf.linalg.matvec(tf.transpose(A), dy)
+      return u, grad
 ```
 
 
