@@ -15,14 +15,18 @@ One iterative process for estimating $\theta$ works as follows: we start from an
 
 This conceptually simple approach can solve various types of inverse problems: either $x$, $y$ are stochastic or deterministic and the unknown $\theta$ can  be a value, function and even functionals. As an example, assume the forward model is Poisson equation $\nabla \cdot (\theta\nabla y(\mathbf{x})) = 0$ with appropriate boundary condition ($x$), $y(\mathbf{x})$ is the output ($\mathbf{x}$ is the coordinate, not $x$) , the following is four kinds of potential classes of problems solvable with ADCME
 
-| **Inverse problem**                          | **Problem type**     | **Approach**                    |             **Reference**             |
+| **Inverse problem**                      | **Problem type**     | **Approach**                    |             **Reference**             |
 | ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
 | $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1]()                 |
-| $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function             | DNN                             | [2](https://arxiv.org/abs/1901.07758) |
-| $\nabla\cdot(f(u)\nabla u) = 0$          | Functional           | DNN Learning from indirect data | [3](https://arxiv.org/abs/1905.12530) |
+| $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function*            | DNN                             | [2](https://arxiv.org/abs/1901.07758) |
+| $\nabla\cdot(f(u)\nabla u) = 0$          | Functional**         | DNN Learning from indirect data | [3](https://arxiv.org/abs/1905.12530) |
 | $\nabla\cdot(\varpi\nabla u) = 0$        | Stochastic Inversion | Adversarial Learning with GAN   | [4](https://arxiv.org/abs/1910.06936) |
 
+Note:
 
+*Arguments of $f$ are independent of $u$
+
+**At least one arguments of $f$ is dependent on $u$. 
 
 
 

@@ -60,7 +60,6 @@ if Sys.islinux()
         tflib = joinpath(Conda.LIBDIR, "python3.7/site-packages/tensorflow/libtensorflow_framework.so")
     end
     verinfo = read(`readelf -p .comment $tflib`, String)
-    Conda.clean()
     if occursin("5.4", verinfo)
         if !("gcc-5" in Conda._installed_packages())
             try
@@ -91,4 +90,10 @@ $verinfo
     rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
     @info "Making a symbolic link for libgcc"
     symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
+end
+
+try
+    Conda.clean()
+catch
+    @warn "Conda.clean() failed"
 end

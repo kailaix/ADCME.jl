@@ -317,9 +317,6 @@ op = load_system_op("OTNetwork")
 
 
 
-### A List of Official Custom Operators
+### Useful References
 
-| Name      | Description                               | URL                                       |
-| --------- | ----------------------------------------- | ----------------------------------------- |
-| OTNetwork | Network Flow Solver for Optimal Transport | https://github.com/ADCMEMarket/OTNetwork/ |
-
+1. [cuBLAS Custom Operators](https://on-demand.gputechconf.com/ai-conference-2019/T1-3_Minseok%20Lee_Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)
