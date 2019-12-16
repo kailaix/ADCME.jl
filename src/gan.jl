@@ -34,7 +34,7 @@ end
 @doc raw"""
     GAN(dat::PyObject, 
         generator::Function, 
-        gan::GAN,
+        discriminator::Function,
         loss::Union{String, Function, Missing}=missing; 
         latent_dim::Union{Missing, Int64}=missing, 
         batch_size::Union{Missing, Int64}=missing)
@@ -45,7 +45,7 @@ Creates a GAN instance.
 - `generator```:\mathbb{R}^{d'} \rightarrow \mathbb{R}^d`` is the generator function, ``d'`` is the hidden dimension.
 - `discriminator```:\mathbb{R}^{d} \rightarrow \mathbb{R}`` is the discriminator function. 
 - `loss` is the loss function. See [`klgan`](@ref), [`rklgan`](@ref), [`wgan`](@ref), [`lsgan`](@ref) for examples.
-- `latent_dim` (default=``d``) is the latent dimension.
+- `latent_dim` (default=``d``, the same as output dimension) is the latent dimension.
 - `batch_size` (default=32) is the batch size in training.
 """
 function GAN(dat::Union{Array,PyObject}, generator::Function, discriminator::Function,
@@ -56,7 +56,7 @@ function GAN(dat::Union{Array,PyObject}, generator::Function, discriminator::Fun
     if ismissing(latent_dim); latent_dim=dim; end
     if ismissing(batch_size); batch_size=32; end
     gan = GAN(latent_dim, batch_size, dim, dat, generator, discriminator, loss, missing, missing, missing, 
-        missing, placeholder(true, shape=[]), missing, missing, missing, randstring(), missing, missing)
+        missing, placeholder(true), missing, missing, missing, randstring(), missing, missing)
     build!(gan)
     gan
 end
@@ -157,8 +157,8 @@ function build!(gan::GAN)
     variable_scope("discriminator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
         gan.d_loss, gan.g_loss = gan.loss(gan)
     end
-    gan.d_vars = Array{PyObject}(get_collection("discriminator_$(gan.ganid)"))
-    gan.g_vars = Array{PyObject}(get_collection("generator_$(gan.ganid)"))
+    gan.d_vars = Array{PyObject}(tf.get_collection(TRAINABLE_VARIABLES, scope="discriminator_$(gan.ganid)"))
+    gan.g_vars = Array{PyObject}(tf.get_collection(TRAINABLE_VARIABLES, scope="generator_$(gan.ganid)"))
     gan.update = Array{PyCall.PyObject}(get_collection(UPDATE_OPS))
     gan
 end 
@@ -175,7 +175,7 @@ function sample(gan::GAN, n::Int64)
     variable_scope("generator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
         out = gan.generator(noise, gan)
     end
-    gan.is_training = placeholder(true, shape=[])
+    gan.is_training = placeholder(true)
     out
 end
 
