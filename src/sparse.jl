@@ -5,7 +5,7 @@ export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse, acc
 mutable struct SparseTensor
     o::PyObject
     _diag::Bool
-    function SparseTensor(o::PyObject, _diag::Union{Missing,Bool}=missing)
+    function SparseTensor(o::PyObject, _diag::Bool=false)
         new(o, _diag)
     end
 end
@@ -80,6 +80,9 @@ end
 
 """
     SparseTensor(A::SparseMatrixCSC)
+    SparseTensor(A::Array{Float64, 2})
+
+Creates a `SparseTensor` from numerical arrays. 
 """
 function SparseTensor(A::SparseMatrixCSC)
     rows = rowvals(A)
@@ -94,6 +97,10 @@ function SparseTensor(A::SparseMatrixCSC)
         end
     end
     SparseTensor(rows, cols, vals, m, n; is_diag=isdiag(A))
+end
+
+function SparseTensor(A::Array{Float64, 2})
+    SparseTensor(sparse(A))
 end
 
 function Base.:show(io::IO, s::SparseTensor)
@@ -179,6 +186,7 @@ function Base.:*(o::Real, s::SparseTensor)
 end
 
 Base.:*(s::SparseTensor, o::Real) = o*s
+Base.:/(s::SparseTensor, o::Real) = (1/o)*s
 
 Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]), false)
 Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]), false)
@@ -416,4 +424,38 @@ function Base.:sum(s::SparseTensor; dims::Union{Integer, Missing}=missing)
     else
         tf.sparse.reduce_sum(s.o, axis=dims-1)
     end
+end
+
+
+@doc raw"""
+    spdiag(m::Integer, pair::Pair...)
+
+Constructs a square $m\times m$ [`SparseTensor`](@ref) from pairs of the form 
+```
+offset => array 
+```
+
+"""
+function spdiag(n::Integer, pair::Pair...)
+    ii = Array{Int64}[]
+    jj = Array{Int64}[]
+    vv = PyObject[]
+    for (k, v) in pair 
+        @assert -(n-1)<=k<=n-1
+        v = convert_to_tensor(v, dtype=Float64)
+        if k>=0
+            push!(ii, collect(1:n-k))
+            push!(jj, collect(k+1:n))
+            push!(vv, v)
+        else
+            push!(ii, collect(-k+1:n))
+            push!(jj, collect(1:n+k))
+            push!(vv, v)
+        end
+    end
+    ii = vcat(ii...)
+    jj = vcat(jj...)
+    vv = vcat(vv...)
+    indices = [ii jj] .- 1
+    SparseTensor(tf.sparse.reorder(tf.SparseTensor(indices, vv, (n, n))))
 end

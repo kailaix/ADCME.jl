@@ -202,3 +202,56 @@ end
     @test run(sess, dense_to_sparse((B))) ≈ A
     @test run(sess, dense_to_sparse(constant(B))) ≈ A
 end
+
+@testset "spdiagm" begin
+    a = rand(10)
+    b = rand(9)
+    A = spdiag(
+        10, 
+        0=>a, 
+        -1=>b
+    )
+    B = diagm(
+        0=>a, 
+        -1=>b
+    )
+    @test Array(run(sess, A)) ≈ B
+
+    b = rand(7)
+    A = spdiag(
+        10,  
+        0=>a, 
+        -3=>b
+    )
+    B = diagm(
+        0=>a, 
+        -3=>b
+    )
+    @test Array(run(sess, A)) ≈ B
+
+    b = rand(7)
+    A = spdiag(
+        10,  
+        0=>a, 
+        -3=>b,
+        3=>4b
+    )
+    B = diagm(
+        0=>a, 
+        -3=>b,
+        3=>4b
+    )
+    @test Array(run(sess, A)) ≈ B
+
+    b = rand(7)
+    A = spdiag(
+        10,  
+        0=>a, 
+        -3=>b
+    )
+    B = diagm(
+        0=>a, 
+        -3=>b
+    )
+    @test Array(run(sess, A)) ≈ B
+end

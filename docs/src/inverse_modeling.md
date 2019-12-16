@@ -22,6 +22,8 @@ This conceptually simple approach can solve various types of inverse problems: e
 | $\nabla\cdot(f(u)\nabla u) = 0$          | Functional**         | DNN Learning from indirect data | [3](https://arxiv.org/abs/1905.12530) |
 | $\nabla\cdot(\varpi\nabla u) = 0$        | Stochastic Inversion | Adversarial Learning with GAN   | [4](https://arxiv.org/abs/1910.06936) |
 
+To see how those problems can be solved with ADCME in practice, see this [tutorial](inverse_impl.md). 
+
 Note:
 
 *Arguments of $f$ are independent of $u$
@@ -29,18 +31,7 @@ Note:
 **At least one arguments of $f$ is dependent on $u$. 
 
 
-
-
-
-
-
-
-
-
-
 ![](./assets/im.png)
-
-
 
 ## Automatic Differentiation
 
