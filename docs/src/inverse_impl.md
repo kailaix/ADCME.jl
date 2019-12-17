@@ -2,7 +2,7 @@
 
 
 
-In this section, we show how to solve the four types of inverse problems identified in [Inverse Modeling](). For simplicity, let the forward model be a 1D Poisson equation
+In this section, we show how to solve the four types of inverse problems identified in [Inverse Modeling](https://kailaix.github.io/ADCME.jl/dev/inverse_modeling/). For simplicity, let the forward model be a 1D Poisson equation
 
 
 
@@ -11,6 +11,13 @@ $\begin{aligned}-\nabla (X\nabla u(x)) &= \varphi(x) & x\in (0,1)\\ u(0)=u(1) &=
 
 
 Here $X$ is the unknown  which may be one of the four forms: parameter, function, functional or random variable. 
+
+| **Inverse problem**                      | **Problem type**     | **Approach**                    |             **Reference**             |
+| ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
+| $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1](http://arxiv.org/abs/1912.07552) [2](http://arxiv.org/abs/1912.07547)                 |
+| $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function            | DNN                             | [3](https://arxiv.org/abs/1901.07758) |
+| $\nabla\cdot(f(u)\nabla u) = 0$          | Functional         | DNN Learning from indirect data | [4](https://arxiv.org/abs/1905.12530) |
+| $\nabla\cdot(\varpi\nabla u) = 0$        | Stochastic Inversion | Adversarial Learning with GAN   | [5](https://arxiv.org/abs/1910.06936) |
 
 ## Parameter Inverse Problem
 
@@ -41,18 +48,14 @@ BFGS!(sess, loss)
 After around 7 iterations, the estimated $X_0$ converges to 1.0000000016917243. 
 
 !!! info 
-
-​	We can actually solve the linear system `A\φ` more efficiently by using [`SparseTensor`](@ref). In this case, simply substitute 
-
-```Julia
-A = X0 * diagm(0=>2/h^2*ones(n-1), 1=>-1/h^2*ones(n-2), -1=>-1/h^2*ones(n-2))
-```
-
-with 
-
-```julia
-A = X0 * SparseTensor(diagm(0=>2/h^2*ones(n-1), 1=>-1/h^2*ones(n-2), -1=>-1/h^2*ones(n-2)))
-```
+    We can actually solve the linear system `A\φ` more efficiently by using [`SparseTensor`](@ref). In this case, simply substitute 
+    ```Julia
+    A = X0 * diagm(0=>2/h^2*ones(n-1), 1=>-1/h^2*ones(n-2), -1=>-1/h^2*ones(n-2))
+    ```
+    with 
+    ```julia
+    A = X0 * SparseTensor(diagm(0=>2/h^2*ones(n-1), 1=>-1/h^2*ones(n-2), -1=>-1/h^2*ones(n-2)))
+    ```
 
 
 
@@ -146,13 +149,13 @@ The corresponding $\varphi$ is
 ```
 
 To solve the Poisson equation, we use the standard Newton-Raphson scheme (see XXX), in which case, we need to compute the residual
-$$
+```math
 R_i = X'(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} + \varphi(x_i)
-$$
+```
 and the corresponding Jacobian
-$$
+```math
 \frac{\partial R_i}{\partial u_j} = \left\{ \begin{matrix}  \frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i-1\\ X''(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X'(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \frac{2}{h^2}X(u_i) & j=i \\ -\frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i+1\\ 0 & \mbox{otherwise}  \end{matrix} \right.
-$$
+```
 Just like the function inverse problem, we also use a neural network to approximate $X(u)$; the difference is that the input of the neural network is $u$ instead of $x$. It is convenient to compute $X'(u)$ with automatic differentiation. If we had used piecewise linear functions, it is only possible to compute the gradients in the weak sense; but this is not a problem for neural network as long as we use smooth activation function such as $\tanh$. 
 
 ADCME also prepares a built-in Newton-Raphson solver [`newton_raphson`](@ref) for you. To use this function, you only need to provide the residual and Jacobian 
@@ -228,8 +231,52 @@ We first propose a candidate neural network that transforms a sample from $\math
 
 - Wasserstein distance (from optimal transport)
 - KL-divergence, JS-divergence, etc. 
+- Discriminator neural networks (from generative adversarial nets)
 
-* Discriminator neural networks (from generative adversarial nets)
+For example, we can consider the first approach, and invoke [`sinkhorn`](@ref) provided by ADCME
 
-For example, we can implement a discriminator neural network approach to this problem. 
+```julia
+using ADCME
+using Distributions
 
+# we add a mixture Gaussian noise to the observation
+m = MixtureModel(Normal[
+   Normal(0.3, 0.1),
+   Normal(0.0, 0.1)], [0.5, 0.5])
+
+function solver(a)
+  n = 100
+  h = 1/n
+  A = a[1] * diagm(0=>2/h^2*ones(n-1), 1=>-1/h^2*ones(n-2), -1=>-1/h^2*ones(n-2)) 
+  φ = 2.0*ones(n-1) # right hand side
+  u = A\φ
+  u[50]
+end
+
+batch_size = 64
+x = placeholder(Float64, shape=[batch_size,10])
+z = placeholder(Float64, shape=[batch_size,1])
+dat = z + 0.25
+fdat  = reshape(map(solver, ae(x, [20,20,20,1])+1.0), batch_size, 1)
+loss = empirical_sinkhorn(fdat, dat, dist=(x,y)->dist(x,y,2), method="lp")
+opt = AdamOptimizer(0.01, beta1=0.5).minimize(loss)
+
+sess = Session(); init(sess)
+for i = 1:100000
+  run(sess, opt, feed_dict=Dict(
+        x=>randn(batch_size, 10),
+        z=>rand(m, batch_size,1)
+      ))
+end
+```
+
+| Loss Function            | Iteration 5000                   | Iteration 15000                    | Iteration 25000                    |
+| ------------------------ | -------------------------------- | ---------------------------------- | ---------------------------------- |
+| ![loss](assets/loss.png) | ![test5000](assets/test5000.png) | ![test15000](assets/test15000.png) | ![test25000](assets/test25000.png) |
+
+
+
+
+
+
+

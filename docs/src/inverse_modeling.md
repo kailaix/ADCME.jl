@@ -17,18 +17,17 @@ This conceptually simple approach can solve various types of inverse problems: e
 
 | **Inverse problem**                      | **Problem type**     | **Approach**                    |             **Reference**             |
 | ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
-| $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1]()                 |
+| $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1](http://arxiv.org/abs/1912.07552) [2](http://arxiv.org/abs/1912.07547)                 |
 | $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function*            | DNN                             | [2](https://arxiv.org/abs/1901.07758) |
 | $\nabla\cdot(f(u)\nabla u) = 0$          | Functional**         | DNN Learning from indirect data | [3](https://arxiv.org/abs/1905.12530) |
 | $\nabla\cdot(\varpi\nabla u) = 0$        | Stochastic Inversion | Adversarial Learning with GAN   | [4](https://arxiv.org/abs/1910.06936) |
 
 To see how those problems can be solved with ADCME in practice, see this [tutorial](inverse_impl.md). 
 
-Note:
-
-*Arguments of $f$ are independent of $u$
-
-**At least one arguments of $f$ is dependent on $u$. 
+!!! Notes
+    *Arguments of $f$ are independent of $u$
+    
+    **At least one arguments of $f$ is dependent on $u$. 
 
 
 ![](./assets/im.png)
