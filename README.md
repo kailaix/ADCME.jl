@@ -122,20 +122,15 @@ For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
 # Research Work
 
-Click the images for short descriptions!
-
-[1] Kailai Xu, and Eric Darve. "[Adversarial Numerical Analysis for Inverse Problems](https://arxiv.org/abs/1910.06936)"
-
-[![](docs/src/assets/ana.png)](https://kailaix.github.io/ADCME.jl/dev/apps_ana/)
-
-[2] Kailai Xu and Eric Darve. "[Calibrating Multivariate Lévy Processes with Neural Networks](https://arxiv.org/abs/1812.08883)"
-
-[![](docs/src/assets/levy.png)](https://kailaix.github.io/ADCME.jl/dev/apps_levy/)
 
 
-[3] Kailai Xu (**co-first author**), Huang, Daniel Z. (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
-
-[![image-20191031200808697](docs/src/assets/law.png)](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/)
+| <img src="docs/src/assets/ana.png" width="400">              | <img src="docs/src/assets/levy.png" width="400">            |
+| ------------------------------------------------------------ | ----------------------------------------------------------- |
+| [Paper](https://arxiv.org/abs/1910.06936) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_ana/) | [Paper](https://arxiv.org/abs/1812.08883) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
+| <img src="docs/src/assets/law.png" width="400">              | <img src="docs/src/assets/diagram.png" width="400">         |
+| [Paper](https://arxiv.org/abs/1905.12530) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/)   | [Paper](https://arxiv.org/abs/1912.07552) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_ad/)  |
+| <img src="docs/src/assets/hidden.png" width="400">           |                                                             |
+| [Paper](https://arxiv.org/abs/1912.07547) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_ad/)   |                                                             |
 
 
 
