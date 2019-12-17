@@ -21,4 +21,4 @@ This view of numerical simulation enables us to develope very sophisticated tool
 
 ![](assets/diagram.png)
 
-We call this technique **intelligent automatic differentiation**, since we can design our own operators for performance and those operators are submodules that can be flexibly replaced and reused. For more details, see [FwiFlow.jl](https://github.com/lidongzh/FwiFlow.jl), a package focused on elastic full waveform inversion for subsurface flow problems with intelligent automatic differentiation
+We call this technique **intelligent automatic differentiation**, since we can design our own operators for performance and those operators are submodules that can be flexibly replaced and reused. For more details, see [FwiFlow.jl](https://github.com/lidongzh/FwiFlow.jl), a package focused on elastic full waveform inversion for subsurface flow problems.
