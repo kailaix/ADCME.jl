@@ -124,13 +124,13 @@ For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
 
 
-| <img src="docs/src/assets/ana.png" width="400">              | <img src="docs/src/assets/levy.png" width="400">            |
-| ------------------------------------------------------------ | ----------------------------------------------------------- |
-| [Paper](https://arxiv.org/abs/1910.06936) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_ana/) | [Paper](https://arxiv.org/abs/1812.08883) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
-| <img src="docs/src/assets/law.png" width="400">              | <img src="docs/src/assets/diagram.png" width="400">         |
-| [Paper](https://arxiv.org/abs/1905.12530) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/)   | [Paper](https://arxiv.org/abs/1912.07552) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_ad/)  |
-| <img src="docs/src/assets/hidden.png" width="400">           |                                                             |
-| [Paper](https://arxiv.org/abs/1912.07547) [Documentation](https://kailaix.github.io/ADCME.jl/dev/apps_ad/)   |                                                             |
+| <img src="docs/src/assets/ana.png" width="400">              | <img src="docs/src/assets/levy.png" width="400">             |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Stochastic Inversion with Adversarial Training [[Paper]](https://arxiv.org/abs/1910.06936) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ana/) | Calibrating Lévy Processes [[Paper]](https://arxiv.org/abs/1812.08883) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
+| <img src="docs/src/assets/law.png" width="400">              | <img src="docs/src/assets/diagram.png" width="400">          |
+| Learning Constitutive Relations [[Paper]](https://arxiv.org/abs/1905.12530) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/) | Time-lapse FWI [[Paper]](https://arxiv.org/abs/1912.07552) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |
+| <img src="docs/src/assets/hidden.png" width="400">           |                                                              |
+| Intelligent Automatic Differentiation [[Paper]](https://arxiv.org/abs/1912.07547) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |                                                              |
 
 
 
