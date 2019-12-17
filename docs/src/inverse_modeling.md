@@ -24,9 +24,10 @@ This conceptually simple approach can solve various types of inverse problems: e
 
 To see how those problems can be solved with ADCME in practice, see this [tutorial](inverse_impl.md). 
 
-!!! Notes
-    * Arguments of $f$ are independent of $u$
-    ** At least one arguments of $f$ is dependent on $u$. 
+!!! info
+    (*) Arguments of $f$ are independent of $u$
+    
+    (**) At least one arguments of $f$ is dependent on $u$. 
 
 
 ![](./assets/im.png)

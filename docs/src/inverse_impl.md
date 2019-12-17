@@ -154,7 +154,9 @@ R_i = X'(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2}
 ```
 and the corresponding Jacobian
 
-$\frac{\partial R_i}{\partial u_j} = \left\{ \begin{matrix}  \frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i-1\\ X''(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X'(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \frac{2}{h^2}X(u_i) & j=i \\ -\frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i+1\\ 0 & \mbox{otherwise}  \end{matrix} \right.$
+```math
+\frac{\partial R_i}{\partial u_j} = \left\{ \begin{matrix}  \frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i-1\\ X''(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X'(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \frac{2}{h^2}X(u_i) & j=i \\ -\frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i+1\\ 0 & |j-i|>1  \end{matrix} \right.
+```
 
 Just like the function inverse problem, we also use a neural network to approximate $X(u)$; the difference is that the input of the neural network is $u$ instead of $x$. It is convenient to compute $X'(u)$ with automatic differentiation. If we had used piecewise linear functions, it is only possible to compute the gradients in the weak sense; but this is not a problem for neural network as long as we use smooth activation function such as $\tanh$. 
 
