@@ -9,7 +9,7 @@ pages = Any[
     "Manual" => ["inverse_impl.md", "array.md", "sparse.md", "newton_raphson.md", "parallel.md", "ode.md"],
     "Resources" => ["customop.md", "while_loop.md",
             "julia_customop.md", "pytorchnn.md", "extra.md", "ot.md", "resource_manager.md"],
-    "Applications" => ["apps_ana.md", "apps_levy.md", "apps_constitutive_law.md"],
+    "Applications" => ["apps_ana.md", "apps_levy.md", "apps_constitutive_law.md", "apps_ad.md"],
     "api.md"
 ],
 authors = "Kailai Xu")
