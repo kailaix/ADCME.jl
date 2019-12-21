@@ -151,7 +151,7 @@ def ForwardOutputShape():
     for i in range(len(outputs)):
         item = outputs[i]
         if item[0]=="string":
-            continue
+            dims = "{}"
         if item[3]==None:
             dims = "{}"
         else:
@@ -166,19 +166,17 @@ def ForwardOutput():
     s = ""
     for i in range(len(outputs)):
         item = outputs[i]
-        if item[0]=="string":
-            continue
         s += ForwardOutput_T.substitute({"name": item[1], "id": i})
     return s
 
 ForwardGetData_T1 = Template("""
     auto ${name}_tensor = ${name}.flat<${tp}>().data();""")
 ForwardGetData_T12 = Template("""
-    string ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
+    auto ${name}_tensor = ${name}.flat<${tp}>().data();""")
 ForwardGetData_T2 = Template("""
     auto ${name}_tensor = ${name}->flat<${tp}>().data();""")
 ForwardGetData_T3 = Template("""
-    string ${name}_tensor = string(*${name}->flat<${tp}>().data());""")
+    auto ${name}_tensor = ${name}->flat<${tp}>().data();""")
 def ForwardGetData():
     s = ""
     for i in range(len(inputs)):
@@ -354,6 +352,8 @@ def OUTPUT():
 
 filename = sys.argv[1]
 dirname = sys.argv[2]
+simple_or_not = sys.argv[3]
+
 if filename not in os.listdir("."):
     print("ERROR: file {} does not exist".format(filename))
     exit(0)
@@ -411,7 +411,8 @@ d = {"OperatorName": op,
     "AttributesParse2": AttributesParse2(),
     "GetAttr": GetAttr()}
 
-with open("{}/custom_op.template".format(dirname),"r") as fp:
+simple_or_not = "" if simple_or_not=="false" else "_simple"
+with open("{}/custom_op{}.template".format(dirname, simple_or_not),"r") as fp:
     cnt = fp.read()
     s = Template(cnt)
     cpp = s.substitute(d)

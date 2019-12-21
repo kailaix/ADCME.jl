@@ -59,7 +59,8 @@ I,
 svd,
 vector,
 pmap,
-std
+std,
+lgamma
 
 
 function PyCall.:*(o1::PyObject, o2::PyObject)
@@ -736,4 +737,8 @@ function Base.:repeat(o::PyObject, i::Int64)
     else
         error("ADCME: rank of `o` must be 0, 1, 2")
     end
+end
+
+function lgamma(o::Union{T, PyObject}, args...;kwargs...) where T<:Real 
+    tf.math.lgamma(convert_to_tensor(o), args...;kwargs...)
 end

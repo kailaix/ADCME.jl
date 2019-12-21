@@ -221,18 +221,19 @@ function compile(s::String)
 end
 
 """
-    customop()
+    customop(simple::Bool=false)
 
-Create a new custom operator.
+Create a new custom operator. If `simple=true`, the custom operator only supports CPU and does not have gradients. 
 
-# example
+# Example
+
 ```julia-repl
 julia> customop() # create an editable `customop.txt` file
 [ Info: Edit custom_op.txt for custom operators
 julia> customop() # after editing `customop.txt`, call it again to generate interface files.
 ```
 """
-function customop()
+function customop(simple::Bool=false)
     # install_custom_op_dependency()
     py_dir = "$(@__DIR__)/../examples/custom_op/template"
     if !("custom_op.txt" in readdir("."))
@@ -241,7 +242,7 @@ function customop()
         return
     else
         python = PyCall.python
-        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir`)
+        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $simple`)
     end
 end
 
