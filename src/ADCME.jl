@@ -15,6 +15,7 @@ module ADCME
     using PyPlot
     using Conda
     import Optim
+    using SparseArrays
 
     tf = PyNULL()
     tfp = PyNULL()
@@ -100,7 +101,5 @@ julia> using Pkg; Pkg.build("PyCall")
     include("gan.jl")
     include("ot.jl")
     include("ode.jl")
-
-    # applications
-    include("apps/fem.jl")
 end
+
