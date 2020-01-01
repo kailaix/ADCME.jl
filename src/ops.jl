@@ -60,7 +60,9 @@ svd,
 vector,
 pmap,
 std,
-lgamma
+lgamma,
+topk,
+argsort
 
 
 function PyCall.:*(o1::PyObject, o2::PyObject)
@@ -741,4 +743,49 @@ end
 
 function lgamma(o::Union{T, PyObject}, args...;kwargs...) where T<:Real 
     tf.math.lgamma(convert_to_tensor(o), args...;kwargs...)
+end
+
+function Base.:sort(o::PyObject; 
+    rev::Bool=false, dims::Integer=-1, name::Union{Nothing,String}=nothing)
+    direction = rev == false ? "ASCENDING" : "DESCENDING"
+    axis = -1
+    if dims!=-1
+        axis = dims + 1
+    end
+    tf.compat.v1.sort(o, axis=axis, direction=direction, name = name)
+end
+
+"""
+    topk(o::PyObject, k::Union{PyObject,Integer}=1;
+        sorted::Bool=true, name::Union{Nothing,String}=nothing)
+
+Finds values and indices of the `k` largest entries for the last dimension.
+If `sorted=true` the resulting k elements will be sorted by the values in descending order.
+"""
+function topk(o::PyObject, k::Union{PyObject,Integer}=1;
+        sorted::Bool=true, name::Union{Nothing,String}=nothing)
+    k = convert_to_tensor(k, dtype=Int32)
+    tf.compat.v1.math.top_k(o, k, sorted=sorted, name = name)
+end
+
+"""
+    argsort(o::PyObject; 
+    stable::Bool = false, rev::Bool=false, dims::Integer=-1, name::Union{Nothing,String}=nothing)
+
+Returns the indices of a tensor that give its sorted order along an axis.
+"""
+function argsort(o::PyObject; 
+    stable::Bool = false, rev::Bool=false, dims::Integer=-1, name::Union{Nothing,String}=nothing)
+    direction = rev == false ? "ASCENDING" : "DESCENDING"
+    axis = -1
+    if dims!=-1
+        axis = dims + 1
+    end
+    tf.compat.v1.argsort(
+        o,
+        axis=axis,
+        direction=direction,
+        stable=stable,
+        name=name
+    ) + 1
 end
