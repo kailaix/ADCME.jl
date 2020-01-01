@@ -20,3 +20,4 @@ docs/src/assets/Slide/*.log
 docs/src/assets/Slide/*.nav
 docs/src/assets/Slide/*.out
 research/*
+*.ipynb
