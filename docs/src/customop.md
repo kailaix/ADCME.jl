@@ -1,17 +1,20 @@
 # Custom Operators
 
-## Basic Usage
+!!! note
+    As a reminder, there are many built-in custom operators in `deps/CustomOps` and they are good resources for understanding custom operators. The following is a step-by-step instruction on how custom operators are implemented. 
+
+## CPU Operators
 Custom operators are ways to add missing features in ADCME. Typically users do not have to worry about custom operators. However, in the following situation custom opreators might be very useful
 
 - Direct implementation in ADCME is inefficient (bottleneck). 
 - There are legacy codes users want to reuse, such as GPU-accelerated codes. 
 - Special acceleration techniques such as checkpointing scheme. 
 
-In the following, we present an example of implementing the sparse solver custom operator for $Ax=b$.
+In the following, we present an example of implementing a sparse solver for $Au=b$ as a custom operator.
 
-**Input**: row vector `ii`, column vector`jj` and value vector `vv` for the sparse coefficient matrix; row vector `kk` and value vector `ff`, matrix dimension $d$
+**Input**: row vector `ii`, column vector`jj` and value vector `vv` for the sparse coefficient matrix $A$; row vector `kk` and value vector `ff` for the right hand side $b$; the coefficient matrix dimension is $d\times d$
 
-**Output**: solution vector $u$
+**Output**: solution vector $u\in \mathbb{R}^d$
 
 
 **Step 1: Create and modify the template file**
@@ -37,14 +40,12 @@ double u(?) -> output
 
 The first line is the name of the operator. It should always be in the camel case. 
 
-The 2nd to the 7th lines specify the input arguments, the signature is `type`+`variable name`+`shape`. For the shape, `()` corresponds to a scalar, `(?)` to a vector and `(?,?)` to a matrix. 
+The 2nd to the 7th lines specify the input arguments, the signature is `type`+`variable name`+`shape`. For the shape, `()` corresponds to a scalar, `(?)` to a vector and `(?,?)` to a matrix. The variable names must be in *lower cases*. Additionally, the supported types are: `int32`, `int64`, `float`, `double`, `bool` and `string`. 
 
-The last line is the output, denoted by ` -> output`. Note there must be a space before and after `->`. 
-
-The following types are accepted: `int32`, `int64`, `double`, `float`, `string`, `bool`. The name of the arguments must all be in *lower cases*. 
+The last line is the output, denoted by ` -> output` (do not forget the whitespace before and after `->`).  
 
 
-**Step 2: Implement core codes**
+**Step 2: Implement the kernels**
 
 Run `customop()` again and there will be `CMakeLists.txt`, `gradtest.jl`, `MySparseSolver.cpp` appearing in the current directory. `MySparseSolver.cpp` is the main wrapper for the codes and `gradtest.jl` is used for testing the operator and its gradients. `CMakeLists.txt` is the file for compilation. 
 
@@ -97,11 +98,11 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 ```
 
 !!! note
-    In this implementation we have used `Eigen` library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable `SpMat A;`. This is not recommend if you want to run the code concurrently. 
+    In this implementation we have used `Eigen` library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable `SpMat A;`. This is not recommend if you want to run the code concurrently, since the variable `A` must be overwritten by another concurrent thread. 
 
 **Step 3: Compile**
 
-It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`. 
+It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`. The binary locations can be found via
 
 | Variable      | Description                           |
 | ------------- | ------------------------------------- |
@@ -116,10 +117,20 @@ It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`
 mkdir build
 cd build
 ```
-- Configure CMake files.
+- Configure `CMakeLists.txt` files.
+```bash
+cmake ..
+```
+or use a safer way 
 ```julia-repl
 julia> using ADCME
 julia> ADCME.cmake()
+```
+This step requires `Conda` and `PyCall` be properly installed. Try the following if necessary
+```julia
+julia> pkg
+pkg> add Conda
+pkg> add PyCall
 ```
 - Build. 
 ```bash
@@ -127,17 +138,19 @@ make -j
 ```
 
 !!! note
-    If the system `make` command is not compatible, try the pre-installed ADCME `make` located at `ADCME.MAKE`. 
+    If the system `make` or `cmake` command is not compatible, try the pre-installed ADCME `make` located at `ADCME.MAKE` or `cmake` located at `ADCME.CMAKE`. 
 
 Based on your operation system, you will create `libMySparseSolver.{so,dylib,dll}`. This will be the dynamic library to link in `TensorFlow`. 
 
 **Step 4: Test**
 
-Finally, you could use `gradtest.jl` to test the operator and its gradients (specify appropriate data in `gradtest.jl` first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. 
+Finally, you could use `gradtest.jl` to test the operator and its gradients (specify appropriate data in `gradtest.jl` first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. Note you need to modify this file first, e.g., creating data and modifying the function `scalar_function`. 
 
 ![custom_op](assets/custom_op.png)
 
-If the process fails, it is most probability the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. In the Linux system, you can check the compiler using 
+
+!!! info 
+    If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. Using the built-in `cmake` and `make` will alleviate this problem in most cases. In the Linux system, you can check the compiler using 
 ```bash
 readelf -p .comment libtensorflow_framework.so
 ```
@@ -148,13 +161,13 @@ Compatibility issues are frustrating. We hope you can submit an issue to ADCME d
 
 
 ### Dependencies
-To create a GPU custom operator, you must have NVCC compiler and CUDA toolkit installed on your system. To install NVCC, see [the installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html). To check you have successfully installed NVCC, type
+To create a GPU custom operator, you must have an NVCC compiler and a CUDA toolkit installed on your system. To install NVCC, see [the installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html). To check you have successfully installed NVCC, type
 ```bash
 which nvcc
 ```
-It should gives you the location of `nvcc` compiler.
+It should gives you the location of `nvcc` compiler. 
 
-For quick installation, you can try
+For quick installation of other dependencies, you can try
 ```julia
 using ADCME
 enable_gpu()
@@ -231,8 +244,9 @@ namespace tensorflow{
 context->eigen_device<GPUDevice>()
 ```
 
-## Mutable Inputs
+## Miscellany
 
+### Mutable Inputs
 Sometimes we want to modify tensors in place. In this case we can use mutable inputs. Mutable inputs must be [`Variable`](@ref) and it must be forwarded to one of the output. We consider implement a `my_assign` operator, with signature
 
 ```
@@ -283,7 +297,7 @@ We can see that the tensors depending on `u` are also aware of the assign operat
 
 
 
-## Third-party Plugins
+### Third-party Plugins
 
 ADCME also allows third-party custom operators hosted on Github. To build your own custom operators, implement your own custom operators in a Github repository. The root directory of the repository should have the following files
 
