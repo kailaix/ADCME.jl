@@ -348,12 +348,19 @@ def ARGS():
     return s
 
 def Convert_ARGS():
-    s = ""
+    s1 = []
+    s2 = []
     for item in inputs:
         if item[0]=="string":
             continue 
-        s += "\t{} = convert_to_tensor({}, dtype={})\n".format(item[1], item[1], jltype[item[0]])
-    if len(s)>0: s = s[:-1]
+        s1.append(item[1])
+        s2.append(jltype[item[0]])
+    s = ""
+    if len(s1)>0:
+        s1 = ",".join(s1)
+        s1_ = "[" + s1 + "]"
+        s2 = "["+",".join(s2)+"]"
+        s = "{} = convert_to_tensor({}, {})".format(s1, s1_, s2)
     return s     
 
 def OUTPUT():
