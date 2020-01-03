@@ -140,7 +140,7 @@ end
 
 sess = Session(); init(sess)
 train_set = run(sess, tf.image.resize_images(mnist[1].images, [64, 64]))
-train_set = (train_set - 0.5) / 0.5
+train_set = (train_set .- 0.5) / 0.5
 num_examples = size(train_set, 1)
 
 loss_d = []

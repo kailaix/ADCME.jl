@@ -5,6 +5,12 @@ using PyCall
 using PyPlot
 using DelimitedFiles
 
+if length(ARGS)>0
+    global reg = parse(Float64, ARGS[1])
+else
+    global reg = 100.0
+end
+
 tt = pyimport("tensorflow.examples.tutorials.mnist")
 
 function lrelu(x, th=0.2)
@@ -108,8 +114,8 @@ if !isdir("MNIST_data")
     download("http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz", "MNIST_data/t10k-images-idx3-ubyte.gz")
     download("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz", "MNIST_data/train-labels-idx1-ubyte.gz")
 end
-if !isdir("figures")
-    mkdir("figures")
+if !isdir("figures$reg")
+    mkdir("figures$reg")
 end
 
 mnist = tt.input_data.read_data_sets("MNIST_data/", one_hot=true, reshape=[])
@@ -123,8 +129,12 @@ G_z = generator(z, isTrain)
 
 vx = cast(Float64, reshape(x, -1, 64*64))
 vz = cast(Float64, reshape(G_z, -1, 64*64))
-reg = 100.0
-G_loss = empirical_sinkhorn(vx, vz, dist=(x,y)->dist(x,y,1), reg=reg)
+
+if reg≈0.0
+    global G_loss = empirical_sinkhorn(vx, vz, dist=(x,y)->dist(x,y,1), method="lp")    
+else
+    global G_loss = empirical_sinkhorn(vx, vz, dist=(x,y)->dist(x,y,1), reg=reg)
+end
 # error()
 
 
@@ -148,7 +158,7 @@ loss_g = []
 for epoch = 1:train_epoch
     for iter = 1:div(num_examples, batch_size)
         if iter%50==1
-            show_result("figures2/$(epoch)_$(iter)")
+            show_result("figures$reg/$(epoch)_$(iter)")
         end
 
         x_ = train_set[(iter-1)*batch_size+1:iter*batch_size,:,:,:]
