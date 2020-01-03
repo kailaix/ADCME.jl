@@ -94,7 +94,7 @@ let fixed_z_ = randn(25, 1, 1, 100)
         end
     
         label = "Epoch $filename"
-        fig.text(0.5, 0.04, label, ha="center")
+        # fig.text(0.5, 0.04, label, ha="center")
     
         savefig(filename)
         close("all")
