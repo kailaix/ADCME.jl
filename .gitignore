@@ -21,3 +21,7 @@ docs/src/assets/Slide/*.nav
 docs/src/assets/Slide/*.out
 research/*
 *.ipynb
+*.gz 
+deps/CustomOps/Laplace2D
+deps/CustomOps/OT
+deps/CustomOps/OTNetwork

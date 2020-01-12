@@ -100,6 +100,7 @@ julia> using Pkg; Pkg.build("PyCall")
     include("gan.jl")
     include("ot.jl")
     include("ode.jl")
+    include("misc.jl")
 
     # applications
     include("apps/fem.jl")
