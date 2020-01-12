@@ -7,7 +7,6 @@
     k = 1
     for i = 1:n
         for j = 1:n
-            global k 
             node[i+(j-1)*(n+1), :] = [(i-1)*h;(j-1)*h]
             node[i+1+(j-1)*(n+1), :] = [i*h;(j-1)*h]
             node[i+(j)*(n+1), :] = [(i-1)*h;(j)*h]
