@@ -157,7 +157,7 @@ end
 `BFGS!` is a simplified interface for BFGS optimizer. See also [`ScipyOptimizerInterface`](@ref).
 `callback` is a callback function with signature 
 ```julia
-callback(vs::Array{Float64}, iter::Int64, loss::Float64)
+callback(vs::Array, iter::Int64, loss::Float64)
 ```
 `vars` is an array consisting of tensors and its values will be the input to `vs`.
 
