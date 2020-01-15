@@ -2,8 +2,10 @@ push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
 PYTHON = joinpath(Conda.BINDIR, "python")
-ENV["PYTHON"]=PYTHON
-Pkg.add("PyCall"); Pkg.build("PyCall")
+if !haskey(Pkg.installed(), "PyCall")
+    ENV["PYTHON"]=PYTHON
+    Pkg.add("PyCall"); Pkg.build("PyCall")
+end
 using PyCall
 println("PyCall Python: $(PyCall.python)
 Conda Python: $(PYTHON)")
