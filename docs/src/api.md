@@ -71,11 +71,11 @@ Modules = [ADCME]
 Pages   = ["extra.jl"]
 ```
 
-## Datasets
+## Misc
 
 ```@autodocs
 Modules = [ADCME]
-Pages   = ["dataset.jl"]
+Pages   = ["misc.jl"]
 ```
 
 

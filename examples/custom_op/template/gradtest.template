@@ -5,19 +5,26 @@ using PyPlot
 using Random
 Random.seed!(233)
 
-${operator_name} = load_op_and_grad("./build/lib${OperatorName}","${operator_name}"${multiple})
+function ${operator_name}(${ARGS})
+    ${operator_name}_ = load_op_and_grad("./build/lib${OperatorName}","${operator_name}"${multiple})
+${CARGS}
+    ${operator_name}_(${ARGS})
+end
 
 # TODO: specify your input parameters
 u = ${operator_name}(${ARGS})
-sess = tf.Session()
-init(sess)
-run(sess, u)
+sess = Session(); init(sess)
+@show run(sess, u)
+
+# uncomment it for testing gradients
+error() 
 
 
 # TODO: change your test parameter to `m`
+#       in the case of `multiple=true`, you also need to specify which component you are testings
 # gradient check -- v
 function scalar_function(m)
-    return sum(${operator_name}(${ARGS}))
+    return sum(${operator_name}(${ARGS})^2)
 end
 
 # TODO: change `m_` and `v_` to appropriate values
@@ -39,8 +46,7 @@ for i = 1:5
     w_[i] = s_[i] - g_*sum(v_.*dy_)
 end
 
-sess = Session()
-init(sess)
+sess = Session(); init(sess)
 sval_ = run(sess, s_)
 wval_ = run(sess, w_)
 close("all")

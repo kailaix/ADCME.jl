@@ -6,6 +6,7 @@ import os
 pypath = os.path.dirname(os.path.realpath(__file__))
 
 supported_types = ["float", "double", "int32", "int64", "bool", "string"]
+jltype = {"float": "Float32", "double": "Float64", "int32": "Int32",  "int64": "Int64","bool": "Bool"}
 used_names = set([])
 
 def convert(name):
@@ -83,9 +84,9 @@ def AttributesDef():
 def ForwardInputOutput():
     s = ""
     for i in range(len(inputs)):
-        s += "{}.Input(\"{} : {}\")\n".format("" if i==0 else "  ", inputs[i][1], inputs[i][0])
+        s += ".Input(\"{} : {}\")\n".format(inputs[i][1], inputs[i][0])
     for i in range(len(outputs)):
-        s += "  .Output(\"{} : {}\"){}".format(outputs[i][1], outputs[i][0], "" if len(outputs)-1==i else "\n")
+        s += ".Output(\"{} : {}\"){}".format(outputs[i][1], outputs[i][0], "" if len(outputs)-1==i else "\n")
     return s
 
 SetShapeFn_T1 = Template("""
@@ -199,11 +200,11 @@ def BackwardInputOutput():
     for i in range(len(outputs)):
         s += ".Input(\"grad_{} : {}\")\n".format(outputs[i][1], outputs[i][0])
     for i in range(len(outputs)):
-        s += "{}.Input(\"{} : {}\")\n".format("  ", outputs[i][1], outputs[i][0])
+        s += ".Input(\"{} : {}\")\n".format(outputs[i][1], outputs[i][0])
     for i in range(len(inputs)):
-        s += "  .Input(\"{} : {}\")\n".format(inputs[i][1], inputs[i][0])
+        s += ".Input(\"{} : {}\")\n".format(inputs[i][1], inputs[i][0])
     for i in range(len(inputs)):
-        s += "  .Output(\"grad_{} : {}\"){}".format(inputs[i][1], inputs[i][0], ";" if i==len(inputs)-1 else "\n")
+        s += ".Output(\"grad_{} : {}\"){}".format(inputs[i][1], inputs[i][0], ";" if i==len(inputs)-1 else "\n")
     return s
 
 
@@ -346,9 +347,34 @@ def ARGS():
         s += ","+",".join(["{}={}".format(item[1],item[1]) for item in attributes])
     return s
 
+def Convert_ARGS():
+    s1 = []
+    s2 = []
+    for item in inputs:
+        if item[0]=="string":
+            continue 
+        s1.append(item[1])
+        s2.append(jltype[item[0]])
+    s = ""
+    if len(s1)>0:
+        s1 = ",".join(s1)
+        s1_ = "[" + s1 + "]"
+        s2 = "["+",".join(s2)+"]"
+        s = "{} = convert_to_tensor({}, {})".format(s1, s1_, s2)
+    return s     
+
 def OUTPUT():
     s = ",".join([item[1] for item in outputs])
     return s
+
+def has_string():
+    for i in inputs:
+        if i[0]=="string":
+            return True
+    for i in outputs:
+        if i[0]=="string":
+            return True
+    return False
 
 filename = sys.argv[1]
 dirname = sys.argv[2]
@@ -387,6 +413,10 @@ with open(filename, "r") as fp:
 # print(outputs)
 # print(ForwardInputOutput())
 # print(SetShapeFn())
+if has_string():
+    STRING_INC = "#include <string>\nusing std::string;"
+else:
+    STRING_INC = ""
 
 d = {"OperatorName": op,
     "SetShapeFn": SetShapeFn(),
@@ -409,7 +439,8 @@ d = {"OperatorName": op,
     "AttributesReg": AttributesReg(),
     "AttributesDef": AttributesDef(),
     "AttributesParse2": AttributesParse2(),
-    "GetAttr": GetAttr()}
+    "GetAttr": GetAttr(),
+    "STRING": STRING_INC}
 
 simple_or_not = "" if simple_or_not=="false" else "_simple"
 with open("{}/custom_op{}.template".format(dirname, simple_or_not),"r") as fp:
@@ -424,7 +455,8 @@ d = {"include": tf.sysconfig.get_compile_flags()[0][2:],
     "link": tf.sysconfig.get_link_flags()[0][2:],
     "ABI": tf.sysconfig.get_compile_flags()[1][-1],
     "OperatorName": op,
-    "HEADERS": os.path.join(pypath, "../headers")}
+    "HEADERS": os.path.join(pypath, "../headers"),
+    "USEGPU": "" if simple_or_not=="false" else "#"}
 with open("{}/CMakeLists.template".format(dirname),"r") as fp:
     print("CMakeLists.txt template: {}/CMakeLists.template".format(dirname))
     cnt = fp.read()
@@ -433,6 +465,7 @@ with open("{}/CMakeLists.template".format(dirname),"r") as fp:
 with open("CMakeLists.txt", "w") as fp:
     fp.write(cmake)
 
+
 import platform
 d = {"operator_name": convert(op),
     "dylibso": "dylib" if platform.system()=="Darwin" else "so",
@@ -440,7 +473,8 @@ d = {"operator_name": convert(op),
     "GetAttr": GetAttr(),
     "ARGS": ARGS(),
     "OUTPUT": OUTPUT(),
-    "FIRST_OUTPUT": outputs[0][1]}
+    "FIRST_OUTPUT": outputs[0][1],
+    "CARGS": Convert_ARGS()}
 
 if len(outputs)>1:
     d["multiple"] = ", multiple=true"

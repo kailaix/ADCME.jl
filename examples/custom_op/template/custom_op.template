@@ -3,10 +3,8 @@
 #include "tensorflow/core/platform/default/logging.h"
 #include "tensorflow/core/framework/shape_inference.h"
 #include<cmath>
-#include<string> 
-using std::string;
 #include "${OperatorName}.h"
-
+${STRING}
 #ifdef USE_GPU
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 namespace tensorflow{
@@ -105,6 +103,12 @@ public:
 };
 REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_CPU), ${OperatorName}GradOp);
 
+
+/***************************************************************************************
+**********************            GPU Operator            ******************************
+***************************************************************************************/
+
+
 #ifdef USE_GPU
 class ${OperatorName}OpGPU : public OpKernel {
 private:
@@ -141,8 +145,6 @@ ${AttributesParse2}
   }
 };
 REGISTER_KERNEL_BUILDER(Name("${OperatorName}").Device(DEVICE_GPU), ${OperatorName}OpGPU);
-
-
 
 class ${OperatorName}GradOpGPU : public OpKernel {
 private:

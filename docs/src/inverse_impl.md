@@ -14,10 +14,10 @@ Here $X$ is the unknown  which may be one of the four forms: parameter, function
 
 | **Inverse problem**                      | **Problem type**     | **Approach**                    |             **Reference**             |
 | ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
-| $\nabla\cdot(c\nabla u) = 0$             | Parameter            | Adjoint State Method            |                 [1](http://arxiv.org/abs/1912.07552) [2](http://arxiv.org/abs/1912.07547)                 |
-| $\nabla\cdot(f(\mathbf{x})\nabla u) = 0$ | Function            | DNN                             | [3](https://arxiv.org/abs/1901.07758) |
-| $\nabla\cdot(f(u)\nabla u) = 0$          | Functional         | DNN Learning from indirect data | [4](https://arxiv.org/abs/1905.12530) |
-| $\nabla\cdot(\varpi\nabla u) = 0$        | Stochastic Inversion | Adversarial Learning with GAN   | [5](https://arxiv.org/abs/1910.06936) |
+| $\nabla\cdot(c\nabla u) = \varphi(x)$             | Parameter            | Adjoint State Method            |                 [1](http://arxiv.org/abs/1912.07552) [2](http://arxiv.org/abs/1912.07547)                 |
+| $\nabla\cdot(f(x)\nabla u) = \varphi(\mathbf{x})$ | Function            | DNN                             | [3](https://arxiv.org/abs/1901.07758) |
+| $\nabla\cdot(f(u)\nabla u) = \varphi(x)$          | Functional         | DNN Learning from indirect data | [4](https://arxiv.org/abs/1905.12530) |
+| $\nabla\cdot(\varpi\nabla u) = \varphi(x)$        | Stochastic Inversion | Adversarial Learning with GAN   | [5](https://arxiv.org/abs/1910.06936) |
 
 ## Parameter Inverse Problem
 
@@ -61,9 +61,9 @@ After around 7 iterations, the estimated $X_0$ converges to 1.0000000016917243.
 
 ## Function Inverse Problem 
 
-When $X$ is a function that does not depend on $u$, i.e., a function of location $x$, we call this type of problem **function inverse problem**. A common approach to this type of problem is to approximate the unknown function $X$ with a parametrized form, such as piecewise linear functions, radial basis functions or Chebyshev polynomials; sometimes we can also discretize $X$ and subtitute $X$ by a vector of its values at the discrete grid nodes. 
+When $X$ is a function that does not depend on $u$, i.e., a function of location $x$, we call this type of problem **function inverse problem**. A common approach to this type of problem is to approximate the unknown function $X$ with a parametrized form, such as piecewise linear functions, radial basis functions or Chebyshev polynomials; sometimes we can also discretize $X$ and substitute $X$ by a vector of its values at the discrete grid nodes. 
 
-This tutorial is not aimed at comparison of different methods. Instead, we show how we can use neural networks to represent $X$ and train the neural network by coupling it with numerical schemes. The gradient calculation can be laborious with the traditional adjoint state methods but is trivial with automatic differentiation. 
+This tutorial is not aimed at the comparison of different methods. Instead, we show how we can use neural networks to represent $X$ and train the neural network by coupling it with numerical schemes. The gradient calculation can be laborious with the traditional adjoint state methods but is trivial with automatic differentiation. 
 
 Let's assume the true $X$ has the following form
 
@@ -91,7 +91,7 @@ To find the optional $w$, we solve the Poisson equation with $X(x)=\mathcal{N}(x
 
 Here $X_i = \mathcal{N}(x_i; w)$. 
 
-Assume we can observe the full solution $u(x)$, we can compared it with the solution $u(x;w)$, and minimize the loss function 
+Assume we can observe the full solution $u(x)$, we can compare it with the solution $u(x;w)$, and minimize the loss function 
 
 ```math 
 L(w) = \sum_{i=2}^{n-1} (u(x_i;w)-u(x_i))^2
@@ -148,7 +148,7 @@ The corresponding $\varphi$ is
 \frac{2 \left(100 x^{2} \left(x - 1\right)^{2} - 100 x \left(x - 1\right) \left(2 x - 1\right)^{2} + 1\right)}{\left(100 x^{2} \left(x - 1\right)^{2} + 1\right)^{2}}
 ```
 
-To solve the Poisson equation, we use the standard Newton-Raphson scheme (see XXX), in which case, we need to compute the residual
+To solve the Poisson equation, we use the standard Newton-Raphson scheme, in which case, we need to compute the residual
 ```math
 R_i = X'(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} + \varphi(x_i)
 ```
@@ -158,7 +158,7 @@ and the corresponding Jacobian
 \frac{\partial R_i}{\partial u_j} = \left\{ \begin{matrix}  \frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i-1\\ X''(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X'(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \frac{2}{h^2}X(u_i) & j=i \\ -\frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i+1\\ 0 & |j-i|>1  \end{matrix} \right.
 ```
 
-Just like the function inverse problem, we also use a neural network to approximate $X(u)$; the difference is that the input of the neural network is $u$ instead of $x$. It is convenient to compute $X'(u)$ with automatic differentiation. If we had used piecewise linear functions, it is only possible to compute the gradients in the weak sense; but this is not a problem for neural network as long as we use smooth activation function such as $\tanh$. 
+Just like the function inverse problem, we also use a neural network to approximate $X(u)$; the difference is that the input of the neural network is $u$ instead of $x$. It is convenient to compute $X'(u)$ with automatic differentiation. If we had used piecewise linear functions, it is only possible to compute the gradients in the weak sense; but this is not a problem for neural networks as long as we use smooth activation functions such as $\tanh$. 
 
 ADCME also prepares a built-in Newton-Raphson solver [`newton_raphson`](@ref) for you. To use this function, you only need to provide the residual and Jacobian 
 
@@ -187,7 +187,7 @@ Then we can solve the Poisson equation with
 newton_raphson(residual_and_jacobian, u0, θ)
 ```
 
-One caveat here is that the Newton-Raphson operator is a [nonlinear implicit operator](https://kailaix.github.io/ADCME.jl/dev/inverse_modeling/#Forward-Operator-Types-1) which does not fall into the types of operators where automatic differentiation applies. Instead, a [special procedure]() is needed. Luckily, ADCME provides an API that abstracts away this technical difficulty and users can call [`NonlinearConstrainedProblem`](@ref) directly to extract the gradients. 
+One caveat here is that the Newton-Raphson operator is a [nonlinear implicit operator](https://kailaix.github.io/ADCME.jl/dev/inverse_modeling/#Forward-Operator-Types-1) that does not fall into the types of operators where automatic differentiation applies. Instead, a [special procedure]() is needed. Luckily, ADCME provides an API that abstracts away this technical difficulty and users can call [`NonlinearConstrainedProblem`](@ref) directly to extract the gradients. 
 
 ```julia
 using ADCME 
@@ -216,10 +216,10 @@ Note in this case, we only have one set of observations and the inverse problem 
 
 ## Stochastic Inverse Problem 
 
-The final type of inverse problems is called **stochastic inverse problem**. In this problem, $X$ is a random variable with unknown distribution. Consequently, the solution $u$ will also be a random variable. For example, we may have the following settings in practice
+The final type of inverse problem is called **stochastic inverse problem**. In this problem, $X$ is a random variable with unknown distribution. Consequently, the solution $u$ will also be a random variable. For example, we may have the following settings in practice
 
-- The measurement of $u(0.5)$ may not be accurate. We might assume that $u(0.5) \sim \mathcal{N}(\hat u(0.5), \sigma^2)$ where $\hat u(0.5)$ is one observation and $\sigma$ is the prescribed standard deviation of the measurement. Thus, we want to estimate the distribution of $X$ which will produces the same distribution for $u(0.5)$. This type of problem falls under the umbrella of **uncertainty quantification**. 
-- The quantity $X$ itself is subject to randomness in nature, but its distribution may be positively/negatively skewed (e.g., stock price returns). We can measure several samples of $u(0.5)$ and want to estimate the distribution of $X$ based on the samples. This problem is also called **probablistic inverse problem**. 
+- The measurement of $u(0.5)$ may not be accurate. We might assume that $u(0.5) \sim \mathcal{N}(\hat u(0.5), \sigma^2)$ where $\hat u(0.5)$ is one observation and $\sigma$ is the prescribed standard deviation of the measurement. Thus, we want to estimate the distribution of $X$ which will produce the same distribution for $u(0.5)$. This type of problem falls under the umbrella of **uncertainty quantification**. 
+- The quantity $X$ itself is subject to randomness in nature, but its distribution may be positively/negatively skewed (e.g., the stock price returns). We can measure several samples of $u(0.5)$ and want to estimate the distribution of $X$ based on the samples. This problem is also called the **probabilistic inverse problem**. 
 
 We cannot simply minimize the distance between $u(0.5)$ and `u`   (which are random variables) as usual; instead, we need a metric to measure the discrepancy between two distributions--`u` and $u(0.5)$. The observables $u(0.5)$ may be given in multiple forms
 
@@ -227,9 +227,9 @@ We cannot simply minimize the distance between $u(0.5)$ and `u`   (which are ran
 - The unnormalized log-likelihood function. 
 - Discrete samples. 
 
-We consider the third type in this tutorial. The idea is to construct a sampler for $X$ with a neural network and find the optimal weights and biases by minimizing the discrepancy between actual observed samples  and produced ones. Here is how we train the neural network:
+We consider the third type in this tutorial. The idea is to construct a sampler for $X$ with a neural network and find the optimal weights and biases by minimizing the discrepancy between actually observed samples  and produced ones. Here is how we train the neural network:
 
-We first propose a candidate neural network that transforms a sample from $\mathcal{N}(0, I_d)$ to a sample from $X$. Then we randomly generate $K$ samples $\{z_i\}_{i=1}^K$ from $\mathcal{N}(0, I_d)$ and transform them to $\{X_i; w\}_{i=1}^K$. We solve the Poisson equation $K$ times to obtain $\{u(0.5;z_i, w)\}_{i=1}^K$. Meanwhile, we sample $K$ items from the observations (e.g., with the bootstrap method) $\{u_i(0.5)\}_{i=1}^K$. We can use a probability metric $D$ to measure the discrepancy between $\{u(0.5;z_i, w)\}_{i=1}^K$ and $\{u_i(0.5)\}_{i=1}^K$. There are many choice for $D$, such as (they are not necessarily non-overlapped)
+We first propose a candidate neural network that transforms a sample from $\mathcal{N}(0, I_d)$ to a sample from $X$. Then we randomly generate $K$ samples $\{z_i\}_{i=1}^K$ from $\mathcal{N}(0, I_d)$ and transform them to $\{X_i; w\}_{i=1}^K$. We solve the Poisson equation $K$ times to obtain $\{u(0.5;z_i, w)\}_{i=1}^K$. Meanwhile, we sample $K$ items from the observations (e.g., with the bootstrap method) $\{u_i(0.5)\}_{i=1}^K$. We can use a probability metric $D$ to measure the discrepancy between $\{u(0.5;z_i, w)\}_{i=1}^K$ and $\{u_i(0.5)\}_{i=1}^K$. There are many choices for $D$, such as (they are not necessarily non-overlapped)
 
 - Wasserstein distance (from optimal transport)
 - KL-divergence, JS-divergence, etc. 

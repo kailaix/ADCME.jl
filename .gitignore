@@ -20,4 +20,8 @@ docs/src/assets/Slide/*.log
 docs/src/assets/Slide/*.nav
 docs/src/assets/Slide/*.out
 research/*
-*.gz
+*.ipynb
+*.gz 
+deps/CustomOps/Laplace2D
+deps/CustomOps/OT
+deps/CustomOps/OTNetwork

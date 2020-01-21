@@ -88,7 +88,7 @@ let fixed_z_ = randn(25, 1, 1, 100)
         end
     
         label = "Epoch $filename"
-        fig.text(0.5, 0.04, label, ha="center")
+        # fig.text(0.5, 0.04, label, ha="center")
     
         savefig(filename)
         close("all")
@@ -140,7 +140,7 @@ end
 
 sess = Session(); init(sess)
 train_set = run(sess, tf.image.resize_images(mnist[1].images, [64, 64]))
-train_set = (train_set - 0.5) / 0.5
+train_set = (train_set .- 0.5) / 0.5
 num_examples = size(train_set, 1)
 
 loss_d = []
