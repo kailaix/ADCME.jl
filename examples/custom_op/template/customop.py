@@ -110,7 +110,7 @@ def SetShapeFn():
         elif item[2]==2:
             s+=SetShapeFn_T2.substitute({"name":item[1], "id":i, "dims":",".join([str(x) for x in item[3]]), "SVM":"Matrix"})
         elif item[2]>=3:
-            s+=SetShapeFn_T2.substitute({"name":item[1], "id":i, "dims":",".join([str(x) for x in item[3]]), "SVM":"MakeShape"})
+            s+=SetShapeFn_T2.substitute({"name":item[1], "id":i, "dims":"{" + ",".join([str(x) for x in item[3]]) + "}", "SVM":"MakeShape"})
     return s
 
 ForwardTensor_T = Template("""

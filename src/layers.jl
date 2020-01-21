@@ -56,11 +56,13 @@ Dropout(args...;kwargs...) = tf.keras.layers.Dropout(args...;kwargs...)
 
 
 """
-    ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default")
+    ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default";
+        activation::Union{Function,String} = "tanh")
 
 Creates a neural network with intermediate numbers of neurons `output_dims`.
 """
-function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope::String = "default")
+function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope::String = "default";
+        activation::Union{Function,String} = "tanh")
     if isa(x, Array)
         x = constant(x)
     end
@@ -72,7 +74,7 @@ function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope:
     net = x
     variable_scope(scope, reuse=AUTO_REUSE) do
         for i = 1:length(output_dims)-1
-            net = dense(net, output_dims[i], activation="tanh")
+            net = dense(net, output_dims[i], activation=activation)
         end
         net = dense(net, output_dims[end])
     end
