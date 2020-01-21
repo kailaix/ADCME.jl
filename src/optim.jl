@@ -157,7 +157,7 @@ end
 `BFGS!` is a simplified interface for BFGS optimizer. See also [`ScipyOptimizerInterface`](@ref).
 `callback` is a callback function with signature 
 ```julia
-callback(vs::Array{Float64}, iter::Int64, loss::Float64)
+callback(vs::Array, iter::Int64, loss::Float64)
 ```
 `vars` is an array consisting of tensors and its values will be the input to `vs`.
 
@@ -193,9 +193,9 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
         push!(out, __loss)
         __iter += 1
     end
-    opt = ScipyOptimizerInterface(loss, method="L-BFGS-B",options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12))
+    opt = ScipyOptimizerInterface(loss, method="L-BFGS-B",options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12); kwargs...)
     @info "Optimization starts..."
-    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...]; kwargs...)
+    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...])
     out
 end
 
