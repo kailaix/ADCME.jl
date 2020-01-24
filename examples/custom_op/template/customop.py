@@ -198,6 +198,8 @@ def ForwardGetData():
 def BackwardInputOutput():
     s = ""
     for i in range(len(outputs)):
+        if outputs[i][0] not in ['float', 'double']:
+            continue
         s += ".Input(\"grad_{} : {}\")\n".format(outputs[i][1], outputs[i][0])
     for i in range(len(outputs)):
         s += ".Input(\"{} : {}\")\n".format(outputs[i][1], outputs[i][0])
@@ -214,14 +216,17 @@ BackwardTensor_T2 = Template("""
     const Tensor& grad_${name} = context->input(${id});""")
 def BackwardTensor():
     s = ""
+    k = 0
     for i in range(len(outputs)):
-        s += BackwardTensor_T2.substitute({"name": outputs[i][1], "id":i})
+        if outputs[i][0] not in ['float', 'double']:
+            continue
+        s += BackwardTensor_T2.substitute({"name": outputs[i][1], "id":k}); k+=1
     for i in range(len(outputs)):
         item = outputs[i]
-        s += BackwardTensor_T1.substitute({"name": item[1], "id":i+len(outputs)})
+        s += BackwardTensor_T1.substitute({"name": item[1], "id":k}); k+= 1
     for i in range(len(inputs)):
         item = inputs[i]
-        s += BackwardTensor_T1.substitute({"name": item[1], "id":i+len(outputs)+len(outputs)})
+        s += BackwardTensor_T1.substitute({"name": item[1], "id":k}); k+=1
     return s
 
 BackwardTensorShape_T1 = Template("""
@@ -231,7 +236,7 @@ BackwardTensorShape_T2 = Template("""
 def BackwardTensorShape():
     s = ""
     for i in range(len(outputs)):
-        if outputs[i][0]=="string":
+        if outputs[i][0] not in ['float', 'double']:
             continue
         s += BackwardTensorShape_T2.substitute({"name": outputs[i][1]})
     for i in range(len(outputs)):
@@ -253,7 +258,7 @@ BackwardCheckShape_T2 = Template("""
 def BackwardCheckShape():
     s = ""
     for i in range(len(outputs)):
-        if outputs[i][0]=="string":
+        if outputs[i][0] not in ['float', 'double']:
             continue
         s += BackwardCheckShape_T2.substitute({"name": outputs[i][1], "dims": outputs[i][2]})
     for i in range(len(outputs)):
@@ -317,7 +322,7 @@ def BackwardGetData():
         else:
             s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
     for i in range(len(outputs)):
-        if item[0]=="string":
+        if item[0] not in ['float', 'double']:
             continue
         else:
             s += BackwardGetData_Input_T2.substitute({"name": outputs[i][1], "tp": outputs[i][0]})
