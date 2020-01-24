@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural Network in C++ · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><a class="tocitem" href="../inverse_modeling/">Inverse Modeling</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../inverse_impl/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../array/">Tensor Operations</a></li><li><a class="tocitem" href="../sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../customop/">Custom Operators</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../while_loop/">While Loops</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li class="is-active"><a class="tocitem" href>Neural Network in C++</a><ul class="internal"><li><a class="tocitem" href="#PyTorch-1"><span>PyTorch</span></a></li><li><a class="tocitem" href="#Adept-2-1"><span>Adept-2</span></a></li></ul></li><li><a class="tocitem" href="../extra/">Miscellaneous Tools</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Resources</a></li><li class="is-active"><a href>Neural Network in C++</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural Network in C++</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/pytorchnn.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-Network-in-C-1"><a class="docs-heading-anchor" href="#Neural-Network-in-C-1">Neural Network in C++</a><a class="docs-heading-anchor-permalink" href="#Neural-Network-in-C-1" title="Permalink"></a></h1><p>In this section, we describe how we can implement a neural network in C++. This is useful when we want to create a custom operator in ADCME and a neural network is embedded in the operator (we cannot simply &quot;pass&quot; the neural network to the C++ backend). </p><h2 id="PyTorch-1"><a class="docs-heading-anchor" href="#PyTorch-1">PyTorch</a><a class="docs-heading-anchor-permalink" href="#PyTorch-1" title="Permalink"></a></h2><p>The first method is by using PyTorch C++ APIs.</p><p>We first need to download <a href="https://pytorch.org/">LibTorch</a> source. Uncompress the library to your working directory. I have created a simple wrapper for some utility functions in ADCME. To use the wrapper, simply add <a href="https://github.com/kailaix/ADCME.jl/blob/master/examples/custom_op/headers/la.h">la.h</a> to your include directories.</p><p>To create a neural network, the following self-explained C++ code can be used</p><pre><code class="language-c">struct Net : torch::nn::Module {
+  Net() {
+    fc1 = register_module(&quot;fc1&quot;, torch::nn::Linear(3, 64));
+    fc2 = register_module(&quot;fc2&quot;, torch::nn::Linear(64, 32));
+    fc3 = register_module(&quot;fc3&quot;, torch::nn::Linear(32, 10));
+  }
+
+  torch::Tensor forward(torch::Tensor x) {
+    x = torch::tanh(fc1-&gt;forward(x));
+    x = torch::tanh(fc2-&gt;forward(x));
+    x = fc3-&gt;forward(x);
+    return x;
+  }
+
+  torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
+};</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>To create a linear layer with double precison, run <code>fc1-&gt;to(torch::kDouble)</code> after construction. </p></div></div><p><strong>Create a Neural Network</strong></p><pre><code class="language-c">auto nn = std::make_shared&lt;Net&gt;();</code></pre><p><strong>Evaluate an input</strong></p><pre><code class="language-c">auto in = torch::rand({8,3},optf.requires_grad(true));
+auto out = nn-&gt;forward(in);</code></pre><p>Here we required gradients with respect to the input <code>in</code> and put <code>optf.requires_grad(true)</code> in the argument.</p><p><strong>Compute Gradients</strong></p><p>To compute gradients, we need to call <code>backward</code> of a <strong>scalar</strong> to populate the gradient entries. For example, assume our neural network model is <span>$y = f_\theta(x)$</span> and we want to compute <span>$\frac{\partial y}{\partial x}$</span>. In our case, <code>x</code> is a <span>$8\times 3$</span> matrix (8 instances of data, each with 3 features). Each output is 10 dimensional. For each input <span>$x_i\in\mathbb{R}^3$</span> and each output feature <span>$y_j\in\mathbb{R}$</span>, we want to compute   <span>$\frac{\partial y_j}{\partial x_i}\in \mathbb{R}^3$</span> For efficiency, we can compute the gradients of all batches simultaneously, i.e., for all <span>$i$</span></p><pre><code class="language-c">auto t = out.sum(0);
+t[0].sum().backward();
+in.grad().fill_(0.0);</code></pre><p>where we compute 8 vectors of <span>$\mathbb{R}^3$</span>, i.e., <code>in.grad()</code> is a <span>$8\times 3$</span> matrix (the same size as <code>in</code>). </p><p><strong>Access Neural Network Weights and Biases</strong></p><p>The neural network weights and biases can be assessed with </p><pre><code class="language-c">std::cout &lt;&lt; nn-&gt;fc1-&gt;bias &lt;&lt; std::endl;
+std::cout &lt;&lt; nn-&gt;fc1-&gt;weights &lt;&lt; std::endl;</code></pre><p>We can also manually set the weight values</p><pre><code class="language-c">nn-&gt;fc1-&gt;bias.set_data(torch::ones({64}));</code></pre><p>The grads can also be computed</p><pre><code class="language-c">std::cout &lt;&lt;  nn-&gt;fc1-&gt;weight.grad() &lt;&lt; std::endl;</code></pre><p><strong>Compile</strong></p><p>To compile the script, in <code>CMakeLists.txt</code>, we have</p><pre><code class="language-txt">cmake_minimum_required(VERSION 3.5)
+project(TorchExample)
+
+set(CMAKE_PREFIX_PATH libtorch)
+find_package(Torch REQUIRED)
+
+include_directories(&lt;path/to/la.h&gt;)
+add_executable(main main.cpp)
+target_link_libraries(main &quot;${TORCH_LIBRARIES}&quot;)
+set_property(TARGET main PROPERTY CXX_STANDARD 11)</code></pre><p><strong>Full Script</strong></p><pre><code class="language-c">#include &quot;la.h&quot;
+
+struct Net : torch::nn::Module {
+  Net() {
+    fc1 = register_module(&quot;fc1&quot;, torch::nn::Linear(3, 64));
+    fc2 = register_module(&quot;fc2&quot;, torch::nn::Linear(64, 32));
+    fc3 = register_module(&quot;fc3&quot;, torch::nn::Linear(32, 10));
+  }
+
+  torch::Tensor forward(torch::Tensor x) {
+    x = torch::tanh(fc1-&gt;forward(x));
+    x = torch::tanh(fc2-&gt;forward(x));
+    x = fc3-&gt;forward(x);
+    return x;
+  }
+
+  torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
+};
+
+
+
+int main(){
+
+    auto nn = std::make_shared&lt;Net&gt;();
+
+    auto in = torch::rand({8,3},optf.requires_grad(true));
+    auto out = nn-&gt;forward(in);
+    
+    auto t = out.sum(0);
+    t[0].sum().backward();
+    in.grad().fill_(0.0);
+    std::cout &lt;&lt; out &lt;&lt; std::endl;
+
+    
+    std::cout &lt;&lt; nn-&gt;fc1-&gt;bias &lt;&lt; std::endl;
+    nn-&gt;fc1-&gt;bias.set_data(torch::ones({64}));
+    std::cout &lt;&lt; nn-&gt;fc1-&gt;bias &lt;&lt; std::endl;
+
+    std::cout &lt;&lt; nn-&gt;fc1-&gt;weight &lt;&lt; std::endl;
+    std::cout &lt;&lt;  nn-&gt;fc1-&gt;weight.grad() &lt;&lt; std::endl;
+    
+    return 1;
+}</code></pre><h2 id="Adept-2-1"><a class="docs-heading-anchor" href="#Adept-2-1">Adept-2</a><a class="docs-heading-anchor-permalink" href="#Adept-2-1" title="Permalink"></a></h2><p>The second approach is to use a third-party automatic differentiation library. Here we use <a href="https://github.com/rjhogan/Adept-2">Adept-2</a>. The idea is that we code a neural network in <code>C++</code> using array operations. </p><p>To start with, download and compile Adept-2 with the following command</p><pre><code class="language-bash">if [ ! -d &quot;Adept-2&quot; ]; then
+  git clone https://github.com/rjhogan/Adept-2
+fi
+cd Adept-2
+autoreconf -i
+./configure
+make -j
+make check
+make install</code></pre><p>All the libraries should be available in <code>Adept-2/adept/.libs</code>. The following script shows a simple neural network implementation</p><pre><code class="language-c">#include &quot;adept.h&quot;
+#include &quot;adept_arrays.h&quot;
+#include &lt;iostream&gt;
+using namespace adept;
+using namespace std;
+
+int main()
+{
+  Stack stack;
+  Array&lt;2, double, true&gt; X(100,3), W1(3,20), W2(20,20), W3(20,4);
+  Array&lt;1, double, true&gt; b1(20), b2(20), b3(4);
+  double V[400];
+  for(int i=0;i&lt;300;i++) X[i] = 0.01*i;
+  for(int i=0;i&lt;60;i++) W1[i] = 0.01*i;
+  for(int i=0;i&lt;400;i++) W2[i] = 0.01*i;
+  for(int i=0;i&lt;80;i++) W3[i] = 0.01*i;
+  for(int i=0;i&lt;20;i++) b1[i] = 0.01*i;
+  for(int i=0;i&lt;20;i++) b2[i] = 0.01*i;
+  for(int i=0;i&lt;4;i++) b3[i] = 0.01*i;
+
+  stack.new_recording();
+  auto x = X**W1;
+  Array&lt;2, double, true&gt; y1(x.size(0),x.size(1));
+  for(int i=0;i&lt;x.size(0);i++) 
+    for(int j=0;j&lt;x.size(1);j++)
+        y1(i,j) = tanh(x(i,j)+b1(j));
+    
+  auto w = y1**W2;
+  Array&lt;2, double, true&gt; y2(w.size(0),w.size(1));
+  for(int i=0;i&lt;w.size(0);i++) 
+    for(int j=0;j&lt;w.size(1);j++)
+        y2(i,j) = tanh(w(i,j)+b2(j));
+
+  auto z = y2**W3;
+  Array&lt;2, double, true&gt; y3(z.size(0),z.size(1));
+  for(int i=0;i&lt;z.size(0);i++) 
+    for(int j=0;j&lt;z.size(1);j++)
+        y3(i,j) = z(i,j)+b3(j);
+  
+  auto out = sum(y3, 0);
+  
+  out[0].set_gradient(1.0);
+  stack.compute_adjoint();
+  auto g1 = X.get_gradient();
+  cout &lt;&lt; g1 &lt;&lt; endl;
+
+  auto g2 = W3.get_gradient();
+  cout &lt;&lt; g2 &lt;&lt; endl;
+
+  out[1].set_gradient(1.0);
+  stack.compute_adjoint();
+  auto g1_ = X.get_gradient();
+  cout &lt;&lt; g1_ &lt;&lt; endl;
+
+  auto g2_ = W3.get_gradient();
+  cout &lt;&lt; g2_ &lt;&lt; endl;
+
+
+  y3(0,0).set_gradient(1.0);
+  stack.compute_adjoint();
+  auto g1__ = X.get_gradient();
+  cout &lt;&lt; g1__ &lt;&lt; endl;
+  auto g2__ = W3.get_gradient();
+  cout &lt;&lt; g2__ &lt;&lt; endl;
+}</code></pre><p>The following codes might be useful </p><pre><code class="language-c">typedef Array&lt;2, double, true&gt; Array2D;
+typedef Array&lt;1, double, true&gt; Array1D;
+
+void setv(Array1D&amp; v,  const double *val){
+    int n = v.size(0);
+    for(int i=0;i&lt;n;i++) v(i).set_value(val[i]);
+}
+
+void setv(Array2D&amp; v, const double *val){
+    int k = 0;
+    int m = v.size(0), n = v.size(1);
+    for(int i=0;i&lt;m;i++){
+        for(int j=0;j&lt;n;j++)
+            v(i,j).set_value(val[k++]);
+    }
+}
+
+void getg(Array1D&amp; v, double *val){
+    int n = v.size(0);
+    auto gv = v.get_gradient();
+    for(int i=0;i&lt;n;i++) val[i] = value(gv(i));
+}
+
+void getg(Array2D&amp; v, double *val){
+    int k = 0;
+    int m = v.size(0), n = v.size(1);
+    auto gv = v.get_gradient();
+    for(int i=0;i&lt;m;i++){
+        for(int j=0;j&lt;n;j++)
+            val[k++] = value(gv(i, j));
+    }
+}</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../julia_customop/">« Julia Custom Operators</a><a class="docs-footer-nextpage" href="../extra/">Miscellaneous Tools »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 24 January 2020 02:43">Friday 24 January 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
