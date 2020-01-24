@@ -76,3 +76,13 @@ The distance can be computed by
 c, p = dtw(Sample, Test, true)
 ```
 `c` is the distance and `p` is the path.
+
+If we have 2000 time series `A` and 2000 time series `B` and we want to compute the total distance of the corresponding time series, we can use `map` function 
+
+```julia
+A = constant(rand(2000,1000))
+B = constant(rand(2000,1000))
+distance = map(x->dtw(x[1],x[2],false)[1],[A,B], dtype=Float64)
+```
+
+`distances` is a 2000 length vector and gives us the pairwise distance for all time series. 
