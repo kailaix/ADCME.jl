@@ -28,3 +28,10 @@ end
         @test run(sess, m)≈M
     end
 end
+
+@testset "fastdtw" begin 
+    Sample = Float64[1,2,3,5,5,5,6]
+    Test = Float64[1,1,2,2,3,5]
+    u, p = dtw(Sample, Test, true)
+    @test run(sess, u)≈1.0
+end

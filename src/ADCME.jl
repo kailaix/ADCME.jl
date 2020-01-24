@@ -80,9 +80,15 @@ julia> using Pkg; Pkg.build("PyCall")
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
         TFLIB = joinpath(splitdir(tf.__file__)[1], "libtensorflow_framework.so")
 
-        colibs = readlines("$(@__DIR__)/../deps/CustomOps/formulas.txt")
+        colibs = readlines("$(@__DIR__)/../deps/CustomOps/default_formulas.txt")
         for c in colibs
             push!(COLIB, eval(Meta.parse(c)))
+        end
+        if isfile("$(@__DIR__)/../deps/CustomOps/formulas.txt")
+            colibs = readlines("$(@__DIR__)/../deps/CustomOps/formulas.txt")
+            for c in colibs
+                push!(COLIB, eval(Meta.parse(c)))
+            end
         end
     end
 

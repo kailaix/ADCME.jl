@@ -1,6 +1,10 @@
 # Optimal Transport
 
-Optimal transport (OT) can be used to measure the "distance" between two probability distribution. In this chapter, we introduce a novel approach for training a general model: SinkHorn Generative Networks (SGN). In this approach, a neural network is used to transform a sample from uniform distributions to a sample of targeted distribution. We train the neural network by minimizing the discrepancy between the targeted distribution and the desired distribution, which is described by optimal transport distance. Different from generative adversarial nets (GAN), we do not use a discriminator neural network to construct the discrepancy; instead, it is computed directly with efficient SinkHorn algorithm. The minimization is conducted via a gradient-based optimizer, where the gradients are computed with reverse mode automatic differentiation. 
+Optimal transport (OT) can be used to measure the "distance" between two probability distribution. 
+
+## Discrete Wasserstein Distance
+
+In this section, we introduce a novel approach for training a general model: SinkHorn Generative Networks (SGN). In this approach, a neural network is used to transform a sample from uniform distributions to a sample of targeted distribution. We train the neural network by minimizing the discrepancy between the targeted distribution and the desired distribution, which is described by optimal transport distance. Different from generative adversarial nets (GAN), we do not use a discriminator neural network to construct the discrepancy; instead, it is computed directly with efficient SinkHorn algorithm or net-flow solver. The minimization is conducted via a gradient-based optimizer, where the gradients are computed with reverse mode automatic differentiation. 
 
 To begin with, we first construct the sample `x` of the targeted distribution and the sample `s` from the desired distribution and compute the loss function with [`sinkhorn`](@ref)
 
@@ -57,4 +61,18 @@ end
 ```
 ![](./assets/g2.png)
 
+## Dynamic Time Wrapping
 
+Dynamic time wrapping is suitable for computing the distance of two time series. The idea is that we can shift the time series to obtain the "best" match while retaining the causality in time. This is best illustrated in the following figure 
+![](./assets/dtw.png)
+
+In ADCME, the distance is computed using [`dtw`](@ref). As an example, given two time series
+```julia
+Sample = Float64[1,2,3,5,5,5,6]
+Test = Float64[1,1,2,2,3,5]
+```
+The distance can be computed by 
+```julia
+c, p = dtw(Sample, Test, true)
+```
+`c` is the distance and `p` is the path.

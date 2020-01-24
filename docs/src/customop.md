@@ -44,6 +44,9 @@ The 2nd to the 7th lines specify the input arguments, the signature is `type`+`v
 
 The last line is the output, denoted by ` -> output` (do not forget the whitespace before and after `->`).  
 
+!!! note
+	If there are non-real type outputs, the corresponding top gradients input to the gradient kernel should be removed. 
+
 
 **Step 2: Implement the kernels**
 
@@ -329,8 +332,4 @@ The official plugins are hosted on `https://github.com/ADCMEMarket`. To get acce
 op = load_system_op("OTNetwork")
 ```
 
-
-
-### Useful References
-
-1. [cuBLAS Custom Operators](https://on-demand.gputechconf.com/ai-conference-2019/T1-3_Minseok%20Lee_Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)
+1. https://on-demand.gputechconf.com/ai-conference-2019/T1-3_Minseok%20Lee_Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)

@@ -1,4 +1,4 @@
-export sinkhorn, dist, empirical_sinkhorn
+export sinkhorn, dist, empirical_sinkhorn, dtw
 # roadmap: implement all related functions from https://github.com/rflamary/POT/blob/master/ot/bregman.py
 
 """
@@ -78,3 +78,22 @@ function dist(x::Union{PyObject, Array{Float64}}, y::Union{PyObject, Array{Float
     sum(abs(x-y)^order, dims=3)^(1.0/order)
 end
 
+"""
+    dtw(s::Union{PyObject, Array{Float64}}, t::Union{PyObject, Array{Float64}}, 
+        use_fast::Bool = false)
+
+Computes the dynamic time wrapping (DTW) distance between two time series `s` and `t`. 
+Returns the distance and path. `use_fast` specifies whether fast algorithm is used. Note 
+fast algorithm may not be accurate.
+"""
+function dtw(s::Union{PyObject, Array{Float64}}, t::Union{PyObject, Array{Float64}}, 
+            use_fast::Bool = false)
+    use_fast = Int32(use_fast)
+    if !haskey(COLIB, "fast_dtw")
+        install("FastDTW")
+    end
+    dtw_ = load_system_op(COLIB["fast_dtw"]...; multiple=true)
+    s,t, use_fast = convert_to_tensor([s,t,use_fast], [Float64,Float64, Int32])
+    cost, path = dtw_(s,t,use_fast)
+    return cost, path + 1
+end

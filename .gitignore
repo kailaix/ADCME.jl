@@ -25,3 +25,4 @@ research/*
 deps/CustomOps/Laplace2D
 deps/CustomOps/OT
 deps/CustomOps/OTNetwork
+deps/CustomOps/FastDTW
