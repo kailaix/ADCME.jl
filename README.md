@@ -136,4 +136,4 @@ For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
 # LICENSE
 
-ADCME.jl is released under GNU GENERAL PUBLIC LICENSE Version 3. See [License](https://github.com/kailaix/ADCME.jl/tree/master/LICENSE) for details. 
+ADCME.jl is released under MIT License. See [License](https://github.com/kailaix/ADCME.jl/tree/master/LICENSE) for details. 
