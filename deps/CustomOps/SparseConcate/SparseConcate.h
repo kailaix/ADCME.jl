@@ -1,12 +1,7 @@
 #include <set>
 #include <vector>
-#include <eigen3/Eigen/Sparse>
 using std::set;
 using std::vector;
-
-typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SpMat; // declares a column-major sparse matrix type of double
-typedef Eigen::Triplet<double> T;
-
 
 class Forward{
   private:

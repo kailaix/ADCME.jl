@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
+typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Triplet<double> T;
 
 void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, const int64 *kk, const double *ff,int64 nf,  int64 d){
@@ -15,10 +15,8 @@ void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int6
     for(int64 i=0;i<nf;i++){
       rhs[kk[i]-1] += ff[i];
     }
-    SpMat A;
-    A.resize(d, d);
+    SpMat A(d, d);
     A.setFromTriplets(triplets.begin(), triplets.end());
-    auto C = Eigen::MatrixXd(A);
     Eigen::SparseLU<SpMat> solver;
     solver.analyzePattern(A);
     solver.factorize(A);
@@ -35,12 +33,10 @@ void backward(double *grad_ff, double *grad_vv, const double *grad_u,
     vector<T> triplets;
     Eigen::VectorXd rhs(d); rhs.setZero();
     for(int64 i=0;i<nv;i++){
-      triplets.push_back(T(ii[i]-1,jj[i]-1,vv[i]));
+      triplets.push_back(T(jj[i]-1,ii[i]-1,vv[i]));
     }
-    SpMat A;
-    A.resize(d, d);
-    A.setFromTriplets(triplets.begin(), triplets.end());
-    auto B = A.transpose();
+    SpMat B(d, d);
+    B.setFromTriplets(triplets.begin(), triplets.end());
     Eigen::SparseLU<SpMat> solver;
     solver.analyzePattern(B);
     solver.factorize(B);
