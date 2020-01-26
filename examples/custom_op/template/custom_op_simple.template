@@ -5,10 +5,9 @@
 #include<cmath>
 #include<string> 
 using std::string;
-#include "${OperatorName}.h"
 
 using namespace tensorflow;
-
+#include "${OperatorName}.h"
 REGISTER_OP("${OperatorName}")
 ${AttributesReg}
 ${ForwardInputOutput}

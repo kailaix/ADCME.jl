@@ -255,3 +255,12 @@ end
     )
     @test Array(run(sess, A)) ≈ B
 end
+
+@testset "hvcat" begin
+    A = sprand(10,5,0.3)
+    B = sprand(10,5,0.2)
+    C = sprand(5,10,0.4)
+    D = [A B;C]
+    D_ = [SparseTensor(A) SparseTensor(B); SparseTensor(C)]
+    @test run(sess, D_)≈D
+end

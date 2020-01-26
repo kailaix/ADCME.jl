@@ -6,3 +6,4 @@
 "diag_sparse_mat_mul" => ("SparseMatMul", "libSparseMatMul", "sparse_sparse_mat_mul", false)
 "sparse_solver" => ("SparseSolver", "libSparseSolver", "sparse_solver", true)
 "sinkhorn_knopp" => ("OT/SinkhornKnopp", "libSinkhornKnopp", "sinkhorn_knopp", true)
+"sparse_concate" => ("SparseConcate", "libSparseConcate", "sparse_concate", true)

@@ -188,8 +188,37 @@ end
 Base.:*(s::SparseTensor, o::Real) = o*s
 Base.:/(s::SparseTensor, o::Real) = (1/o)*s
 
-Base.:vcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(0,[s.o for s in args]), false)
-Base.:hcat(args::SparseTensor...) = SparseTensor(tf.sparse.concat(1,[s.o for s in args]), false)
+
+function _sparse_concate(A1::SparseTensor, A2::SparseTensor, hcat_::Bool)
+    m1,n1 = size(A1)
+    m2,n2 = size(A2)
+    ii1,jj1,vv1 = find(A1)
+    ii2,jj2,vv2 = find(A2)
+    sparse_concate_ = load_system_op(COLIB["sparse_concate"]...; multiple=true)
+    ii1,jj1,vv1,m1_,n1_,ii2,jj2,vv2,m2_,n2_ = convert_to_tensor([ii1,jj1,vv1,m1,n1,ii2,jj2,vv2,m2,n2], [Int64,Int64,Float64,Int32,Int32,Int64,Int64,Float64,Int32,Int32])
+    ii,jj,vv = sparse_concate_(ii1,jj1,vv1,m1_,n1_,ii2,jj2,vv2,m2_,n2_,constant(hcat_))
+    if hcat_
+        SparseTensor(ii,jj,vv, m1, n1+n2)
+    else
+        SparseTensor(ii,jj,vv,m1+m2,n1)
+    end
+end
+
+function sparse_concate(args::SparseTensor...; hcat_::Bool)
+    reduce((x,y)->_sparse_concate(x,y,hcat_), args)
+end
+
+Base.:vcat(args::SparseTensor...) = sparse_concate(args...;hcat_=false)
+Base.:hcat(args::SparseTensor...) = sparse_concate(args...;hcat_=true)
+function Base.:hvcat(rows::Tuple{Vararg{Int}}, values::SparseTensor...)
+    r = Array{SparseTensor}(undef, length(rows))
+    k = 1
+    for i = 1:length(rows)
+        r[i] = hcat(values[k:k+rows[i]-1]...)
+        k += rows[i]
+    end
+    vcat(r...)
+end
 
 function Base.:lastindex(o::SparseTensor, i::Int64)
     return size(o,i)

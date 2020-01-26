@@ -1,0 +1,15 @@
+SparseConcate
+int64 ii1(?)
+int64 jj1(?)
+double vv1(?)
+int32 m1()
+int32 n1()
+int64 ii2(?)
+int64 jj2(?)
+double vv2(?)
+int32 m2()
+int32 n2()
+bool hcat()
+int64 ii(?) -> output
+int64 jj(?) -> output
+double vv(?) -> output
