@@ -55,7 +55,7 @@ For custom operators, the TensorFlow shared library compiler (see [here](https:/
 | ------------- | ------------------------------------- |
 | `ADCME.CXX`   | C++ Compiler                          |
 | `ADCME.CC`    | C Compiler                            |
-| `ADCME.TFLIB` | `libtensorflow_framework.so` location |
+| `ADCME.TFLIB_FILE` | `libtensorflow_framework.so` location |
 | `ADCME.CMAKE` | Cmake binary location                 |
 | `ADCME.MAKE`  | Make binary location                  |
 
@@ -120,17 +120,32 @@ Under the hood, a computational graph is created for gradients back-propagation.
 
 For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
+
+# Manual Installation
+
+It is recommended that you use the default build script. However, in some cases, you may want to install the package and configure the environment manually. In this case, simply set
+```julia
+using Pkg;
+ENV["manual"] = 1
+Pkg.build("ADCME")
+```
+However, in this case you are responsible for configuring the environment by modifying the file
+```julia
+using ADCME; 
+print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
+```
+
 # Research Work
 
 
 
 | <img src="docs/src/assets/ana.png" width="380">              | <img src="docs/src/assets/levy.png" width="380">             |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Stochastic Inversion with Adversarial Training [[Paper]](https://arxiv.org/abs/1910.06936) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ana/) | Calibrating Lévy Processes [[Paper]](https://arxiv.org/abs/1812.08883) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
+| Stochastic Inversion with Adversarial Training [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ana/) | Calibrating Lévy Processes  [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
 | <img src="docs/src/assets/law.png" width="380">              | <img src="docs/src/assets/diagram.png" width="380">          |
-| Learning Constitutive Relations [[Paper]](https://arxiv.org/abs/1905.12530) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/) | Time-lapse FWI [[Paper]](https://arxiv.org/abs/1912.07552) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |
+| Learning Constitutive Relations  [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/) | Time-lapse FWI  [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |
 | <img src="docs/src/assets/hidden.png" width="380">           |                                                              |
-| Intelligent Automatic Differentiation [[Paper]](https://arxiv.org/abs/1912.07547) [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |                                                              |
+| Intelligent Automatic Differentiation [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |                                                              |
 
 
 

@@ -23,38 +23,15 @@ module ADCME
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
-    CC = joinpath(Conda.BINDIR, "gcc")
-    CXX = joinpath(Conda.BINDIR, "g++")
-    CMAKE = joinpath(Conda.BINDIR, "cmake")
-    MAKE = joinpath(Conda.BINDIR, "make")
-    GIT = joinpath(Conda.BINDIR, "git")
-    TFLIB = nothing
+    include("$(@__DIR__)/../deps/deps.jl")
     run_metadata = nothing
     
     
     function __init__()
         # install_custom_op_dependency() # always install dependencies
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, TFLIB, COLIB
-        if haskey(ENV, "LD_LIBRARY_PATH")
-            ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR*":"*ENV["LD_LIBRARY_PATH"]
-        else
-            ENV["LD_LIBRARY_PATH"] = Conda.LIBDIR
-        end
-            
-        PYTHON = joinpath(Conda.BINDIR, "python")
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB
         
-        if PYTHON!=PyCall.python
-            error("""PyCall python and TensorFlow python does not match.
-$(PyCall.python) vs $PYTHON
-Rebuild PyCall with 
-
-julia> ENV["PYTHON"] = "$PYTHON"
-julia> using Pkg; Pkg.build("PyCall")
-
-""")
-        end
-        
-        copy!(tf, pyimport_conda("tensorflow","tensorflow"))
+        copy!(tf, pyimport("tensorflow"))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
@@ -66,7 +43,6 @@ julia> using Pkg; Pkg.build("PyCall")
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
-        TFLIB = joinpath(splitdir(tf.__file__)[1], "libtensorflow_framework.so")
 
         colibs = readlines("$(@__DIR__)/../deps/CustomOps/default_formulas.txt")
         for c in colibs

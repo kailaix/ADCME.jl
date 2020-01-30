@@ -49,7 +49,7 @@ Save the timeline information to file `filename`.
 - Load the timeline file
 """
 function save_profile(filename::String="default_timeline.json"; kwargs...)
-    timeline = pyimport_conda("tensorflow.python.client.timeline","tensorflow")
+    timeline = pyimport("tensorflow.python.client.timeline")
     fetched_timeline = timeline.Timeline(run_metadata.step_stats)
     chrome_trace = fetched_timeline.generate_chrome_trace_format(;kwargs...)
     open(filename,"w") do io

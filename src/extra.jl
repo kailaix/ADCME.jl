@@ -22,26 +22,21 @@ function xavier_init(size, dtype=Float64)
     return randn(dtype, size...)*xavier_stddev
 end
 
-
-export traintestdev
-function traintestdev(n::Int64, train::Float64=0.64, test::Float64=0.2)
-    rn = randperm(n)
-    if train+test>1 || train<0 || test<0
-        error("invalid train and test set size")
-    end
-    dev = 1 - train-test
-    return rn[1:Int64(round(train*n))], rn[Int64(round(train*n))+1:Int64(round((train+test)*n))],
-                rn[Int64(round((train+test)*n)):end]
-end
-
-
 ############### custom operators ##################
 function cmake(DIR::String="..")
+    ENV_ = copy(ENV)
+    ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
     if Sys.islinux()
-        run(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`)
+        run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
     else
-        run(`$CMAKE $DIR`)
+        run(setenv(`$CMAKE $DIR`, ENV_))
     end
+end
+
+function make()
+    ENV_ = copy(ENV)
+    ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    run(setenv(`$MAKE -j`, ENV_))
 end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
@@ -67,7 +62,7 @@ function compile_op(oplibpath::String; check::Bool=false)
     cd(DIR)
     try
         cmake()
-        run(`$MAKE -j`)
+        make()
     catch
         @warn("Compiling not successful. Instruction: Check $oplibpath")
     finally

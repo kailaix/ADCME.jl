@@ -1,3 +1,10 @@
+begin 
+if haskey(ENV, "manual")
+    include("build2.jl")
+    @goto writedeps
+end
+
+
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
@@ -23,12 +30,12 @@ for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-p
     Conda.add(pkg)
 end
 
-@info "Fix libtensorflow_framework.so..."
-if haskey(ENV, "LD_LIBRARY_PATH")
-    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>ENV["LD_LIBRARY_PATH"]*":$(Conda.LIBDIR)"))
-else
-    run(setenv(`$PYTHON build.py`, "LD_LIBRARY_PATH"=>"$(Conda.LIBDIR)"))
-end
+@info "Preparing environment for custom operators"
+tf = pyimport("tensorflow")
+lib = readdir(splitdir(tf.__file__)[1])
+tflib = joinpath(splitdir(tf.__file__)[1],lib[findall(occursin.("libtensorflow_framework", lib))[1]])
+TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
+TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
 function install_custom_op_dependency()
     LIBDIR = "$(Conda.LIBDIR)/Libraries"
@@ -94,8 +101,34 @@ $verinfo
     symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
 end
 
-try
-    Conda.clean()
-catch
-    @warn "Conda.clean() failed"
+
+s = ""
+t = []
+function adding(k, v)
+    global s 
+    s *= "$k = \"$v\"\n"
+    push!(t, "$k")
+end
+adding("BINDIR", Conda.BINDIR)
+adding("LIBDIR", Conda.LIBDIR)
+adding("TF_INC", TF_INC)
+adding("TF_ABI", TF_ABI)
+adding("EIGEN_INC", joinpath(Conda.LIBDIR,"Libraries"))
+adding("CC", joinpath(Conda.BINDIR, "gcc"))
+adding("CXX", joinpath(Conda.BINDIR, "g++"))
+adding("CMAKE", joinpath(Conda.BINDIR, "cmake"))
+adding("MAKE", joinpath(Conda.BINDIR, "make"))
+adding("GIT", joinpath(Conda.BINDIR, "git"))
+adding("PYTHON", PyCall.python)
+adding("TF_LIB_FILE", tflib)
+
+t = "join(["*join(t, ",")*"], \";\")"
+s *= "__STR__ = $t"
+open("deps.jl", "w") do io 
+    write(io, s)
+end
+
+@label writedeps  
+
+
 end

@@ -1,23 +1,28 @@
 cmake_minimum_required(VERSION 3.5)
 project(TFApp)
 
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
-execute_process(COMMAND julia -e "using PyCall; print(PyCall.python)" OUTPUT_VARIABLE PYTHON)
 set (CMAKE_CXX_STANDARD 11)
-# C++11 required for tensorflow
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_compile_flags()[0][2:])" OUTPUT_VARIABLE TF_INC)
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_link_flags()[0][2:])" OUTPUT_VARIABLE TF_LIB)
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_compile_flags()[1][-1])" OUTPUT_VARIABLE TF_ABI)
-execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; sys.stdout.write(tf.sysconfig.get_link_flags()[1][3:])" OUTPUT_VARIABLE TF_LIB_FILE)
+execute_process(COMMAND julia -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
+list(GET JL_OUT 0 BINDIR)
+list(GET JL_OUT 1 LIBDIR)
+list(GET JL_OUT 2 TF_INC)
+list(GET JL_OUT 3 TF_ABI)
+list(GET JL_OUT 4 EIGEN_INC)
+list(GET JL_OUT 5 CC)
+list(GET JL_OUT 6 CXX)
+list(GET JL_OUT 7 CMAKE)
+list(GET JL_OUT 8 MAKE)
+list(GET JL_OUT 9 GIT)
+list(GET JL_OUT 10 PYTHON)
+list(GET JL_OUT 11 TF_LIB_FILE)
 
+message("Python path=${PYTHON}")
+message("EIGEN_INC=${EIGEN_INC}")
+message("TF_INC=${TF_INC}")
+message("TF_ABI=${TF_ABI}")
+message("TF_LIB_FILE=${TF_LIB_FILE}")
 
-message(STATUS ${PYTHON})
-message(STATUS ${TF_INC})
-message(STATUS ${TF_ABI})
-message(STATUS ${TF_LIB})
-message(STATUS ${TF_LIB_FILE})
 # https://github.com/tensorflow/tensorflow/issues/1569
 # if GCC > 5
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
@@ -27,8 +32,7 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
 
-include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
-link_directories(${TF_LIB})
+include_directories(${TF_INC} ${EIGEN_INC})
 
 add_library(SparseSolver SHARED SparseSolver.cpp)
 set_property(TARGET SparseSolver PROPERTY POSITION_INDEPENDENT_CODE ON)

@@ -206,7 +206,7 @@ Applies the BFGS optimizer to `value_and_gradients_function`
 """
 function BFGS!(value_and_gradients_function::Function, 
     initial_position::Union{PyObject, Array{Float64}}, max_iter::Int64=50, args...;kwargs...)
-    tfp = pyimport_conda("tensorflow_probability","tensorflow_probability")
+    tfp = pyimport("tensorflow_probability")
     tfp.optimizer.bfgs_minimize(value_and_gradients_function, 
         initial_position=initial_position, args...;max_iterations=max_iter, kwargs...)[5]
 end

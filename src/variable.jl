@@ -265,7 +265,7 @@ end
 
 function hessian_vector(f, xs, v; kwargs...)
     kwargs = jlargs(kwargs)
-    gradients_impl = pyimport_conda("tensorflow.python.ops.gradients_impl","tensorflow")
+    gradients_impl = pyimport("tensorflow.python.ops.gradients_impl")
     gradients_impl._hessian_vector_product(f, [xs], [v]; kwargs...)[1]
 end
 

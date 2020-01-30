@@ -27,3 +27,4 @@ deps/CustomOps/OT
 deps/CustomOps/OTNetwork
 deps/CustomOps/FastDTW
 deps/CustomOps/formulas.txt
+deps/deps.jl
