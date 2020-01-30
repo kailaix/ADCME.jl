@@ -107,10 +107,10 @@ uuid = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
 version = "1.0.2"
 
 [[DiffRules]]
-deps = ["NaNMath", "Random", "SpecialFunctions"]
-git-tree-sha1 = "10dca52cf6d4a62d82528262921daf63b99704a2"
+deps = ["Random", "Test"]
+git-tree-sha1 = "dc0869fb2f5b23466b32ea799bd82c76480167f7"
 uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
-version = "1.0.0"
+version = "0.0.10"
 
 [[Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -330,9 +330,9 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[SpecialFunctions]]
 deps = ["OpenSpecFun_jll"]
-git-tree-sha1 = "268052ee908b2c086cc0011f528694f02f3e2408"
+git-tree-sha1 = "e19b98acb182567bcb7b75bb5d9eedf3a3b5ec6c"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
-version = "0.9.0"
+version = "0.10.0"
 
 [[StaticArrays]]
 deps = ["LinearAlgebra", "Random", "Statistics"]
