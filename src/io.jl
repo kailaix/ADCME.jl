@@ -22,6 +22,7 @@ Saves a Python objection `o` to `file`.
 See also [`pload`](@ref)
 """                                             
 function psave(o::PyObject, file::String)
+    pickle = pyimport_conda("pickle", "pickle")
     f = open(file, "w")
     pickle.dump(o, f)
     close(f)
@@ -35,6 +36,7 @@ See also [`psave`](@ref)
 """                
 function pload(file::String)
     r = nothing
+    pickle = pyimport_conda("pickle", "pickle")
     @pywith pybuiltin("open")(file,"rb") as f begin
         r = pickle.load(f)
     end

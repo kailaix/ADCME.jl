@@ -8,21 +8,15 @@ module ADCME
     TRAINABLE_VARIABLES,
     UPDATE_OPS
     
-    using Suppressor
     using PyCall
     using Random
     using LinearAlgebra
-    using PyPlot
+    # using PyPlot
     using Conda
     import Optim
     using SparseArrays
 
     tf = PyNULL()
-    tfp = PyNULL()
-    tfops = PyNULL()
-    pickle = PyNULL()
-    timeline = PyNULL()
-    gradients_impl = PyNULL()
     DTYPE = Dict{Type, PyObject}()
     # a list of custom operators 
     COLIB = Dict{String, Tuple{String, String, String, Bool}}()
@@ -38,7 +32,6 @@ module ADCME
     run_metadata = nothing
     
     
-
     function __init__()
         # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, TFLIB, COLIB
@@ -61,12 +54,7 @@ julia> using Pkg; Pkg.build("PyCall")
 """)
         end
         
-        copy!(tf, (@suppress pyimport_conda("tensorflow","tensorflow")))
-        copy!(tfops, (@suppress pyimport_conda("tensorflow.python.framework.ops","tensorflow")))
-        copy!(tfp, (@suppress pyimport_conda("tensorflow_probability","tensorflow_probability")))
-        copy!(gradients_impl, (@suppress pyimport_conda("tensorflow.python.ops.gradients_impl","tensorflow")))
-        copy!(pickle, (@suppress pyimport_conda("pickle", "pickle")))
-        copy!(timeline, (@suppress pyimport_conda("tensorflow.python.client.timeline","tensorflow")))
+        copy!(tf, pyimport_conda("tensorflow","tensorflow"))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
@@ -99,9 +87,7 @@ julia> using Pkg; Pkg.build("PyCall")
     include("variable.jl")
     include("ops.jl")
     include("layers.jl")
-    include("datasets.jl")
     include("extra.jl")
-    include("RBF.jl")
     include("sparse.jl")
     include("random.jl")
     include("gan.jl")

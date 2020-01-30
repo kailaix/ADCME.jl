@@ -18,7 +18,7 @@ end
 end
 
 @testset "install" begin
-    install("OTNetwork")
+    install("OTNetwork", force=true)
 end
 
 @testset "ae" begin

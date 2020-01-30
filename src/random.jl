@@ -67,6 +67,7 @@ for op in [:Beta, :Bernoulli,:Gamma, :TruncatedNormal, :Binomial, :Cauchy,
     @eval begin
         export $opname
         function $opname(shape...;kwargs...)
+            tfp = pyimport_conda("tensorflow_probability","tensorflow_probability")
             if !haskey(kwargs, :dtype); T = Float64; 
             else T=kwargs[:dtype]; end
             kwargs = jlargs(kwargs)
@@ -75,7 +76,7 @@ for op in [:Beta, :Bernoulli,:Gamma, :TruncatedNormal, :Binomial, :Cauchy,
             cast(out, T)
         end
         $opname(;kwargs...) = squeeze($opname(1; dtype =Float64, kwargs...))
-        Docs.getdoc(::typeof($opname)) = Docs.getdoc(tfp.distributions.$op)
+        # Docs.getdoc(::typeof($opname)) = Docs.getdoc(tfp.distributions.$op)
     end
 end
 
