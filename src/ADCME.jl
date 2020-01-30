@@ -11,7 +11,6 @@ module ADCME
     using PyCall
     using Random
     using LinearAlgebra
-    # using PyPlot
     using Conda
     import Optim
     using SparseArrays
@@ -30,7 +29,9 @@ module ADCME
     function __init__()
         # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB
-        
+py"""
+import warnings;warnings.filterwarnings('ignore')
+"""
         copy!(tf, pyimport("tensorflow"))
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
