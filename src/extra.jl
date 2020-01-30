@@ -25,7 +25,11 @@ end
 ############### custom operators ##################
 function cmake(DIR::String="..")
     ENV_ = copy(ENV)
-    ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    if haskey(ENV_, "LD_LIBRARY_PATH")
+        ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    else
+        ENV_["LD_LIBRARY_PATH"] = LIBDIR
+    end
     if Sys.islinux()
         run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
     else
@@ -35,7 +39,11 @@ end
 
 function make()
     ENV_ = copy(ENV)
-    ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    if haskey(ENV_, "LD_LIBRARY_PATH")
+        ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    else
+        ENV_["LD_LIBRARY_PATH"] = LIBDIR
+    end
     run(setenv(`$MAKE -j`, ENV_))
 end
 
