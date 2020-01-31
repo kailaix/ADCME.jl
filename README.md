@@ -123,7 +123,16 @@ For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
 # Manual Installation
 
-It is recommended that you use the default build script. However, in some cases, you may want to install the package and configure the environment manually. In this case, simply set
+It is recommended that you use the default build script. However, in some cases, you may want to install the package and configure the environment manually. 
+
+Step 1: Install `ADCME` on a computer with Internet access and zip all files from the following paths
+```julia
+julia> using Pkg
+julia> Pkg.depots()
+```
+The files will contain all the dependencies. 
+
+Step 2: Build `ADCME` mannually. 
 ```julia
 using Pkg;
 ENV["manual"] = 1
@@ -136,7 +145,6 @@ print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
 ```
 
 # Research Work
-
 
 
 | <img src="docs/src/assets/ana.png" width="380">              | <img src="docs/src/assets/levy.png" width="380">             |
