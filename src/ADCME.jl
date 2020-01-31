@@ -23,7 +23,7 @@ module ADCME
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
-    include("$(@__DIR__)/../deps/deps.jl")
+    if isfile("$(@__DIR__)/../deps/deps.jl"); include("$(@__DIR__)/../deps/deps.jl"); end
     run_metadata = nothing
     
     
