@@ -1,7 +1,7 @@
 name = "ADCME"
 uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
 authors = ["Kailai Xu <kailaix@hotmail.com>"]
-version = "0.4.0"
+version = "0.4.1"
 
 [deps]
 Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
@@ -23,6 +23,7 @@ MAT = "0.5"
 Optim = "^0.19"
 PyCall = "^1.91"
 julia = "^1"
+SpecialFunctions = "0.10"
 
 [extras]
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
