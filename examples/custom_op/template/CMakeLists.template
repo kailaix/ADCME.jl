@@ -16,11 +16,11 @@ list(GET JL_OUT 9 GIT)
 list(GET JL_OUT 10 PYTHON)
 list(GET JL_OUT 11 TF_LIB_FILE)
 
-message("Python path=${PYTHON}")
-message("EIGEN_INC=${EIGEN_INC}")
-message("TF_INC=${TF_INC}")
-message("TF_ABI=${TF_ABI}")
-message("TF_LIB_FILE=${TF_LIB_FILE}")
+message("Python path=$${PYTHON}")
+message("EIGEN_INC=$${EIGEN_INC}")
+message("TF_INC=$${TF_INC}")
+message("TF_ABI=$${TF_ABI}")
+message("TF_LIB_FILE=$${TF_LIB_FILE}")
 
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)

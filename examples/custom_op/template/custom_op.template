@@ -13,8 +13,9 @@ namespace tensorflow{
   void backwardGPU(const GPUDevice &d);
 }
 #endif
-#include "${OperatorName}.h"
 using namespace tensorflow;
+#include "${OperatorName}.h"
+
 
 REGISTER_OP("${OperatorName}")
 ${AttributesReg}

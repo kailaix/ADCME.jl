@@ -2,7 +2,7 @@
 
 ---
 
-Kailai Xu (**co-first author**), Huang, Daniel Z. (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
+Huang, Daniel Z. (**co-first author**), Kailai Xu (**co-first author**), Charbel Farhat, and Eric Darve. "[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](https://arxiv.org/abs/1905.12530)"
 
 [Project Website](https://github.com/kailaix/UQ)
 

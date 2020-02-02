@@ -148,7 +148,7 @@ lib$$fn_name = tf.load_op_library($oplibpath)
 def $$fn_name(*args):
     u = lib$$fn_name.$$opname(*args)
     def grad(*dy):
-        dy = [y for y in dy if y is not None]
+        dy = [y for y in dy if y is not None and y.dtype in [tf.float64, tf.float32]] # only float64 and float32 can backpropagate gradients
         return lib$$fn_name.$$opname_grad(*dy, *u, *args)
     return u, grad
 """

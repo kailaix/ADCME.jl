@@ -317,7 +317,7 @@ def BackwardGetData():
     for i in range(len(inputs)):
         item = inputs[i]
 
-        if item[0]=="string":
+        if item[0] not in ['float', 'double']:
             continue
         else:
             s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
