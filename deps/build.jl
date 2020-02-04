@@ -4,19 +4,16 @@ if haskey(ENV, "manual")
     @goto writedeps
 end
 
-
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
-PYTHON = joinpath(Conda.BINDIR, "python")
-if !haskey(Pkg.installed(), "PyCall")
-    ENV["PYTHON"]=PYTHON
-    Pkg.add("PyCall"); Pkg.build("PyCall")
-end
-using PyCall
-println("PyCall Python: $(PyCall.python)
-Conda Python: $(PYTHON)")
 
+PYTHON = joinpath(Conda.BINDIR, "python")
+!haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
+ENV["PYTHON"]=PYTHON
+Pkg.build("PyCall")
+
+using PyCall
 tf_ver = "1.14"
 PIP = joinpath(Conda.BINDIR, "pip")
 ZIP = joinpath(Conda.BINDIR, "zip")
@@ -29,6 +26,8 @@ for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-p
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
+!("hdf5" in pkgs) && Conda.add("hdf5", channel="anaconda")
+
 
 @info "Preparing environment for custom operators"
 tf = pyimport("tensorflow")

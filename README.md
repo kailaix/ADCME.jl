@@ -30,6 +30,10 @@ Start building your forward and inverse modeling on top of the million-dollar [T
 
 # Installation
 
+⚠️ The latest version only supports Julia≧1.3
+
+⚠️ `PyCall` is forced to use the default interpreter by `ADCME`. Do not try to reset the interpreter by rebuilding `PyCall`. 
+
 1. Install [Julia](https://julialang.org/)
 
 2. Install `ADCME`

@@ -215,7 +215,7 @@ function compile(s::String)
     cd("build")
     try
         cmake()
-        run(`$MAKE -j`)
+        make()
     catch e 
         error("Compilation error: $e")
     finally
@@ -257,7 +257,7 @@ function test_custom_op()
     mkdir("build")
     cd("build")
     cmake()
-    run(`$MAKE -j`)
+    make()
     include("$(@__DIR__)/../deps/CustomOps/SparseSolver/gradtest.jl")
     cd(PWD)
     true
