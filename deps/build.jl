@@ -72,12 +72,6 @@ install_custom_op_dependency()
 # readelf -p .comment libtensorflow_framework.so 
 # strings libstdc++.so.6 | grep GLIBCXX
 if Sys.islinux() 
-    tflib = nothing
-    if occursin("3.6", PyCall.libpython)
-        tflib = joinpath(Conda.LIBDIR, "python3.6/site-packages/tensorflow/libtensorflow_framework.so")
-    elseif occursin("3.7", PyCall.libpython)
-        tflib = joinpath(Conda.LIBDIR, "python3.7/site-packages/tensorflow/libtensorflow_framework.so")
-    end
     verinfo = read(`readelf -p .comment $tflib`, String)
     if occursin("5.4", verinfo)
         if !("gcc-5" in Conda._installed_packages())
