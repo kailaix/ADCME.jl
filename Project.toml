@@ -17,13 +17,13 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
-Conda = "^1"
-FFTW = "^1"
-MAT = "0.5"
-Optim = "^0.19"
-PyCall = "^1.91"
-julia = "^1"
-SpecialFunctions = "0.10"
+Conda = "1"
+FFTW = "1"
+MAT = "0"
+Optim = "0"
+PyCall = "1.91"
+julia = "1"
+SpecialFunctions = "0"
 
 [extras]
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
