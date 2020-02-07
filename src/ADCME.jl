@@ -11,7 +11,6 @@ module ADCME
     using PyCall
     using Random
     using LinearAlgebra
-    using Conda
     import Optim
     using SparseArrays
 

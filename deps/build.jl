@@ -15,14 +15,25 @@ Pkg.build("PyCall")
 
 using PyCall
 tf_ver = "1.14"
-PIP = joinpath(Conda.BINDIR, "pip")
-ZIP = joinpath(Conda.BINDIR, "zip")
-UNZIP = joinpath(Conda.BINDIR, "unzip")
+easy_get = pkg->begin
+    try
+        strip(read(pipeline(`which $pkg`), String))
+    catch
+        Conda.add(pkg)
+        joinpath(Conda.BINDIR, pkg)
+    end
+end
+
+pkgs = Conda._installed_packages()
+
+@info "Install binaries"
+ZIP = easy_get("zip")
+UNZIP = easy_get("unzip")
+GIT = easy_get("git")
 
 @info "Install CONDA dependencies..."
-pkgs = Conda._installed_packages()
-for pkg in ["zip", "unzip", "make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7",
-            "matplotlib", "git"]
+for pkg in ["make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7",
+            "matplotlib"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
 end
