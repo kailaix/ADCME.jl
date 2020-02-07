@@ -14,7 +14,11 @@ ENV["PYTHON"]=PYTHON
 Pkg.build("PyCall")
 
 using PyCall
-tf_ver = "1.14"
+@info """
+PyCall Python version: $(Pycall.python)
+Conda Python version: $PYTHON
+"""
+
 easy_get = pkg->begin
     try
         strip(read(pipeline(`which $pkg`), String))
@@ -32,7 +36,7 @@ UNZIP = easy_get("unzip")
 GIT = easy_get("git")
 
 @info "Install CONDA dependencies..."
-for pkg in ["make", "cmake", "tensorflow=$tf_ver", "tensorflow-probability=0.7",
+for pkg in ["make", "cmake", "tensorflow=1.14", "tensorflow-probability=0.7",
             "matplotlib"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
@@ -93,7 +97,7 @@ if Sys.islinux()
             Conda.add("libgcc")
         end
     else
-        error("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
+        @info("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
 1. Continue using ADCME. But you are responsible for the compatible issue of GCC versions for custom operators.
 2. Report to the author of ADCME by opening an issue in https://github.com/kailaix/ADCME.jl/
 Compiler information:
@@ -122,7 +126,7 @@ adding("CC", joinpath(Conda.BINDIR, "gcc"))
 adding("CXX", joinpath(Conda.BINDIR, "g++"))
 adding("CMAKE", joinpath(Conda.BINDIR, "cmake"))
 adding("MAKE", joinpath(Conda.BINDIR, "make"))
-adding("GIT", joinpath(Conda.BINDIR, "git"))
+adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
 adding("TF_LIB_FILE", tflib)
 
