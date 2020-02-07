@@ -15,7 +15,7 @@ Pkg.build("PyCall")
 
 using PyCall
 @info """
-PyCall Python version: $(Pycall.python)
+PyCall Python version: $(PyCall.python)
 Conda Python version: $PYTHON
 """
 

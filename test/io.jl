@@ -39,5 +39,5 @@ end
     load(e, "mydiary")
     # activate(e)
 
-    rm("mydiary", recursive=true, force=true)
+    try;rm("mydiary", recursive=true, force=true);catch;end
 end
