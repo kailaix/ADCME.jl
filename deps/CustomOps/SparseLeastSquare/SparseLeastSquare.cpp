@@ -3,8 +3,6 @@
 #include "tensorflow/core/platform/default/logging.h"
 #include "tensorflow/core/framework/shape_inference.h"
 #include<cmath>
-#include<string> 
-using std::string;
 using namespace tensorflow;
 // If you want to use the PyTorch feature, uncomment the following line
 // #include "la.h" 
