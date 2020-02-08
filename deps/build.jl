@@ -1,5 +1,5 @@
 begin 
-if haskey(ENV, "manual")
+if haskey(ENV, "MANUAL")
     include("build2.jl")
     @goto writedeps
 end
@@ -42,6 +42,52 @@ for pkg in ["make", "cmake", "tensorflow=1.14", "tensorflow-probability=0.7",
     Conda.add(pkg)
 end
 !("hdf5" in pkgs) && Conda.add("hdf5", channel="anaconda")
+
+
+function enable_gpu()
+    pkgs = Conda._installed_packages()
+
+    if !("tensorflow-gpu" in pkgs)
+        Conda.add("tensorflow-gpu=1.14")
+    end
+    
+    if !("cudatoolkit" in pkgs)
+        Conda.add("cudatoolkit", channel="anaconda")
+    end
+
+    gpus = joinpath(splitdir(tf.__file__)[1], "include/third_party/gpus")
+    if !isdir(gpus)
+    mkdir(gpus)
+    end
+    gpus = joinpath(gpus, "cuda")
+    if !isdir(gpus)
+    mkdir(gpus)
+    end
+    incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
+    if !isdir(joinpath(gpus, "include"))
+        cp(incpath, joinpath(gpus, "include"))
+    end
+
+    pth = joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
+    # compatible 
+    files = readdir(pth)
+    for f in files
+        if f[end-2:end]==".10" && !isfile(joinpath(pth, f*".0"))
+            symlink(joinpath(pth, f), joinpath(pth, f*".0"))
+        end
+        if f[end-4:end]==".10.1" && !isfile(joinpath(pth, f[1:end-2]*".0"))
+            symlink(joinpath(pth, f), joinpath(pth, f[1:end-2]*".0"))
+        end
+    end
+    
+    @info("Run the following command in shell
+
+    echo 'export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH' >> ~/.bashrc")
+end
+
+if haskey(ENV, "GPU")
+    enable_gpu()
+end
 
 
 @info "Preparing environment for custom operators"

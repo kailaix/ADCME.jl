@@ -66,8 +66,8 @@ For custom operators, the TensorFlow shared library compiler (see [here](https:/
 5. (Optional) Enable GPU Support
 To enable GPU support, first, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).
 ```julia
-using ADCME
-enable_gpu()
+ENV["GPU"] = 1
+Pkg.build("ADCME")
 ```
 
 

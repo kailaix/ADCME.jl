@@ -25,9 +25,10 @@ julia> using Pkg; Pkg.add("ADCME")
 
 To enable GPU support for custom operators (if you do not need to compile custom operators, you do not need this step), make sure `nvcc` command is available on your machine, then
 ```julia
-using ADCME
-enable_gpu()
+ENV["GPU"] = 1
+Pkg.build("ADCME")
 ```
+
 
 We consider a simple inverse modeling problem: consider the following partial differential equation
 ```math
