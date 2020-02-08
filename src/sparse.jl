@@ -239,7 +239,7 @@ function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{T},
     ii1, jj1, vv1 = find(s)
     m = tf.convert_to_tensor(s.o.shape[1],dtype=tf.int64)
     n = tf.convert_to_tensor(s.o.shape[2],dtype=tf.int64)
-    ss = load_system_op(COLIB["sparse_indexing"]...)
+    ss = load_system_op(COLIB["sparse_indexing"]...; multiple=true)
     ii2, jj2, vv2 = ss(ii1,jj1,vv1,m,n,i1,i2)
     ret = SparseTensor(ii2, jj2, vv2, m_, n_)
     if length(squeeze_dims)>0

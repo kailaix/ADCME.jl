@@ -96,11 +96,11 @@ public:
     auto jj_tensor = jj.flat<int64>().data();
 
     int64 nz_ii = ii_shape.dim_size(0), nz_jj = jj_shape.dim_size(0);
-    SpMat C(nz_ii, nz_jj);
+    IJV ijv;
     forward(ii1_tensor, jj1_tensor, vv1_tensor, n1, *m_tensor, *n_tensor,
-            ii_tensor, nz_ii, jj_tensor, nz_jj, &C);
+            ii_tensor, nz_ii, jj_tensor, nz_jj, ijv);
     
-    int64 nz = C.nonZeros();
+    int nz = ijv.get_size();
     TensorShape ii2_shape({nz});
     TensorShape jj2_shape({nz});
     TensorShape vv2_shape({nz});
@@ -124,15 +124,20 @@ public:
     // implement your forward function here 
 
     // TODO:
-    int64 p = 0;
-    for (int64 k = 0; k < C.outerSize(); ++k){
-        for (SpMat::InnerIterator it(C, k); it; ++it){
-            ii2_tensor[p] = it.row()+1;
-            jj2_tensor[p] = it.col()+1; 
-            vv2_tensor[p] = it.value(); 
-            p++;
-        }
+    for(int k = 0; k<nz;k++){
+      ii2_tensor[k] =  ijv.ii[k];
+      jj2_tensor[k] =  ijv.jj[k];
+      vv2_tensor[k] =  ijv.vv[k];
     }
+    // int64 p = 0;
+    // for (int64 k = 0; k < C.outerSize(); ++k){
+    //     for (SpMat::InnerIterator it(C, k); it; ++it){
+    //         ii2_tensor[p] = it.row()+1;
+    //         jj2_tensor[p] = it.col()+1; 
+    //         vv2_tensor[p] = it.value(); 
+    //         p++;
+    //     }
+    // }
   }
 };
 REGISTER_KERNEL_BUILDER(Name("SparseIndexing").Device(DEVICE_CPU), SparseIndexingOp);
@@ -140,8 +145,8 @@ REGISTER_KERNEL_BUILDER(Name("SparseIndexing").Device(DEVICE_CPU), SparseIndexin
 
 REGISTER_OP("SparseIndexingGrad")
   
-  .Input("grad_ii2 : int64")
-.Input("grad_jj2 : int64")
+  // .Input("grad_ii2 : int64")
+// .Input("grad_jj2 : int64")
 .Input("grad_vv2 : double")
   .Input("ii2 : int64")
   .Input("jj2 : int64")
@@ -171,23 +176,19 @@ public:
   void Compute(OpKernelContext* context) override {
     
     
-    const Tensor& grad_ii2 = context->input(0);
-    const Tensor& grad_jj2 = context->input(1);
-    const Tensor& grad_vv2 = context->input(2);
-    const Tensor& ii2 = context->input(3);
-    const Tensor& jj2 = context->input(4);
-    const Tensor& vv2 = context->input(5);
-    const Tensor& ii1 = context->input(6);
-    const Tensor& jj1 = context->input(7);
-    const Tensor& vv1 = context->input(8);
-    const Tensor& m = context->input(9);
-    const Tensor& n = context->input(10);
-    const Tensor& ii = context->input(11);
-    const Tensor& jj = context->input(12);
+    const Tensor& grad_vv2 = context->input(0);
+    const Tensor& ii2 = context->input(1);
+    const Tensor& jj2 = context->input(2);
+    const Tensor& vv2 = context->input(3);
+    const Tensor& ii1 = context->input(4);
+    const Tensor& jj1 = context->input(5);
+    const Tensor& vv1 = context->input(6);
+    const Tensor& m = context->input(7);
+    const Tensor& n = context->input(8);
+    const Tensor& ii = context->input(9);
+    const Tensor& jj = context->input(10);
     
     
-    const TensorShape& grad_ii2_shape = grad_ii2.shape();
-    const TensorShape& grad_jj2_shape = grad_jj2.shape();
     const TensorShape& grad_vv2_shape = grad_vv2.shape();
     const TensorShape& ii2_shape = ii2.shape();
     const TensorShape& jj2_shape = jj2.shape();
@@ -201,8 +202,6 @@ public:
     const TensorShape& jj_shape = jj.shape();
     
     
-    DCHECK_EQ(grad_ii2_shape.dims(), 1);
-    DCHECK_EQ(grad_jj2_shape.dims(), 1);
     DCHECK_EQ(grad_vv2_shape.dims(), 1);
     DCHECK_EQ(ii2_shape.dims(), 1);
     DCHECK_EQ(jj2_shape.dims(), 1);
@@ -254,8 +253,6 @@ public:
     auto n_tensor = n.flat<int64>().data();
     auto ii_tensor = ii.flat<int64>().data();
     auto jj_tensor = jj.flat<int64>().data();
-    auto grad_ii2_tensor = grad_ii2.flat<int64>().data();
-    auto grad_jj2_tensor = grad_jj2.flat<int64>().data();
     auto grad_vv2_tensor = grad_vv2.flat<double>().data();
     auto ii2_tensor = ii2.flat<int64>().data();
     auto jj2_tensor = jj2.flat<int64>().data();
@@ -271,6 +268,9 @@ public:
     // implement your backward function here 
 
     // TODO:
+    int64 n1 = ii1_shape.dim_size(0), nnz = ii2_shape.dim_size(0), nz_ii = ii_shape.dim_size(0), nz_jj = jj_shape.dim_size(0);
+    backward(grad_vv1_tensor, grad_vv2_tensor, ii2_tensor, jj2_tensor, nnz, ii1_tensor, jj1_tensor, n1,
+          ii_tensor, nz_ii, jj_tensor, nz_jj);
     
   }
 };
