@@ -172,7 +172,7 @@ Running [`Diary`](@ref) at http://localhost:port.
 """
 function activate(sw::Diary, port::Int64=0)
     printstyled("tensorboard --logdir=\"$(sw.tdir)\" --port $port\n", color=:blue)
-    run(`tensorboard --logdir="$(sw.tdir)" --port $port &`)
+    run(`tensorboard --logdir="$(sw.tdir)" --port $port '&'`)
 end
 
 """

@@ -74,7 +74,7 @@ end
     A1 = SparseTensor(A)
     b1 = constant(b)
     u = A1\b1
-    run(sess, u) ≈ A\b
+    @test run(sess, u) ≈ A\b
 end
 
 @testset "sparse_assembler" begin

@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(TFApp)
-
+project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
 execute_process(COMMAND julia -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
@@ -23,8 +22,7 @@ message("TF_INC=${TF_INC}")
 message("TF_ABI=${TF_ABI}")
 message("TF_LIB_FILE=${TF_LIB_FILE}")
 
-# https://github.com/tensorflow/tensorflow/issues/1569
-# if GCC > 5
+
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
   set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
@@ -32,8 +30,25 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
 
-include_directories(${TF_INC} ${EIGEN_INC})
+include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC})
+link_directories(${TF_LIB})
 
-add_library(SparseSolver SHARED SparseSolver.cpp)
+#find_package(CUDA QUIET)
+#set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
+#SET(CUDA_PROPAGATE_HOST_FLAGS ON)
+
+#find_program(_nvidia_smi "nvidia-smi")
+#if (_nvidia_smi)
+#  add_definitions(-DUSE_GPU)
+#  message("Compiling GPU-compatible custom operator!")
+#  cuda_add_library(SparseSolver SHARED SparseSolver.cpp SparseSolver.cu)
+#else()
+  add_library(SparseSolver SHARED SparseSolver.cpp)
+#endif()
+
 set_property(TARGET SparseSolver PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(SparseSolver ${TF_LIB_FILE} "${TORCH_LIBRARIES}")
+target_link_libraries(SparseSolver ${TF_LIB_FILE})

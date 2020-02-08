@@ -1,0 +1,7 @@
+SparseSolver
+int64 ii(?)
+int64 jj(?)
+double vv(?)
+double f(?)
+string method()
+double u(?) -> output

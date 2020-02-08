@@ -252,7 +252,21 @@ function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
     SparseTensor(tf.sparse.reshape(s, shape), false)
 end
 
-function PyCall.:\(s::SparseTensor, o::PyObject)
+@doc raw"""
+    \\(s::SparseTensor, o::PyObject, method::String="SparseLU")
+    
+Solves the linear equation 
+$$s x = o$$
+
+# Method 
+For square matrices `s`, one of the following methods is available
+- `SparseLU`
+- `SparseQR`
+- `SimplicialLDLT`
+- `SimplicialLLT`
+```
+"""
+function PyCall.:\(s::SparseTensor, o::PyObject, method::String="SparseLU")
     local u
     if length(size(o))!=1
         error("input b must be a vector")
@@ -274,10 +288,9 @@ function PyCall.:\(s::SparseTensor, o::PyObject)
     else
         ss = load_system_op(COLIB["sparse_solver"]...)
         # in case `indices` has dynamical shape
-        ii = s.o.indices'[1,:]+1
-        jj = s.o.indices'[2,:]+1
-        u = ss(ii, jj, s.o.values, constant(collect(1:length(o))),o,
-                    constant(size(s, 1)))
+        ii, jj, vv = find(s)
+        ii,jj,vv,o = convert_to_tensor([ii,jj,vv,o], [Int64,Int64,Float64,Float64])
+        u = ss(ii,jj,vv,o,method)
     end
     if size(s,2)!=nothing 
         u.set_shape((size(s,2),))

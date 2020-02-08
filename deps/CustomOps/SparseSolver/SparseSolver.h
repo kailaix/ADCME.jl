@@ -6,38 +6,40 @@ using namespace std;
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Triplet<double> T;
 
-void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, const int64 *kk, const double *ff,int64 nf,  int64 d){
+// Eigen::SparseLU<SpMat>
+template<typename SOLVER>
+void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, 
+                   const double *f,  int64 d){
     vector<T> triplets;
-    Eigen::VectorXd rhs(d); rhs.setZero();
+    Eigen::Map<const Eigen::VectorXd> rhs(f, d); 
     for(int64 i=0;i<nv;i++){
+      // printf("%d %d --> %f\n", ii[i],jj[i],vv[i]);
       triplets.push_back(T(ii[i]-1,jj[i]-1,vv[i]));
-    }
-    for(int64 i=0;i<nf;i++){
-      rhs[kk[i]-1] += ff[i];
     }
     SpMat A(d, d);
     A.setFromTriplets(triplets.begin(), triplets.end());
-    Eigen::SparseLU<SpMat> solver;
+    SOLVER solver;
     solver.analyzePattern(A);
     solver.factorize(A);
     auto x = solver.solve(rhs);
     for(int64 i=0;i<d;i++) u[i] = x[i];
 }
 
-void backward(double *grad_ff, double *grad_vv, const double *grad_u, 
-    const int64 *ii, const int64 *jj, const double *vv, const double *u, 
-      int64 nv, int64 d, const int64 *kk, int64 nf){
-    Eigen::VectorXd g(d);
-    for(int64 i=0;i<d;i++) g[i] = grad_u[i];
+template<typename SOLVER>
+void backward(double *grad_f, double *grad_vv, const double *grad_u, 
+    const double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, 
+                   const double *f,  int64 d){
+
+    Eigen::Map<const Eigen::VectorXd> g(grad_u, d);
 
     vector<T> triplets;
-    Eigen::VectorXd rhs(d); rhs.setZero();
     for(int64 i=0;i<nv;i++){
       triplets.push_back(T(jj[i]-1,ii[i]-1,vv[i]));
     }
     SpMat B(d, d);
     B.setFromTriplets(triplets.begin(), triplets.end());
-    Eigen::SparseLU<SpMat> solver;
+    
+    SOLVER solver;
     solver.analyzePattern(B);
     solver.factorize(B);
     auto x = solver.solve(g);
@@ -46,9 +48,6 @@ void backward(double *grad_ff, double *grad_vv, const double *grad_u,
     for(int64 i=0;i<nv;i++){
       grad_vv[i] -= x[ii[i]-1]*u[jj[i]-1];
     }
-
-    for(int64 i=0;i<nf;i++) grad_ff[i] = 0.0;
-    for(int64 i=0;i<nf;i++) grad_ff[i] += x[kk[i]-1];
-
+    for(int64 i=0;i<d;i++) grad_f[i] = x[i];
 }
 
