@@ -247,6 +247,18 @@ namespace tensorflow{
 context->eigen_device<GPUDevice>()
 ```
 
+!!! info 
+    `for(int i : CudaGridRangeX(nthreads))` is interpreted as 
+    ```c++
+    for (int index = blockIdx.x * blockDim.x + threadIdx.x; index < nthreads; index += blockDim.x * gridDim.x)
+    ```
+    and the kernel launch semantic is equivalent to 
+    ```cuda
+    forward_<<<config.block_count, config.thread_per_block, 0,
+                                d.stream()>>>(config.virtual_thread_count,
+                                              			out, y, H0, n);
+    ```
+
 ## Miscellany
 
 ### Mutable Inputs
