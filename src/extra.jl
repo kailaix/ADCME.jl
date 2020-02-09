@@ -4,7 +4,6 @@ xavier_init,
 load_op_and_grad,
 load_op,
 compile_op,
-test_custom_op,
 use_gpu,
 test_jacobian,
 install,
@@ -248,19 +247,6 @@ function customop(simple::Bool=false)
     end
 end
 
-
-function test_custom_op()
-    PWD = pwd()
-    cd("$(@__DIR__)/../deps/CustomOps/SparseSolver")
-    rm("build", recursive=true, force=true)
-    mkdir("build")
-    cd("build")
-    cmake()
-    make()
-    include("$(@__DIR__)/../deps/CustomOps/SparseSolver/gradtest.jl")
-    cd(PWD)
-    true
-end
 
 
 function use_gpu(i::Union{Nothing,Int64}=nothing)

@@ -48,22 +48,7 @@ julia> ]
 pkg> test ADCME
 ```
 
-4. (Optional) Test Custom Operator Functionality
-If you want to use `customop()` and test the utility, test with the following command
-```
-julia> test_custom_op()
-```
-For custom operators, the TensorFlow shared library compiler (see [here](https://www.tensorflow.org/install/source#tested_build_configurations)) must be consistent with the compiler used for compiling custom operators. By default, `ADCME` installs Anaconda GCC on the Linux system. For a custom version of TensorFlow, if you encounter problems with compiling, load error or link error, consider check GCC and `libtensorflow_framework.so` versions. The following information may be useful
-
-| Variable      | Description                           |
-| ------------- | ------------------------------------- |
-| `ADCME.CXX`   | C++ Compiler                          |
-| `ADCME.CC`    | C Compiler                            |
-| `ADCME.TFLIB_FILE` | `libtensorflow_framework.so` location |
-| `ADCME.CMAKE` | Cmake binary location                 |
-| `ADCME.MAKE`  | Make binary location                  |
-
-5. (Optional) Enable GPU Support
+4. (Optional) Enable GPU Support
 To enable GPU support, first, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).
 ```julia
 ENV["GPU"] = 1
