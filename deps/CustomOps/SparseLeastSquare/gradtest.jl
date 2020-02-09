@@ -56,7 +56,7 @@ n = 2
 u = sparse_least_square(ii,jj,vv,ff,constant(n, dtype=Int32))
 sess = Session()
 init(sess)
-run(sess, u)-sol
+@show run(sess, u)-sol
 # error()
 
 

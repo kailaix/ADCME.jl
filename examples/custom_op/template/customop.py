@@ -173,11 +173,11 @@ def ForwardOutput():
 ForwardGetData_T1 = Template("""
     auto ${name}_tensor = ${name}.flat<${tp}>().data();""")
 ForwardGetData_T12 = Template("""
-    auto ${name}_tensor = ${name}.flat<${tp}>().data();""")
+    string ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
 ForwardGetData_T2 = Template("""
     auto ${name}_tensor = ${name}->flat<${tp}>().data();""")
 ForwardGetData_T3 = Template("""
-    auto ${name}_tensor = ${name}->flat<${tp}>().data();""")
+    string ${name}_tensor = string(*${name}->flat<${tp}>().data());""")
 def ForwardGetData():
     s = ""
     for i in range(len(inputs)):
@@ -240,13 +240,9 @@ def BackwardTensorShape():
             continue
         s += BackwardTensorShape_T2.substitute({"name": outputs[i][1]})
     for i in range(len(outputs)):
-        if outputs[i][0]=="string":
-            continue
         item = outputs[i]
         s += BackwardTensorShape_T1.substitute({"name": item[1]})
     for i in range(len(inputs)):
-        if inputs[i][0]=="string":
-            continue
         item = inputs[i]
         s += BackwardTensorShape_T1.substitute({"name": item[1]})
     return s
@@ -262,13 +258,9 @@ def BackwardCheckShape():
             continue
         s += BackwardCheckShape_T2.substitute({"name": outputs[i][1], "dims": outputs[i][2]})
     for i in range(len(outputs)):
-        if outputs[i][0]=="string":
-            continue
         item = outputs[i]
         s += BackwardCheckShape_T1.substitute({"name": item[1], "dims": item[2]})
     for i in range(len(inputs)):
-        if inputs[i][0]=="string":
-            continue
         item = inputs[i]
         s += BackwardCheckShape_T1.substitute({"name": item[1], "dims": item[2]})
     return s
@@ -279,8 +271,6 @@ BackwardOutputShape_T = Template("""
 def BackwardOutputShape():
     s = ""
     for i in range(len(inputs)):
-        if inputs[i][0]=="string":
-            continue
         item = inputs[i]
         if item[3]==None:
             dims = "{}"
@@ -295,8 +285,6 @@ BackwardOutput_T = Template("""
 def BackwardOutput():
     s = ""
     for i in range(len(inputs)):
-        if inputs[i][0]=="string":
-            continue
         item = inputs[i]
         s += BackwardOutput_T.substitute({"name": item[1], "id":i})
     return s
@@ -310,18 +298,16 @@ BackwardGetData_Output = Template("""
 
 BackwardGetData_Input_T1_ = Template("""
     auto ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
-BackwardGetData_Input_T2_ = Template("""""")
-BackwardGetData_Output_ = Template("""""")
+BackwardGetData_Output_ = Template("""
+    auto ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
+
 def BackwardGetData():
     s = ""
     for i in range(len(inputs)):
         item = inputs[i]
-
-        if item[0] not in ['float', 'double']:
-            continue
-        else:
-            s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
+        s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
     for i in range(len(outputs)):
+        item = outputs[i]
         if item[0] not in ['float', 'double']:
             continue
         else:

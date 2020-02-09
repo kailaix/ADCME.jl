@@ -74,7 +74,7 @@ end
     A1 = SparseTensor(A)
     b1 = constant(b)
     u = A1\b1
-    run(sess, u) ≈ A\b
+    @test run(sess, u) ≈ A\b
 end
 
 @testset "sparse_assembler" begin
@@ -263,4 +263,45 @@ end
     D = [A B;C]
     D_ = [SparseTensor(A) SparseTensor(B); SparseTensor(C)]
     @test run(sess, D_)≈D
+end
+
+@testset "find" begin 
+    A = sprand(10,10, 0.3)
+    ii = Int64[]
+    jj = Int64[]
+    vv = Float64[]
+    for i = 1:10
+        for j = 1:10
+            if A[i,j]!=0
+                push!(ii, i)
+                push!(jj, j)
+                push!(vv, A[i,j])
+            end
+        end
+    end
+    a = SparseTensor(A)
+    i, j, v = find(a)
+    @test run(sess, i)≈ii
+    @test run(sess, j)≈jj
+    @test run(sess, v)≈vv
+
+    @test run(sess, rows(a))≈ii
+    @test run(sess, cols(a))≈jj
+    @test run(sess, values(a))≈vv
+end
+
+@testset "sparse scatter update add" begin
+    A = sprand(10,10,0.3)
+    B = sprand(3,3,0.6)
+    ii = [1;4;5]
+    jj = [2;4;6]
+    u = scatter_update(A, ii, jj, B)
+    C = copy(A)
+    C[ii,jj] = B
+    @test run(sess, u)≈C
+
+    u = scatter_add(A, ii, jj, B)
+    C = copy(A)
+    C[ii,jj] += B
+    @test run(sess, u)≈C
 end

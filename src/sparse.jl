@@ -1,6 +1,6 @@
 using SparseArrays
 import Base: accumulate
-export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse, accumulate, assemble
+export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols
 
 mutable struct SparseTensor
     o::PyObject
@@ -8,6 +8,19 @@ mutable struct SparseTensor
     function SparseTensor(o::PyObject, _diag::Bool=false)
         new(o, _diag)
     end
+end
+
+
+function Base.:values(o::SparseTensor)
+    o.o.values
+end
+
+function rows(o::SparseTensor)
+    o.o.indices'[1]+1
+end
+
+function cols(o::SparseTensor)
+    o.o.indices'[2]+1
 end
 
 """
@@ -98,6 +111,8 @@ function SparseTensor(A::SparseMatrixCSC)
     end
     SparseTensor(rows, cols, vals, m, n; is_diag=isdiag(A))
 end
+
+constant(o::SparseMatrixCSC) = SparseTensor(o)
 
 function SparseTensor(A::Array{Float64, 2})
     SparseTensor(sparse(A))
@@ -239,7 +254,7 @@ function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{T},
     ii1, jj1, vv1 = find(s)
     m = tf.convert_to_tensor(s.o.shape[1],dtype=tf.int64)
     n = tf.convert_to_tensor(s.o.shape[2],dtype=tf.int64)
-    ss = load_system_op(COLIB["sparse_indexing"]...)
+    ss = load_system_op(COLIB["sparse_indexing"]...; multiple=true)
     ii2, jj2, vv2 = ss(ii1,jj1,vv1,m,n,i1,i2)
     ret = SparseTensor(ii2, jj2, vv2, m_, n_)
     if length(squeeze_dims)>0
@@ -248,11 +263,81 @@ function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{T},
     ret
 end
 
+@doc raw"""
+    scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
+    i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}},
+    B::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}})  where {S<:Real,T<:Real}
+
+Updates a subblock of a sparse matrix by `B`. Equivalently, 
+```
+A[i1, i2] = B
+```
+"""
+function scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
+    i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}},
+    B::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}})  where {S<:Real,T<:Real}
+    if isa(i1, Integer); i1 = [i1]; push!(squeeze_dims, 1); end
+    if isa(i2, Integer); i2 = [i2]; push!(squeeze_dims, 2); end
+    if isa(i1, UnitRange) || isa(i1, StepRange); i1 = collect(i1); end
+    if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
+    if isa(i1, Colon); i1 = collect(1:lastindex(s,1)); end
+    if isa(i2, Colon); i2 = collect(1:lastindex(s,2)); end
+    ii = convert_to_tensor(i1, dtype=Int64)
+    jj = convert_to_tensor(i2, dtype=Int64)
+
+    !isa(A, SparseTensor) && (A=SparseTensor(A))
+    !isa(B, SparseTensor) && (B=SparseTensor(B))
+    ii1, jj1, vv1 = find(A)
+    m1_, n1_ = size(A)
+    ii2, jj2, vv2 = find(B)
+    sparse_scatter_update_ = load_system_op(COLIB["sparse_scatter_update"]...; multiple=true)
+    ii1,jj1,vv1,m1,n1,ii2,jj2,vv2,ii,jj = convert_to_tensor([ii1,jj1,vv1,m1_,n1_,ii2,jj2,vv2,ii,jj], [Int64,Int64,Float64,Int64,Int64,Int64,Int64,Float64,Int64,Int64])
+    ii, jj, vv = sparse_scatter_update_(ii1,jj1,vv1,m1,n1,ii2,jj2,vv2,ii,jj)
+    SparseTensor(ii, jj, vv, m1_, n1_)
+end
+
+@doc raw"""
+    scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
+    i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}},
+    B::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}})  where {S<:Real,T<:Real}
+
+Adds `B` to a subblock of a sparse matrix `A`. Equivalently, 
+```
+A[i1, i2] += B
+```
+"""
+function scatter_add(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
+    i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}},
+    B::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}})  where {S<:Real,T<:Real}
+    C = A[i1,i2]
+    D = B + C 
+    scatter_update(A, i1, i2, D)
+end
+
+
 function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
     SparseTensor(tf.sparse.reshape(s, shape), false)
 end
 
-function PyCall.:\(s::SparseTensor, o::PyObject)
+@doc raw"""
+    \\(s::SparseTensor, o::PyObject, method::String="SparseLU")
+    
+Solves the linear equation 
+$$s x = o$$
+
+# Method 
+For square matrices `s`, one of the following methods is available
+- `SparseLU`
+- `SparseQR`
+- `SimplicialLDLT`
+- `SimplicialLLT`
+```
+"""
+function PyCall.:\(s::SparseTensor, o::PyObject, method::String="SparseLU")
     local u
     if length(size(o))!=1
         error("input b must be a vector")
@@ -274,10 +359,9 @@ function PyCall.:\(s::SparseTensor, o::PyObject)
     else
         ss = load_system_op(COLIB["sparse_solver"]...)
         # in case `indices` has dynamical shape
-        ii = s.o.indices'[1,:]+1
-        jj = s.o.indices'[2,:]+1
-        u = ss(ii, jj, s.o.values, constant(collect(1:length(o))),o,
-                    constant(size(s, 1)))
+        ii, jj, vv = find(s)
+        ii,jj,vv,o = convert_to_tensor([ii,jj,vv,o], [Int64,Int64,Float64,Float64])
+        u = ss(ii,jj,vv,o,method)
     end
     if size(s,2)!=nothing 
         u.set_shape((size(s,2),))

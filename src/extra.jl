@@ -5,7 +5,6 @@ load_op_and_grad,
 load_op,
 compile_op,
 test_custom_op,
-enable_gpu,
 use_gpu,
 test_jacobian,
 install,
@@ -263,46 +262,6 @@ function test_custom_op()
     true
 end
 
-function enable_gpu()
-    pkgs = Conda._installed_packages()
-
-    if !("tensorflow-gpu" in pkgs)
-        Conda.add("tensorflow-gpu=1.14")
-    end
-    
-    if !("cudatoolkit" in pkgs)
-        Conda.add("cudatoolkit", channel="anaconda")
-    end
-
-    gpus = joinpath(splitdir(tf.__file__)[1], "include/third_party/gpus")
-    if !isdir(gpus)
-    mkdir(gpus)
-    end
-    gpus = joinpath(gpus, "cuda")
-    if !isdir(gpus)
-    mkdir(gpus)
-    end
-    incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
-    if !isdir(joinpath(gpus, "include"))
-        cp(incpath, joinpath(gpus, "include"))
-    end
-
-    pth = joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
-    # compatible 
-    files = readdir(pth)
-    for f in files
-        if f[end-2:end]==".10" && !isfile(joinpath(pth, f*".0"))
-            symlink(joinpath(pth, f), joinpath(pth, f*".0"))
-        end
-        if f[end-4:end]==".10.1" && !isfile(joinpath(pth, f[1:end-2]*".0"))
-            symlink(joinpath(pth, f), joinpath(pth, f[1:end-2]*".0"))
-        end
-    end
-    
-    println("Run the following command in shell
-
-echo 'export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH' >> ~/.bashrc")
-end
 
 function use_gpu(i::Union{Nothing,Int64}=nothing)
     dl = pyimport("tensorflow.python.client.device_lib")

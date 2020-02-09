@@ -1,0 +1,16 @@
+SparseScatterUpdate
+int64 ii1(?)
+int64 jj1(?)
+double vv1(?)
+int64 m1()
+int64 n1()
+int64 ii2(?)
+int64 jj2(?)
+double vv2(?)
+int64 ii(?)
+int64 jj(?)
+int64 nii(?) -> output
+int64 njj(?) -> output
+double nvv(?) -> output
+
+

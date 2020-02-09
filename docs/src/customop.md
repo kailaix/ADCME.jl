@@ -172,8 +172,8 @@ It should gives you the location of `nvcc` compiler.
 
 For quick installation of other dependencies, you can try
 ```julia
-using ADCME
-enable_gpu()
+ENV["GPU"] = 1
+Pkg.build("ADCME")
 ```
 
 #### Manual Installation

@@ -4,10 +4,11 @@ using PyCall
 using LinearAlgebra
 using PyPlot
 using Random
+using Test
 using SparseArrays
 Random.seed!(233)
 
-# sparse_indexing = load_op_and_grad("build/libSparseIndexing", "sparse_indexing")
+sparse_indexing = load_op_and_grad("build/libSparseIndexing", "sparse_indexing", multiple=true)
 # function Base.:getindex(s::SparseTensor, i1::Union{PyObject,Array{S,1}},
 #          i2::Union{PyObject,Array{T,1}}) where {S<:Real,T<:Real}
 #     m_, n_ = length(i1), length(i2)
@@ -31,18 +32,23 @@ Bd = Array(B[i1, j1])
 sess = Session()
 init(sess)
 Bd_ = run(sess, Bd)
-# @test Ad≈Bd_
+@test Ad≈Bd_
 
-error()
+# error()
 # TODO: change your test parameter to `m`
 # gradient check -- v
-function scalar_function(m)
-    return sum(tanh(sparse_indexing(ii1,jj1,vv1,m,n,ii,jj)))
+function scalar_function(m_)
+    A = SparseTensor(ii1, jj1, m_, 20, 30)
+    B = A[i1, j1]
+    return sum(B)^2
 end
 
 # TODO: change `m_` and `v_` to appropriate values
-m_ = constant(rand(10,20))
-v_ = rand(10,20)
+m = 20
+n = 30
+ii1,jj1,vv1 = find(B)
+m_ = constant(rand(length(B.o.values)))
+v_ = rand(length(B.o.values))
 y_ = scalar_function(m_)
 dy_ = gradients(y_, m_)
 ms_ = Array{Any}(undef, 5)
