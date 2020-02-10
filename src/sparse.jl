@@ -282,8 +282,8 @@ function scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
     if isa(i2, Integer); i2 = [i2]; push!(squeeze_dims, 2); end
     if isa(i1, UnitRange) || isa(i1, StepRange); i1 = collect(i1); end
     if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
-    if isa(i1, Colon); i1 = collect(1:lastindex(s,1)); end
-    if isa(i2, Colon); i2 = collect(1:lastindex(s,2)); end
+    if isa(i1, Colon); i1 = collect(1:lastindex(A,1)); end
+    if isa(i2, Colon); i2 = collect(1:lastindex(A,2)); end
     ii = convert_to_tensor(i1, dtype=Int64)
     jj = convert_to_tensor(i2, dtype=Int64)
 
