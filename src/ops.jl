@@ -62,8 +62,27 @@ pmap,
 std,
 lgamma,
 topk,
-argsort
+argsort,
+batch_matmul
 
+@doc raw"""
+    batch_matmul(o1::PyObject, o2::PyObject)
+
+Computes `o1[i,:,:] * o2[i, :]` or `o1[i,:,:] * o2[i, :, :]` for each index `i`.
+"""
+function batch_matmul(o1::PyObject, o2::PyObject)
+    if length(size(o2))==2
+        o2 = tf.expand_dims(o2, 2)
+    end
+    if length(size(o1))!=3 || length(size(o2))!=3
+        error("The size of o1 or o2 is not valid.")
+    end
+    tf.matmul(o1, o2)
+end
+
+batch_matmul(o1::Array{<:Real}, o2::PyObject) = batch_matmul(constant(o1), o2)
+batch_matmul(o1::PyObject, o2::Array{<:Real}) = batch_matmul(o1, constant(o2))
+batch_matmul(o1::Array{<:Real}, o2::Array{<:Real}) = batch_matmul(constant(o1), constant(o2))
 
 function PyCall.:*(o1::PyObject, o2::PyObject)
     s1 = size(o1)
@@ -132,6 +151,19 @@ Base.Broadcast.broadcasted(::typeof(^), o1::Union{AbstractArray{<:Real},Number},
 
 function einsum(equation, args...; kwargs...)
     tf.einsum(equation, args...; kwargs...)
+end
+
+"""
+    reshape(o::PyObject, s::Union{Array{<:Integer}, Tuple{Vararg{<:Integer, N}}}) where N 
+    reshape(o::PyObject, s::Integer; kwargs...)
+    reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
+    reshape(o::PyObject, ::Colon, n::Integer)
+    reshape(o::PyObject, n::Integer, ::Colon)
+
+Reshapes the tensor. `reshape` is compatible with 
+"""
+function reshape(o::PyObject, s::Union{Array{<:Integer}, Tuple{Vararg{<:Integer, N}}}) where N 
+    tf.reshape(o, s)
 end
 
 
@@ -300,6 +332,11 @@ function group_assign(os::Array{PyObject}, values, args...; kwargs...)
     ops
 end
 
+"""
+    rvec(o::PyObject; kwargs...)
+
+Vectorizes the tensor `o` to a row vector, assuming row major.
+"""
 function rvec(o::PyObject; kwargs...)
     s = size(o)
     if length(s)==0
@@ -313,6 +350,11 @@ function rvec(o::PyObject; kwargs...)
     end
 end
 
+"""
+    rvec(o::PyObject; kwargs...)
+
+Vectorizes the tensor `o` to a column vector, assuming column major.
+"""
 function cvec(o::PyObject;kwargs...)
     s = size(o)
     if length(s)==0
@@ -326,6 +368,11 @@ function cvec(o::PyObject;kwargs...)
     end
 end
 
+"""
+    vec(o::PyObject;kwargs...)
+
+Vectorizes the tensor `o` assuming column major. 
+"""
 function vec(o::PyObject;kwargs...)
     s = size(o)
     if length(s)==0

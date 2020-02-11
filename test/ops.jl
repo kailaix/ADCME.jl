@@ -342,3 +342,21 @@ end
                     10.0
                     11.0]
 end
+
+@testset "reshape" begin 
+    o = constant(rand(100,10,10))
+    A = reshape(o, (100,2,50)) 
+    B = tf.reshape(o, (100,2,50))
+    @test run(sess, A)≈run(sess, B)
+end
+
+@testset "batch mul" begin 
+    A = rand(100, 10, 10)
+    B = rand(100, 10, 3)
+    C = zeros(100, 10, 3)
+    for i = 1:100
+        C[i,:,:] = A[i,:,:] * B[i,:,:]
+    end
+    C_ = batch_matmul(A, B)
+    @test run(sess, C_) ≈ C
+end
