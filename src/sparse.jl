@@ -324,7 +324,7 @@ function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
 end
 
 @doc raw"""
-    \\(s::SparseTensor, o::PyObject, method::String="SparseLU")
+    \(s::SparseTensor, o::PyObject, method::String="SparseLU")
     
 Solves the linear equation 
 $$s x = o$$
@@ -335,7 +335,6 @@ For square matrices `s`, one of the following methods is available
 - `SparseQR`
 - `SimplicialLDLT`
 - `SimplicialLLT`
-```
 """
 function PyCall.:\(s::SparseTensor, o::PyObject, method::String="SparseLU")
     local u
