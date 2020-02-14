@@ -71,13 +71,20 @@ batch_matmul
 Computes `o1[i,:,:] * o2[i, :]` or `o1[i,:,:] * o2[i, :, :]` for each index `i`.
 """
 function batch_matmul(o1::PyObject, o2::PyObject)
+    flag = false
     if length(size(o2))==2
+        flag = true
         o2 = tf.expand_dims(o2, 2)
     end
     if length(size(o1))!=3 || length(size(o2))!=3
         error("The size of o1 or o2 is not valid.")
     end
-    tf.matmul(o1, o2)
+    out = tf.matmul(o1, o2)
+    if flag 
+        squeeze(out)
+    else
+        out 
+    end
 end
 
 batch_matmul(o1::Array{<:Real}, o2::PyObject) = batch_matmul(constant(o1), o2)
