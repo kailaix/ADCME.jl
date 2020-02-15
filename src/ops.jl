@@ -477,7 +477,10 @@ end
 
 for (op1, op2) = [(:scatter_add, :tensor_scatter_nd_add), (:scatter_sub, :tensor_scatter_nd_sub), (:scatter_update,:tensor_scatter_nd_update)]
     @eval begin
-        function $op1(ref::PyObject, indices::PyObject, updates)
+        function $op1(ref, indices, updates)
+            indices = convert_to_tensor(indices)
+            updates = convert_to_tensor(updates)
+            ref = convert_to_tensor(ref)
             if length(size(ref))==1
                 indices = reshape(indices-1, length(indices), 1)
             else
