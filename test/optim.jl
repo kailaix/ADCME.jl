@@ -202,6 +202,13 @@ end
     @test l[end]<1e-5
 end
 
+@testset "var_to_bounds" begin 
+    x = Variable(2.0)    
+    loss = x^2
+    init(sess)
+    BFGS!(sess, loss, var_to_bounds=Dict(x=>[1.0,3.0]))
+    @test run(sess, x)≈1.0
+end
 
 #=
 @testset "Ipopt" begin
