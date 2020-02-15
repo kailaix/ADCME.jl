@@ -63,7 +63,9 @@ std,
 lgamma,
 topk,
 argsort,
-batch_matmul
+batch_matmul,
+dot,
+set_shape
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -180,6 +182,29 @@ function reshape(o::PyObject, s::Integer; kwargs...)
     end
     tf.reshape(o, [s]; kwargs...)
 end
+
+"""
+    set_shape(o::PyObject, s::Union{Array{<:Integer}, Tuple{Vararg{<:Integer, N}}}) where N
+    set_shape(o::PyObject, s::Integer...)
+    
+Sets the shape of `o` to `s`. `s` must be the actual shape of `o`. This function is used to convert a 
+tensor with unknown dimensions to a tensor with concrete dimensions. 
+
+# Example 
+```julia
+a = placeholder(Float64, shape=[nothing, 10])
+b = set_shape(a, 3, 10)
+run(sess, b, a=>rand(3,10)) # OK 
+run(sess, b, a=>rand(5,10)) # Error
+run(sess, b, a=>rand(10,3)) # Error
+```
+"""
+function set_shape(o::PyObject, s::Union{Array{<:Integer}, Tuple{Vararg{<:Integer, N}}}) where N 
+    o.set_shape(s)
+    return o 
+end
+
+set_shape(o::PyObject, s::Integer...) = set_shape(o, s)
 
 function reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
     if length(size(o))==1
@@ -608,6 +633,20 @@ function Base.:diff(o::PyObject; dims::Union{Int64,Nothing}=nothing)
 end
 
 clip(o::PyObject, vmin, vmax, args...;kwargs...) = tf.clip_by_value(o, vmin, vmax, args...;kwargs...)
+
+@doc raw"""
+    clip(o::Union{Array{Any}, Array{PyObject}}, vmin, vmax, args...;kwargs...)
+
+Clips the values of `o` to the range [`vmin`, `vmax`]
+
+# Example
+```julia 
+a = constant(3.0)
+a = clip(a, 1.0, 2.0)
+b = constant(rand(3))
+b = clip(b, 0.5, 1.0)
+```
+"""
 function clip(o::Union{Array{Any}, Array{PyObject}}, vmin, vmax, args...;kwargs...)
     out = Array{PyObject}(undef, length(o))
     for i = 1:length(o)
@@ -649,6 +688,13 @@ Vt::PyObject
 ```
 We have the equality
 ``o = USV'``
+
+# Example 
+```julia
+A = rand(10,20)
+r = svd(constant(A))
+A2 = r.U*diagm(r.S)*r.Vt # The value of `A2` should be equal to `A`
+```
 """
 function svd(o::PyObject, args...; kwargs...)
     s,u,v = tf.linalg.svd(o)
@@ -675,6 +721,29 @@ function Base.:imag(o::PyObject, args...; kwargs...)
     tf.imag(o, args...; kwargs...)
 end
 
+@doc raw"""
+    map(fn::Function, o::Union{Array{PyObject},PyObject};
+    kwargs...)
+
+Applies `fn` to each element of `o`. 
+- `o`∈`Array{PyObject}` : returns `[fn(x) for x in o]`
+- `o`∈PyObject : splits `o` according to the first dimension and then applies `fn`. 
+
+# Example
+```julia
+a = constant(rand(10,5))
+b = map(x->sum(x), a) # equivalent to `sum(a, dims=2)`
+```
+
+!!! note 
+    If `fn` is a multivariate function, we need to specify the output type using `dtype` keyword. For example, 
+    ```julia
+    a = constant(ones(10))
+    b = constant(ones(10))
+    fn = x->x[1]+x[2]
+    c = map(fn, [a, b], dtype=Float64)
+    ```
+"""
 function map(fn::Function, o::Union{Array{PyObject},PyObject};
          kwargs...)
     kwargs = jlargs(kwargs)
@@ -802,12 +871,20 @@ function lgamma(o::Union{T, PyObject}, args...;kwargs...) where T<:Real
     tf.math.lgamma(convert_to_tensor(o), args...;kwargs...)
 end
 
+@doc raw"""
+    Base.:sort(o::PyObject; 
+    rev::Bool=false, dims::Integer=-1, name::Union{Nothing,String}=nothing)
+
+Sort a multidimensional array `o` along the given dimension. 
+- `rev`: `true` for DESCENDING and `false` (default) for ASCENDING
+- `dims`: `-1` for last dimension. 
+"""
 function Base.:sort(o::PyObject; 
     rev::Bool=false, dims::Integer=-1, name::Union{Nothing,String}=nothing)
     direction = rev == false ? "ASCENDING" : "DESCENDING"
     axis = -1
     if dims!=-1
-        axis = dims + 1
+        axis = dims - 1
     end
     tf.compat.v1.sort(o, axis=axis, direction=direction, name = name)
 end

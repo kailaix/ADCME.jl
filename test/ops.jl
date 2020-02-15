@@ -360,3 +360,18 @@ end
     C_ = batch_matmul(A, B)
     @test run(sess, C_) ≈ C
 end
+
+@testset "sort" begin 
+    A = rand(10,5)
+    B = constant(A)
+    @test run(sess, sort(B, dims=1))≈sort(A, dims=1)
+    @test run(sess, sort(B, rev=true, dims=2))≈sort(A, dims=2, rev=true)
+end
+
+@testset "set_shape" begin 
+    a = placeholder(Float64, shape=[nothing, 10])
+    b = set_shape(a, 3, 10)
+    @test_nowarn run(sess, b, a=>rand(3,10)) # OK 
+    @test_throws PyCall.PyError run(sess, b, a=>rand(5,10)) # Error
+    @test_throws PyCall.PyError run(sess, b, a=>rand(10,3)) # Error
+end

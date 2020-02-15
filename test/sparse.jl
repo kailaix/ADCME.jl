@@ -305,3 +305,9 @@ end
     C[ii,jj] += B
     @test run(sess, u)≈C
 end
+
+@testset "constant sparse" begin 
+    A = sprand(10,10,0.3)
+    B = constant(A)
+    @test run(sess, B)≈A
+end
