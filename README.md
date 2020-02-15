@@ -10,17 +10,18 @@
 
 ![](docs/src/assets/demo.png)
 
-The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling with gradient-based optimization techniques. It has [TensorFlow](https://www.tensorflow.org/) as the automatic differentiation and parallel computing backends. The dataflow model adopted by the framework enables researchers to do high-performance inverse modeling *without substantial effort after implementing the forward simulation*.
+The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at generic and scalable inverse modeling in scientific computing with gradient-based optimization techniques. It is built on the deep learning framework [TensorFlow](https://www.tensorflow.org/), which provides the automatic differentiation and parallel computing backend. The dataflow model adopted by the framework makes it suitable for high performance computing and inverse modeling in scientific computing. 
 
 Several features of the library are
 
 * *MATLAB-style syntax*. Write `A*B` for matrix production instead of `tf.matmul(A,B)`.
-* *Custom operators*. Implement operators in C/C++ for bottleneck parts; incorporate legacy code or specially designed C/C++ code in `ADCME`.
+* *Custom operators*. Implement operators in C/C++ for bottleneck parts; incorporate legacy code or specially designed C/C++ code in `ADCME`; differentiate implicit schemes.
 * *Numerical Scheme*. Easy to implement numerical schemes for solving PDEs.
 * *Static graphs*. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
 * *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. 
+* *Sparse linear algebra*. Sparse linear algebra library tailored for scientific computing. 
 
-Start building your forward and inverse modeling on top of the million-dollar [TensorFlow](https://www.tensorflow.org/) project with ADCME today!
+Start building your forward and inverse modeling using ADCME today!
 
 | Documentation                                                |
 | ------------------------------------------------------------ |
@@ -30,7 +31,7 @@ Start building your forward and inverse modeling on top of the million-dollar [T
 
 # Installation
 
-⚠️ The latest version only supports Julia≧1.3
+⚠️ The latest version only supports Julia≧1.3.
 
 ⚠️ `PyCall` is forced to use the default interpreter by `ADCME`. Do not try to reset the interpreter by rebuilding `PyCall`. 
 
