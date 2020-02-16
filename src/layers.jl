@@ -202,7 +202,7 @@ function ae_num(output_dims::Array{Int64})
     return offset
 end
 
-function _ae_to_code(d::Dict, scope::String)
+function _ae_to_code(d::Dict, scope::String; activation::String)
     i = 0
     nn_code = ""
     while true
@@ -211,32 +211,34 @@ function _ae_to_code(d::Dict, scope::String)
         bkey = "$(scope)backslashfully_connected$(si)backslashbiasescolon0"
         if haskey(d, Wkey)
             if i!=0
-                nn_code *= "\tisa(net, Array) ? (net = tanh.(net)) : (net=tanh(net))\n"
+                nn_code *= "    isa(net, Array) ? (net = $activation.(net)) : (net=$activation(net))\n"
+                nn_code *= "    #-------------------------------------------------------------------\n"
             end
-            nn_code *= "\tW$i = aedict$scope[\"$Wkey\"]; b$i = aedict$scope[\"$bkey\"];\n"
-            nn_code *= "\tisa(net, Array) ? (net = net * W$i .+ b$i') : (net = net *W$i + b$i)\n"
+            nn_code *= "    W$i = aedict$scope[\"$Wkey\"]\n    b$i = aedict$scope[\"$bkey\"];\n"
+            nn_code *= "    isa(net, Array) ? (net = net * W$i .+ b$i') : (net = net *W$i + b$i)\n"
             i += 1
         else
             break
         end
     end
-    nn_code = """function nn$scope(net)
-$(nn_code)\treturn net\nend """
+    nn_code = """  function nn$scope(net)
+$(nn_code)    return net\n  end """
     nn_code
 end
 
 """
-    ae_to_code(file::String, scope::String)
+    ae_to_code(file::String, scope::String; activation::String = "tanh")
 
 Return the code string from the feed-forward neural network data in `file`. Usually we can immediately evaluate 
 the code string into Julia session by 
 ```julia
 eval(Meta.parse(s))
 ```
+If `activation` is not specified, `tanh` is the default. 
 """
-function ae_to_code(file::String, scope::String)
+function ae_to_code(file::String, scope::String; activation::String = "tanh")
     d = matread(file)
-    s = "aedict$scope = matread(\"$file\");"*_ae_to_code(d, scope)
+    s = "let aedict$scope = matread(\"$file\")\n"*_ae_to_code(d, scope; activation = activation)*"\nend\n"
     return s
 end
 
