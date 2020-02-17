@@ -375,3 +375,11 @@ end
     @test_throws PyCall.PyError run(sess, b, a=>rand(5,10)) # Error
     @test_throws PyCall.PyError run(sess, b, a=>rand(10,3)) # Error
 end
+
+@testset "activation" begin
+    x = 1.0 
+    x_ = constant(1.0)
+    for fn in [sigmoid, leaky_relu, selu, elu, softsign, softplus, relu, relu6]
+        @test run(sess, fn(x_))≈fn(x)
+    end
+end

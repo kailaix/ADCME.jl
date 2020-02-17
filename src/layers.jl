@@ -280,15 +280,21 @@ end
 
 export dense, bn
 function dense(inputs, units, args...; activation = nothing, kwargs...) 
+    string2fn = Dict(
+        "relu" => relu,
+        "tanh" => tanh,
+        "sigmoid" => sigmoid,
+        "leakyrelu" => leaky_relu,
+        "leaky_relu" => leaky_relu,
+        "relu6" => relu6,
+        "softmax" => softmax,
+        "softplus" => softplus,
+        "selu" => selu,
+        "elu" => elu
+    )
     if isa(activation, String)
-        if lowercase(activation)=="relu"
-            activation = relu 
-        elseif lowercase(activation)=="tanh"
-                activation = tanh 
-        elseif lowercase(activation)=="sigmoid"
-            activation = sigmoid
-        elseif lowercase(activation) in ["leakyrelu" , "leaky_relu"]
-            activation = leaky_relu
+        if haskey(string2fn, lowercase(activation))
+            activation = string2fn[lowercase(activation)] 
         else
             error("Activation function $activation not understood")
         end

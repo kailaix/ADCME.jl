@@ -15,8 +15,10 @@ log,
 exp,
 softplus,
 softmax,
+softsign,
 sum,
 relu,
+relu6,
 squeeze,
 adjoint,
 diag,
@@ -65,7 +67,9 @@ topk,
 argsort,
 batch_matmul,
 dot,
-set_shape
+set_shape,
+selu, 
+elu 
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -226,16 +230,30 @@ function _tfreshape(o::PyObject, s...; kwargs...)
     tf.reshape(o, [s...]; kwargs...)
 end
 
+function sigmoid(x::Real)
+    return 1/(1+exp(-x))
+end
+
 function sigmoid(o::PyObject; kwargs...)
     tf.math.sigmoid(o; kwargs...)
 end
 
+relu(x::Real) = max(zero(x), x)
 function relu(o::PyObject; kwargs...)
     tf.nn.relu(o; kwargs...)
 end
 
+
+relu6(x::Real) = min(relu(x), one(x)*oftype(x, 6))
+relu6(o::PyObject; kwargs...) = tf.nn.relu6(o; kwargs...)
+
+
 function tan(o::PyObject; kwargs...)
     tf.math.tan(o; kwargs...)
+end
+
+function leaky_relu(x::Real, a = oftype(x / 1, 0.01))
+    max(a * x, x / one(x))
 end
 
 function leaky_relu(o::PyObject; kwargs...)
@@ -245,6 +263,22 @@ end
 function tanh(o::PyObject; kwargs...)
     tf.tanh(o; kwargs...)
 end
+
+function selu(x::Real)
+    λ = oftype(x / 1, 1.0507009873554804934193349852946)
+    α = oftype(x / 1, 1.6732632423543772848170429916717)
+    λ * ifelse(x > 0, x / one(x), α * (exp(x) - one(x)))
+end
+
+selu(o::PyObject; kwargs...) = tf.nn.selu(o; kwargs...)
+
+elu(x, α = one(x)) = ifelse(x ≥ 0, x / one(x), α * (exp(x) - one(x)))
+elu(o::PyObject; kwargs...) = tf.nn.elu(o; kwargs...)
+
+softsign(x::Real) = x / (one(x) + abs(x))
+softsign(o::PyObject; kwargs...) = tf.nn.softsign(o; kwargs...)
+
+
 
 function argmax(o::PyObject; kwargs...)
     kwargs = jlargs(kwargs)
@@ -294,6 +328,7 @@ function cast(dtype::Type, x::PyObject;kwargs...)
     tf.cast(x, dtype; kwargs...)
 end
 
+softplus(x::Real) = ifelse(x > 0, x + log1p(exp(-x)), log1p(exp(x)))
 function softplus(x;kwargs...)
     tf.math.softplus(x; kwargs...)
 end
