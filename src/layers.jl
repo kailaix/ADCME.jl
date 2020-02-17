@@ -221,7 +221,7 @@ function _ae_to_code(d::Dict, scope::String; activation::String)
             break
         end
     end
-    nn_code = """  function nn$scope(net)
+    nn_code = """  global nn$scope\n  function nn$scope(net)
 $(nn_code)    return net\n  end """
     nn_code
 end
