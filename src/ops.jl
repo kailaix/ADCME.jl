@@ -252,7 +252,7 @@ function tan(o::PyObject; kwargs...)
     tf.math.tan(o; kwargs...)
 end
 
-function leaky_relu(x::Real, a = oftype(x / 1, 0.01))
+function leaky_relu(x::Real, a = oftype(x / 1, 0.2))
     max(a * x, x / one(x))
 end
 
