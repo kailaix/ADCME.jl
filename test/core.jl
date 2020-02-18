@@ -127,3 +127,10 @@ end
     save_profile("test.json")
     rm("test.json")
 end
+
+@testset "independent" begin 
+    x = constant(rand(10))
+    y = 2*x 
+    z = sum(independent(y))
+    @test isnothing(gradients(z, x))
+end

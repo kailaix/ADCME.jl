@@ -8,6 +8,7 @@ has_gpu,
 while_loop,
 if_else,
 stop_gradient,
+independent,
 tensor,
 tensorname
 
@@ -257,12 +258,15 @@ function has_gpu()
     end
 end
 
-
-""" 
-    stop_gradient(o::PyObject, args...;kwargs...)
-
-Disconnects `o` from gradients backpropagation. 
 """
+    independent(o::PyObject, args...; kwargs...)
+
+Returns `o` but when computing the gradients, the top gradients will not be back-propagated into dependent variables of `o`.
+"""
+independent(o::PyObject, args...; kwargs...) = stop_gradient(o, args...; kwargs...)
+
+@deprecate stop_gradient independent
 function stop_gradient(o::PyObject, args...;kwargs...)
     tf.stop_gradient(o, args...;kwargs...)
 end
+
