@@ -1,15 +1,15 @@
 # What is ADCME? Computational Graph, Automatic Differentiation & TensorFlow
 
-##Computational Graph	
+## Computational Graph	
 
 A computational graph is a functional description of the required computation. In the computationall graph, an edge represents a value, such as a scalar, a vector, a matrix or a tensor. A node represents a function whose input arguments are the the incoming edges and output values are are the outcoming edges. Based on the number of input arguments, a function can be nullary, unary, binary, ..., and n-ary; based on the number of output arguments, a function can be single-valued or multiple-valued. 
 
 
 
 Computational graphs are directed and acyclic. The acyclicity implies the forward propagation computation is well-defined: we loop over edges in topological order and evaluates the outcoming edges for each node. To make the discussion more concrete, we illustrate the computational graph for 
-$$
-z = \sin(x_1+x_2) + x_2^2 x_3
-$$
+
+$$z = \sin(x_1+x_2) + x_2^2 x_3$$
+
 ![](./assets/fd.jpeg)
 
 
@@ -25,21 +25,20 @@ An important application of computational graphs is automatic differentiation (A
 
 
 To explain how reverse-mode AD works, let's consider constructing a computational graph with independent variables 
-$$
-\{x_1, x_2, \ldots, x_n\}
-$$
+
+$$\{x_1, x_2, \ldots, x_n\}$$
+
 and the forward propagation produces a single output $x_N$, $N>n$. The gradients $\frac{\partial x_N(x_1, x_2, \ldots, x_n)}{\partial x_i}$
 $i=1$, $2$, $\ldots$, $n$ are queried. 
 
 The idea is that this algorithm can be decomposed into a sequence of functions $f_i$ ($i=n+1, n+2, \ldots, N$) that can be easily differentiated analytically, such as addition, multiplication, or basic functions like exponential, logarithm and trigonometric functions. Mathematically, we can formulate it as
-$$\begin{equation*}
-  \begin{aligned}
+
+$$\begin{aligned}
     x_{n+1} &= f_{n+1}(\mathbf{x}_{\pi({n+1})})\\
     x_{n+2} &= f_{n+2}(\mathbf{x}_{\pi({n+2})})\\
     \ldots\\
     x_{N} &= f_{N}(\mathbf{x}_{\pi({N})})\\
-\end{aligned}
-\end{equation*}$$
+\end{aligned}$$
 
 where $\mathbf{x} = \{x_i\}_{i=1}^N$ and $\pi(i)$ are the parents of $x_i$, s.t., $\pi(i) \in \{1,2,\ldots,i-1\}$.
 
@@ -51,35 +50,48 @@ The idea to compute $\partial x_N / \partial x_i$ is to start from $i = N$, and 
 
 The starting point is to define $x_i$ considering all previous $x_j$, $j < i$, as independent variables. Then:
 
-$$ x_i(x_1, x_2, \ldots, x_{i-1}) = f_i(\mathbf{x}_{\pi(i)}) $$
+$$x_i(x_1, x_2, \ldots, x_{i-1}) = f_i(\mathbf{x}_{\pi(i)})$$
 
 Next, we observe that $x_{i-1}$ is a function of previous $x_j$, $j < i-1$, and so on; so that we can recursively define $x_i$ in terms of fewer independent variables, say in terms of $x_1$, ..., $x_k$, with $k < i-1$. This is done recursively using the following definition:
-$$\begin{equation*}
-    x_i(x_1, x_2, \ldots, x_j) = x_i(x_1, x_2, \ldots, x_j, f_{j+1}(\mathbf{x}_{\pi(j+1)})), \quad n < j+1 < i
-\end{equation*}$$
+
+$$x_i(x_1, x_2, \ldots, x_j) = x_i(x_1, x_2, \ldots, x_j, f_{j+1}(\mathbf{x}_{\pi(j+1)})), \quad n < j+1 < i$$
+
 Observe that the function of the left-hand side has $j$ arguments, while the function on the right has $j+1$ arguments. This equation is used to "reduce" the number of arguments in $x_i$.
 
 With these definitions, we can define recurrences for our partial derivatives which form the basis of the back-propagation algorithm. The partial derivatives for
-$$ x_N(x_1, x_2, \ldots, x_{N-1}) $$
+
+$$x_N(x_1, x_2, \ldots, x_{N-1})$$
+
 are readily available since we can differentiate
-$$ f_N(\mathbf{x}_{\pi(N)}) $$
+
+$$f_N(\mathbf{x}_{\pi(N)})$$
+
 directly. The problem is therefore to calculate partial derivatives for functions of the type $x_N(x_1, x_2, \ldots, x_i)$ with $i<N-1$. This is done using the following recurrence:
+
 $$\frac{\partial x_N(x_1, x_2, \ldots, x_{i})}{\partial x_i} = \sum_{j\,:\,i\in \pi(j)}
     \frac{\partial x_N(x_1, x_2, \ldots, x_j)}{\partial x_j}
     \frac{\partial x_j(x_1, x_2, \ldots, x_{j-1})}{\partial x_i}$$
+
 with $n < i< N-1$. Since $i \in \pi(j)$, we have $i < j$. So we are defining derivatives with respect to $x_i$ in terms of derivatives with respect to $x_j$ with $j > i$. The last term
+
 $$\frac{\partial x_j(x_1, x_2, \ldots, x_{j-1})}{\partial x_k}$$
+
 is readily available since:
+
 $$x_j(x_1, x_2, \ldots, x_{j-1}) = f_j(\mathbf{x}_{\pi(j)}) $$
 
 ![](./assets/cg2.jpeg)
 
 The computational cost of this recurrence is proportional to the number of edges in the computational graph (excluding the nodes $1$ through $n$), assuming that the cost of differentiating $f_k$ is $O(1)$. The last step is defining
+
 $$ \frac{\partial x_N(x_1, x_2, \ldots, x_n)}{\partial x_i} = \sum_{j\,:\,i\in \pi(j)}
     \frac{\partial x_N(x_1, x_2, \ldots, x_j)}{\partial x_j}
     \frac{\partial x_j(x_1, x_2, \ldots, x_{j-1})}{\partial x_i}$$
+
 with $1 \le i \le n$. Since $n < j$, the first term
-$$\frac{\partial x_N(x_1, x_2, \ldots, x_j)}{\partial x_j} $$
+
+$$\frac{\partial x_N(x_1, x_2, \ldots, x_j)}{\partial x_j}$$
+
 has already been computed in earlier steps of the algorithm. The computational cost is equal to the number of edges connected to one of the nodes in $\{1, \dots, n\}$.
 
 We can see that the complexity of the back-propagation is bounded by that of the forward step, up to a constant factor. Reverse mode differentiation is very useful in the penalty method, where the loss function is a scalar, and no other constraints are present. 
