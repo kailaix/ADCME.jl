@@ -85,7 +85,8 @@ function ae(x::Union{Array{Float64},PyObject}, output_dims::Array{Int64}, scope:
 end
 
 """
-    ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject})
+    ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject};
+    activation::Union{Function,String} = "tanh")
 
 Creates a neural network with intermediate numbers of neurons `output_dims`. The weights are given by `θ`
 
@@ -106,10 +107,16 @@ y = ae(x, [20,20,20,2], θ)
 
 See also [`ae_num`](@ref), [`ae_init`](@ref).
 """
-function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject})
-    if isa(x, Array)
-        x = constant(x)
-    end
+function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject};
+    activation::Union{Function,String} = "tanh")
+    activation=="tanh" && (activation = tanh)
+    activation=="sigmoid" && (activation = sigmoid)
+    activation=="selu" && (activation = selu)
+    activation=="elu" && (activation = elu)
+    activation=="relu" && (activation = relu)
+    activation=="leaky_relu" && (activation = leaky_relu)
+    x = convert_to_tensor(x)
+    θ = convert_to_tensor(θ)
     flag = false
     if length(size(x))==1
         x = reshape(x, length(x), 1)
@@ -123,14 +130,14 @@ function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::U
         m = output_dims[i]
         n = output_dims[i+1]
         net = net * reshape(θ[offset+1:offset+m*n], m, n)  + θ[offset+m*n+1:offset+m*n+n]
-        net = tanh(net)
+        net = activation(net)
         offset += m*n+n
     end
     m = output_dims[end-1]
     n = output_dims[end]
     net = net * reshape(θ[offset+1:offset+m*n], m, n)  + θ[offset+m*n+1:offset+m*n+n]
-    offset += m*n+n
 
+    offset += m*n+n
     if offset!=length(θ)
         error("ADCME: the weights and configuration does not match. Required $offset but given $(length(θ)).")
     end
@@ -165,13 +172,15 @@ function ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xav
     N = ae_num(output_dims)
     W = zeros(T, N)
     offset = 0
-    for i = 1:length(output_dims)-2
+    for i = 1:length(output_dims)-1
         m = output_dims[i]
         n = output_dims[i+1]
         if method=="xavier"
             W[offset+1:offset+m*n] = randn(T, m*n) * T(sqrt(1/m))
-        elseif method=="xavier_avg"
+        elseif method=="xavier_normal"
             W[offset+1:offset+m*n] = randn(T, m*n) * T(sqrt(2/(n+m)))
+        elseif method=="xavier_uniform"
+            W[offset+1:offset+m*n] = rand(T, m*n) * T(sqrt(6/(n+m)))
         elseif method=="he"
             W[offset+1:offset+m*n] = randn(T, m*n) * T(sqrt(2/(m)))
         else
