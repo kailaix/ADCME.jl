@@ -424,9 +424,7 @@ The unknown $\theta$ is sought by solving a minimization problem using L-BFGS-B,
 Here we show a case in locating the centroid of an earthquake. The red star denotes the location where the earthquake happens and the triangles denote the seismic stations. The subsurface constitutes layers of different properties (the values of $c$ are different), affecting the propagation of the seismic waves. 
 
 | Source/Receiver Location                                     | Forward Simulation                                           |
-
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-
 |![](./assets/source-vp.png) | ![](./assets/forward_source.gif) |
 
 By running the optimization problem by specifying the earthquake location as `Variable` [^delta], we can locate the centroid of an earthquake. The result is amazingly good. It is worth noting that it requires substantial effort to implement the traditional adjoint-state solver for this problem (e.g., it takes time to manually deriving and implementing the gradients). However, in view of ADCME, the inversion functionality is merely a by-product of the forward simulation codes, which can be reused in many other inversion problems.
@@ -695,7 +693,7 @@ Here $X$ is the unknown  which may be one of the four forms: parameter, function
 
 | **Inverse problem**                      | **Problem type**     | **ADCME Approach**      |             **Reference**             |
 | ---------------------------------------- | -------------------- | ------------------------------- | :-----------------------------------: |
-| $\nabla\cdot(c\nabla u) = \varphi(x)$             | Parameter            | Adjoint State Method            |                 [1](http://arxiv.org/abs/1912.07552) [2](http://arxiv.org/abs/1912.07547)                 |
+| $\nabla\cdot(c\nabla u) = \varphi(x)$             | Parameter            | Adjoint-State Method           |                 [1](http://arxiv.org/abs/1912.07552) [2](http://arxiv.org/abs/1912.07547)                 |
 | $\nabla\cdot(f(x)\nabla u) = \varphi(x)$ | Function            | DNN as a Function Approximator | [3](https://arxiv.org/abs/1901.07758) |
 | $\nabla\cdot(f(u)\nabla u) = \varphi(x)$          | Functional         | Residual Learning or Physics Constrained Learning | [4](https://arxiv.org/abs/1905.12530) |
 | $\nabla\cdot(\varpi\nabla u) = \varphi(x)$        | Stochastic Inversion | Generative Neural Networks                        | [5](https://arxiv.org/abs/1910.06936) |
@@ -779,7 +777,7 @@ A = spdiag(
   0=>(2*X[2:end-1]+X[3:end]+X[1:end-2])/2
 )/h^2
 φ = @. 2*x*(1 - 2*x)/(x^2 + 1)^2 + 2 /(x^2 + 1)
-u = Array(A)\φ[2:end-1] # for efficiency, we can use A\φ[2:end-1] (sparse solver)
+u = A\φ[2:end-1] # for efficiency, we can use A\φ[2:end-1] (sparse solver)
 u_obs = (@. x * (1-x))[2:end-1]
 loss = sum((u - u_obs)^2)
 
@@ -805,81 +803,97 @@ We show the exact $X(x)$ and the pointwise error in the following plots
 
 ### Functional Inverse Problem
 
-In the **functional inverse problem**, $X$ is a function that _depends_ on $u$ (or both $x$ and $u$); it must not be confused with the functional inverse problem and it is much harder to solve (since the equation is nonlinear). For example, we may have
+In the **functional inverse problem**, $X$ is a function that _depends_ on $u$ (or both $x$ and $u$); it must not be confused with the functional inverse problem and it is much harder to solve (since the equation is nonlinear). 
+
+
+
+As an example, assume 
+
+$$\begin{aligned}\nabla (X(u)\nabla u(x)) &= \varphi(x) & x\in (0,1)\\ u(0)=u(1) &= 0\end{aligned}$$
+
+where the quantity of interest is 
 
 ```math
 X(u) = \frac{1}{1+100u^2}
 ```
 
-The corresponding $\varphi$ is 
-
-```math 
-\frac{2 \left(100 x^{2} \left(x - 1\right)^{2} - 100 x \left(x - 1\right) \left(2 x - 1\right)^{2} + 1\right)}{\left(100 x^{2} \left(x - 1\right)^{2} + 1\right)^{2}}
-```
+The corresponding $\varphi$ can be analytically evaluated (e.g., using SymPy).
 
 To solve the Poisson equation, we use the standard Newton-Raphson scheme, in which case, we need to compute the residual
-```math
-R_i = X'(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} + \varphi(x_i)
-```
-and the corresponding Jacobian
 
-```math
-\frac{\partial R_i}{\partial u_j} = \left\{ \begin{matrix}  \frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i-1\\ X''(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X'(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \frac{2}{h^2}X(u_i) & j=i \\ -\frac{X'(u_i)}{2h} + \frac{X(u_i)}{h^2} & j=i+1\\ 0 & |j-i|>1  \end{matrix} \right.
-```
+$$R_i = X'(u_i)\left(\frac{u_{i+1}-u_{i-1}}{2h}\right)^2 + X(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \varphi(x_i)$$
 
-Just like the function inverse problem, we also use a neural network to approximate $X(u)$; the difference is that the input of the neural network is $u$ instead of $x$. It is convenient to compute $X'(u)$ with automatic differentiation. If we had used piecewise linear functions, it is only possible to compute the gradients in the weak sense; but this is not a problem for neural networks as long as we use smooth activation functions such as $\tanh$. 
+and the corresponing Jacobian
 
-ADCME also prepares a built-in Newton-Raphson solver [`newton_raphson`](@ref) for you. To use this function, you only need to provide the residual and Jacobian 
+$$\frac{\partial R_i}{\partial u_j} = \left\{ \begin{matrix}  -\frac{X'(u_i)}{h}\frac{u_{i+1}-u_{i-1}}{2h} + \frac{X(u_i)}{h^2} & j=i-1\\ X''(u_i)\frac{u_{i+1}-u_{i-1}}{2h} + X'(u_i)\frac{u_{i+1}+u_{i-1}-2u_i}{h^2} - \frac{2}{h^2}X(u_i) & j=i \\ \frac{X'(u_i)}{2h}\frac{u_{i+1}-u_{i-1}}{2h} + \frac{X(u_i)}{h^2} & j=i+1\\ 0 & |j-i|>1  \end{matrix} \right.$$
 
-```julia 
-function residual_and_jacobian(θ, u)
-  X = ae(u, [20,20,20,20,1], θ)+1.0 # to avoid X=0 at the first step 
-  Xp = tf.gradients(X, u)[1]
-  Xpp = tf.gradients(Xp, u)[1]
-  up = [u[2:end];constant(zeros(1))]
-  un = [constant(zeros(1)); u[1:end-1]]
-  R = Xp * (up-un)/2h + X * (up+un-2u)/h^2 + φ
-  dRdu = Xpp * (up-un)/2h + Xp*(up+un-2u)/h^2 - 2/h^2*X 
-  dRdun = Xp[2:end]/2h + X[2:end]/h^2
-  dRdup = -Xp[1:end-1]/2h + X[1:end-1]/h^2
-  J = spdiag(n-1, 
-	  -1=>dRdun,
-  	  0=>dRdu,
-      1=>dRdup)
-  return R, Array(J)
-end
-```
+Just like the function inverse problem, we also use a neural network to approximate $X(u)$; the difference is that the input of the neural network is $u$ instead of $x$. It is convenient to compute $X'(u)$ with automatic differentiation.
 
-Then we can solve the Poisson equation with 
-
-```julia
-newton_raphson(residual_and_jacobian, u0, θ)
-```
-
-One caveat here is that the Newton-Raphson operator is a [nonlinear implicit operator](https://kailaix.github.io/ADCME.jl/dev/inverse_modeling/#Forward-Operator-Types-1) that does not fall into the types of operators where automatic differentiation applies. Instead, a [special procedure]() is needed. Luckily, ADCME provides an API that abstracts away this technical difficulty and users can call [`NonlinearConstrainedProblem`](@ref) directly to extract the gradients. 
+Solving the forward problem (given $X(u)$, solve for $u$) requires conducting Newton-Raphson iterations. One challenge here is that the Newton-Raphson operator is a nonlinear implicit operator that does not fall into the types of operators where automatic differentiation applies. The relevant technique is **physics constrained learning**. The basic idea is to extract the gradients by the implicit function theorem. The limitation is that we need to provide the Jacobian matrix for the residual term in the Newton-Raphson algorithm. In ADCME, the complex algorithm is wrapped in the API [`NonlinearConstrainedProblem`](@ref) and users only need to focus on constructing the residual and the gradient term
 
 ```julia
 using ADCME 
-# definitions of residual_and_jacobian is omited here
+using PyPlot
+
+function residual_and_jacobian(θ, u)
+    X = ae(u, config, θ) + 1.0     # (1)
+    Xp = tf.gradients(X, u)[1]
+    Xpp = tf.gradients(Xp, u)[1]
+    up = [u[2:end];constant(zeros(1))]
+    un = [constant(zeros(1)); u[1:end-1]]
+    R = Xp .* ((up-un)/2h)^2 + X .* (up+un-2u)/h^2 - φ
+    dRdu = Xpp .* ((up-un)/2h)^2 + Xp.*(up+un-2u)/h^2 - 2/h^2*X 
+    dRdun = -Xp[2:end]/h .* (up-un)[2:end]/2h + X[2:end]/h^2
+    dRdup = Xp[1:end-1]/h .* (up-un)[1:end-1]/2h + X[1:end-1]/h^2
+    J = spdiag(n-1, 
+        -1=>dRdun,
+        0=>dRdu,
+        1=>dRdup)     # (2)
+    return R, J
+end
+
+
+config = [20,20,20,1]
 n = 100
 h = 1/n
 x = collect(LinRange(0, 1.0, n+1))
 
-φ = @. 2*(x^2*(x - 1)^2 - x*(x - 1)*(2*x - 1)^2 + (x^2*(x - 1)^2 + 1)^2 + 1)/(x^2*(x - 1)^2 + 1)^2
+φ = @. (1 - 2*x)*(-100*x^2*(2*x - 2) - 200*x*(1 - x)^2)/(100*x^2*(1 - x)^2 + 1)^2 - 2 - 2/(100*x^2*(1 - x)^2 + 1)
 φ = φ[2:end-1]
-θ = Variable(ae_init([1,20,20,20,20,1]))
-u0 = constant(zeros(n-1)) #initial guess
-function L(u)
+θ = Variable(ae_init([1,config...]))
+u0 = constant(zeros(n-1)) 
+function L(u)    # (3)
   u_obs = (@. x * (1-x))[2:end-1]
-	loss = sum((u - u_obs)^2)
+  loss = mean((u - u_obs)^2) 
 end
 loss, solution, grad = NonlinearConstrainedProblem(residual_and_jacobian, L, θ, u0)
+X_pred = ae(collect(LinRange(0.0,0.25,100)), config, θ) + 1.0
 
 sess = Session(); init(sess)
 BFGS!(sess, loss, grad, θ)
+x_pred, sol = run(sess, [X_pred, solution])
+
+figure(figsize=(10,4))
+subplot(121)
+s = LinRange(0.0,0.25,100)
+x_exact = @. 1/(1+100*s^2) + 1
+plot(s, x_exact, "-", linewidth=3, label="Exact")
+plot(s, x_pred, "o", markersize=2, label="Estimated")
+legend()
+xlabel("u")
+ylabel("X(u)")
+
+subplot(122)
+s = LinRange(0.0,1.0,101)[2:end-1]
+plot(s, (@. s * (1-s)), "-", linewidth=3, label="Exact")
+plot(s, sol, "o", markersize=2, label="Estimated")
+legend()
+xlabel("x")
+ylabel("u")
+savefig("nn.png")
 ```
 
-Note in this case, we only have one set of observations and the inverse problem may be ill-posed, i.e., the solution is not unique. Thus the best we can expect is that we can find one of the solutions $\mathcal{N}(x;w)$ that can reproduce the observation we have. This is indeed the case we encounter in this example: the reproduced solution is nearly the same as the observation, but we found a completely different $\mathcal{N}(x;w)$ compared with $X(u)$. 
+Detailed explaination: (1) This is the neural network we constructed. Note that with default initialization, the neural network output values are close to 0, and thus poses numerical stability issue for the solver. We can shift the neural network value by $+1$ (equivalently, we use 1 for the initial guess of the last bias term); (2) The jacobian matrix is sparse, and thus we use [`spdiag`](@ref) to create a sparse matrix; (3) A loss function is formulated and minimized in the physics constrained learning. 
 
 ![nn](assets/nn.png)
 
