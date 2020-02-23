@@ -523,7 +523,15 @@ function stack(o::Array{PyObject}, args...;kwargs...)
 end
 
 Base.:vcat(args::PyObject...) = concat([args...],0)
-Base.:hcat(args::PyObject...) = length(size(args[1]))>=2 ? concat([args...],1) : stack([args...],dims=2)
+function Base.:hcat(args::PyObject...)
+    if length(size(args[1]))>=2 
+        concat([args...],1) 
+    elseif length(size(args[1]))==1
+        stack([args...],dims=2)
+    else 
+        vcat(args...)'
+    end
+end
 
 # for TensorArray
 function stack(o::PyObject)
