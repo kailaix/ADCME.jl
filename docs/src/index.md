@@ -4,7 +4,7 @@ ADCME is suitable for conducting inverse modeling in scientific computing. The p
 
 - full wavelength inversion
 
-- reduced order modeling in solid mechanics
+- constitutive modeling in solid mechanics
 
 - learning hidden geophysical dynamics
 
@@ -14,4 +14,6 @@ ADCME is suitable for conducting inverse modeling in scientific computing. The p
 
 The package inherents the scalability and efficiency from the well-optimized backend TensorFlow. Meanwhile, it provides access to incooperate existing C/C++ codes via the custom operators. For example, some functionalities for sparse matrices are implemented in this way and serve as extendable "plugins" for ADCME. 
 
-Read more about the methodology and philosophy about ADCME: [slides](./assets/Slide/ADCME.pdf). 
+![](./assets/op.png)
+
+Read more about the methodology, the philosophy, the insights and the perspective about ADCME: [slides](./assets/Slide/ADCME.pdf). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems. 
