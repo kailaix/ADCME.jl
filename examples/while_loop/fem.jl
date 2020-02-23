@@ -33,6 +33,8 @@ end
 areas = constant(areas)
 localcoef = constant(localcoef)
 D = constant(diagm(0=>ones(2)))
+# D = Variable(2.0) .* [1.0 0.0;0.0 1.0]
+
 function body(i, tai, taj, tav)
     el = elem_[i-1]
     a = areas[i-1]
@@ -72,9 +74,11 @@ A = scatter_update(A, dof, dof, spdiag(length(dof)))
 rhs[dof] .= 0.0
 sol = A\rhs 
 
+# loss = sum((sol - (@. 1-node[:,1]^2-node[:,2]^2))^2)
 sess = Session(); init(sess)
 S = run(sess, sol)
 close("all")
 scatter3D(node[:,1], node[:,2], S, marker="^", label = "FEM")
 scatter3D(node[:,1], node[:,2], (@. 1-node[:,1]^2-node[:,2]^2), marker = "+", label = "Exact")
 legend()
+

@@ -551,7 +551,7 @@ We  split $\Omega$ into triangles $\mathcal{T}$ and use piecewise linear basis f
 
 The implementation is split into two parts: 
 
-- The first part is associated with data preprocessing such as precompute finite element data. 
+- The first part is associated with data preprocessing such as precompute finite element data. The quantities in this part do not require gradients and therefore can leverage the full performance of Julia. 
 - The second part is accociated with finite element. Particularly, the quantity of interest is $D$, which we may want to estimate from data in the future. 
 
 ```julia
@@ -639,6 +639,8 @@ legend()
 
 The implementation in the `while_loop` part is a standard routine in FEM. Other detailed explaination: (1) We use [`SparseTensor`](@ref) to create a sparse matrix out of the row indices, column indices and values. (2) [`scatter_update`](@ref) sets part of the sparse matrix to a given one. [`spzero`](@ref) and [`spdiag`](@ref) are convenient ways to specify zero and identity sparse matrices. (3) The backslash operator will invoke a sparse solver (the default is SparseLU). 
 
+![](./assets/while_loop.png)
+
 ### Sensitivity 
 
 The gradients with respect to the parameters in the finite element coefficient matrix, also known as the **sensitivity**, can be computed using automatic differentiation. For example, to extract the sensitivity of the solution norm with respect to D, we have 
@@ -649,5 +651,31 @@ gradients(sum(sol^2), D)
 
 The output is a 2 by 2 sensitivity matrix. 
 
-## Inversion 
+### Inversion
+
+If we only know the discrete solution, and the form of $D=x\mathbf{I}$, $x>0$. This can be easily done by replacing `D = constant(diagm(0=>ones(2)))` with (the initial guess for $x=2$)
+
+```julia
+D = Variable(2.0) .* [1.0 0.0;0.0 1.0]
+```
+
+Then, we can estimate $x$ using L-BFGS-B 
+
+```julia
+loss = sum((sol - (@. 1-node[:,1]^2-node[:,2]^2))^2)
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+```
+
+The estimated result is 
+
+$$D = \begin{bmatrix}1.0028 & 0.0\\ 0.0 & 1.0028\end{bmatrix}$$
+
+### Custom FEM Kernels: An Example from PoreFlow.jl 
+
+
+
+### Summary
+
+Finite element analysis is a powerful tool in numerical PDEs. However, it is more conceptually sophisticated than the finite difference method and requires more implementation efforts. The important lesson we learned from this tutorial is the necessity of `while_loop`, how to separate the computation into pure Julia and ADCME C++ kernels, and how complex numerical schemes can be implemented in ADCME. 
 
