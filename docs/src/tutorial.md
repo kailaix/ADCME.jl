@@ -14,19 +14,19 @@ The tutorial does not assume readers with experience in deep learning. However, 
 
 **Tutorial Series**
 
-[What is ADCME? Computational Graph, Automatic Differentiation & TensorFlow]("What is ADCME? Computational Graph, Automatic Differentiation & TensorFlow")
+[What is ADCME? Computational Graph, Automatic Differentiation & TensorFlow](https://kailaix.github.io/ADCME.jl/dev/tutorial/#What-is-ADCME?-Computational-Graph,-Automatic-Differentiation-and-TensorFlow-1)
 
-ADCME Basics: Tensor, Type, Operator, Session & Kernel
+[ADCME Basics: Tensor, Type, Operator, Session & Kernel](https://kailaix.github.io/ADCME.jl/dev/tutorial/#ADCME-Basics:-Tensor,-Type,-Operator,-Session-and-Kernel-1)
 
 Mathematical Minimization with ADCME
 
 Sparse Linear Algebra in ADCME
 
-Numerical Scheme in ADCME: Finite Difference Example
+[Numerical Scheme in ADCME: Finite Difference Example](https://kailaix.github.io/ADCME.jl/dev/tutorial/#Numerical-Scheme-in-ADCME:-Finite-Difference-Example-1)
 
-Numerical Scheme in ADCME: Finite Element Example
+[Numerical Scheme in ADCME: Finite Element Example](https://kailaix.github.io/ADCME.jl/dev/tutorial/#Numerical-Scheme-in-ADCME:-Finite-Element-Example-1)
 
-Inverse Modeling in ADCME
+[Inverse Modeling in ADCME](https://kailaix.github.io/ADCME.jl/dev/tutorial/#Inverse-Modeling-with-ADCME-1)
 
 Neural Network Tutorial: Combining NN with Numerical Schemes 
 
@@ -317,6 +317,169 @@ All the intensive computations are  done either in Julia or C++, and therefore w
 ADCME performances operations on tensors. The actual computations are pushed back to low level C++ kernels via operators. A session is need to drive the executation of the computation. It will be easier for you to analyze computational cost and optimize your codes with this computation model in mind. 
 
 
+
+### Tensor Operations
+Here we show a list of commonly used operators in ADCME. 
+
+| Description                       | API                                             |
+| --------------------------------- | ----------------------------------------------- |
+| Constant creation                 | `constant(rand(10))`                            |
+| Variable creation                 | `Variable(rand(10))`                            |
+| Get size                          | `size(x)`                                       |
+| Get size of dimension             | `size(x,i)`                                     |
+| Get length                        | `length(x)`                                     |
+| Resize                            | `reshape(x,5,3)`                                |
+| Vector indexing                   | `v[1:3]`,`v[[1;3;4]]`,`v[3:end]`,`v[:]`         |
+| Matrix indexing                   | `m[3,:]`, `m[:,3]`, `m[1,3]`,`m[[1;2;5],[2;3]]` |
+| Index relative to end             | `v[end]`, `m[1,end]`                            |
+| Extract row (most efficient)      | `m[2]`, `m[2,:]`                                |
+| Extract column                    | `m[:,3]`                                        |
+| Convert to dense diagonal matrix  | `diagm(v)`                                      |
+| Convert to sparse diagonal matrix | `spdiag(v)`                                     |
+| Extract diagonals as vector       | `diag(m)`                                       |
+| Elementwise multiplication        | `a.*b`                                          |
+| Matrix (vector) multiplication    | `a*b`                                           |
+| Matrix transpose                  | `m'`                                            |
+| Dot product                       | `sum(a*b)`                                      |
+| Solve                             | `A\b`                                           |
+| Inversion                         | `inv(m)`                                        |
+| Average all elements              | `mean(x)`                                       |
+| Average along dimension           | `mean(x, dims=1)`                               |
+| Maximum/Minimum of all elements   | `maximum(x)`, `minimum(x)`                      |
+| Squeeze all single dimensions     | `squeeze(x)`                                    |
+| Squeeze along dimension           | `squeeze(x, dims=1)`, `squeeze(x, dims=[1;2])`  |
+| Reduction (along dimension)       | `norm(a)`, `sum(a, dims=1)`                     |
+| Elementwise Multiplication        | `a.*b`                                          |
+| Elementwise Power                 | `a^2`                                           |
+| SVD                               | `svd(a)`                                        |
+
+
+## Sparse Linear Algebra
+
+ADCME augments TensorFlow APIs by adding sparse linear algebra support. In ADCME, sparse matrices are represented by [`SparseTensor`](@ref). This data structure stores `indices`, `rows` and `cols` of the sparse matrices and keep track of relevant information such as whether it is diagonal for performance consideration. The default is row major (due to TensorFlow backend). 
+
+When evaluating `SparseTensor`, the output will be `SparseMatrixCSC`, the native Julia representation of sparse matrices
+
+```julia
+A = run(sess, s) # A has type SparseMatrixCSC{Float64,Int64}
+```
+
+
+
+### Sparse Matrix Construction
+
+* By passing columns (`Int64`), rows (`Int64`) and values (`Float64`) arrays
+```julia
+ii = [1;2;3;4]
+jj = [1;2;3;4]
+vv = [1.0;1.0;1.0;1.0]
+s = SparseTensor(ii, jj, vv, 4, 4)
+```
+* By passing a `SparseMatrixCSC`
+```julia
+using SparseArrays
+s = SparseTensor(sprand(10,10,0.3))
+```
+* By passing a dense array (tensor or numerical array)
+```julia
+D = Array(sprand(10,10,0.3)) # a dense array
+d = constant(D)
+s = dense_to_sparse(d)
+```
+
+There are also special constructors. 
+
+| Description                       | Code           |
+| --------------------------------- | -------------- |
+| Diagonal matrix with diagonal `v` | `spdiag(v)`    |
+| Empty matrix with size `m`, `n`   | `spzero(m, n)` |
+| Identity matrix with size `m`     | `spdiag(m)`    |
+
+
+
+### Matrix Traits
+
+1. Size of the matrices
+
+   ```julia
+   size(s) # (10,20)
+   size(s,1) # 10
+   ```
+
+2. Return `row`, `col`, `val` arrays (also known as COO arrays)
+
+   ```julia
+   ii,jj,vv = find(s)
+   ```
+
+
+
+### Arithmetic Operations
+
+1. Add Subtract
+
+   ```julia
+   s = s1 + s2
+   s = s1 - s2
+   
+   ```
+
+2. Scalar Product
+
+   ```julia
+   s = 2.0 * s1
+   s = s1 / 2.0
+   ```
+
+3. Sparse Product
+
+   ```julia
+   s = s1 * s2
+   ```
+
+4. Transposition
+
+   ```julia
+   s = s1'
+   ```
+
+### Sparse Solvers
+
+1. Solve a linear system (`s` is a square matrix)
+
+   ```julia
+   sol = s\rhs
+   ```
+
+2. Solve a least square system (`s` is a tall matrix)
+
+   ```julia
+   sol = s\rhs
+   ```
+
+!!! note
+    The least square solvers are implemented using Eigen sparse linear packages, and the gradients are also implemented. Thus, the following codes will work as expected (the gradients functions will correctly compute the gradients):
+    ```julia
+    ii = [1;2;3;4]
+    jj = [1;2;3;4]
+    vv = constant([1.0;1.0;1.0;1.0])
+    rhs = constant(rand(4))
+    s = SparseTensor(ii, jj, vv, 4, 4)
+    sol = s\rhs
+    run(sess, sol)
+    run(sess, gradients(sum(sol), rhs))
+    run(sess, gradients(sum(sol), vv))
+    ```
+
+### Assembling Sparse Matrix
+
+In many applications, we want to accumulate `row`, `col` and `val` to assemble a sparse matrix in iterations. For this purpose, we provide the `SparseAssembler` utilities. 
+
+```@docs
+SparseAssembler
+accumulate
+assemble
+```
 
 
 

@@ -5,10 +5,8 @@ using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any[
     "index.md",
-    "inverse_modeling.md",
     "tutorial.md",
-    "Manual" => ["inverse_impl.md", "array.md", "sparse.md", "newton_raphson.md", "parallel.md", "ode.md"],
-    "Resources" => ["customop.md", "global.md", "while_loop.md",
+    "Resources" => ["newton_raphson.md", "parallel.md", "ode.md", "customop.md", "global.md", 
             "julia_customop.md", "pytorchnn.md", "extra.md", "ot.md", "resource_manager.md"],
     "Applications" => ["apps_ana.md", "apps_levy.md", "apps_constitutive_law.md", "apps_ad.md"],
     "api.md"
