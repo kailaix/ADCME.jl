@@ -16,6 +16,10 @@
 %----------------------------------------------------------------------------------------
 
 \documentclass{beamer}
+\usepackage{animate}
+\usepackage{float}
+\usepackage{bm}
+\newcommand{\ChoL}{\mathsf{L}}
 \newcommand{\bx}{\mathbf{x}}
 \newcommand{\ii}{\mathrm{i}}
 \newcommand{\bxi}{\bm{\xi}}
@@ -164,29 +168,39 @@
 \fontencoding{U}\fontfamily{futs}\selectfont\char#1}}
 \newcommand*{\danger}{\TakeFourierOrnament{66}}
 
-\title[ADCME]{ADCME: Automatic Differentiation Library for Computational and Mathematical Engineering} % The short title appears at the bottom of every slide, the full title is only on the title page
+\title[Physics Based Machine Learning]{Physics Based Machine Learning for Inverse Problems} % The short title appears at the bottom of every slide, the full title is only on the title page
 
-\author{\url{https://github.com/kailaix/ADCME.jl}} % Your name
-\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
-{
-%ICME, Stanford University \\ % Your institution for the title page
-%\medskip
-%\textit{kailaix@stanford.edu}\quad \textit{darve@stanford.edu} % Your email address
-}
-\date{\today} % Date, can be changed to a custom date
-
+\author[ADCME]{Kailai Xu and Eric Darve\\\quad\url{https://github.com/kailaix/ADCME.jl} \qquad      \\ $\star$ The Pathway to Physics Based Machine Learning $\star$} % Your name
+%\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+%{
+%%ICME, Stanford University \\ % Your institution for the title page
+%%\medskip
+%%\textit{kailaix@stanford.edu}\quad \textit{darve@stanford.edu} % Your email address
+%}
+\date{}% Date, can be changed to a custom date
 % Mathematics of PDEs
 
 
 \begin{document}
 
+\usebackgroundtemplate{%
+\begin{picture}(0,250)
+\centering
+	{{\includegraphics[width=1.0\paperwidth]{../background}}}
+\end{picture}
+  } 
 %\usebackgroundtemplate{%
 %  \includegraphics[width=\paperwidth,height=\paperheight]{figures/back}} 
 \begin{frame}
+
 \titlepage % Print the title page as the first slide
 
 %dfa
 \end{frame}
+\usebackgroundtemplate{}
+
+\section{Physics Based Machine Learning}
+
 
 
 \begin{frame}
@@ -196,6 +210,7 @@
 		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.
 		\begin{figure}[hbt]
   \includegraphics[width=0.4\textwidth]{../im.png}
+  \includegraphics[width=0.45\textwidth]{../inverse2}
 \end{figure}
 
 	\end{itemize}
@@ -204,60 +219,255 @@
 \begin{frame}
 	\frametitle{Physics Based Machine Learning}
 	\begin{itemize}
-		\item Traditional inverse modeling methods utilize efficient numerical schemes and incorporate physical knowledge (first principles); deep learning learns statistical relations from large amounts of training data.
-		\item We combine the best of the two worlds and invent \textbf{physics based machine learning}. 
+		\item Classical physical modeling relies on efficient numerical schemes for conservation laws derived from first principles; deep learning learns statistical relations from large amounts of training data.
+		\item We combine the best of the two worlds and invent \textbf{physics based machine learning}: \textcolor{red}{only the unknown is modeled with deep neural networks, and the known physical laws are solved with numerical schemes}.
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.9\textwidth]{../physics_based_machine_learning.png}
+  \includegraphics[width=0.8\textwidth]{../physics_based_machine_learning.png}
 \end{figure}
 \end{frame}
+
+\section{Automatic Differentiation for Inverse Modeling}
 
 \begin{frame}
 	\frametitle{Automatic Differentiation}
+The surprising fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
 	\begin{itemize}
-		\item Deep learning and inverse modeling have the same computational model but are disguised under different terminologies.
+		\item Deep learning (and many other machine learning techniques) and inverse modeling share the same computational model: composition of individual operators. 
 	\end{itemize}
-	\begin{center}
-	\small
-	\textcolor{red}{
-		Back-propagation = Automatic Differentiation = Discrete Adjoint State Method}
-	\end{center}
+	
+
+\begin{minipage}[t]{0.4\textwidth}
+
+\
+
+
+
+\begin{center}
+	Back-propagation 
+
+= 
+
+ Automatic Differentiation 
+
+=
+ 
+ Adjoint-State Method
+\end{center}
+\end{minipage}~
+\begin{minipage}[t]{0.6\textwidth}
+\begin{figure}[hbt]
+  \includegraphics[width=0.8\textwidth]{../compare-NN-PDE.png}
+\end{figure}
+\end{minipage}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Automatic Differentiation: Computational Graph}
+	
+	\begin{itemize}
+		\item A computational graph is a functional description of the required computation. In the computationall graph, an edge represents \textcolor{red}{data}, such as a scalar, a vector, a matrix or a tensor. A node represents a \textcolor{red}{function (operator)} whose input arguments are the the incoming edges and output values are are the outcoming edges. 
+		\item How to build a computational graph for $z = \sin(x_1+x_2) + x_2^2 x_3$?
+	\end{itemize}
+	
 	\begin{figure}[hbt]
-  \includegraphics[width=0.6\textwidth]{../compare-NN-PDE.png}
+  \includegraphics[width=1.0\textwidth]{../fd}
 \end{figure}
 \end{frame}
 
 \begin{frame}
-	\frametitle{AD Implementation in ADCME}
+	\frametitle{Automatic Differentiation: Reverse-Mode}
+	
 	\begin{itemize}
-		\item ADCME allows users to use high level script language Julia to implement numerical simulation codes, but obtain the powerful parallelism and scalability provided by TensorFlow and Julia itself.
-		\item Gradients are computed automatically. 
+		\item The reverse-mode automatic differentiation relies on the chain rule 
+		$$\frac{\partial f\circ g (x)}{\partial x} = \frac{\partial f'\circ g(x)}{\partial g} \frac{\partial g'(x)}{\partial x}$$
+		\item Let's see how to compute $\frac{\partial z}{\partial x_i}$, $i=1,2,3$ for $z = \sin(x_1+x_2) + x_2^2 x_3$
+	\end{itemize}
+	\centering
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../bd}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Automatic Differentiation: Mathematical Description}
+	\begin{minipage}[t]{0.49\textwidth}
+	\begin{itemize}
+		\item A computational graph starts from independent variables $x_1$, $x_2$, $\ldots$, $x_n$, which are transformed by the composition of operators $f_k$, $k = n+1, n+2, \ldots, N$
+		$$\begin{aligned}
+    x_{n+1} &= f_{n+1}(\mathbf{x}_{\pi({n+1})})\\
+    x_{n+2} &= f_{n+2}(\mathbf{x}_{\pi({n+2})})\\
+    \ldots\\
+    x_{N} &= f_{N}(\mathbf{x}_{\pi({N})})\\
+\end{aligned}$$
+where $\pi(i) \in \{1,2,\ldots,i-1\}$. 
+\end{itemize}
+\end{minipage}~
+\begin{minipage}[t]{0.49\textwidth}
+  \begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../cg}
+\end{figure}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Automatic Differentiation: Mathematical Description}
+\begin{theorem}[Chain Rule]
+	$$\frac{\partial x_N(x_1, x_2, \ldots, x_{i})}{\partial x_i} = \sum_{j\,:\,i\in \pi(j)}
+    \frac{\partial x_N(x_1, x_2, \ldots, x_j)}{\partial x_j}
+    \frac{\partial x_j(x_1, x_2, \ldots, x_{j-1})}{\partial x_i}$$
+\end{theorem}
+\begin{figure}[hbt]
+  \includegraphics[width=0.6\textwidth]{../cg2}
+\end{figure}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{ADCME}
+	\begin{itemize}
+		\item ADCME allows users to use \textcolor{red}{high performance} and \textcolor{red}{mathematical friendly} programming language Julia to implement numerical schemes, and obtain the \textcolor{red}{comprehensive automatic differentiation functionality}, \textcolor{red}{heterogeneous computing capability}, \textcolor{red}{parallelism} and \textcolor{red}{scalability} provided by the TensorFlow backend. 
+		\item ADCME simplifies programming and improves performance. 
 	\end{itemize}
 	\begin{figure}[hbt]
   \includegraphics[width=1.0\textwidth]{../Julia.png}
 \end{figure}
 \end{frame}
 
+%\begin{frame}
+%	\frametitle{Code Example}
+%	\begin{itemize}
+%		\item  Find $b$ such that $u(0.5)=1.0$ and
+%		$$-bu''(x)+u(x) = 8 + 4x - 4x^2, x\in[0,1], u(0)=u(1)=0$$
+%	\end{itemize}
+%	\begin{figure}[hbt]
+%  \includegraphics[width=0.8\textwidth]{../code.png}
+%\end{figure}
+%\end{frame}
+
+
+
 \begin{frame}
-	\frametitle{Code Example}
+	\frametitle{ADSeismic.jl: A General Approach to Seismic Inversion}
 	\begin{itemize}
-		\item  Find $b$ such that $u(0.5)=1.0$ and
-		$$-bu''(x)+u(x) = 8 + 4x - 4x^2, x\in[0,1], u(0)=u(1)=0$$
+		\item Many seismic inversion problems can be solved within a unified framework. 
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.8\textwidth]{../code.png}
+  \includegraphics[width=1.0\textwidth]{../adseimic.jpeg}
+\end{figure}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{ADSeismic.jl: Earthquake Location Example}
+	\begin{itemize}
+		\item The earthquake source function is parametrized by ($g(t)$ and $x$ are unknowns)
+		$$f(x, t) =  \frac{g(t)}{2\pi \sigma^2} \exp \left( -\frac{||x - x_0||^2}{2 \sigma^2} \right)$$
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../source_time}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{ADSeismic.jl: Benchmark}
+	\begin{itemize}
+		\item ADCME makes the heterogeneous computation capability of TensorFlow available for scientific computing. 
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.7\textwidth]{../benchmark}
 \end{figure}
 \end{frame}
 
 \begin{frame}
+	\frametitle{NNFEM.jl: Constitutive Modeling}
+	
+	\begin{equation}\label{equ:momentum}
+  \begin{aligned}
+		\underbrace{\sigma_{ij,j}}_{\mbox{stress}} + \rho \underbrace{b_i}_{\mbox{external force}} &= \rho \underbrace{\ddot u_i}_{\mbox{velocity}}\\
+		\underbrace{\varepsilon_{ij}}_{\mbox{strain}} &= \frac{1}{2}(u_{j,i}+u_{i,j})
+	\end{aligned}
+\end{equation}
+
+	
+	\begin{itemize}
+		\item \textbf{Observable}: external/body force $b_i$, displacements $u_i$ (strains $\varepsilon_{ij}$ can be computed from $u_i$); density $\rho$ is known.  
+		\item \textbf{Unobservable}: stress $\sigma_{ij}$. 
+		\item Data-driven Constitutive Relations: modeling the strain-stress relation using a neural network
+\begin{equation}\label{equ:nn}
+  	\boxed{\mbox{stress} =\mathcal{M}_{\theta}(\mbox{strain},\ldots)}
+\end{equation}
+		and the neural network is trained by coupling (1) and (2).
+	\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{NNFEM.jl: Robustic Constitutive Modeling}
+	\begin{itemize}
+\item Proper form of constitutive relation is crucial for numerical stability
+{\footnotesize
+\begin{align*}
+\mbox{Hyperelasticity (Static)} \Rightarrow \bm\sigma &= \mathcal{M}_{\theta}(\bm\epsilon) \qquad\qquad\qquad\qquad \\
+\mbox{Hyperelasticity (Dynamic)} \Rightarrow \bm{\sigma}^{n+1}  &=  \ChoL_{\bt}(\bm\epsilon^{n+1}) \ChoL_{\bt}(\bm\epsilon^{n+1})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n}  \\
+	\mbox{Elaso-Plasticity}\Rightarrow \bm\sigma^{n+1} &= \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n} 
+\end{align*}
+}
+	\item Weak form of balance equations of linear momentum 
+	{\small
+	\begin{align*}
+		P_i(\theta) &=\underbrace{ \int_V \rho \ddot u_i \delta u_i dV}_{\mbox{equals 0 for static problems}} + \int_{V} \sigma_{ij} \delta \varepsilon_{ij}dV\\
+		F_i &= \int_{V}\rho b_i \delta u_i dV + \int_{\partial V} t_i\delta u_idS
+	\end{align*}
+	}
+	\item Train the neural network by 
+	$$\boxed{L(\theta) = \min_{\theta}\;\sum_{i=1}^N(P_i(\theta) - F_i)^2}$$
+	The gradient $\nabla L(\theta)$ is computed via automatic differentiation.
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{NNFEM.jl: Robustic Constitutive Modeling}
+\begin{figure}[hbt]
+  \includegraphics[width=0.8\textwidth]{../vs}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{NNFEM.jl: Robustic Constitutive Modeling}
+	\begin{itemize}
+		\item Comparison of different neural network architectures 
+		\begin{align*}
+			\bm\sigma^{n+1} &= \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n} \\
+			\bm{\sigma}^{n+1} &=  \mathsf{NN}_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})\\
+			\bm{\sigma}^{n+1} &=  \mathsf{NN}_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) + \bm{\sigma}^{n}
+		\end{align*}
+	\end{itemize}
+\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../nncons}
+\end{figure}
+\end{frame}
+
+\section{Beyond Automatic Differentiation: Physics Constrained Learning}
+\begin{frame}
+
+
 	\frametitle{Challenges in AD}
 	
 	
 	\begin{minipage}[t]{0.49\textwidth}
 	\vspace{-3cm}
 \begin{itemize}
-	\item ADCME aims to solve the nonlinear implicit operator case via custom operators. 
-	\item Another ongoing effort is automatic calculation of Jacobian (\texttt{IGACS.jl}).
+	\item Most AD frameworks only deal with explicit operators, i.e., the operators that can be expressed by differentiable library functions. 
+	\item A large portion of scientific computing algorithms involve implicit schemes or iterative procedures to some extent.
 \end{itemize}
 \end{minipage}~
 \begin{minipage}[t]{0.49\textwidth}
@@ -272,126 +482,197 @@
 Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
 Linear           & Explicit          & $y=Ax$       \\
 Linear           & Implicit          & $Ax = y$     \\
-Nonlinear        & Explicit          & $y = F(x)$   \\
+\textbf{Nonlinear}        & \textbf{Explicit}          & $y = F(x)$   \\
 \textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
 \end{tabular}
 \end{table}
-
-
-
-
-
-
 \end{frame}
 
 \begin{frame}
-	\frametitle{ADCME Solutions}
-	% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
-\begin{itemize}
-	\item Most inverse modeling problems can be classified into 4 categories. For example, the PDE for describing physics is
-	\begin{equation}
-		\nabla \cdot (\textcolor{red}{X} \nabla u(x)) = 0\quad \mathcal{B}\mathcal{C}(u(x)) = 0
-	\end{equation}
-	We observe some quantities depending on the solution $u$ and want to estimate $X$.
-\end{itemize}
-{
-\tiny
-\begin{table}[]
-\begin{tabular}{@{}llll@{}}
-\toprule
-Expression                                       & Description                & ADCME Solution                         & Note                                     \\ \midrule
-$\nabla \cdot (\textcolor{red}{c} \nabla u(x)) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & Direct optimize the constant $c$                      \\ \hline
-$\nabla \cdot (\textcolor{red}{f(x)} \nabla u(x)) = 0$ & Functional Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx f_{\theta}(x)$             \\ \hline
-$\nabla \cdot (\textcolor{red}{f(u)} \nabla u(x)) = 0$ & Relation Inverse Problem   & \makecell{Deep Learning for\\ Indirect Data}        & $f(u) \approx f_{\theta}(u)$             \\ \hline
-$\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Problem & \makecell{Adversarial Numerical\\ Analysis}         & \makecell{Generative Neural Nets for $\varpi$\\ (unknown random processes)} \\ \bottomrule
-\end{tabular}
-\end{table}
+	\frametitle{Physics Constrained Learning}
+	\begin{itemize}
+		\item Let $L_h$ be a error functional, $F_h$ be the corresponding nonlinear implicit operator, $\theta$ is all the input to this operator and $u_h$ is all the output of this node.
+ $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
+
+\item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
+$${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
+\item Applying the \textcolor{red}{implicit function theorem}
+{  \scriptsize
+\begin{equation*}
+\frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}  \frac{\partial G_h(\theta)}{\partial \theta} = 0  \Rightarrow 
+     \frac{\partial G_h(\theta)}{\partial \theta} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
+\end{equation*}
 }
+\item Finally we have
+{\scriptsize
+\begin{equation*}
+    \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
+    = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}= - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
+    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
+    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}
+\end{equation*}
+}
+
+	\end{itemize}
+	
 \end{frame}
 
 
 \begin{frame}
-	\frametitle{Parameter Inverse Problem: Learning Hidden Geophysical Processes}
+	\frametitle{Physics Constrained Learning}	
+	{\scriptsize$$\boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
+    = - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
+    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
+    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}$$}
+	\begin{minipage}[t]{0.48\textwidth}
+		Step 1: Calculate $w$ by solving a linear system (never invert the matrix!)
+{\scriptsize$$w^T = \underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}\rule[-9pt]{1pt}{0pt}}}_{1\times N} 
+        \;\;
+        \underbrace{\Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}$$}
+Step 2: Calculate the gradient by automatic differentiation 
+{\scriptsize$$w^T\;\underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p} = \frac{\partial (w^T\;  {F_h}(\theta, u_h))}{\partial \theta }\Bigg|_{u_h = {G_h}(\theta )}$$}
+	\end{minipage}\hfill\vline\hfill~
+	\begin{minipage}[t]{0.48\textwidth}
+		Step 1: Calculate $z$ by solving a linear system (never invert the matrix!)
+		{\scriptsize$$z = \underbrace{
+            \Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}
+            \;\; \underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p}$$}
+           Step 2: Calculate the gradient
+           {\scriptsize$$\underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}}}_{1\times N}\; z$$}
+	\end{minipage}
+	\begin{center}
+		\textbf{Which strategy should we use?}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{FwiFlow.jl: Elastic Full Waveform Inversion for subsurface flow problems with intelligent automatic differentiation}
 	\begin{figure}[hbt]
   \includegraphics[width=0.8\textwidth]{../geo.png}
 \end{figure}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Functional Inverse Problem: Calibrating L\'evy Processes}
-	{\small
+\frametitle{FwiFlow.jl: Fully Nonlinear Implicit Schemes}
+\begin{itemize}
+	\item The governing equation is a nonlinear PDE
+{\scriptsize
 	\begin{align*}
-		 		& \phi(\bm{\bxi}) = \mathbb{E}[e^{\ii \langle \bxi, \bX_t \rangle}]= \\
-		 		& \exp\left[t\left( \ii \langle \bb, \bxi \rangle - \frac{1}{2}\langle \bxi, \bA\bxi\rangle  +\int_{\RR^d} \left( e^{\ii \langle \bxi, \bx\rangle} - 1 - \ii \langle \bxi, \bx\rangle \mathbf{1}_{\|\bx\|\leq 1}\right)\red{\nu(d\bx)}\right) \right]
-		 	\end{align*}
-		 	}
-	\begin{figure}[hbt]
-	 \includegraphics[width=0.6\textwidth]{../algo.png}
-\end{figure}
+	\frac{\partial }{{\partial t}}(\phi {\textcolor{red}{S_i}}{\rho _i}) + \nabla  \cdot ({\rho _i}{\mathbf{v}_i}) &= {\rho _i}{q_i},\quad 
+      i = 1,2	\\
+      S_{1} + S_{2} &= 1\\
+      {\mathbf{v}_i} &= - \frac{{K{\textcolor{red}{k_{ri}}}}}{{{\tilde{\mu}_i}}}(\nabla {P_i} - g{\rho _i}\nabla Z), \quad
+      i=1, 2\\
+	k_{r1}(S_1) =& \frac{k_{r1}^o S_1^{L_1}}{S_1^{L_1} + E_1 S_2^{T_1}}\\
+	k_{r2}(S_1) =& \frac{ S_2^{L_2}}{S_2^{L_2} + E_2 S_1^{T_2}}
+	\end{align*}
+	}
+	\item For stability and efficiency, implicit methods are the industrial standards. 
+{\scriptsize	$$\phi (S_2^{n + 1} - S_2^n) - \nabla \cdot \left( {{m_{2}}(S_2^{n + 1})K\nabla \Psi _2^n} \right) \Delta t = 
+\left(q_2^n + q_1^n \frac{m_2(S^{n+1}_2)}{m_1(S^{n+1}_2)}\right) 
+\Delta t\quad m_i(s) = \frac{k_{ri}(s)}{\tilde \mu_i}
+$$}
+\item It is impossible to express the numerical scheme directly in an AD framework. Physics constrained learning is used to enhance the AD framework for computing gradients. 
+\end{itemize}
+
 \end{frame}
 
 \begin{frame}
-	\frametitle{Relation Inverse Problem: Learning Constitutive Relations}
+	\frametitle{FwiFlow.jl: Showcase}
 	\begin{itemize}
-		\item Equilibrium equation
-		\begin{equation*}
-		\mathcal{P}(u(\mathbf{x}), \mathcal{M}(u(\mathbf{x}),\dot u(\mathbf{x}), \mathbf{x})) = \mathcal{F}(u(\mathbf{x}), \mathbf{x}, p)
-	\end{equation*}
-		\item Neural Network Approximation:
-		\begin{equation*}
-			\mathcal{M}_{\theta}(\mathbf{u}) \approx \mathcal{M}(u(\mathbf{x}),\dot u(\mathbf{x}),\mathbf{x})
-		\end{equation*}
-	\end{itemize}
-	
-	
-	\begin{equation*}
-		\boxed{\min_{\theta}\|\mathcal{P}(\mathbf{u}, \mathcal{M}_{\theta}(\mathbf{u})) - \mathcal{F}(\mathbf{u}, \mathbf{x}, p) \|^2_2}
-	\end{equation*}
+		\item Task 1: Estimating the permeability from seismic data 
 		\begin{figure}[hbt]
-	 \includegraphics[width=1.0\textwidth]{../law.png}
+		\centering
+  \includegraphics[width=0.6\textwidth]{../coupled}
 \end{figure}
-\end{frame}
-
-\begin{frame}
-	\frametitle{Probability Inverse Problem: Adversarial Numerical Analysis}
-	
-		\begin{equation*}
-			\begin{cases}     -\nabla \cdot (a(x)\nabla u(x)) = 1 & x\in(0,1)\\
-    u(0) = u(1) = 0 & \mbox{otherwise} \end{cases}
-		\end{equation*}
-		
-		\begin{equation*}
-			a(x) = 1-0.9\exp\left( -\frac{(x-\mu)^2}{2\sigma^2} \right)
-		\end{equation*}
-
-\begin{figure}[hbt]
-	 \includegraphics[width=1.0\textwidth]{../ana.png}
+\item Task 2: Learning the rock physics model from sparse saturation data. The rock physics model is approximated by neural networks  
+{\scriptsize$$f_1(S_1; \theta_1) \approx k_{r1}(S_1)\qquad f_2(S_1; \theta_2) \approx k_{r2}(S_1)$$}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.25\textwidth]{../sat}~
+  \includegraphics[width=0.25\textwidth]{../rock}
 \end{figure}
-\end{frame}
-
-\begin{frame}
-	\frametitle{A Cool Application: \texttt{ADSeismic.jl} (Coming soon)}
-	\begin{itemize}
-		\item An Open Source High Performance Package for General Seismic Inversion Problems
-		\item Problems include:
-		\begin{itemize}
-		\item Full waveform inversion (FWI);
-\item Rupture inversion;
-\item Source-time inversion.
-		\end{itemize}
-		\item Features:
-		\begin{itemize}
-		\item (Multi-)GPU support;
-		\item Easy-to-use;
-		\item Easily extendable.
-		\end{itemize}
 	\end{itemize}
-	
-	\begin{figure}[hbt]
-	 \includegraphics[width=1.0\textwidth]{../adseismic.png}
-\end{figure}
 \end{frame}
+
+\begin{frame}
+	\frametitle{FwiFlow.jl: Showcase}
+	\begin{itemize}
+		\item Task 3: Learning the \textcolor{red}{nonlocal} (space or time) hidden dynamics from seismic data. This is very challenging using traditional method (adjoint-state method) because the dynamics is history dependent. 
+	\end{itemize}
+\begin{table}[htpb]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Governing Equation & $\sigma=0$ & $\sigma=5$ \\ \midrule
+${}_0^CD_t^{0.8}m = 10\Delta m $ & \makecell{$a/a^*\ =1.0000$ \\  $\quad\alpha\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =0.9109$ \\  $\quad\alpha\quad =\mathbf{0.7993}$} \\ \hline
+${}_0^CD_t^{0.2}m = 10\Delta m $ & \makecell{$a/a^*\ =0.9994$ \\  $\quad\alpha\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =0.3474$ \\  $\quad\alpha\quad =\mathbf{0.1826}$}  \\   \bottomrule
+$\frac{\partial m}{\partial t} = -10(-\Delta)^{0.2} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =1.0378$ \\   $\quad s\quad =\mathbf{0.2069}$} \\  \hline
+$\frac{\partial m}{\partial t} = -10(-\Delta)^{0.8} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =1.0365$ \\   $\quad s\quad =\mathbf{0.8093}$}\\  \bottomrule
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+
+\section{Some Perspectives}
+
+\begin{frame}
+	\frametitle{A Parameter/Function Learning View of Inverse Modeling}
+	% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{itemize}
+	\item Most inverse modeling problems can be classified into 4 categories. To be more concrete, consider the PDE for describing physics is
+	\begin{equation}
+		\nabla \cdot (\textcolor{red}{\theta} \nabla u(x)) = 0\quad \mathcal{B}\mathcal{C}(u(x)) = 0
+	\end{equation}
+	We observe some quantities depending on the solution $u$ and want to estimate $\theta$.
+\end{itemize}
+{
+\tiny
+\begin{table}[]
+\begin{tabular}{@{}lllc@{}}
+\toprule
+Expression                                       & Description                & ADCME Solution                         & Note                                     \\ \midrule
+$\nabla \cdot (\textcolor{red}{c} \nabla u(x)) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & \makecell{$c$ is the minimizer of\\ the error functional }                     \\ \hline
+$\nabla \cdot (\textcolor{red}{f(x)} \nabla u(x)) = 0$ & Function Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx f_{w}(x)$             \\ \hline
+$\nabla \cdot (\textcolor{red}{f(u)} \nabla u(x)) = 0$ & Relation Inverse Problem   & \makecell{Residual Learning\\ Physics Constrained Learning}        & $f(u) \approx f_{w}(u)$             \\ \hline
+$\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Problem & \makecell{Generative Neural Networks}         & $\varpi = f_w(v_{\mathrm{latent}})$ \\ \bottomrule
+\end{tabular}
+\end{table}
+}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Scopes, Challenges, and Future Work}
+	\textcolor{red}{\textbf{Physics based machine learning}}: an innovative approach to inverse modeling. 
+	{\scriptsize
+	\begin{enumerate}
+		\item Deep neural networks provide a novel function approximator that outperforms traditional basis functions in certain scenarios. 
+		\item Numerical PDEs are not on the opposite side of machine learning. By expressing the known physical constraints using numerical schemes and approximating the unknown with machine learning models, we combine the best of the two worlds, leading to efficient and accurate inverse modeling tools. 
+	\end{enumerate}
+	}
+		
+		\textcolor{red}{\textbf{Automatic Differentiation}}: the core technique of physics based machine learning.
+		{\scriptsize
+		\begin{enumerate}
+		\item The AD technique is not new; it has existed for several decades and many software exists. 
+		\item The advent of deep learning drives the development of robust, scalable and flexible AD software that leverages the high performance computing environment. 
+		\item As deep learning techniques continue to grow, crafting the tool to incorporate machine learning and AD techniques for inverse modeling is beneficial in scientific computing.
+		\item However, AD is not a panacea. Many scientific computing algorithms cannot be directly expressed by composition of differentiable operators. 
+	\end{enumerate}
+	}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{A General Approach to Inverse Modeling}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../summary}
+\end{figure}
+
+\end{frame}
+
 
 %}
 %\usebackgroundtemplate{}
