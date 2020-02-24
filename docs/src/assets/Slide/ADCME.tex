@@ -219,11 +219,11 @@
 \begin{frame}
 	\frametitle{Physics Based Machine Learning}
 	\begin{itemize}
-		\item Classical physical modeling relies on efficient numerical schemes for conservation laws derived from first principles; deep learning learns statistical relations from large amounts of training data.
+		\item Classical physical modeling relies on efficient numerical schemes for discretizing conservation laws derived from first principles; deep learning learns statistical relations from large amounts of training data.
 		\item We combine the best of the two worlds and invent \textbf{physics based machine learning}: \textcolor{red}{only the unknown is modeled with deep neural networks, and the known physical laws are solved with numerical schemes}.
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.8\textwidth]{../physics_based_machine_learning.png}
+  \includegraphics[width=0.75\textwidth]{../physics_based_machine_learning.png}
 \end{figure}
 \end{frame}
 
@@ -231,9 +231,9 @@
 
 \begin{frame}
 	\frametitle{Automatic Differentiation}
-The surprising fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
+The fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
 	\begin{itemize}
-		\item Deep learning (and many other machine learning techniques) and inverse modeling share the same computational model: composition of individual operators. 
+		\item Deep learning (and many other machine learning techniques) and numerical schemes share the same computational model: composition of individual operators. 
 	\end{itemize}
 	
 
@@ -268,7 +268,7 @@ The surprising fact that bridges the \textcolor{red}{technical} gap between mach
 	\frametitle{Automatic Differentiation: Computational Graph}
 	
 	\begin{itemize}
-		\item A computational graph is a functional description of the required computation. In the computationall graph, an edge represents \textcolor{red}{data}, such as a scalar, a vector, a matrix or a tensor. A node represents a \textcolor{red}{function (operator)} whose input arguments are the the incoming edges and output values are are the outcoming edges. 
+		\item A computational graph is a functional description of the required computation. In the computational graph, an edge represents \textcolor{red}{data}, such as a scalar, a vector, a matrix or a tensor. A node represents a \textcolor{red}{function (operator)} whose input arguments are the the incoming edges and output values are are the outcoming edges. 
 		\item How to build a computational graph for $z = \sin(x_1+x_2) + x_2^2 x_3$?
 	\end{itemize}
 	
@@ -295,8 +295,7 @@ The surprising fact that bridges the \textcolor{red}{technical} gap between mach
 \begin{frame}
 	\frametitle{Automatic Differentiation: Mathematical Description}
 	\begin{minipage}[t]{0.49\textwidth}
-	\begin{itemize}
-		\item A computational graph starts from independent variables $x_1$, $x_2$, $\ldots$, $x_n$, which are transformed by the composition of operators $f_k$, $k = n+1, n+2, \ldots, N$
+	A computational graph starts from independent variables $x_1$, $x_2$, $\ldots$, $x_n$, which are transformed by the composition of operators $f_k$, $k = n+1, n+2, \ldots, N$
 		$$\begin{aligned}
     x_{n+1} &= f_{n+1}(\mathbf{x}_{\pi({n+1})})\\
     x_{n+2} &= f_{n+2}(\mathbf{x}_{\pi({n+2})})\\
@@ -304,7 +303,6 @@ The surprising fact that bridges the \textcolor{red}{technical} gap between mach
     x_{N} &= f_{N}(\mathbf{x}_{\pi({N})})\\
 \end{aligned}$$
 where $\pi(i) \in \{1,2,\ldots,i-1\}$. 
-\end{itemize}
 \end{minipage}~
 \begin{minipage}[t]{0.49\textwidth}
   \begin{figure}[hbt]
