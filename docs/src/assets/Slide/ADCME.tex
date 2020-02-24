@@ -363,7 +363,7 @@ where $\pi(i) \in \{1,2,\ldots,i-1\}$.
 \begin{frame}
 	\frametitle{ADSeismic.jl: Earthquake Location Example}
 	\begin{itemize}
-		\item The earthquake source function is parametrized by ($g(t)$ and $x$ are unknowns)
+		\item The earthquake source function is parameterized by ($g(t)$ and $x_0$ are unknowns)
 		$$f(x, t) =  \frac{g(t)}{2\pi \sigma^2} \exp \left( -\frac{||x - x_0||^2}{2 \sigma^2} \right)$$
 	\end{itemize}
 	\begin{figure}[hbt]
@@ -410,11 +410,10 @@ where $\pi(i) \in \{1,2,\ldots,i-1\}$.
 	\frametitle{NNFEM.jl: Robustic Constitutive Modeling}
 	\begin{itemize}
 \item Proper form of constitutive relation is crucial for numerical stability
-{\footnotesize
-\begin{align*}
-\mbox{Hyperelasticity (Static)} \Rightarrow \bm\sigma &= \mathcal{M}_{\theta}(\bm\epsilon) \qquad\qquad\qquad\qquad \\
-\mbox{Hyperelasticity (Dynamic)} \Rightarrow \bm{\sigma}^{n+1}  &=  \ChoL_{\bt}(\bm\epsilon^{n+1}) \ChoL_{\bt}(\bm\epsilon^{n+1})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n}  \\
-	\mbox{Elaso-Plasticity}\Rightarrow \bm\sigma^{n+1} &= \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n} 
+{\footnotesize\begin{align*}
+&\mbox{Hyperelasticity (Static)} \Rightarrow \bm\sigma = \mathcal{M}_{\theta}(\bm\epsilon) \qquad\qquad\qquad\qquad \\
+&\mbox{Hyperelasticity (Dynamic)} \Rightarrow \bm{\sigma}^{n+1}  =  \ChoL_{\bt}(\bm\epsilon^{n+1}) \ChoL_{\bt}(\bm\epsilon^{n+1})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n}  \\
+&	\mbox{Elaso-Plasticity}\Rightarrow \bm\sigma^{n+1} = \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n} 
 \end{align*}
 }
 	\item Weak form of balance equations of linear momentum 
@@ -479,8 +478,8 @@ where $\pi(i) \in \{1,2,\ldots,i-1\}$.
 \toprule
 Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
 Linear           & Explicit          & $y=Ax$       \\
-Linear           & Implicit          & $Ax = y$     \\
-\textbf{Nonlinear}        & \textbf{Explicit}          & $y = F(x)$   \\
+Nonlinear        & Explicit          & $y = F(x)$   \\
+\textbf{Linear}           & \textbf{Implicit}          & $Ax = y$     \\
 \textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
 \end{tabular}
 \end{table}
@@ -489,7 +488,7 @@ Linear           & Implicit          & $Ax = y$     \\
 \begin{frame}
 	\frametitle{Physics Constrained Learning}
 	\begin{itemize}
-		\item Let $L_h$ be a error functional, $F_h$ be the corresponding nonlinear implicit operator, $\theta$ is all the input to this operator and $u_h$ is all the output of this node.
+		\item Let $L_h$ be a error functional, $F_h$ be the corresponding nonlinear implicit operator, $\theta$ be all the input to this operator and $u_h$ be all the output of this node.
  $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
 
 \item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
@@ -541,6 +540,23 @@ Step 2: Calculate the gradient by automatic differentiation
 	\begin{center}
 		\textbf{Which strategy should we use?}
 	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning: Linear System}
+	
+	\begin{itemize}
+		\item Many physical simulations require solving a linear system 
+		$$F_h(\theta_1,\theta_2, u_h) = \theta_1 - A(\theta_2)u_h$$
+		\item The backpropagation formula
+		\begin{align*}
+			p &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_1} = \frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1}\\
+			q &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_2} = -\frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1} \frac{\partial A(\theta_2)}{\partial \theta_2}
+		\end{align*}
+		which is equivalent to 
+		$$A^T p^T =\left( \frac{\partial  L_h(u_h)}{\partial u_h} \right)^T\quad q = -p\frac{\partial A(\theta_2)}{\partial \theta_2} $$
+	\end{itemize}
+	
 \end{frame}
 
 \begin{frame}
@@ -596,21 +612,25 @@ $$}
 \begin{frame}
 	\frametitle{FwiFlow.jl: Showcase}
 	\begin{itemize}
-		\item Task 3: Learning the \textcolor{red}{nonlocal} (space or time) hidden dynamics from seismic data. This is very challenging using traditional method (adjoint-state method) because the dynamics is history dependent. 
+		\item Task 3: Learning the \textcolor{red}{nonlocal} (space or time) hidden dynamics from seismic data. This is very challenging using traditional methods (e.g., the adjoint-state method) because the dynamics is history dependent. 
 	\end{itemize}
 \begin{table}[htpb]
 \centering
 \begin{tabular}{@{}lll@{}}
 \toprule
 Governing Equation & $\sigma=0$ & $\sigma=5$ \\ \midrule
-${}_0^CD_t^{0.8}m = 10\Delta m $ & \makecell{$a/a^*\ =1.0000$ \\  $\quad\alpha\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =0.9109$ \\  $\quad\alpha\quad =\mathbf{0.7993}$} \\ \hline
-${}_0^CD_t^{0.2}m = 10\Delta m $ & \makecell{$a/a^*\ =0.9994$ \\  $\quad\alpha\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =0.3474$ \\  $\quad\alpha\quad =\mathbf{0.1826}$}  \\   \bottomrule
-$\frac{\partial m}{\partial t} = -10(-\Delta)^{0.2} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =1.0378$ \\   $\quad s\quad =\mathbf{0.2069}$} \\  \hline
-$\frac{\partial m}{\partial t} = -10(-\Delta)^{0.8} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =1.0365$ \\   $\quad s\quad =\mathbf{0.8093}$}\\  \bottomrule
+${}_0^CD_t^{\textbf{0.8}}m = 10\Delta m $ & \makecell{$a/a^*\ =1.0000$ \\  $\quad\alpha\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =0.9109$ \\  $\quad\alpha\quad =\mathbf{0.7993}$} \\ \hline
+${}_0^CD_t^{\textbf{0.2}}m = 10\Delta m $ & \makecell{$a/a^*\ =0.9994$ \\  $\quad\alpha\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =0.3474$ \\  $\quad\alpha\quad =\mathbf{0.1826}$}  \\   \bottomrule
+$\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.2}} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =1.0378$ \\   $\quad s\quad =\mathbf{0.2069}$} \\  \hline
+$\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.8}} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =1.0365$ \\   $\quad s\quad =\mathbf{0.8093}$}\\  \bottomrule
 \end{tabular}
 \end{table}
 
 \end{frame}
+
+
+%\section{}
+% Stochastic Inverse Problems 
 
 
 \section{Some Perspectives}
@@ -620,7 +640,7 @@ $\frac{\partial m}{\partial t} = -10(-\Delta)^{0.8} m$ & \makecell{$a/a^*\ =1.00
 	% Please add the following required packages to your document preamble:
 % \usepackage{booktabs}
 \begin{itemize}
-	\item Most inverse modeling problems can be classified into 4 categories. To be more concrete, consider the PDE for describing physics is
+	\item Most inverse modeling problems can be classified into 4 categories. To be more concrete, consider the PDE for describing physics
 	\begin{equation}
 		\nabla \cdot (\textcolor{red}{\theta} \nabla u(x)) = 0\quad \mathcal{B}\mathcal{C}(u(x)) = 0
 	\end{equation}
