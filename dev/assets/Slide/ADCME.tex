@@ -548,7 +548,7 @@ Step 2: Calculate the gradient by automatic differentiation
 	\frametitle{Physics Constrained Learning: Linear System}
 	
 	\begin{itemize}
-		\item Many physical simulation requires solving a linear system 
+		\item Many physical simulations require solving a linear system 
 		$$F_h(\theta_1,\theta_2, u_h) = \theta_1 - A(\theta_2)u_h$$
 		\item The backpropagation formula
 		\begin{align*}
@@ -556,7 +556,7 @@ Step 2: Calculate the gradient by automatic differentiation
 			q &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_2} = -\frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1} \frac{\partial A(\theta_2)}{\partial \theta_2}
 		\end{align*}
 		which is equivalent to 
-		$$A^T p^T =\left( \frac{\partial \tilde L_h(\theta)}{\partial \theta} \right)^T\quad q = -p\frac{\partial A(\theta_2)}{\partial \theta_2} $$
+		$$A^T p^T =\left( \frac{\partial  L_h(u_h)}{\partial u_h} \right)^T\quad q = -p\frac{\partial A(\theta_2)}{\partial \theta_2} $$
 	\end{itemize}
 	
 \end{frame}
