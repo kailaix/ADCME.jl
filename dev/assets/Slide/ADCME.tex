@@ -19,6 +19,8 @@
 \usepackage{animate}
 \usepackage{float}
 \usepackage{bm}
+\usepackage{mathtools}
+
 \newcommand{\ChoL}{\mathsf{L}}
 \newcommand{\bx}{\mathbf{x}}
 \newcommand{\ii}{\mathrm{i}}
@@ -411,23 +413,43 @@ where $\pi(i) \in \{1,2,\ldots,i-1\}$.
 	\begin{itemize}
 \item Proper form of constitutive relation is crucial for numerical stability
 {\footnotesize\begin{align*}
-&\mbox{Hyperelasticity (Static)} \Rightarrow \bm\sigma = \mathcal{M}_{\theta}(\bm\epsilon) \qquad\qquad\qquad\qquad \\
-&\mbox{Hyperelasticity (Dynamic)} \Rightarrow \bm{\sigma}^{n+1}  =  \ChoL_{\bt}(\bm\epsilon^{n+1}) \ChoL_{\bt}(\bm\epsilon^{n+1})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n}  \\
-&	\mbox{Elaso-Plasticity}\Rightarrow \bm\sigma^{n+1} = \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n} 
+ \mbox{Elasticity} &\Rightarrow \bm\sigma = \mathsf{C}_{\theta}\bm\epsilon \\
+\mbox{Hyperelasticity } &\Rightarrow \begin{cases}\bm\sigma =\mathcal{M}_{\theta}(\bm\epsilon) & \mbox{(Static)} \\
+\bm{\sigma}^{n+1}  =  \ChoL_{\bt}(\bm\epsilon^{n+1}) \ChoL_{\bt}(\bm\epsilon^{n+1})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n}  & \mbox{(Dynamic)} \end{cases} \\
+	\mbox{Elaso-Plasticity} &\Rightarrow \bm\sigma^{n+1} = \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n}) \ChoL_{\bt}(\bm\epsilon^{n+1},\bm{\epsilon}^{n},\bm{\sigma}^{n})^T (\bm{\epsilon}^{n+1} - \bm{\epsilon}^{n})  + \bm{\sigma}^{n} 
 \end{align*}
-}
-	\item Weak form of balance equations of linear momentum 
-	{\small
+}{\footnotesize$$\ChoL_{\bt} = \begin{bmatrix}
+L_{1111}  &  & &  &       &\\
+L_{2211}  & L_{2222} & &   & &\\
+ L_{3311}  &  L_{3322}               & L_{3333} &  & &\\
+               &                 &                 & L_{2323}&  &\\
+              &               &                  &                & L_{1313} &\\
+              &                 &                  &                &                 &L_{1212}\\
+\end{bmatrix}$$}
+	\item \textcolor{red}{Weak convexity}: $\ChoL_{\bt}\ChoL_{\bt}^T \succ 0$
+	\item \textcolor{red}{Time consistency}:  $\bm\sigma^{n+1} \rightarrow \bm \sigma^n$ when $\bm\epsilon^{n+1} \rightarrow \bm \epsilon^n$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{NNFEM.jl: Robustic Constitutive Modeling}
+	\begin{itemize}
+	 \item Weak form of balance equations of linear momentum 
+	{\footnotesize
 	\begin{align*}
-		P_i(\theta) &=\underbrace{ \int_V \rho \ddot u_i \delta u_i dV}_{\mbox{equals 0 for static problems}} + \int_{V} \sigma_{ij} \delta \varepsilon_{ij}dV\\
+		P_i(\theta) &= \int_V \rho \ddot u_i \delta u_i dVt + \int_{V} \textcolor{blue}{\underbrace{\textcolor{blue}{\sigma_{ij}(\theta)}}_{\mathclap{\textcolor{blue}{\mbox{embedded neural network}}}}} \delta \varepsilon_{ij}dV\\
 		F_i &= \int_{V}\rho b_i \delta u_i dV + \int_{\partial V} t_i\delta u_idS
 	\end{align*}
 	}
 	\item Train the neural network by 
-	$$\boxed{L(\theta) = \min_{\theta}\;\sum_{i=1}^N(P_i(\theta) - F_i)^2}$$
+	{\scriptsize $$\boxed{L(\theta) = \min_{\theta}\;\sum_{i=1}^N(P_i(\theta) - F_i)^2}$$}
 	The gradient $\nabla L(\theta)$ is computed via automatic differentiation.
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.75\textwidth]{../rnn}
+\end{figure}
 
-\end{itemize}
 \end{frame}
 
 \begin{frame}
