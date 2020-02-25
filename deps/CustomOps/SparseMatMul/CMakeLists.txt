@@ -33,7 +33,7 @@ include_directories(${TF_INC} ${EIGEN_INC})
 
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 
 add_library(SparseMatMul SHARED SparseMatMul.cpp)

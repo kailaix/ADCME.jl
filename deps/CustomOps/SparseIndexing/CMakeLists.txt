@@ -33,7 +33,7 @@ include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
 link_directories(${TF_LIB})
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS_RELEASE "-march=native -O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 
 add_library(SparseIndexing SHARED SparseIndexing.cpp)
