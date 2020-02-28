@@ -26,6 +26,8 @@ Mathematical Minimization with ADCME
 
 [Inverse Modeling in ADCME](./tu_inv.md)
 
+[Inverse Modeling Recipe](./tu_recipe.md)
+
 Neural Network Tutorial: Combining NN with Numerical Schemes 
 
 [Advanced: Automatic Differentiation for Implicit Operations](./tu_implicit.md)
