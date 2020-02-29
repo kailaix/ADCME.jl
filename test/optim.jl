@@ -154,7 +154,6 @@ end
     function L1(u)
         return sum(u)
     end
-    verify_NonlinearConstrainedProblem(sess, f1,L1,θ,u0); 
     close("all")
 
     function value_and_gradients_function(θ)

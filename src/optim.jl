@@ -11,8 +11,7 @@ ScipyOptimizerMinimize,
 BFGS!,
 CustomOptimizer,
 newton_raphson,
-NonlinearConstrainedProblem,
-verify_NonlinearConstrainedProblem
+NonlinearConstrainedProblem
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -149,7 +148,7 @@ function CustomOptimizer(opt::Function)
 end
 
 
-@doc """
+@doc raw"""
     BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
     vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, kwargs...)
 
@@ -160,11 +159,25 @@ callback(vs::Array, iter::Int64, loss::Float64)
 ```
 `vars` is an array consisting of tensors and its values will be the input to `vs`.
 
-# example
+# Example 1
 ```julia
 a = Variable(1.0)
 loss = (a - 10.0)^2
+sess = Session(); init(sess)
 BFGS!(sess, loss)
+```
+
+# Example 2
+```julia
+θ1 = Variable(1.0)
+θ2 = Variable(1.0)
+loss = (θ1-1)^2 + (θ2-2)^2
+cb = (vs, iter, loss)->begin 
+    printstyled("[#iter $iter] θ1=$(vs[1]), θ2=$(vs[2]), loss=$loss\n", color=:green)
+end
+sess = Session(); init(sess)
+cb(run(sess, [θ1, θ2]), 0, run(sess, loss))
+BFGS!(sess, loss, 100; vars=[θ1, θ2], callback=cb)
 ```
 """->
 function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
@@ -486,47 +499,39 @@ function NonlinearConstrainedProblem(f::Function, L::Function, θ::Union{Array{F
     l, nr.x, tf.convert_to_tensor(-gradients(sum(r*g), θ))
 end
 
-function verify_NonlinearConstrainedProblem(sess::PyObject, f::Function, L::Function, θ::Union{PyObject,Array{Float64,1}, Float64}, 
-    u0::Union{PyObject, Array{Float64}}, args...; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
-    if isa(θ, PyObject)
-        θ = run(sess, θ, args...)
-    end
-    x = placeholder(Float64, shape=[length(θ)])
-    l, u, g = NonlinearConstrainedProblem(f, L, x, u0; options=options)
-    L_ = run(sess, l, x=>θ, args...)
-    J_ = run(sess, g, x=>θ, args...)
-    v = rand(length(x))
-    γs = 1.0 ./ 10 .^ (1:5)
-    v1 = Float64[]
-    v2 = Float64[]
-    for i = 1:5
-        L__ = run(sess, l, x=>θ+v*γs[i], args...)
-        # @show L__,L_,J_, v
-        push!(v1, L__-L_)
-        push!(v2, L__-L_-γs[i]*sum(J_.*v))
-    end
-    close("all")
-    loglog(γs, abs.(v1), "*-", label="finite difference")
-    loglog(γs, abs.(v2), "+-", label="automatic linearization")
-    loglog(γs, γs.^2 * 0.5*abs(v2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
-    loglog(γs, γs * 0.5*abs(v1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
-    plt.gca().invert_xaxis()
-    legend()
-    xlabel("\$\\gamma\$")
-    ylabel("Error")
-end
 
 @doc raw"""
     BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyObject}, 
-        vars::Union{Array{PyObject},PyObject}; kwargs...) where T<:Union{Nothing, PyObject}
+    vars::Union{Array{PyObject},PyObject}; kwargs...) where T<:Union{Nothing, PyObject}
 
 Running BFGS algorithm
 ``\min_{\texttt{vars}} \texttt{loss}(\texttt{vars})``
 The gradients `grads` must be provided. Typically, `grads[i] = gradients(loss, vars[i])`. 
 `grads[i]` can exist on different devices (GPU or CPU). 
+
+# Example 1
+```julia
+a = Variable(0.0)
+loss = (a-1)^2
+g = gradients(loss, a)
+sess = Session(); init(sess)
+BFGS!(sess, loss, g, a)
+```
+
+# Example 2
+```julia 
+a = Variable(0.0)
+loss = (a^2+a-1)^2
+g = gradients(loss, a)
+sess = Session(); init(sess)
+cb = (vs, iter, loss)->begin 
+    printstyled("[#iter $iter] a = $vs, loss=$loss\n", color=:green)
+end
+BFGS!(sess, loss, g, a; callback = cb)
+```
 """
 function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyObject}, 
-        vars::Union{Array{PyObject},PyObject}; kwargs...) where T<:Union{Nothing, PyObject}
+        vars::Union{Array{PyObject},PyObject}; callback::Union{Function, Missing}=missing, kwargs...) where T<:Union{Nothing, PyObject}
     if isa(grads, PyObject); grads = [grads]; end
     if isa(vars, PyObject); vars = [vars]; end
     if length(grads)!=length(vars); error("ADCME: length of grads and vars do not match"); end
@@ -556,6 +561,8 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
     
     __loss = 0.0
     __losses = Float64[]
+    __iter = 0
+    __value = nothing
     function f(x)
         run(sess, assign_ops, pl=>x)
         __loss = run(sess, loss)
@@ -564,15 +571,21 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
 
     function g!(G, x)
         run(sess, assign_ops, pl=>x)
+        __value = x
         G[:] = run(sess, grds)
     end
 
-    function callback(x)
+    function callback1(x)
+        __iter = x.iteration + 1
+        __loss = x.value
         push!(__losses, __loss)
+        if !ismissing(callback)
+            callback(__value, __iter, __loss)
+        end
         false
     end
 
-    Optim.optimize(f, g!, x0, Optim.LBFGS(), Optim.Options(show_trace=true, callback=callback,
+    Optim.optimize(f, g!, x0, Optim.LBFGS(), Optim.Options(show_trace=true, callback=callback1,
          kwargs...))
     return __losses
 end

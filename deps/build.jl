@@ -91,8 +91,16 @@ end
 @info "Preparing environment for custom operators"
 tf = pyimport("tensorflow")
 if haskey(ENV, "GPU");enable_gpu();end
+
 lib = readdir(splitdir(tf.__file__)[1])
 tflib = joinpath(splitdir(tf.__file__)[1],lib[findall(occursin.("libtensorflow_framework", lib))[1]])
+surfix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
+if !isfile(joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix"))
+    @info "making symbolic link to libtensorflow_framework"
+    symlink(tflib, joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix"))
+end
+tflib = joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix")
+
 TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
 TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
