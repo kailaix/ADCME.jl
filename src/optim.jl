@@ -12,7 +12,6 @@ BFGS!,
 CustomOptimizer,
 newton_raphson,
 NonlinearConstrainedProblem,
-verify_jacobian,
 verify_NonlinearConstrainedProblem
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
@@ -451,32 +450,6 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     sol = stop_gradient(sol)
     res = stop_gradient(res)
     NRResult(sol, res, u_his', converged, iter)
-end
-
-
-function verify_jacobian(sess::PyObject, f::Function, θ::Union{Array{Float64}, PyObject, Missing}, u0::Array{Float64}, args...)
-    u = placeholder(Float64, shape=[length(u0)])
-    L, J = f(θ, u)
-    L_ = run(sess, L, u=>u0, args...)
-    J_ = run(sess, J, u=>u0, args...)
-    v = rand(length(u0))
-    γs = 1.0 ./ 10 .^ (1:5)
-    v1 = Float64[]
-    v2 = Float64[]
-    for i = 1:5
-        L__ = run(sess, L, u=>u0+v*γs[i], args...)
-        push!(v1, norm(L__-L_))
-        push!(v2, norm(L__-L_-γs[i]*J_*v))
-    end
-    close("all")
-    loglog(γs, abs.(v1), "*-", label="finite difference")
-    loglog(γs, abs.(v2), "+-", label="automatic linearization")
-    loglog(γs, γs.^2 * 0.5*abs(v2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
-    loglog(γs, γs * 0.5*abs(v1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
-    plt.gca().invert_xaxis()
-    legend()
-    xlabel("\$\\gamma\$")
-    ylabel("Error")
 end
 
 
