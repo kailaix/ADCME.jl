@@ -25,9 +25,7 @@ Start building your forward and inverse modeling using ADCME today!
 
 | Documentation                                                | Tutorial                                                     | Research                                                     |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) | [![https://img.shields.io/badge/tutorial-Inverse%20Modeling-brightgreen](https://img.shields.io/badge/tutorials-Inverse Modeling-brightgreen)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
-
-https://kailaix.github.io/ADCME.jl/dev/apps
+| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) | [![](https://img.shields.io/badge/tutorials-Inverse%20Modeling-brightgreen)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
 
 # Installation
 
@@ -59,7 +57,7 @@ Pkg.build("ADCME")
 
 # Tutorial
 
-Consider solving the following problem
+For a detailed tutorial, click [here](https://kailaix.github.io/ADCME.jl/dev/tutorial/). Consider solving the following problem
 
 -bu''(x)+u(x) = f(x), x∈[0,1], u(0)=u(1)=0
 
