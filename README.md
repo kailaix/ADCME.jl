@@ -25,7 +25,7 @@ Start building your forward and inverse modeling using ADCME today!
 
 | Documentation                                                | Tutorial                                                     | Research                                                     |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) | [![https://img.shields.io/badge/tutorial-Inverse%20Modeling-brightgreen](https://img.shields.io/badge/tutorials-Inverse Modeling-brightgreen)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
+| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) | [![](https://img.shields.io/badge/tutorials-Inverse%20Modeling-brightgreen)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
 
 https://kailaix.github.io/ADCME.jl/dev/apps
 
