@@ -576,7 +576,7 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
     end
 
     function callback1(x)
-        __iter = x.iteration + 1
+        __iter = x.iteration
         __loss = x.value
         push!(__losses, __loss)
         if !ismissing(callback)
