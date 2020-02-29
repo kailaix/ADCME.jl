@@ -69,7 +69,7 @@ sess = Session(); init(sess)
 lineview(sess, θ, loss, [1.;2.;3.;4.], zeros(4)) # or meshview(sess, θ, loss, [1.;2.;3.;4.])
 ```
 
-![image-20200227233902747](/Users/kailaix/Desktop/ADCME.jl/docs/src/assets/landscape.png)
+![image-20200227233902747](./assets/landscape.png)
 
 The landscape is very nice (convex and smooth)! That means the optimization should be very easy. 
 

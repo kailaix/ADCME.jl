@@ -23,11 +23,11 @@ Several features of the library are
 
 Start building your forward and inverse modeling using ADCME today!
 
-| Documentation                                                |
-| ------------------------------------------------------------ |
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) |
+| Documentation                                                | Tutorial                                                     | Research                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) | [![https://img.shields.io/badge/tutorial-Inverse%20Modeling-brightgreen](https://img.shields.io/badge/tutorials-Inverse Modeling-brightgreen)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
 
-
+https://kailaix.github.io/ADCME.jl/dev/apps
 
 # Installation
 
@@ -134,16 +134,6 @@ using ADCME;
 print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
 ```
 
-# Research Work
-
-
-| <img src="docs/src/assets/ana.png" width="380">              | <img src="docs/src/assets/levy.png" width="380">             |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Stochastic Inversion with Adversarial Training [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ana/) | Calibrating Lévy Processes  [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
-| <img src="docs/src/assets/law.png" width="380">              | <img src="docs/src/assets/diagram.png" width="380">          |
-| Learning Constitutive Relations  [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/) | Time-lapse FWI  [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |
-| <img src="docs/src/assets/hidden.png" width="380">           |                                                              |
-| Intelligent Automatic Differentiation [[Documentation]](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) |                                                              |
 
 
 
