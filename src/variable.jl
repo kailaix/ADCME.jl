@@ -87,6 +87,17 @@ function get_variable(name; kwargs...)
     tf.compat.v1.get_variable(name;kwargs...)
 end
 
+"""
+    placeholder(dtype::Type; kwargs...)
+
+Creates a placeholder of the type `dtype`.
+# Example 
+```julia
+a = placeholder(Float64, shape=[20,10])
+b = placeholder(Float64, shape=[]) # a scalar 
+c = placeholder(Float64, shape=[nothing]) # a vector
+```
+"""
 function placeholder(dtype::Type; kwargs...)
     dtype = DTYPE[dtype]
     kwargs = Dict{Any,Any}(kwargs)
@@ -96,6 +107,11 @@ function placeholder(dtype::Type; kwargs...)
     tf.compat.v1.placeholder(dtype;kwargs...)
 end
 
+"""
+    placeholder(o::Union{Number, Array, PyObject}; kwargs...)
+
+Creates a placeholder of the same type and size as `o`. `o` is the default value. 
+"""
 function placeholder(o::Union{Number, Array, PyObject}; kwargs...)
     o = convert_to_tensor(o; kwargs...)
     tf.compat.v1.placeholder_with_default(o, shape=size(o))

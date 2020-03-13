@@ -71,6 +71,20 @@ Modules = [ADCME]
 Pages   = ["extra.jl"]
 ```
 
+## ODE
+
+```@autodocs
+Modules = [ADCME]
+Pages   = ["ode.jl"]
+```
+
+## Optimal Transport
+
+```@autodocs
+Modules = [ADCME]
+Pages   = ["ot.jl"]
+```
+
 ## Misc
 
 ```@autodocs

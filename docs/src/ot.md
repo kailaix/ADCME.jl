@@ -23,7 +23,7 @@ loss = sinkhorn(ones(K)/K, ones(K)/K, M, reg=0.1)
 ```
 
 **Example 1**
-In the first example, we assume the desired distribution is the standard Gaussian. We minimize the loss function with [`AdamOptimizer`](@ref)
+In the first example, we assume the desired distribution is the standard Gaussian. We minimize the loss function with the Adam optimizer
 ```julia
 opt = AdamOptimizer().minimize(loss)
 sess = Session(); init(sess)

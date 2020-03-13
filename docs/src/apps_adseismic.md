@@ -12,7 +12,7 @@ Imaging Earth structure or seismic sources from seismic data involves minimizing
 
 | Connection Between the Adjoint-State Method and Automatic Differentiation | Remarkable Multi-GPU Acceleration               | Earthquake Location and Source-Time Function Inversion       |
 | ------------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------ |
-| ![compare-NN-PDE](./assets/compare-NN-PDE.png)               | ![image-20200313110921108](./assets/cpugpu.png) | ![image-20200313111045121](/Users/kailaix/Desktop/ADCME.jl/docs/src/assets/earthquake.png) |
+| ![compare-NN-PDE](./assets/compare-NN-PDE.png)               | ![image-20200313110921108](./assets/cpugpu.png) | ![image-20200313111045121](./assets/earthquake.png) |
 
 
 

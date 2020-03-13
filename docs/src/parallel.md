@@ -45,7 +45,6 @@ julia> b.device
 **Collocate Gradient Operators**
 
 When we call `gradients`, TensorFlow actually creates a set of new operators, one for each operator in the forward computation. By default, those operators are placed on the default device (`GPU:0` if GPU is available; otherwise it's `CPU:0`). Sometimes we want to place the operators created by gradients on the same devices as the corresponding forward computation operators. For example, if the operator `b` (`sin`) in the last example is on `GPU:0`, we hope the corresponding gradient computation (`cos`) is also on `GPU:0`. This can be done by specifying `colocate` [^colocate] keyword arguments in `gradients`:
-[^colocate]: Unfortunately, in the TensorFlow APIs, "collocate" is spelt as "colocate". 
 ```julia
 @pywith tf.device(assign_to_device("/device:GPU:0")) begin
     global a = Variable(1.0)
@@ -81,3 +80,5 @@ save_profile("false.json")
   end
   ```
   and bind `update_ops` to an active operator (or explictly execute it in `run(sess,...)`).
+
+[^colocate]: Unfortunately, in the TensorFlow APIs, "collocate" is spelt as "colocate". 
