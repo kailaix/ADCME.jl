@@ -54,6 +54,7 @@ ENV["GPU"] = 1
 Pkg.build("ADCME")
 ```
 
+For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
 
 # Tutorial
 
@@ -105,32 +106,13 @@ Under the hood, a computational graph is created for gradients back-propagation.
 
 ![](docs/src/assets/code.png)
 
-
 For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 
+#Featured Applications
 
-# Manual Installation
-
-It is recommended that you use the default build script. However, in some cases, you may want to install the package and configure the environment manually. 
-
-Step 1: Install `ADCME` on a computer with Internet access and zip all files from the following paths
-```julia
-julia> using Pkg
-julia> Pkg.depots()
-```
-The files will contain all the dependencies. 
-
-Step 2: Build `ADCME` mannually. 
-```julia
-using Pkg;
-ENV["manual"] = 1
-Pkg.build("ADCME")
-```
-However, in this case you are responsible for configuring the environment by modifying the file
-```julia
-using ADCME; 
-print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
-```
+| [Constitutive Modeling](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/) | [Seismic Inversion](https://kailaix.github.io/ADCME.jl/dev/apps_adseismic) | [Coupled Two-Phase Flow and Time-lapse FWI](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) | [Calibrating Jump Diffusion](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![law](docs/src/assets/law.png)                              | ![law](docs/src/assets/earthquake.png)                       | ![law](docs/src/assets/geo.png)                              | ![law](docs/src/assets/algo.png)                             |
 
 
 

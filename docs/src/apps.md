@@ -10,6 +10,8 @@ We design data-driven algorithms for estimating unknown parameters, functions, f
 
 [Intelligent Automatic Differentiation ](./apps_ad.md)
 
-[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](./adds_constitutive_law.md)
+[Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks](./apps_constitutive_law.md)
 
-[Calibrating Multivariate Lévy Processes with Neural Networks](./adds_levy.md)
+[Calibrating Multivariate Lévy Processes with Neural Networks](./apps_levy.md)
+
+[General Seismic Inversion using Automatic Differentiation](./apps_adseismic.md)

@@ -16,4 +16,38 @@ The package inherents the scalability and efficiency from the well-optimized bac
 
 ![](./assets/op.png)
 
-Read more about the methodology, the philosophy, the insights and the perspective about ADCME: [slides](./assets/Slide/ADCME.pdf). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems. 
+Read more about the methodology, the philosophy, the insights and the perspective about ADCME: [slides](./assets/Slide/ADCME.pdf). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems.
+
+**Installation**
+
+It is recommended to install ADCME via
+```julia
+using Pkg; Pkg.add("ADCME")
+```
+
+However, in some cases, you may want to install the package and configure the environment manually. 
+
+Step 1: Install `ADCME` on a computer with Internet access and zip all files from the following paths
+
+```julia
+julia> using Pkg
+julia> Pkg.depots()
+```
+
+The files will contain all the dependencies. 
+
+Step 2: Build `ADCME` mannually. 
+
+```julia
+using Pkg;
+ENV["manual"] = 1
+Pkg.build("ADCME")
+```
+
+However, in this case you are responsible for configuring the environment by modifying the file
+
+```julia
+using ADCME; 
+print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
+```
+
