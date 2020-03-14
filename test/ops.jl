@@ -110,6 +110,17 @@ end
     @test run(sess, A) ≈ a
 end
 
+@testset "adjoint" begin
+    a = 1.0
+    @test run(sess, constant(a)')≈a'
+    a = rand(10)
+    @test run(sess, constant(a)')≈a'
+    a = rand(10,10)
+    @test run(sess, constant(a)')≈a'
+    a = rand(2,3,4,5)
+    @test run(sess, constant(a)')≈permutedims(a, [1,2,4,3])
+end
+
 @testset "scatter_update_pyobject" begin
     A = constant(ones(10))
     B = constant(ones(3))
@@ -190,13 +201,16 @@ end
 @testset "Vectorize" begin
     A = rand(10)
     B = reshape(A, 2, 5)
-    tA = Variable(A)
-    tB = Variable(B)
+    tA = constant(A)
+    tB = constant(B)
     rA = rvec(tA)
     cB = vec(tB)
     init(sess)
     a, b = run(sess, [rA, cB])
     @test a≈reshape(A, 1, 10)
+    @test run(sess, rvec(constant(B)))≈reshape(B[:], 1, :)
+    @test run(sess, cvec(constant(B)))≈B[:] && size(cvec(constant(B)))==(10,1)
+    @test run(sess, vec(constant(B)))≈B[:]
     @test b≈A
 end
 

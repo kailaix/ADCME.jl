@@ -173,18 +173,88 @@ end
     reshape(o::PyObject, ::Colon, n::Integer)
     reshape(o::PyObject, n::Integer, ::Colon)
 
-Reshapes the tensor. `reshape` is compatible with 
+Reshapes the tensor according to row major if the "TensorFlow style" syntax is used; otherwise 
+reshaping according to column major is assumed. 
+
+# Example
+```julia
+reshape(a, [10,5]) # row major 
+reshape(a, 10, 5) # column major 
+```
 """
 function reshape(o::PyObject, s::Union{Array{<:Integer}, Tuple{Vararg{<:Integer, N}}}) where N 
     tf.reshape(o, s)
 end
 
-
 function reshape(o::PyObject, s::Integer; kwargs...)
-    if length(size(o))==2
+    if length(size(o))>=2
         return tf.reshape(o', [s]; kwargs...)
     end
     tf.reshape(o, [s]; kwargs...)
+end
+
+function reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
+    if length(size(o))==1
+        return tf.reshape(o, [n,m]; kwargs...)'
+    elseif length(size(o))==2
+        return tf.reshape(o', [n,m]; kwargs...)'
+    end
+    tf.reshape(o, [m, n]; kwargs...)
+end
+
+reshape(o::PyObject, ::Colon, n::Integer) = reshape(o, -1, n)
+reshape(o::PyObject, n::Integer, ::Colon) = reshape(o, n, -1)
+
+"""
+    rvec(o::PyObject; kwargs...)
+
+Vectorizes the tensor `o` to a row vector, assuming column major.
+"""
+function rvec(o::PyObject; kwargs...)
+    s = size(o)
+    if length(s)==0
+        return reshape(o, 1, 1, kwargs...)
+    elseif length(s)==1
+        return reshape(o, 1, s[1], kwargs...)
+    elseif length(s)==2
+        return reshape(o, 1, s[1]*s[2], kwargs...)
+    else
+        error("Invalid argument")
+    end
+end
+
+"""
+    rvec(o::PyObject; kwargs...)
+
+Vectorizes the tensor `o` to a column vector, assuming column major.
+"""
+function cvec(o::PyObject;kwargs...)
+    s = size(o)
+    if length(s)==0
+        return reshape(o, 1, 1,kwargs...)
+    elseif length(s)==1
+        return reshape(o, s[1], 1,kwargs...)
+    elseif length(s)==2
+        return reshape(o, s[1]*s[2], 1,kwargs...)
+    else
+        error("Invalid argument")
+    end
+end
+
+"""
+    vec(o::PyObject;kwargs...)
+
+Vectorizes the tensor `o` assuming column major. 
+"""
+function vec(o::PyObject;kwargs...)
+    s = size(o)
+    if length(s)==0
+        return reshape(o, 1, kwargs...)
+    elseif length(s)==1
+        return o
+    elseif length(s)>=2
+        return reshape(o, s[1]*s[2])
+    end
 end
 
 """
@@ -210,25 +280,6 @@ end
 
 set_shape(o::PyObject, s::Integer...) = set_shape(o, s)
 
-function reshape(o::PyObject, m::Integer, n::Integer; kwargs...)
-    if length(size(o))==1
-        return tf.reshape(o, [n,m]; kwargs...)'
-    elseif length(size(o))==2
-        return tf.reshape(o', [n,m]; kwargs...)'
-    end
-    tf.reshape(o, [m, n]; kwargs...)
-end
-
-reshape(o::PyObject, ::Colon, n::Integer) = reshape(o, -1, n)
-reshape(o::PyObject, n::Integer, ::Colon) = reshape(o, n, -1)
-
-
-function _tfreshape(o::PyObject, s...; kwargs...)
-    if length(size(o))==2
-        return tf.reshape(o', [s...]; kwargs...)
-    end
-    tf.reshape(o, [s...]; kwargs...)
-end
 
 function sigmoid(x::Real)
     return 1/(1+exp(-x))
@@ -399,66 +450,21 @@ function group_assign(os::Array{PyObject}, values, args...; kwargs...)
     ops
 end
 
-"""
-    rvec(o::PyObject; kwargs...)
-
-Vectorizes the tensor `o` to a row vector, assuming row major.
-"""
-function rvec(o::PyObject; kwargs...)
-    s = size(o)
-    if length(s)==0
-        return reshape(o, 1, 1, kwargs...)
-    elseif length(s)==1
-        return reshape(o, 1, s[1], kwargs...)
-    elseif length(s)==2
-        return reshape(o, 1, s[1]*s[2], kwargs...)
-    else
-        error("Invalid argument")
-    end
-end
 
 """
-    rvec(o::PyObject; kwargs...)
+    adjoint(o::PyObject; kwargs...) 
 
-Vectorizes the tensor `o` to a column vector, assuming column major.
+Returns the conjugate adjoint of `o`. 
+When the dimension of `o` is greater than 2, only the last two dimensions are permuted, i.e., `permutedims(o, [1,2,...,n,n-1])`
 """
-function cvec(o::PyObject;kwargs...)
-    s = size(o)
-    if length(s)==0
-        return reshape(o, 1, 1,kwargs...)
-    elseif length(s)==1
-        return reshape(o, s[1], 1,kwargs...)
-    elseif length(s)==2
-        return reshape(o, s[1]*s[2], 1,kwargs...)
-    else
-        error("Invalid argument")
-    end
-end
-
-"""
-    vec(o::PyObject;kwargs...)
-
-Vectorizes the tensor `o` assuming column major. 
-"""
-function vec(o::PyObject;kwargs...)
-    s = size(o)
-    if length(s)==0
-        return reshape(o, 1,kwargs...)
-    elseif length(s)==1
-        return o
-    elseif length(s)==2
-        return tf.reshape(tf.linalg.adjoint(o), (s[1]*s[2],),kwargs...)
-    else
-        error("Invalid argument")
-    end
-end
-
-# linear algebra
 function adjoint(o::PyObject; kwargs...) 
-    if length(size(o))<=1
+    if length(size(o))==0
+        return o 
+    elseif length(size(o))==1
         return rvec(o)
+    else
+        return tf.linalg.adjoint(o; kwargs...)
     end
-    tf.linalg.adjoint(o; kwargs...)
 end
 diagm(o::PyObject; kwargs...) = tf.linalg.diag(o; kwargs...)
 diag(o::PyObject; kwargs...) = tf.linalg.diag_part(o; kwargs...)
@@ -789,6 +795,11 @@ b = map(x->sum(x), a) # equivalent to `sum(a, dims=2)`
 """
 function map(fn::Function, o::Union{Array{PyObject},PyObject};
          kwargs...)
+    # if `o` is not a tensorflow tensor, roll back to normal `map`
+    if (isa(o, Array) && !haskey(o[1], :graph)) ||
+        (isa(o, PyObject) && !haskey(o, :graph))
+        return fn.(o)
+    end
     kwargs = jlargs(kwargs)
     tf.map_fn(fn, o;kwargs...)
 end

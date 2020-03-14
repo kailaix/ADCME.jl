@@ -167,6 +167,10 @@ function PyCall.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
 end
 
 function PyCall.:length(o::PyObject) 
+    # If `o.shape.dims` is invalid, it is not a TensorFlow object.
+    if (!haskey(o, :shape)) || (!haskey(o.shape, :dims))
+        PyCall.@pycheckz ccall((PyCall.@pysym :PySequence_Size), Int, (PyCall.PyPtr,), o)
+    end
     if any(isnothing.(size(o)))
         return nothing
     else
@@ -390,7 +394,7 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
     temp = Base.Iterators.product(i2,i1)|>collect
     indices = [vec([x[2] for x in temp]) vec([x[1] for x in temp])] .- 1
     p = tf.gather_nd(o, indices)
-    p = _tfreshape(p, length(i1), length(i2))
+    p = tf.reshape(p', (length(i1), length(i2)))
 
     if sdim1 
         return squeeze(p, dims=1)
