@@ -168,7 +168,7 @@ end
 
 function PyCall.:length(o::PyObject) 
     # If `o.shape.dims` is invalid, it is not a TensorFlow object.
-    if (!haskey(o, :shape)) || (!haskey(o.shape, :dims))
+    if (!hasproperty(o, :shape)) || (!hasproperty(o.shape, :dims))
         PyCall.@pycheckz ccall((PyCall.@pysym :PySequence_Size), Int, (PyCall.PyPtr,), o)
     end
     if any(isnothing.(size(o)))

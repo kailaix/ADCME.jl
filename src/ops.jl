@@ -796,8 +796,8 @@ b = map(x->sum(x), a) # equivalent to `sum(a, dims=2)`
 function map(fn::Function, o::Union{Array{PyObject},PyObject};
          kwargs...)
     # if `o` is not a tensorflow tensor, roll back to normal `map`
-    if (isa(o, Array) && !haskey(o[1], :graph)) ||
-        (isa(o, PyObject) && !haskey(o, :graph))
+    if (isa(o, Array) && !hasproperty(o[1], :graph)) ||
+        (isa(o, PyObject) && !hasproperty(o, :graph))
         return fn.(o)
     end
     kwargs = jlargs(kwargs)
