@@ -168,6 +168,9 @@ end
 
 function PyCall.:*(s::SparseTensor, o::PyObject)
     flag = false
+    if length(size(o))==0
+        return o * s 
+    end
     if length(size(o))==1
         flag = true
         o = reshape(o, length(o), 1)
@@ -185,7 +188,7 @@ end
 
 function PyCall.:*(o::PyObject, s::SparseTensor)
     if length(size(o))==0
-        SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape), s._diag)
+        SparseTensor(tf.SparseTensor(copy(s.o.indices), o*tf.identity(s.o.values), s.o.dense_shape), s._diag)
     else
         tf.sparse.sparse_dense_matmul(s.o, o, adjoint_a=true, adjoint_b=true)'
     end
@@ -197,7 +200,7 @@ end
 
 function Base.:*(o::Real, s::SparseTensor)
     o = Float64(o)
-    SparseTensor(tf.SparseTensor(copy(s.o.indices), o*copy(s.o.values), s.o.dense_shape), s._diag)
+    SparseTensor(tf.SparseTensor(copy(s.o.indices), o*tf.identity(s.o.values), s.o.dense_shape), s._diag)
 end
 
 Base.:*(s::SparseTensor, o::Real) = o*s

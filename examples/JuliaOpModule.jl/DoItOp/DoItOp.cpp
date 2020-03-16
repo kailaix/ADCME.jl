@@ -12,6 +12,8 @@ using namespace tensorflow;
 // #include "la.h" 
 #include "DoItOp.h"
 
+#include <thread>
+
 REGISTER_OP("DoItOp")
   
   .Input("x : double")
@@ -29,10 +31,17 @@ private:
   
 public:
   explicit DoItOpOp(OpKernelConstruction* context) : OpKernel(context) {
-
+    jl_eval_string("println(\"Constructing DoItOp\");");
+    std::cout<<"Construction: " << std::this_thread::get_id()<<std::endl;
   }
 
-  void Compute(OpKernelContext* context) override {    
+  bool IsExpensive() override { return false; };
+  void Compute(OpKernelContext* context) override {   
+    
+    std::cout<<"Compute: " << std::this_thread::get_id()<<std::endl;
+
+    std::cout << "parallel: " << context->run_all_kernels_inline() << std::endl;
+ 
     DCHECK_EQ(1, context->num_inputs());
     
     
@@ -61,7 +70,10 @@ public:
     auto y_tensor = y->flat<double>().data();   
 
     // implement your forward function here 
+    thread::ThreadPool* const worker_threads =
+        context->device()->tensorflow_cpu_worker_threads()->workers;
 
+    
     // TODO:
     forward(y_tensor,x_tensor, n);
 

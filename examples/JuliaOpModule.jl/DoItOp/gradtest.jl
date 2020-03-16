@@ -1,21 +1,10 @@
+push!(LOAD_PATH, "..")
+include("../JuliaOpModule.jl")
 using ADCME
-using PyCall
-using LinearAlgebra
-using PyPlot
-using Random
-Random.seed!(233)
-
-do_it_op = load_op("build/libDoItOp", "do_it_op")
-function DoIt!(x::Array{Float64}, y::Array{Float64})
-    @show "print from Julia"
-    x[:] = y
-end
-
-# TODO: specify your input parameters
+import JuliaOpModule:do_it, DoIt!
 x = constant(rand(100))
-u = do_it_op(x)
+y = 2x # or `y = Variable(rand(100))`
+u = do_it(y)
 sess = Session()
 init(sess)
 run(sess, u)
-
-
