@@ -126,3 +126,9 @@ end
     @test run(sess, r[1])≈[1.0]
     @test run(sess, r[2])≈[2.,3.]
 end
+
+@testset "special matrices" begin 
+    A = rand(10,10)
+    @test run(sess, sym(A)) ≈ 0.5 * (A + A')
+    @test all(eigvals(run(sess, spd(A))) .> 0.0)
+end

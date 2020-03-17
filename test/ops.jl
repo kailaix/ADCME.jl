@@ -397,3 +397,8 @@ end
         @test run(sess, fn(x_))≈fn(x)
     end
 end
+
+@testset "trace" begin 
+    A = rand(10,10)
+    @test tr(A) ≈ run(sess, tr(constant(A)))
+end

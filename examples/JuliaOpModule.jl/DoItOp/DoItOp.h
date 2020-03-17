@@ -1,6 +1,6 @@
 void forward(double *y, const double *x, int n){
-    PyGILState_STATE py_threadstate;
-    py_threadstate = PyGILState_Ensure();
+    // PyGILState_STATE py_threadstate;
+    // py_threadstate = PyGILState_Ensure();
     jl_value_t* array_type = jl_apply_array_type((jl_value_t*)jl_float64_type, 1);
     jl_value_t **args;
     JL_GC_PUSHARGS(args, 2); // args can now hold 2 `jl_value_t*` objects
@@ -16,5 +16,5 @@ void forward(double *y, const double *x, int n){
     JL_GC_POP();
     if (jl_exception_occurred())
         printf("%s \n", jl_typeof_str(jl_exception_occurred()));
-    PyGILState_Release(py_threadstate);
+    // PyGILState_Release(py_threadstate);
 }

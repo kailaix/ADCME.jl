@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map, prod
-import LinearAlgebra: diag, det, norm, diagm, dot, I, svd
+import LinearAlgebra: tr, diag, det, norm, diagm, dot, I, svd
 import Statistics: mean, std
 import FFTW: fft, ifft
 export 
@@ -69,7 +69,8 @@ batch_matmul,
 dot,
 set_shape,
 selu, 
-elu 
+elu,
+tr
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -123,7 +124,7 @@ function PyCall.:*(o1::PyObject, o2::PyObject)
         return tf.multiply(o1, o2)
     else
         @warn("Unusual usage of multiplication. Check carefully")
-        tf.multiply(o1,o2)
+        tf.matmul(o1,o2)
     end
 end
 
@@ -976,4 +977,8 @@ function argsort(o::PyObject;
         stable=stable,
         name=name
     ) + 1
+end
+
+function tr(o::PyObject)
+    tf.linalg.trace(o)
 end

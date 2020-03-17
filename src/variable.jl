@@ -17,8 +17,8 @@ random_uniform_initializer,
 truncated_normal_initializer,
 uniform_unit_scaling_initializer, 
 variance_scaling_initializer,
-SymmetricMatrix,
-SPDMatrix,
+sym,
+spd,
 tensor,
 convert_to_tensor,
 hessian_vector,
@@ -406,16 +406,15 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
 end
 
 # https://stackoverflow.com/questions/46718356/tensorflow-symmetric-matrix
-function SymmetricMatrix(A, args...;kwargs...)
-    X = Variable(A, args...;kwargs...)
-    X_upper = tf.linalg.band_part(X, 0, -1)
-    X_symm = 0.5 * (X_upper + tf.transpose(X_upper))
+function sym(o::Union{Array{<:Real}, PyObject})
+    convert_to_tensor(1/2 * (o + o'))
 end
 
-SPDMatrix(C::PyObject) = C*C'
-function SPDMatrix(m::Int64)
-    x = Variable(ones(m,m))
-    x*x'
+function spd(o::Union{Array{<:Real}, PyObject})
+    if length(size(o))!=2 || size(o,1)!=size(o,2)
+        error("Input `o` must be a square matrix")
+    end
+    convert_to_tensor(o * o')
 end
 
 

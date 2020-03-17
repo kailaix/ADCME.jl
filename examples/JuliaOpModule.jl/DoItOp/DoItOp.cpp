@@ -28,19 +28,21 @@ REGISTER_OP("DoItOp")
   });
 class DoItOpOp : public OpKernel {
 private:
-  
 public:
   explicit DoItOpOp(OpKernelConstruction* context) : OpKernel(context) {
     jl_eval_string("println(\"Constructing DoItOp\");");
     std::cout<<"Construction: " << std::this_thread::get_id()<<std::endl;
   }
 
-  bool IsExpensive() override { return false; };
+  bool IsExpensive() override { 
+    std::cout<<"IsExpensive()"<<std::endl;
+    return false; 
+  };
   void Compute(OpKernelContext* context) override {   
     
     std::cout<<"Compute: " << std::this_thread::get_id()<<std::endl;
 
-    std::cout << "parallel: " << context->run_all_kernels_inline() << std::endl;
+    // std::cout << "parallel: " << context->run_all_kernels_inline() << std::endl;
  
     DCHECK_EQ(1, context->num_inputs());
     
