@@ -21,7 +21,11 @@ module ADCME
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
-    if isfile("$(@__DIR__)/../deps/deps.jl"); include("$(@__DIR__)/../deps/deps.jl"); end
+    if isfile("$(@__DIR__)/../deps/deps.jl")
+        include("$(@__DIR__)/../deps/deps.jl")
+    else
+        error("ADCME is not properly built; run `Pkg.build(\"ADCME\")` to fix the problem.")
+    end
     run_metadata = nothing
     
     
