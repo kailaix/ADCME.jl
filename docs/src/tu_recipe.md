@@ -121,3 +121,25 @@ You should get
 That's exact what we want. 
 
 * **Step 6: Last but not least, repeat step 3 and step 4 if you get stuck in a local minimum.** Scrutinizing the landscape at the local minimum will give you useful information so you can make educated next step!
+
+## Debugging 
+
+When the gradient test fails, we can perform _unit sensitivity analysis_. The idea is that given a function $y = f(x_1, x_2, \ldots, x_n)$, if we want to confirm that the gradients $\frac{\partial f}{\partial x_i}$ is correctly implemented, we can perform 1D gradient test with respect to a small perturbation $\varepsilon_i$: 
+
+$$y(\varepsilon_i) = f(x_1, x_2, \ldots, x_i + \varepsilon_i, \ldots, x_n)$$
+
+As an example, if we want to check whether the gradients for `sigmoid` is correctly backpropagated in the above code, we have 
+
+```julia
+using ADCME
+using ADCMEKit
+ε = placeholder(1.0)
+θ = constant([1.;2.;3.;4.])
+x = collect(LinRange(0.0,1.0,10))
+f = θ[3]*sigmoid(θ[1]*x+θ[2] + ε)+θ[4]
+loss = sum((f - f0)^2)
+sess = Session(); init(sess)
+gradview(sess, ε, loss, 0.01)
+```
+
+We will see a second order convergence for the automatic differentiation method while a first order convergence for the finite difference method. 
