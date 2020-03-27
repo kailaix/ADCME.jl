@@ -27,6 +27,7 @@ ae,
 ae_num,
 ae_init,
 ae_to_code,
+fc,
 sparse_softmax_cross_entropy_with_logits
 
 # for a keras layer, `training` is a keyword
@@ -54,6 +55,33 @@ Conv3DTranspose(args...;kwargs...) = tf.keras.layers.Conv3DTranspose(args...;kwa
 BatchNormalization(args...;kwargs...) = tf.keras.layers.BatchNormalization(args...;kwargs...)
 Dropout(args...;kwargs...) = tf.keras.layers.Dropout(args...;kwargs...)
 
+
+@doc raw"""
+    fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
+    θ::Union{Array{Float64,1}, PyObject};
+    activation::String = "tanh")
+
+Creates a fully connected neural network with output dimension `o` and inputs $x\in \mathbb{R}^{m\times n}$. 
+
+$$n \rightarrow o_1 \rightarrow o_2 \rightarrow \ldots \rightarrow o_k$$
+
+`θ` is the weights and biases of the neural network, e.g., `θ = ae_init(output_dims)`.
+
+`fc` outputs two tensors:
+
+- $u\in \mathbb{R}^{m\times o_k}$, the output of the neural network 
+- $\partial u\in \mathbb{R}^{m \times o_k \times n}$, the sensitivity of the neural network per sample.
+"""
+function fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
+    θ::Union{Array{Float64,1}, PyObject};
+    activation::String = "tanh")
+    extended_nn_ = load_system_op(COLIB["extended_nn"]...; multiple=true)
+    config = [size(x,2);output_dims]
+    x_,config_,θ_ = convert_to_tensor([x,config,θ], [Float64,Int64,Float64])
+    x_ = reshape(x_, (-1,))
+    u, du = extended_nn_(x_,config_,θ_,activation)
+    reshape(u, (size(x,1), config[end])), reshape(du, (size(x,1), config[end], size(x,2)))
+end
 
 """
     ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default";
@@ -129,13 +157,13 @@ function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::U
     for i = 1:length(output_dims)-2
         m = output_dims[i]
         n = output_dims[i+1]
-        net = net * reshape(θ[offset+1:offset+m*n], m, n)  + θ[offset+m*n+1:offset+m*n+n]
+        net = net * reshape(θ[offset+1:offset+m*n], (m, n))  + θ[offset+m*n+1:offset+m*n+n]
         net = activation(net)
         offset += m*n+n
     end
     m = output_dims[end-1]
     n = output_dims[end]
-    net = net * reshape(θ[offset+1:offset+m*n], m, n)  + θ[offset+m*n+1:offset+m*n+n]
+    net = net * reshape(θ[offset+1:offset+m*n], (m, n))  + θ[offset+m*n+1:offset+m*n+n]
 
     offset += m*n+n
     if offset!=length(θ)

@@ -322,6 +322,18 @@ function install(s::String; force::Bool = false)
     catch
         run(`$GIT clone git://$(s[9:end]).git $(joinpath(codir, name))`)
     end
+
+    # If there is a build script `build.sh`, run the build script
+    if isfile(joinpath(joinpath(codir, name), "build.sh"))
+        PWD = pwd()
+        cd(joinpath(codir, name))
+        try
+            run(`bash build.sh`)
+        catch 
+        end
+        cd(PWD)
+    end
+
     formula = eval(Meta.parse(read(joinpath(joinpath(codir, name),"formula.txt"), String)))
     if isnothing(formula)
         error("Broken package: $s does not have formula.txt.")
