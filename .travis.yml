@@ -18,6 +18,9 @@ os:
 notifications:
   email: false
 coveralls: true
+before_install:
+  - sudo apt-get install gfortran -y
+  - type gfortran
 jobs:
   include:
     - stage: "Documentation"
