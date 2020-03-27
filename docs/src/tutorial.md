@@ -36,6 +36,8 @@ Advanced: Custom Operators
 
 Advanced: Debugging 
 
+[Exercise](./exercise.md)
+
 
 
 

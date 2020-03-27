@@ -1,5 +1,5 @@
 @testset "fc" begin 
-    if Sys.isappled()
+    if Sys.isapple()
         config = [2, 20,20,20,3]
         x = constant(rand(10,2))
         θ = ae_init(config)
