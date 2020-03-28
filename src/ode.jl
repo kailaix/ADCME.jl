@@ -1,4 +1,4 @@
-export ode45, rk4
+export ode45, rk4, αintegration, αintegration_time
 
 function runge_kutta_one_step(f::Function, t::PyObject, y::PyObject, Δt::PyObject, θ::Union{PyObject, Missing})
     k1 = Δt*f(t, y, θ)
@@ -95,3 +95,108 @@ with six-stage, fifth-order, Runge-Kutta method.
 """
 ode45(args...;kwargs...) = runge_kutta(args...;method="rk45", kwargs...)
 
+
+@doc raw"""
+    αintegration(M::Union{SparseTensor, SparseMatrixCSC}, 
+    C::Union{SparseTensor, SparseMatrixCSC}, 
+    K::Union{SparseTensor, SparseMatrixCSC}, 
+    Force::Union{Array{Float64}, PyObject}, 
+    d0::Union{Array{Float64, 1}, PyObject}, 
+    v0::Union{Array{Float64, 1}, PyObject}, 
+    a0::Union{Array{Float64, 1}, PyObject}, 
+    Δt::Array{Float64})
+
+Generalized α-scheme. 
+$$M u_{tt} + C u_{t} + K u = F$$
+
+`Force` must be an array of size `n`×`p`, where `d0`, `v0`, and `a0` have a size `p`
+`Δt` is an array (variable time step)
+
+In the case $u$ has a nonzero essential boundary condition $u_b$, we let $\tilde u=u-u_b$, then 
+$$M \tilde u_{tt} + C \tilde u_t + K u = F - K u_b - C \dot u_b$$
+"""
+function αintegration(M::Union{SparseTensor, SparseMatrixCSC}, 
+                      C::Union{SparseTensor, SparseMatrixCSC}, 
+                      K::Union{SparseTensor, SparseMatrixCSC}, 
+                      Force::Union{Array{Float64}, PyObject}, 
+                      d0::Union{Array{Float64, 1}, PyObject}, 
+                      v0::Union{Array{Float64, 1}, PyObject}, 
+                      a0::Union{Array{Float64, 1}, PyObject}, 
+                      Δt::Array{Float64}; solve::Union{Missing, Function} = missing)
+    n = length(Δt)
+    αm = 0.5
+    αf = 0.5
+    γ = 1/2-αm+αf 
+    β = 0.25*(1-αm+αf)^2
+    d = length(d0)
+
+    M = isa(M, SparseMatrixCSC) ? constant(M) : M
+    C = isa(C, SparseMatrixCSC) ? constant(C) : C
+    K = isa(K, SparseMatrixCSC) ? constant(K) : K
+    Force, d0, v0, a0, Δt = convert_to_tensor([Force, d0, v0, a0, Δt], [Float64, Float64, Float64, Float64, Float64])
+
+    function equ(dc, vc, ac, dt, Force)
+        dn = dc + dt*vc + dt^2/2*(1-2β)*ac 
+        vn = vc + dt*((1-γ)*ac)
+
+        df = (1-αf)*dn + αf*dc
+        vf = (1-αf)*vn + αf*vc 
+        am = αm*ac 
+
+        rhs = Force - (M*am + C*vf + K*df)
+        A = (1-αm)*M + (1-αf)*C*dt*γ + (1-αf)*K*β*dt^2
+
+        if !ismissing(solve)
+            return solve(A, rhs)
+        else 
+            return A\rhs
+        end
+    end
+
+    function condition(i, tas...)
+        return i<=n-1
+    end
+    function body(i, tas...)
+        dc_arr, vc_arr, ac_arr = tas
+        dc = read(dc_arr, i)
+        vc = read(vc_arr, i)
+        ac = read(ac_arr, i)
+        y = equ(dc, vc, ac, Δt[i], Force[i])
+        dn = dc + Δt[i]*vc + Δt[i]^2/2*((1-2β)*ac+2β*y)
+        vn = vc + Δt[i]*((1-γ)*ac+γ*y)
+        i+1, write(dc_arr, i+1, dn), write(vc_arr, i+1, vn), write(ac_arr, i+1, y)
+    end
+
+    dM = TensorArray(n); vM = TensorArray(n); aM = TensorArray(n)
+    dM = write(dM, 1, d0)
+    vM = write(vM, 1, v0)
+    aM = write(aM, 1, a0)
+    i = constant(1, dtype=Int32)
+    _, d, v, a = while_loop(condition, body, [i,dM, vM, aM])
+    stack(d), stack(v), stack(a)
+end
+
+
+@doc raw"""
+    αintegration_time(Δt::Array{Float64})
+
+Returns the integration time between $[t_i, t_{i+1}]$ using the alpha scheme. 
+"""
+function αintegration_time(Δt::Array{Float64})
+    n = length(Δt)
+    αm = 0.5
+    αf = 0.5
+    γ = 1/2-αm+αf 
+    β = 0.25*(1-αm+αf)^2
+    function equ(tc, dt)
+        tf = (1-αf)*(tc+dt) + αf*tc
+    end
+
+    tcs = Float64[]
+    tc = 0.0
+    for i = 1:n-1
+        push!(tcs, equ(tc, Δt[i]))
+        tc += Δt[i]
+    end
+    return tcs 
+end

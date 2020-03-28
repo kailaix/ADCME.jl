@@ -1,7 +1,4 @@
-using PyCall 
-using Pkg; Pkg.add("PyPlot")
-
-using Documenter, ADCME
+using PyCall, Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any[
     "index.md",
