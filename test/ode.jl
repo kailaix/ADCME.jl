@@ -36,13 +36,13 @@ end
     a0 = zeros(2)
     Δt = 1e-3
     n = 9001
-    Δt = Δt * ones(n-1)
+    Δt = Δt * ones(n)
     M = sparse([1.0 0.0;0.0 1.0])
     C = sparse(zeros(2,2))
     K = sparse([4.0 0.0;0.0 9.0])
     F = zeros(n-1, 2)
 
-    d, v, a = αintegration(M, C, K, F, d0, v0, a0, Δt, n)
+    d, v, a = αintegration(M, C, K, F, d0, v0, a0, Δt)
 
     d_, v_, a_ = run(sess, [d, v, a])
 
