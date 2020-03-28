@@ -1,4 +1,6 @@
-using PyCall, Documenter, ADCME
+using Pkg
+Pkg.build("ADCME")
+using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any[
     "index.md",

@@ -506,6 +506,8 @@ function Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj::PyObject)
     ta.write(i-1, obj)
 end
 
+Base.:write(ta::PyObject, i::Union{PyObject,Integer}, obj::Union{Array{<:Real}, Real}) = write(ta, i, constant(obj))
+
 """
     convert_to_tensor(o::Union{PyObject, Number, Array{T}, Missing, Nothing}; dtype::Union{Type, Missing}=missing) where T<:Number
     convert_to_tensor(os::Array, dtypes::Array)
