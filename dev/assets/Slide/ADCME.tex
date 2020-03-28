@@ -20,6 +20,7 @@
 \usepackage{float}
 \usepackage{bm}
 \usepackage{mathtools}
+\usepackage{extarrows}
 
 \newcommand{\ChoL}{\mathsf{L}}
 \newcommand{\bx}{\mathbf{x}}
@@ -45,6 +46,7 @@
 \renewcommand{\bf}{\mathbf{f}}
 \newcommand{\bu}{\mathbf{u}}
 \newcommand{\bv}[0]{\mathbf{v}}
+
 \mode<presentation> {
 
 % The Beamer class comes with a number of default slide themes
@@ -119,6 +121,8 @@
 %\usepackage{floatrow}
 %
 %\usepackage{pgfplots,algorithmic,algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
 %\usepackage[toc,page]{appendix}
 %\usepackage{float}
 %\usepackage{booktabs}
@@ -201,7 +205,7 @@
 \end{frame}
 \usebackgroundtemplate{}
 
-\section{Physics Based Machine Learning}
+\section{Inverse Modeling}
 
 
 
@@ -209,27 +213,92 @@
 	\frametitle{Inverse Modeling}
 	\begin{itemize}
 		\item \textbf{Inverse modeling} identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement.
-		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.
-		\begin{figure}[hbt]
-  \includegraphics[width=0.4\textwidth]{../im.png}
-  \includegraphics[width=0.45\textwidth]{../inverse2}
+		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.t
+	\end{itemize}
+	\begin{figure}[hbt]
+	\centering
+  \includegraphics[width=0.8\textwidth]{../inverse2}
 \end{figure}
+\end{frame}
 
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	\begin{figure}
+	\centering
+  \includegraphics[width=1.0\textwidth]{../inverse3}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	We can formulate inverse modeling as a PDE-constrained optimization problem 
+	\begin{equation*}
+		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+	\end{equation*}
+	\begin{itemize}
+		\item The \textcolor{red}{loss function} $L_h$ measures the discrepancy between the prediction $u_h$ and the observation $u_{\mathrm{obs}}$, e.g., $L_h(u_h) = \|u_h - u_{\mathrm{obs}}\|_2^2$. 
+		\item $\theta$ is the \textcolor{red}{model parameter} to be calibrated. 
+		\item The \textcolor{red}{physics constraints} $F_h(\theta, u_h)=0$ are described by a system of partial differential equations. Solving for $u_h$ may require solving linear systems or applying an iterative algorithm such as the Newton-Raphson method. 
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
+	\frametitle{Function Inverse Problem}
+	
+	\begin{equation*}
+		\min_{\textcolor{red}{f}} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\textcolor{red}{f}, u_h) = 0
+	\end{equation*}
+	
+	What if the unknown is a \textcolor{red}{function} instead of a set of parameters?
+\begin{itemize}
+	\item Koopman operator in dynamical systems.
+	\item Constitutive relations in solid mechanics. 
+	\item Turbulent closure relations in fluid mechanics.
+	\item ...
+\end{itemize}
+
+The candidate solution space is \textcolor{red}{infinite dimensional}.
+
+\end{frame}
+
+\begin{frame}
 	\frametitle{Physics Based Machine Learning}
+	$$\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\;F_h(\textcolor{red}{NN_\theta}, u_h) = 0$$
+	\vspace{-0.5cm}
 	\begin{itemize}
-		\item Classical physical modeling relies on efficient numerical schemes for discretizing conservation laws derived from first principles; deep learning learns statistical relations from large amounts of training data.
-		\item We combine the best of the two worlds and invent \textbf{physics based machine learning}: \textcolor{red}{only the unknown is modeled with deep neural networks, and the known physical laws are solved with numerical schemes}.
+		\item Deep neural networks exhibit capability of approximating high dimensional and complicated functions. 
+		\item \textbf{Physics based machine learning}: \textcolor{red}{the unknown function is approximated by a deep neural network, and the physical constraints are enforced by numerical schemes}.
+		\item \textcolor{red}{Satisfy the physics to the largest extent}.
 	\end{itemize}
 	\begin{figure}[hbt]
   \includegraphics[width=0.75\textwidth]{../physics_based_machine_learning.png}
 \end{figure}
 \end{frame}
 
-\section{Automatic Differentiation for Inverse Modeling}
+
+
+\begin{frame}
+	\frametitle{Gradient Based Optimization}
+	\begin{equation}\label{equ:opt}
+		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+		\end{equation}
+	
+	\begin{itemize}
+		\item We can now apply a gradient-based optimization method to (\ref{equ:opt}).
+		\item The key is to \textcolor{red}{calculate the gradient descent direction} $g^k$
+		$$\theta^{k+1} \gets \theta^k - \alpha g^k$$ 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+	\centering
+  \includegraphics[width=0.6\textwidth]{../im.pdf}
+\end{figure}
+
+\end{frame}
+
+
+
+\section{Automatic Differentiation}
 
 \begin{frame}
 	\frametitle{Automatic Differentiation}
@@ -248,11 +317,15 @@ The fact that bridges the \textcolor{red}{technical} gap between machine learnin
 \begin{center}
 	Back-propagation 
 
-= 
+$||$
+
+Reverse-mode
 
  Automatic Differentiation 
 
-=
+$||$
+ 
+ Discrete 
  
  Adjoint-State Method
 \end{center}
@@ -285,6 +358,7 @@ The fact that bridges the \textcolor{red}{technical} gap between machine learnin
 	\begin{itemize}
 		\item The reverse-mode automatic differentiation relies on the chain rule 
 		$$\frac{\partial f\circ g (x)}{\partial x} = \frac{\partial f'\circ g(x)}{\partial g} \frac{\partial g'(x)}{\partial x}$$
+		\item The reverse-mode automatic differentiation stores all intermediate variables in the forward computation. 
 		\item Let's see how to compute $\frac{\partial z}{\partial x_i}$, $i=1,2,3$ for $z = \sin(x_1+x_2) + x_2^2 x_3$
 	\end{itemize}
 	\centering
@@ -295,48 +369,187 @@ The fact that bridges the \textcolor{red}{technical} gap between machine learnin
 \end{frame}
 
 \begin{frame}
-	\frametitle{Automatic Differentiation: Mathematical Description}
-	\begin{minipage}[t]{0.49\textwidth}
-	A computational graph starts from independent variables $x_1$, $x_2$, $\ldots$, $x_n$, which are transformed by the composition of operators $f_k$, $k = n+1, n+2, \ldots, N$
-		$$\begin{aligned}
-    x_{n+1} &= f_{n+1}(\mathbf{x}_{\pi({n+1})})\\
-    x_{n+2} &= f_{n+2}(\mathbf{x}_{\pi({n+2})})\\
-    \ldots\\
-    x_{N} &= f_{N}(\mathbf{x}_{\pi({N})})\\
-\end{aligned}$$
-where $\pi(i) \in \{1,2,\ldots,i-1\}$. 
+	\frametitle{Automatic Differentiation: Forward-Mode}
+
+	\begin{itemize}
+	\item The forward-mode automatic differentiation also uses the chain rule to propagate the gradients. 
+	$$\frac{\partial f\circ g (x)}{\partial x} = \frac{\partial f'\circ g(x)}{\partial g} \frac{\partial g'(x)}{\partial x}$$
+		\item In the forward-mode automatic differentiation, at every stage we evaluate the operator as well as its gradient.  
+	\end{itemize}
+	\begin{minipage}[b]{0.45\textwidth}
+	\includegraphics[width=1.0\textwidth]{../forwardmode}
 \end{minipage}~
-\begin{minipage}[t]{0.49\textwidth}
-  \begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../cg}
-\end{figure}
+\begin{minipage}[b]{0.45\textwidth}
+  \begin{align*}
+(y_1, y_1')& = (x^2, 2x) \\
+(y_2, y_2') &= (\sin x, \cos x)\\
+\\
+ (y_3, y_3') &= (y_1^2, 2y_1y_1') = (x^4, 4x^3)\\
+ (y_4, y_4') &= (y_1+y_1, y_1'+y_2') \\
+ &= (x^2+\sin x, 2x+\cos x) \\
+ (y_5, y_5')& = (-y_2, -y_2') = (-\sin x, -\cos x)
+ 	\end{align*}
 \end{minipage}
+	
+	
 \end{frame}
 
 \begin{frame}
-	\frametitle{Automatic Differentiation: Mathematical Description}
-\begin{theorem}[Chain Rule]
-	$$\frac{\partial x_N(x_1, x_2, \ldots, x_{i})}{\partial x_i} = \sum_{j\,:\,i\in \pi(j)}
-    \frac{\partial x_N(x_1, x_2, \ldots, x_j)}{\partial x_j}
-    \frac{\partial x_j(x_1, x_2, \ldots, x_{j-1})}{\partial x_i}$$
-\end{theorem}
-\begin{figure}[hbt]
-  \includegraphics[width=0.6\textwidth]{../cg2}
+	\frametitle{Automatic Differentiation: Comparison}
+	
+	\begin{itemize}
+			\item In general, for a function $f:\RR^n \rightarrow \RR^m$
+		 % Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+Mode & Suitable for ... & Complexity\footnote{$\mathrm{OPS}$ is a metric for complexity in terms of fused-multiply adds.} & Application \\ \midrule
+Forward & $m\gg n$ & $\leq 2.5\;\mathrm{OPS}(f(x))$ & UQ \\
+Reverse & $m\ll n$ & $\leq 4\;\mathrm{OPS}(f(x))$ & Inverse Modeling \\ \bottomrule
+\end{tabular}
+\end{table}
+	\end{itemize}
+	
+		{\footnotesize Margossian CC. A review of automatic differentiation and its efficient implementation. Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery. 2019 Jul;9(4):e1305.} 
+\end{frame}
+
+\begin{frame}
+	\frametitle{Computational Graph for Numerical Schemes}
+	
+	\begin{itemize}
+		\item To leverage automatic differentiation for inverse modeling, we need to express the numerical schemes in the ``AD language'': computational graph. 
+		\item No matter how complicated a numerical scheme is, it can be decomposed into a collection of operators that are interlinked via state variable dependencies. 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../cgnum}
 \end{figure}
+
+	
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{The  Relationship between reverse-mode Automatic Differentiation and KKT Condition}
+	Consider a concrete PDE-constrained optimization problem:
+	
+	\begin{minipage}[b]{0.45\textwidth}
+		\begin{align*}
+     \min_{\mathbf{u}_1, \bm{\theta}} &\  J = f_4(\mathbf{u}_1, \mathbf{u}_2, \mathbf{u}_3, \mathbf{u}_4), \\
+     \mathrm{s.t.} & \ \mathbf{u}_2 = f_1(\mathbf{u}_1, \bm {\theta}), \\
+     & \ \mathbf{u}_3 = f_2(\mathbf{u}_2, \bm {\theta}),\\
+     & \  \mathbf{u}_4 = f_3(\mathbf{u}_3, \bm {\theta}).
+\end{align*}
+-- $f_1$, $f_2$, $f_3$ are PDE constraints
+
+-- $f_4$ is the loss function
+
+-- $\bu_1$ is the initial condition
+
+-- $\bt$ is the model parameter
+	\end{minipage}~
+	\begin{minipage}[b]{0.45\textwidth}
+		\includegraphics[width=1.0\textwidth]{../adjoint}
+	\end{minipage}
+	 
+	
+	
+	
+	\end{frame}
+	
+	
+	\begin{frame}
+\frametitle{The  Relationship between reverse-mode Automatic Differentiation and KKT Condition}
+
+Solving the constrained optimization method using \textcolor{red}{adjoint-state methods}:
+
+\begin{itemize}
+	\item The Lagrange multiplier is 
+	{\footnotesize $$ J = f_4(\mathbf{u}_1, \mathbf{u}_2, \mathbf{u}_3, \mathbf{u}_4) + \bm{\lambda}^{T}_{2}(f_1(\mathbf{u}_1, \bm {\theta}) - \mathbf{u}_2) + \bm{\lambda}^T_{3}(f_2(\mathbf{u}_2, \bm {\theta}) - \mathbf{u}_3) + \bm{\lambda}^T_{4}(f_3(\mathbf{u}_3, \bm {\theta}) - \mathbf{u}_4)$$}
+	\item Therefore, the first order KKT condition of the constrained PDE system is 
+\begin{eqnarray*}
+ && \bm{\lambda}_4^T = \frac{\partial f_4}{\partial \mathbf{u}_4} \nonumber \\
+ && \bm{\lambda}_3^T = \frac{\partial f_4}{\partial  \mathbf{u}_3} + \bm{\lambda}_4^T\frac{\partial f_3}{\partial  \mathbf{u}_3} \nonumber \\
+ && \bm{\lambda}_2^T = \frac{\partial f_4}{\partial  \mathbf{u}_2} + \bm{\lambda}_3^T\frac{\partial f_2}{\partial  \mathbf{u}_2} \nonumber \\
+ && \frac{\partial \mathcal{L}}{\partial \bm{\theta}} = \bm{\lambda}_2^T\frac{\partial f_1}{\partial \bm{\theta}} + \bm{\lambda}_3^T\frac{\partial f_2}{\partial \bm{\theta}} + \bm{\lambda}_4^T\frac{\partial f_3}{\partial \bm{\theta}} \Rightarrow \mbox{Sensitivity $\frac{\partial J}{\partial \bt}$}
+\end{eqnarray*}
+\end{itemize}
+
+	 
+	 
+	 
+	 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{The  Relationship between reverse-mode Automatic Differentiation and KKT Condition}
+How do we implement reverse-mode automatic differentiation for computing the gradients? 
+\begin{itemize}
+	\item Consider the operator $f_2$, we need to implement two operators 
+	\begin{align*}
+		\mbox{Forward:}&\; \bu_3 = f_2(\bu_2, \bt)\\
+		\mbox{Backward:}&\; \frac{\partial J}{\partial \bu_2}, \frac{\partial J}{\partial \bt} = b_2\left(\frac{\partial J^{\mathrm{tot}}}{\partial \bu_3}, \bu_2, \bt\right)
+	\end{align*}
+	
+	$\frac{\partial J^{\mathrm{tot}}}{\partial \bu_3}$ is the ``total'' gradient $\bu_3$ received from the downstream in the computational graph. 
+	
+\item The backward operator is implemented using the chain rule
+\begin{equation*}
+	\frac{\partial J}{\partial \bu_2} = \frac{\partial J^{\mathrm{tot}}}{\partial \bu_3} \frac{\partial f_2}{\partial \bu_2}\qquad
+	\frac{\partial J}{\partial \bt} = \frac{\partial J^{\mathrm{tot}}}{\partial \bu_3} \frac{\partial f_2}{\partial \bt}
+\end{equation*}
+
+	
+\end{itemize}
+
+What are $\frac{\partial J}{\partial \bu_2}$, $\frac{\partial J}{\partial \bt}$, and $\frac{\partial J^{\mathrm{tot}}}{\partial \bu_3}$ exactly?
+
 	
 \end{frame}
 
 
 \begin{frame}
-	\frametitle{ADCME}
-	\begin{itemize}
-		\item ADCME allows users to use \textcolor{red}{high performance} and \textcolor{red}{mathematical friendly} programming language Julia to implement numerical schemes, and obtain the \textcolor{red}{comprehensive automatic differentiation functionality}, \textcolor{red}{heterogeneous computing capability}, \textcolor{red}{parallelism} and \textcolor{red}{scalability} provided by the TensorFlow backend. 
-		\item ADCME simplifies programming and improves performance. 
-	\end{itemize}
-	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../Julia.png}
-\end{figure}
+\frametitle{The  Relationship between reverse-mode Automatic Differentiation and KKT Condition}
+
+\begin{minipage}[b]{0.48\textwidth}
+	The total gradient $\bu_2$ received is
+$$  \frac{\partial J^{\mathrm{tot}}}{\partial \bu_2}  = \frac{\partial f_4}{\partial \bu_2} + \frac{\partial J}{\partial \bu_2} = \frac{\partial f_4}{\partial \bu_2} + \frac{\partial J^{\mathrm{tot}}}{\partial \bu_3} \frac{\partial f_2}{\partial \bu_2}$$
+
+The dual constraint in the KKT condition
+$$\bm{\lambda}_2^T = \frac{\partial f_4}{\partial  \mathbf{u}_2} + \bm{\lambda}_3^T\frac{\partial f_2}{\partial  \mathbf{u}_2}$$
+\end{minipage}~
+\begin{minipage}[b]{0.48\textwidth}
+\centering
+	\includegraphics[width=0.8\textwidth]{../adjoint2.pdf}
+\end{minipage}
+
+
+	 
+The following equality can be verified 
+\begin{equation*}
+	\boxed{\bm{\lambda}_i^T = \frac{\partial J^{\mathrm{tot}}}{\partial \bu_i}}
+\end{equation*}
+
+In general, \textcolor{red}{the reverse-mode AD is back-propagating the Lagrange multiplier (adjoint variables)}. 
 \end{frame}
+
+\begin{frame}
+\frametitle{The  Relationship between reverse-mode Automatic Differentiation and KKT Condition}
+\begin{itemize}
+	\item The well-established adjoint-state method is equivalent to solving the KKT system. 
+	\item The adjoint-state methods are challenging to implement, mainly due to the time-consuming and difficult process of deriving the gradients in a complex system. 
+	\item Using reverse-mode automatic differentiation is equivalent to solving the inverse modeling problem using discrete adjoint-state methods, but in a more manageable way. 
+	\item Computational graph based implementation also allows for automatic compilation time optimization and parallelization.  
+\end{itemize}
+	 
+\end{frame}
+
+
+
+
 
 %\begin{frame}
 %	\frametitle{Code Example}
@@ -349,6 +562,178 @@ where $\pi(i) \in \{1,2,\ldots,i-1\}$.
 %\end{figure}
 %\end{frame}
 
+
+\section{Physics Constrained Learning}
+\begin{frame}
+
+
+	\frametitle{Challenges in AD}
+	
+	
+	\begin{minipage}[t]{0.49\textwidth}
+	\vspace{-3cm}
+\begin{itemize}
+	\item Most AD frameworks only deal with explicit operators, i.e., the functions that has analytical derivatives, or composition of these functions. 
+	\item Many scientific computing algorithms are \textcolor{red}{iterative} or \textcolor{red}{implicit} in nature.
+\end{itemize}
+\end{minipage}~
+\begin{minipage}[t]{0.49\textwidth}
+  \includegraphics[width=1.0\textwidth]{../sim.png}
+\end{minipage}
+
+	% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[]
+\begin{tabular}{@{}lll@{}}
+\toprule
+Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
+Linear           & Explicit          & $y=Ax$       \\
+Nonlinear        & Explicit          & $y = F(x)$   \\
+\textbf{Linear}           & \textbf{Implicit}          & $Ax = y$     \\
+\textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Example}
+	
+\begin{itemize}
+	\item Consider a function $f:x\rightarrow y$, which is implicitly defined by 
+	$$F(x,y) = x^3 - (y^3+y) = 0$$
+If not using the cubic formula for finding the roots, the forward computation consists of iterative algorithms, such as the Newton's method and bisection method
+\end{itemize}
+
+
+
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{algorithmic}
+\State $y^0 \gets 0$
+\State $k \gets 0$
+\While {$|F(x, y^k)|>\epsilon$}
+\State $\delta^k \gets F(x, y^k)/F'_y(x,y^k)$
+\State $y^{k+1}\gets y^k - \delta^k$
+\State $k \gets k+1$
+\EndWhile
+\State \textbf{Return} $y^k$
+\end{algorithmic}
+\end{minipage}~
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{algorithmic}
+\State $l \gets -M$, $r\gets M$, $m\gets 0$
+\While {$|F(x, m)|>\epsilon$}
+\State $c \gets \frac{a+b}{2}$
+\If{$F(x, m)>0$}
+\State $a\gets m$
+\Else
+\State $b\gets m$
+\EndIf
+\EndWhile
+\State \textbf{Return} $c$
+\end{algorithmic}
+
+\end{minipage}	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Example}
+	
+	\begin{itemize}
+		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyré, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
+		\item A more efficient way is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$, treat $y$ as a function of $x$ and take the derivative on both sides
+		$$3x^2 - 3y(x)^2y'(x)-1=0\Rightarrow y'(x) = \frac{3x^2-1}{3y(x)^2}$$
+	The above gradient is \textcolor{red}{exact}.
+	\end{itemize}
+	\begin{center}
+			\textbf{Can we apply the same idea to inverse modeling?}
+	\end{center}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	 $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
+	\begin{itemize}
+\item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
+$${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
+\item Applying the \textcolor{red}{implicit function theorem}
+{  \scriptsize
+\begin{equation*}
+\frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}  \frac{\partial G_h(\theta)}{\partial \theta} = 0  \Rightarrow 
+     \frac{\partial G_h(\theta)}{\partial \theta} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
+\end{equation*}
+}
+\item Finally we have
+{\scriptsize
+\begin{equation*}
+    \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
+    = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}= - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
+    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
+    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}
+\end{equation*}
+}
+
+	\end{itemize}
+	
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}	
+	{\scriptsize$$\boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
+    = - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
+    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
+    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}$$}
+
+		Step 1: Calculate $w$ by solving a linear system (never invert the matrix!)
+{\scriptsize$$w^T = \underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}\rule[-9pt]{1pt}{0pt}}}_{1\times N} 
+        \;\;
+        \underbrace{\Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}$$}
+Step 2: Calculate the gradient by automatic differentiation 
+{\scriptsize$$w^T\;\underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p} = \frac{\partial (w^T\;  {F_h}(\theta, u_h))}{\partial \theta }\Bigg|_{u_h = {G_h}(\theta )}$$}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning: Linear System}
+	
+	\begin{itemize}
+		\item Many physical simulations require solving a linear system 
+		$$A(\theta_2) u_h = \theta_1$$
+		\item The corresponding PDE constraint in our formulation is  
+		$$F_h(\theta_1,\theta_2, u_h) = \theta_1 - A(\theta_2)u_h = 0$$
+		\item The backpropagation formula
+		\begin{align*}
+			p &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_1} = \frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1}\\
+			q &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_2} = -\frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1} \frac{\partial A(\theta_2)}{\partial \theta_2}
+		\end{align*}
+		which is equivalent to 
+		$$A^T p^T =\left( \frac{\partial  L_h(u_h)}{\partial u_h} \right)^T\quad q = -p\frac{\partial A(\theta_2)}{\partial \theta_2} $$
+	\end{itemize}
+	
+\end{frame}
+%\section{}
+% Stochastic Inverse Problems 
+
+\begin{frame}
+	\frametitle{Methodology Summary}
+\begin{figure}[hbt]
+\centering
+  \includegraphics[width=0.8\textwidth]{../routine}
+\end{figure}
+
+\end{frame}
+
+
+\section{Applications}
 
 
 \begin{frame}
@@ -475,114 +860,11 @@ L_{2211}  & L_{2222} & &   & &\\
 \end{figure}
 \end{frame}
 
-\section{Beyond Automatic Differentiation: Physics Constrained Learning}
-\begin{frame}
 
-
-	\frametitle{Challenges in AD}
-	
-	
-	\begin{minipage}[t]{0.49\textwidth}
-	\vspace{-3cm}
-\begin{itemize}
-	\item Most AD frameworks only deal with explicit operators, i.e., the operators that can be expressed by differentiable library functions. 
-	\item A large portion of scientific computing algorithms involve implicit schemes or iterative procedures to some extent.
-\end{itemize}
-\end{minipage}~
-\begin{minipage}[t]{0.49\textwidth}
-  \includegraphics[width=1.0\textwidth]{../sim.png}
-\end{minipage}
-
-	% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
-\begin{table}[]
-\begin{tabular}{@{}lll@{}}
-\toprule
-Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
-Linear           & Explicit          & $y=Ax$       \\
-Nonlinear        & Explicit          & $y = F(x)$   \\
-\textbf{Linear}           & \textbf{Implicit}          & $Ax = y$     \\
-\textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
-\end{tabular}
-\end{table}
-\end{frame}
-
-\begin{frame}
-	\frametitle{Physics Constrained Learning}
-	\begin{itemize}
-		\item Let $L_h$ be a error functional, $F_h$ be the corresponding nonlinear implicit operator, $\theta$ be all the input to this operator and $u_h$ be all the output of this node.
- $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
-
-\item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
-$${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
-\item Applying the \textcolor{red}{implicit function theorem}
-{  \scriptsize
-\begin{equation*}
-\frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}  \frac{\partial G_h(\theta)}{\partial \theta} = 0  \Rightarrow 
-     \frac{\partial G_h(\theta)}{\partial \theta} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
-\end{equation*}
-}
-\item Finally we have
-{\scriptsize
-\begin{equation*}
-    \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
-    = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}= - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
-    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
-    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}
-\end{equation*}
-}
-
-	\end{itemize}
-	
-\end{frame}
 
 
 \begin{frame}
-	\frametitle{Physics Constrained Learning}	
-	{\scriptsize$$\boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
-    = - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
-    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
-    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}$$}
-	\begin{minipage}[t]{0.48\textwidth}
-		Step 1: Calculate $w$ by solving a linear system (never invert the matrix!)
-{\scriptsize$$w^T = \underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}\rule[-9pt]{1pt}{0pt}}}_{1\times N} 
-        \;\;
-        \underbrace{\Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}$$}
-Step 2: Calculate the gradient by automatic differentiation 
-{\scriptsize$$w^T\;\underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p} = \frac{\partial (w^T\;  {F_h}(\theta, u_h))}{\partial \theta }\Bigg|_{u_h = {G_h}(\theta )}$$}
-	\end{minipage}\hfill\vline\hfill~
-	\begin{minipage}[t]{0.48\textwidth}
-		Step 1: Calculate $z$ by solving a linear system (never invert the matrix!)
-		{\scriptsize$$z = \underbrace{
-            \Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}
-            \;\; \underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p}$$}
-           Step 2: Calculate the gradient
-           {\scriptsize$$\underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}}}_{1\times N}\; z$$}
-	\end{minipage}
-	\begin{center}
-		\textbf{Which strategy should we use?}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-	\frametitle{Physics Constrained Learning: Linear System}
-	
-	\begin{itemize}
-		\item Many physical simulations require solving a linear system 
-		$$F_h(\theta_1,\theta_2, u_h) = \theta_1 - A(\theta_2)u_h$$
-		\item The backpropagation formula
-		\begin{align*}
-			p &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_1} = \frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1}\\
-			q &:=\frac{\partial \tilde L_h(\theta_1, \theta_2)}{\partial \theta_2} = -\frac{\partial L_h(u_h)}{\partial u_h}A(\theta_2)^{-1} \frac{\partial A(\theta_2)}{\partial \theta_2}
-		\end{align*}
-		which is equivalent to 
-		$$A^T p^T =\left( \frac{\partial  L_h(u_h)}{\partial u_h} \right)^T\quad q = -p\frac{\partial A(\theta_2)}{\partial \theta_2} $$
-	\end{itemize}
-	
-\end{frame}
-
-\begin{frame}
-	\frametitle{FwiFlow.jl: Elastic Full Waveform Inversion for subsurface flow problems with intelligent automatic differentiation}
+	\frametitle{FwiFlow.jl: Elastic Full Waveform Inversion for subsurface flow problems}
 	\begin{figure}[hbt]
   \includegraphics[width=0.8\textwidth]{../geo.png}
 \end{figure}
@@ -594,10 +876,10 @@ Step 2: Calculate the gradient by automatic differentiation
 	\item The governing equation is a nonlinear PDE
 {\scriptsize
 	\begin{align*}
-	\frac{\partial }{{\partial t}}(\phi {\textcolor{red}{S_i}}{\rho _i}) + \nabla  \cdot ({\rho _i}{\mathbf{v}_i}) &= {\rho _i}{q_i},\quad 
+	\frac{\partial }{{\partial t}}(\phi {{S_i}}{\rho _i}) + \nabla  \cdot ({\rho _i}{\mathbf{v}_i}) &= {\rho _i}{q_i},\quad 
       i = 1,2	\\
       S_{1} + S_{2} &= 1\\
-      {\mathbf{v}_i} &= - \frac{{K{\textcolor{red}{k_{ri}}}}}{{{\tilde{\mu}_i}}}(\nabla {P_i} - g{\rho _i}\nabla Z), \quad
+      {\mathbf{v}_i} &= - \frac{{\textcolor{blue}{K}{\textcolor{red}{k_{ri}}}}}{{{\tilde{\mu}_i}}}(\nabla {P_i} - g{\rho _i}\nabla Z), \quad
       i=1, 2\\
 	k_{r1}(S_1) =& \frac{k_{r1}^o S_1^{L_1}}{S_1^{L_1} + E_1 S_2^{T_1}}\\
 	k_{r2}(S_1) =& \frac{ S_2^{L_2}}{S_2^{L_2} + E_2 S_1^{T_2}}
@@ -617,15 +899,19 @@ $$}
 	\frametitle{FwiFlow.jl: Showcase}
 	\begin{itemize}
 		\item Task 1: Estimating the permeability from seismic data 
+		\begin{center}
+	B.C. +	\textcolor{red}{Two-Phase Flow Equation} + Wave Equation $\Rightarrow$ Seismic Data
+	\end{center}
 		\begin{figure}[hbt]
 		\centering
   \includegraphics[width=0.6\textwidth]{../coupled}
 \end{figure}
 \item Task 2: Learning the rock physics model from sparse saturation data. The rock physics model is approximated by neural networks  
 {\scriptsize$$f_1(S_1; \theta_1) \approx k_{r1}(S_1)\qquad f_2(S_1; \theta_2) \approx k_{r2}(S_1)$$}
+\vspace{-0.4cm}
 \begin{figure}
 	\centering
-	\includegraphics[width=0.25\textwidth]{../sat}~
+	\includegraphics[width=0.3\textwidth]{../sat}~
   \includegraphics[width=0.25\textwidth]{../rock}
 \end{figure}
 	\end{itemize}
@@ -636,6 +922,9 @@ $$}
 	\begin{itemize}
 		\item Task 3: Learning the \textcolor{red}{nonlocal} (space or time) hidden dynamics from seismic data. This is very challenging using traditional methods (e.g., the adjoint-state method) because the dynamics is history dependent. 
 	\end{itemize}
+	\begin{center}
+	B.C. +	\textcolor{red}{Time-/Space-fractional PDE} + Wave Equation $\Rightarrow$ Seismic Data
+	\end{center}
 \begin{table}[htpb]
 \centering
 \begin{tabular}{@{}lll@{}}
@@ -651,8 +940,58 @@ $\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.8}} m$ & \makecell{$a/a
 \end{frame}
 
 
-%\section{}
-% Stochastic Inverse Problems 
+\newcommand{\bsigma}[0]{\bm{\sigma}}
+\newcommand{\bepsilon}[0]{\bm{\epsilon}}
+
+
+\begin{frame}
+	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
+%	
+	\begin{itemize}
+		\item Multi-physics Interaction of Coupled Geomechanics and Multi-Phase Flow Equations 
+{\small
+\begin{align*}
+\mathrm{div}\bsigma(\bu) - b \nabla p &= 0\\
+    \frac{1}{M} \frac{\partial p}{\partial t} + b\frac{\partial \epsilon_v(\bu)}{\partial t} - \nabla\cdot\left(\frac{k}{B_f\mu}\nabla p\right) &= f(x,t)	\\
+    	\bsigma &= \bsigma(\bepsilon, \dot\bepsilon)
+\end{align*}
+}
+\item Approximate the constitutive relation by a neural network
+{\small
+$$\bsigma^{n+1} = \mathcal{NN}_{\bt} (\bsigma^n, \bepsilon^n) + H\bepsilon^{n+1}$$}
+	\end{itemize}		
+	\begin{figure}[hbt]	
+	\centering
+  \includegraphics[width=0.5\textwidth]{../ip}~
+  \includegraphics[width=0.3\textwidth]{../cell}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
+	
+	\begin{itemize}
+		\item Comparison with space varying linear elasticity approximation
+		\begin{equation}
+			\bsigma = H(x, y) \bepsilon
+		\end{equation}
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../visco1}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.7\textwidth]{../visco2}
+\end{figure}
+
+\end{frame}
+
 
 
 \section{Some Perspectives}
@@ -706,9 +1045,24 @@ $\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Pr
 \end{frame}
 
 \begin{frame}
+	\frametitle{ADCME}
+	\begin{itemize}
+	\item ADCME is the materialization of the physics based machine learning concept. 
+		\item ADCME allows users to use \textcolor{red}{high performance} and \textcolor{red}{mathematical friendly} programming language Julia to implement numerical schemes, and obtain the \textcolor{red}{comprehensive automatic differentiation functionality}, \textcolor{red}{heterogeneous computing capability}, \textcolor{red}{parallelism} and \textcolor{red}{scalability} provided by the TensorFlow backend. 
+	\end{itemize}
+	\begin{center}
+		\url{https://github.com/kailaix/ADCME.jl}
+	\end{center}
+	\vspace{-0.3cm}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../Julia.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}
 	\frametitle{A General Approach to Inverse Modeling}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../summary}
+  \includegraphics[width=1.0\textwidth]{../summary.pdf}
 \end{figure}
 
 \end{frame}
@@ -719,6 +1073,7 @@ $\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Pr
 		\item \texttt{NNFEM.jl}: Joint work with Daniel Z. Huang and Charbel Farhat.
 		\item \texttt{FwiFlow.jl}: Joint work with Dongzhuo Li and Jerry M. Harris. 
 		\item \texttt{ADSeismic.jl}: Joint work with Weiqiang Zhu and Gregory C. Beroza. 
+		\item \texttt{PoreFlow.jl}: Joint work with Alexandre M. Tartakovsky and Jeff Burghardt.
 	\end{itemize}
 \end{frame}
 
