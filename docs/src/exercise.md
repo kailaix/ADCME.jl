@@ -1,12 +1,12 @@
-# Exercise: Estimating Thermal Thermal Diffusivity Distribution from Sparse Sensor Measurements
+# Exercise: Inverse Modeling with ADCME
 
-We saw in the lectures how to implement numerical PDE schemes in ADCME and use the forward computation codes to do inverse modeling with automatic differentiation. Here we apply the concepts of inverse modeling to a learning task---estimate the thermal diffusivity distribution in a material from sparse sensor measurements. The **thermal diffusivity** is the measure of the ease at which the heat can pass through a material. It relies on the material property. Let $T$ be the temperature, and $\kappa$ be the thermal diffusivity, the Fourier's law of heat transfer says
+We saw in the lectures how to implement numerical PDE schemes in ADCME and use the forward computation codes to do inverse modeling with automatic differentiation. Here we apply the concepts of inverse modeling to a learning task---estimate the thermal diffusivity distribution in material from sparse sensor measurements. The **thermal diffusivity** is the measure of the ease at which the heat can pass through a material. It relies on the material property. Let $T$ be the temperature, and $\kappa$ be the thermal diffusivity, the Fourier's law of heat transfer says
 
-$$\frac{\partial u(\mathbf{x}, t)}{\partial t} = \kappa\Delta u(\mathbf{x}, t) + f(\mathbf{x}, t), \quad t\in [0,T], x\in \Omega \tag{1}$$
+$$\frac{\partial u(\mathbf{x}, t)}{\partial t} = \kappa\Delta u(\mathbf{x}, t) + f(\mathbf{x}, t), \quad t\in [0,T], \mathbf{x}\in \Omega \tag{1}$$
 
 Here $f$ is the heat source and $\Omega$ is the domain.
 
-To make use of the heat equation, we need addition information. 
+To make use of the heat equation, we need additional information. 
 
 - **Initial Condition**: the initial temperature distribution is given $u(\mathbf{x}, 0) = u_0(\mathbf{x})$. 
 
@@ -14,7 +14,7 @@ To make use of the heat equation, we need addition information.
 
    (1) Temperature fixed at a boundary,
 
-   $$u(\mathbf{x}, t) = 0, \mathbf{x}\in \Gamma_u \tag{2}$$
+   $$u(\mathbf{x}, t) = 0, \mathbf{x}\in \Gamma_D \tag{2}$$
 
   (2) Insulated boundary. The heat flow can be prescribed (known as the _no flow_ boundary condition)
 
@@ -22,74 +22,85 @@ To make use of the heat equation, we need addition information.
 
   Here $n$ is the outward normal vector. 
 
-  The boundaries $\Gamma_u$ and $\Gamma_N$ satisfies $\partial \Omega = \Gamma_u \cup \Gamma_N$
+  The boundaries $\Gamma_D$ and $\Gamma_N$ satisfies $\partial \Omega = \Gamma_D \cup \Gamma_N$
 
-Assume that we want to experiment with a piece of new material. The material has heterogenous properties in that the thermal diffusivity is a function of the space, i.e., $\kappa(\mathbf{x})$. This is the quantity we want to estimate. To this end, we place some sensors in the domain or on the boundary. The measurements are sparse in the sense that only the temperature from those sensors can be collected. Namely, let the sensors be located at $\{\mathbf{x}_i\}_{i=1}^M$, then we can observe $\{\hat u(\mathbf{x}_i, t)\}_{i=1}^M$, i.e., the measurements of $\{ u(\mathbf{x}_i, t)\}_{i=1}^M$. We also assume that the boundary conditions, initial conditions and the source terms are known. 
+Assume that we want to experiment with a piece of new material. The material has heterogeneous properties in that the thermal diffusivity is a function of the space, i.e., $\kappa(\mathbf{x})$. This is the quantity we want to estimate. To this end, we place some sensors in the domain or on the boundary. The measurements are sparse in the sense that only the temperature from those sensors can be collected. Namely, let the sensors be located at $\{\mathbf{x}_i\}_{i=1}^M$, then we can observe $\{\hat u(\mathbf{x}_i, t)\}_{i=1}^M$, i.e., the measurements of $\{ u(\mathbf{x}_i, t)\}_{i=1}^M$. We also assume that the boundary conditions, initial conditions, and the source terms are known.
+
+![image-20200328193715417](./assets/ex_figure.png) 
+
+For the following questions, download the starter codes and data [here](https://github.com/ADCMEMarket/CME216-Supplementary). 
 
 ## Problem 1: 1D Case
 
-We first consider the simpler 1D case. In this problem the material is a rod $\Omega=[0,1]$. We consider a homogeneous (zero) fixed boundary condition on the left side, and an insulated boundary on the right side. 
+We first consider the simpler 1D case. In this problem the material is a rod $\Omega=[0,1]$. We consider a homogeneous (zero) fixed boundary condition on the left side, and an insulated boundary on the right side. The initial temperature is zero everywhere, i.e., $u(x, 0)=0$, $x\in [0,1]$. The source term is $f(x, t) = \exp(-10(x-0.5)^2)$, and $\kappa(x)$ is a function of space
 
-(a) Write down the mathematical optimization problem for the inverse modeling.
+$$\kappa(x) = a + bx$$
 
-Now we consider the discretization of the forward problem. We divide the domain $[0,1]$ into $n$ equi-spaced intervals. We consider the time horizon $T = 10$, and divide the time horizon $[0,T]$ into $m$ equi-spaced intervals. We use a finite difference scheme to solve the 1D heat equation Equations 1-3. Specifically, we use an implicit scheme for stability
+Our task is to estimate the coefficient $a$ and $b$ in $\kappa(x)$. To this end, we place a sensor at $x=0$, and the sensor records the temperature as a time series $\hat u(t)$, $t\in (0,1)$. 
 
-$$\frac{u^{k+1}_i-u^k_i}{\Delta t} = \kappa_i \frac{u^{k+1}_{i+1}+u^{k+1}_{i-1}-2u^{k+1}_i}{\Delta x^2} + f_i^{k+1}, \quad k=1,2,\ldots, i=1,2,\ldots, n$$
+**(a)** Write down the mathematical optimization problem for the inverse modeling.
+
+Now we consider the discretization of the forward problem. We divide the domain $[0,1]$ into $n$ equispaced intervals. We consider the time horizon $T = 10$, and divide the time horizon $[0,T]$ into $m$ equispaced intervals. We use a finite difference scheme to solve the 1D heat equation Equations 1-3. Specifically, we use an implicit scheme for stability
+
+$$\frac{u^{k+1}_i-u^k_i}{\Delta t} = \kappa_i \frac{u^{k+1}_{i+1}+u^{k+1}_{i-1}-2u^{k+1}_i}{\Delta x^2} + f_i^{k+1}, \quad k=1,2,\ldots,m, i=1,2,\ldots, n \tag{4}$$
 
 where $\Delta t$ is the time interval, $\Delta x$ is the space interval, $u_i^k$ is the numerical approximation to $u((i-1)\Delta x, (k-1)\Delta t)$, $\kappa_i$ is the numerical approximation to $\kappa((i-1)\Delta x)$, and $f_i^{k} = f((i-1)\Delta x, (k-1)\Delta t)$.
 
-For the insulated boundary, we introduce the ghost node $u_{0}^k$, which satisfies
+For the insulated boundary, we introduce the ghost node $u_{0}^k$ at location $x=-\Delta x$, which satisfies
 
-$$-\kappa_1 \frac{u_2^{k}-u_0^k}{2\Delta x} = 0\tag{4}$$
+$$-\kappa_1 \frac{u_2^{k}-u_0^k}{2\Delta x} = 0\tag{5}$$
 
-(b) Let $U^k = \begin{bmatrix}u_1^k\\u_2^k\\\vdots \\u_n^k\end{bmatrix}$ (note the index starts from 1 and ends with $n$), using the finite difference scheme, together with proper elimination of boundary values $u_0^k$, $u_{n+1}^k$, we have the following  formula
+**(b)** Let $U^k = \begin{bmatrix}u_1^k\\u_2^k\\\vdots \\u_n^k\end{bmatrix}$ (note the index starts from 1 and ends with $n$), using the finite difference scheme, together with proper elimination of boundary values $u_0^k$, $u_{n+1}^k$, we have the following  formula
 
 $$AU^{k+1} = U^k + F^k$$
 
-Express the matrix $A\in \mathbb{R}^{n\times n}$ in terms of $\Delta t$, $\Delta x$ and $\{\kappa_i\}_{i=1}^{n}$; namely, what is $A_{ij}$? In addition, what is $F^k\in \mathbb{R}^n$?
+Express the matrix $A\in \mathbb{R}^{n\times n}$ in terms of $\Delta t$, $\Delta x$ and $\{\kappa_i\}_{i=1}^{n}$. What is $F^k\in \mathbb{R}^n$?
 
-(c) Now precompute in Julia the force vector $F^k$ and pack it into a matrix $F\in \mathbb{R}^{(m+1)\times n}$. Using [spdiag]([https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.spdiag-Tuple{Integer,Vararg{Pair,N}%20where%20N}](https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.spdiag-Tuple{Integer,Vararg{Pair,N} where N})) to construct `A` as a `SparseTensor`. Use $m=20$ and $n=10$. Use $f(x, t) = \exp(-10(x-0.5)^2)$ for all the following questions of Problem 1. $\kappa_i$ is given as a vector 
+Hint: Can you eliminate $u_0^k$ and $u_{n+1}^k$ in Equation 4 using Equation 5 and $u_{n+1}^k=0$?
 
-```julia
-κ = constant(1 .+ exp.(Array(LinRange(0,1,n))))
-```
+**(c)** The starter code `starter1.jl` precomputes the force vector $F^k$ and packs it into a matrix $F\in \mathbb{R}^{(m+1)\times n}$. Using [spdiag]([https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.spdiag-Tuple{Integer,Vararg{Pair,N}%20where%20N}](https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.spdiag-Tuple{Integer,Vararg{Pair,N} where N})) to construct `A` as a `SparseTensor` (see the starter code for details). $\kappa$ is given by
 
-(d) The computational graph of the dynamical system can be efficiently constructed using `while_loop`. Conduct the forward computation using `while_loop`. For debugging, you can plot the temperature at the left side. You should have something similar to XXX. 
+$$\kappa(x) = 2+1.5x$$
 
-Hint: You might want to read the documentation for [while_loop]([https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.while_loop-Tuple{Union{Function,%20PyObject},Function,Union{PyObject,%20Array{Any,N}%20where%20N,%20Array{PyObject,N}%20where%20N}}](https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.while_loop-Tuple{Union{Function, PyObject},Function,Union{PyObject, Array{Any,N} where N, Array{PyObject,N} where N}})) for its usage.
+ For debugging, check that your $A_{ij}$ is tridiagonal (You can use `run(sess, A)` to evaluate the `SparseTensor` `A`), and 
 
-(e) Now we are ready to perform inverse modeling. Now using the initial guess
+$$A_{11} = 9, A_{12} = -4, A_{33} = 10.2, A_{10, 10} = 14.4$$
 
-```julia
-κ = Variable(ones(n))
-```
-
-Perform the mathematical optimization using `BFGS!`. Plot the $\kappa$ values after the optimization converges. 
-
-Hint: To debug for your inverse modeling code, refer to [Inverse Modeling Recipe](https://kailaix.github.io/ADCME.jl/dev/tu_recipe/)
+**(d)** The computational graph of the dynamical system can be efficiently constructed using `while_loop`. Implement the forward computation using `while_loop`. For debugging, you can plot the temperature on the left side. You should have something similar to the following plot 
 
 
+
+![ex1_reference](./assets/ex1_reference.png)
+
+**(e)** Now we are ready to perform inverse modeling. Read carefully the starter code `starter2.jl` in the `problem1` directory and complete the missing implementations. What is your estimate `a` and `b`?
 
 ## Problem 2: 2D Case
 
-Now we consider the 2D case. We assume that $\Omega=[0,1]^2$, and $\Gamma_u=\partial\Omega$. In this case, we assume that the sensors are located at the following points
+Now we consider the 2D case and $T=1 $. We assume that $\Omega=[0,1]^2$. We impose zero boundary conditions on the entire boundary $\Gamma_D=\partial\Omega$. Additionally, we assume the initial condition is zero everywhere. In this case, we assume that the sensor is located at (0.2,0.2) and $(0.8,0.8)$ and the sensors record the time series of the temperature $u_1(t)$ and $u_2(t)$. The thermal diffusivity is a linear function of the space coordinates
 
-XXX
+$$\kappa(x, y) = a + bx + cy$$
 
-We still use the finite difference method to discretize the PDE. Additionally, a similar implicit scheme is used for stability
+where $a, b$ and $c$ are three coefficients we want to find out from the data $u_1(t)$ and $u_2(t)$. 
 
-XXX
+**(a)** Write down the mathematical optimization problem for the inverse modeling.
 
-Let $U^k$ be the vector of vectorized $\{u_{ij}\}$, and the order is $u_{22}, u_{23}, \ldots, u_{2n}, u_{31}, \ldots, u_{nn}$. Convince yourself that the evolution formula also has the form as Equation 4 (no need to provide justification). We provide a custom operator here XXX, which implements a differentiable SparseTensor $A$ for you (refer to the instructions on how to compile and use it). 
+We use the finite difference method to discretize the PDE. Consider $\Omega=[0,1]\times [0,1]$, we use a uniform grid and divide the domain into $m\times n$ squares, with length $\Delta  x$. We also divide $[0,T]$ into $N_T$ intervals of equal length The implicit scheme for the equation is 
+$$
+\frac{u_{ij}^{k+1}-u_{ij}^k}{\Delta t} = \kappa_{ij}\frac{u_{i+1,j}^{k+1}+u_{i,j+1}^{k+1}+u_{i-1,j}^{k+1}+u_{i,j-1}^{k+1}-4u_{ij}^{k+1}}{\Delta x^2} + f_{ij}^{k+1} \tag{FD}
+$$
+where $i=2,3,\ldots, m, j=2,3,\ldots, n, k=1,2,\ldots, N_T$.
 
-(a) Similar to Problem 1, conduct forward computation using `while_loop`. Plot  the curve of the temperature at $(0.5,0.5)$. For debugging, you should obtain something as follows
+Here $u_{ij}^k$ is an approximation to $u((i-1)h, (j-1)h, (k-1)\Delta t)$, and $f_{ij}^k = f((i-1)h, (j-1)h, (k-1)\Delta t)$.
 
+We flatten $\{u_{ij}^k\}$ to a vector $U^k$, using $i$ as the leading dimension, i.e., the order is $u_{11}^k, u_{12}^k, \ldots$. We also flatten $f_{ij}^{k+1}$ to $F^{k+1}$ , and $\kappa_{ij}$ to $\Kappa$ in the same way. 
 
+In the starter code, we provide a function, `heat_equation`, a differentiable solver implemented using custom operators. Read the instruction on how to compile the custom operator, and answer the following questions. 
 
-The parameters used in this problem: $m=10$, $n=10$, $T=1$, $K=50$, $f(\mathbf{x},t) = e^{-t}\exp(-10\|\mathbf{x}-[0.5;0.5]\|^2_2)$, $\kappa(\mathbf{x}) = 1 + \|\mathbf{x}\|^2_2$
+**(b)** Similar to Problem 1, implement forward computation using `while_loop`. Plot the curve of the temperature at $(0.5,0.5)$. For debugging, you should obtain something as follows
 
-(b) Now assume $\kappa(\mathbf{x})$ is unknown but we have observations from the sensors (the observations can be computed using the forward simulation code you just developed). Conduct mathematical optimization using `BFGS!`. The initial guess for $\kappa$ is $\kappa(\mathbf{x})=1$. 
+![ex2_reference](./assets/ex2_reference.png)
 
-(c) (Bonus) Can you implement a custom operator kernel for the 1D case? 
+The parameters used in this problem: $m=50$, $n=50$, $T=1$, $N_T=50$, $f(\mathbf{x},t) = e^{-t}\exp(-50((x-0.5)^2+(y-0.5)^2))$, $a = 1.5$, $b=1.0$, $c=2.0$. 
 
-Warning: This problem may be time consuming, but this technique is frequently used for developing high performance codes for inverse modeling. 
+**(c)** The data file `data.txt` is a $(N_T+1)\times 2$ matrix, where the first and the second column are $u_1(t)$ and $u_2(t)$ respectively. Using these data to do inverse modeling and report the values $a, b$ and $c$. We do not provide a starter code intentionally, but the forward computation codes in (b) and Problem 1 will be helpful. 
+
