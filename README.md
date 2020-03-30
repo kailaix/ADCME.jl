@@ -5,6 +5,7 @@
 
 
 ![](https://travis-ci.org/kailaix/ADCME.jl.svg?branch=master)
+![](https://github.com/kailaix/ADCME.jl/workflows/Documentation/badge.svg)
 ![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
 
 

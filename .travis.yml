@@ -1,4 +1,3 @@
-sudo: required
 language: julia
 dist: xenial
 python:
@@ -11,13 +10,8 @@ julia:
 os:
   - osx
   - linux
-  # - windows
-# before_install:
-#   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update  ; fi
-#   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install hdf5; fi
 notifications:
   email: false
-coveralls: true
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
 cache:
