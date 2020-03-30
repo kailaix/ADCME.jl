@@ -36,7 +36,9 @@ Advanced: Custom Operators
 
 Advanced: Debugging 
 
-[Exercise](./exercise.md)
+[Exercise](./exercise.md)[^exercise]
+
+[^exercise]: If you want to discuss or check your exercise solutions, you are welcome to send an email to kailaix@hotmail.com.
 
 
 

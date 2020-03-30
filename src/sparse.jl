@@ -469,7 +469,7 @@ end
 """
     spdiag(n::Int64)
 
-Constructs a sparse identity matrix of size ``n\\times n``.
+Constructs a sparse identity matrix of size ``n\\times n``, which is equivalent to `spdiag(n, 0=>ones(n))`
 """
 function spdiag(n::Int64)
     SparseTensor(sparse(1:n, 1:n, ones(Float64, n)))
@@ -478,7 +478,7 @@ end
 """
     spdiag(o::PyObject)
 
-Constructs a sparse diagonal matrix where the diagonal entries are `o`
+Constructs a sparse diagonal matrix where the diagonal entries are `o`, which is equivalent to `spdiag(length(o), 0=>o)`
 """
 function spdiag(o::PyObject)
     if length(size(o))!=1
@@ -549,7 +549,12 @@ Constructs a square $m\times m$ [`SparseTensor`](@ref) from pairs of the form
 ```
 offset => array 
 ```
-
+# Example
+Suppose we want to construct a $10\times 10$ tridiagonal matrix, where the lower off-diagonals are all -2, 
+the diagonals are all 2, and the upper off-diagonals are all 3, the corresponding Julia code is 
+```julia
+spdiag(10, -1=>-2*ones(9), 0=>2*ones(10), 1=>3ones(9))
+```
 """
 function spdiag(n::Integer, pair::Pair...)
     ii = Array{Int64}[]
