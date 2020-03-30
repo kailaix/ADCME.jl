@@ -3,7 +3,6 @@ export customop,
 xavier_init,
 load_op_and_grad,
 load_op,
-compile_op,
 use_gpu,
 test_jacobian,
 install,
@@ -48,33 +47,6 @@ end
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
-
-"""
-    compile_op(oplibpath::String; check::Bool=false)
-
-Compile the library operator by force.
-"""
-function compile_op(oplibpath::String; check::Bool=false)
-    PWD = pwd()
-    if splitext(oplibpath)[2]==""
-        oplibpath = abspath(oplibpath * (Sys.islinux() ? 
-                        ".so" : Sys.isapple() ? ".dylib" : ".dll"))
-    end
-    if check && isfile(oplibpath)
-        return 
-    end
-    DIR, FILE = splitdir(oplibpath)
-    if !isdir(DIR); mkdir(DIR); end 
-    cd(DIR)
-    try
-        cmake()
-        make()
-    catch
-        @warn("Compiling not successful. Instruction: Check $oplibpath")
-    finally
-        cd(PWD)
-    end
-end
 
 @doc """
     load_op(oplibpath::String, opname::String)
@@ -197,28 +169,67 @@ end
 load_system_op(s::String; kwargs...) = load_system_op(COLIB[s]...; kwargs...)
 
 """
-    compile(s::String)
+    compile(s::String; force::Bool=false)
 
-Compiles the library `s` by force.
+Compiles the library given by path `deps/s`. If `force` is false, `compile` first check whether 
+the binary product exists. If the binary product exists, return 2. Otherwise, `compile` tries to 
+compile the binary product, and returns 0 if successful; it return 1 otherwise. 
 """
-function compile(s::String)
+function compile(s::String; force::Bool=false)
     PWD = pwd()
     dir = joinpath(joinpath("$(@__DIR__)", "../deps/CustomOps"), s)
     if !isdir(dir)
-        error("Folder for the operator $s does not exist: $dir")
+        @warn("Folder for the operator $s does not exist: $dir")
+        return 1
     end
     cd(dir)
+    
+    local surfix 
+    if Sys.isapple()
+        surfix = ".dylib"
+    elseif Sys.islinux()
+        surfix = ".so"
+    elseif Sys.iswindows()
+        surfix = ".dll"
+    end
+    if !force && isdir("build") # check if product exists 
+        files = readdir("build")
+        if any([endswith(x, surfix) for x in files])
+            @warn("The binary product exists.")
+            cd(PWD)
+            return 2
+        end
+    end
     rm("build",force=true,recursive=true)
     mkdir("build")
     cd("build")
     try
         cmake()
         make()
+        cd(PWD)
+        return 0
     catch e 
         error("Compilation error: $e")
-    finally
         cd(PWD)
+        return 1
     end
+end
+
+"""
+    precompile(;force::Bool=false)
+
+Compiles all the operators in `formulas.txt`. Report #succeded, #existed and #failed. 
+"""
+function Base.:precompile(;force::Bool=false)
+    e = 0; c = 0
+    for k in ADCME.COLIB
+        s = k.second[1]
+        f = compile(s)
+        f==0 && (c+=1)
+        f==2 && (e+=1)
+    end
+    printstyled("Total | Existed | Compiled | Failed\n", color=:green)
+    printstyled("$(length(ADCME.COLIB))    |    $e   |    $c    |    $(length(ADCME.COLIB)-e-c)", color=:green)
 end
 
 """

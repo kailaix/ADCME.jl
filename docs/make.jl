@@ -1,5 +1,8 @@
+cd(@__DIR__)
 using Pkg
-Pkg.build("ADCME")
+Pkg.activate(@__DIR__)
+Pkg.instantiate()
+
 using Documenter, ADCME
 makedocs(sitename="ADCME", modules=[ADCME],
 pages = Any[
