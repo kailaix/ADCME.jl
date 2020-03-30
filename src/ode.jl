@@ -1,4 +1,4 @@
-export ode45, rk4, αintegration, αintegration_time
+export ode45, rk4, αscheme, αscheme_time
 
 function runge_kutta_one_step(f::Function, t::PyObject, y::PyObject, Δt::PyObject, θ::Union{PyObject, Missing})
     k1 = Δt*f(t, y, θ)
@@ -97,35 +97,68 @@ ode45(args...;kwargs...) = runge_kutta(args...;method="rk45", kwargs...)
 
 
 @doc raw"""
-    αintegration(M::Union{SparseTensor, SparseMatrixCSC}, 
-    C::Union{SparseTensor, SparseMatrixCSC}, 
-    K::Union{SparseTensor, SparseMatrixCSC}, 
-    Force::Union{Array{Float64}, PyObject}, 
-    d0::Union{Array{Float64, 1}, PyObject}, 
-    v0::Union{Array{Float64, 1}, PyObject}, 
-    a0::Union{Array{Float64, 1}, PyObject}, 
-    Δt::Array{Float64})
+    αscheme(M::Union{SparseTensor, SparseMatrixCSC}, 
+        C::Union{SparseTensor, SparseMatrixCSC}, 
+        K::Union{SparseTensor, SparseMatrixCSC}, 
+        Force::Union{Array{Float64}, PyObject}, 
+        d0::Union{Array{Float64, 1}, PyObject}, 
+        v0::Union{Array{Float64, 1}, PyObject}, 
+        a0::Union{Array{Float64, 1}, PyObject}, 
+        Δt::Array{Float64}; 
+        solve::Union{Missing, Function} = missing,
+        ρ::Float64 = 1.0)
 
 Generalized α-scheme. 
 $$M u_{tt} + C u_{t} + K u = F$$
 
 `Force` must be an array of size `n`×`p`, where `d0`, `v0`, and `a0` have a size `p`
-`Δt` is an array (variable time step)
+`Δt` is an array (variable time step). 
 
-In the case $u$ has a nonzero essential boundary condition $u_b$, we let $\tilde u=u-u_b$, then 
-$$M \tilde u_{tt} + C \tilde u_t + K u = F - K u_b - C \dot u_b$$
+The generalized α scheme solves the equation by the time stepping
+```math
+\begin{align}
+\bf d_{n+1} &= \bf d_n + h\bf v_n + h^2 \left(\left(\frac{1}{2}-\beta_2 \right)\bf a_n + \beta_2 \bf a_{n+1}  \right)\\
+\bf v_{n+1} &= \bf v_n + h((1-\gamma_2)\bf a_n + \gamma_2 \bf a_{n+1})\\
+\bf F(t_{n+1-\alpha_{f_2}}) &= M \bf a _{n+1-\alpha_{m_2}} + C \bf v_{n+1-\alpha_{f_2}} + K \bf{d}_{n+1-\alpha_{f_2}}
+\end{align}
+```
+where 
+```math
+\begin{aligned}
+\bf d_{n+1-\alpha_{f_2}} &= (1-\alpha_{f_2})\bf d_{n+1} + \alpha_{f_2} \bf d_n\\
+\bf v_{n+1-\alpha_{f_2}} &= (1-\alpha_{f_2}) \bf v_{n+1} + \alpha_{f_2} \bf v_n \\
+\bf a_{n+1-\alpha_{m_2} } &= (1-\alpha_{m_2}) \bf a_{n+1} + \alpha_{m_2} \bf a_n\\
+t_{n+1-\alpha_{f_2}} & = (1-\alpha_{f_2}) t_{n+1 + \alpha_{f_2}} + \alpha_{f_2}t_n
+\end{aligned}
+```
+
+Here the parameters are computed using 
+```math 
+\begin{aligned}
+\gamma_2 &= \frac{1}{2} - \alpha_{m_2} + \alpha_{f_2}\\
+\beta_2 &= \frac{1}{4} (1-\alpha_{m_2}+\alpha_{f_2})^2 \\
+\alpha_{m_2} &= \frac{2\rho_\infty-1}{\rho_\infty+1}\\
+\alpha_{f_2} &= \frac{\rho_\infty}{\rho_\infty+1}
+\end{aligned}
+```
+
+!!! note 
+    In the case $u$ has a nonzero essential boundary condition $u_b$, we let $\tilde u=u-u_b$, then 
+    $$M \tilde u_{tt} + C \tilde u_t + K u = F - K u_b - C \dot u_b$$
 """
-function αintegration(M::Union{SparseTensor, SparseMatrixCSC}, 
+function αscheme(M::Union{SparseTensor, SparseMatrixCSC}, 
                       C::Union{SparseTensor, SparseMatrixCSC}, 
                       K::Union{SparseTensor, SparseMatrixCSC}, 
                       Force::Union{Array{Float64}, PyObject}, 
                       d0::Union{Array{Float64, 1}, PyObject}, 
                       v0::Union{Array{Float64, 1}, PyObject}, 
                       a0::Union{Array{Float64, 1}, PyObject}, 
-                      Δt::Array{Float64}; solve::Union{Missing, Function} = missing)
+                      Δt::Array{Float64}; 
+                      solve::Union{Missing, Function} = missing,
+                      ρ::Float64 = 1.0)
     n = length(Δt)
-    αm = 0.5
-    αf = 0.5
+    αm = (2ρ-1)/(ρ+1)
+    αf = ρ/(1+ρ)
     γ = 1/2-αm+αf 
     β = 0.25*(1-αm+αf)^2
     d = length(d0)
@@ -154,7 +187,7 @@ function αintegration(M::Union{SparseTensor, SparseMatrixCSC},
     end
 
     function condition(i, tas...)
-        return i<=n-1
+        return i<=n
     end
     function body(i, tas...)
         dc_arr, vc_arr, ac_arr = tas
@@ -167,7 +200,7 @@ function αintegration(M::Union{SparseTensor, SparseMatrixCSC},
         i+1, write(dc_arr, i+1, dn), write(vc_arr, i+1, vn), write(ac_arr, i+1, y)
     end
 
-    dM = TensorArray(n); vM = TensorArray(n); aM = TensorArray(n)
+    dM = TensorArray(n+1); vM = TensorArray(n+1); aM = TensorArray(n+1)
     dM = write(dM, 1, d0)
     vM = write(vM, 1, v0)
     aM = write(aM, 1, a0)
@@ -178,14 +211,15 @@ end
 
 
 @doc raw"""
-    αintegration_time(Δt::Array{Float64})
+    αscheme_time(Δt::Array{Float64}; ρ::Float64 = 1.0)
 
-Returns the integration time between $[t_i, t_{i+1}]$ using the alpha scheme. 
+Returns the integration time $t_{i+1-\alpha_{f_2}}$ between $[t_i, t_{i+1}]$ using the alpha scheme. 
+If $\Delta t$ has length $n$, the output will also have length $n$.
 """
-function αintegration_time(Δt::Array{Float64})
+function αscheme_time(Δt::Array{Float64}; ρ::Float64 = 1.0)
     n = length(Δt)
-    αm = 0.5
-    αf = 0.5
+    αm = (2ρ-1)/(ρ+1)
+    αf = ρ/(1+ρ)
     γ = 1/2-αm+αf 
     β = 0.25*(1-αm+αf)^2
     function equ(tc, dt)
@@ -194,7 +228,7 @@ function αintegration_time(Δt::Array{Float64})
 
     tcs = Float64[]
     tc = 0.0
-    for i = 1:n-1
+    for i = 1:n
         push!(tcs, equ(tc, Δt[i]))
         tc += Δt[i]
     end

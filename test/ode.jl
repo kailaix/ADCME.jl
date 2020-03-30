@@ -40,13 +40,12 @@ end
     M = sparse([1.0 0.0;0.0 1.0])
     C = sparse(zeros(2,2))
     K = sparse([4.0 0.0;0.0 9.0])
-    F = zeros(n-1, 2)
+    F = zeros(n, 2)
 
-    d, v, a = αintegration(M, C, K, F, d0, v0, a0, Δt)
-
+    d, v, a = αscheme(M, C, K, F, d0, v0, a0, Δt)
     d_, v_, a_ = run(sess, [d, v, a])
 
     tspan = 0:1e-3:(n-1)*1e-3
-    @test norm(d_[:,1] - sin.(2tspan))<1e-3
-    @test norm(d_[:,2] - sin.(3tspan))<1e-3
+    @test norm(d_[1:end-1,1] - sin.(2tspan))<1e-3
+    @test norm(d_[1:end-1,2] - sin.(3tspan))<1e-3
 end 
