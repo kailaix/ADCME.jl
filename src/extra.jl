@@ -6,7 +6,8 @@ load_op,
 use_gpu,
 test_jacobian,
 install,
-load_system_op
+load_system_op,
+install_adept
 
 """
     xavier_init(size, dtype=Float64)
@@ -175,9 +176,12 @@ Compiles the library given by path `deps/s`. If `force` is false, `compile` firs
 the binary product exists. If the binary product exists, return 2. Otherwise, `compile` tries to 
 compile the binary product, and returns 0 if successful; it return 1 otherwise. 
 """
-function compile(s::String; force::Bool=false)
+function compile(s::String; force::Bool=false, customdir::Bool = false)
     PWD = pwd()
-    dir = joinpath(joinpath("$(@__DIR__)", "../deps/CustomOps"), s)
+    dir = s 
+    if !customdir
+        dir = joinpath(joinpath("$(@__DIR__)", "../deps/CustomOps"), s)
+    end
     if !isdir(dir)
         @warn("Folder for the operator $s does not exist: $dir")
         return 1
@@ -360,3 +364,38 @@ function install(s::String; force::Bool = false)
         end
     end
 end
+
+"""
+    install_adept()
+
+Install adept-2 library: https://github.com/rjhogan/Adept-2
+"""
+function install_adept()
+    PWD = pwd()
+    cd(ADCME.LIBDIR)
+    if !isdir("Adept-2")
+        run(`$GIT clone https://github.com/ADCMEMarket/Adept-2`)
+    end
+    cd("Adept-2")
+    try
+        if !isdir("adept/.libs")
+            run(`autoreconf -i`)
+            run(`./configure`)
+            run(`$MAKE`)
+            run(`$MAKE check`)
+            run(`$MAKE install`)
+        end
+    catch
+        printstyled("Compliation failed", color=:red)
+    finally
+        cd(PWD)
+        printstyled("""∘ Add the following lines to CMakeLists.txt 
+
+include_directories(\${LIBDIR}/Adept-2/include)
+link_directories(\${LIBDIR}/Adept-2/adept/.libs)
+
+∘ Add `adept` to `target_link_libraries`
+""", color=:green)
+    end
+end
+

@@ -298,30 +298,35 @@ BackwardGetData_Output = Template("""
 
 BackwardGetData_Input_T1_ = Template("""
     auto ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
-BackwardGetData_Output_ = Template("""
-    auto ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
 
 def BackwardGetData():
     s = ""
+    # const 
     for i in range(len(inputs)):
         item = inputs[i]
-        s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
+        if item[0] == "string":
+            s += BackwardGetData_Input_T1_.substitute({"name": item[1], "tp": item[0]})
+        else:
+            s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
+    # const grad
     for i in range(len(outputs)):
         item = outputs[i]
         if item[0] not in ['float', 'double']:
             continue
         else:
             s += BackwardGetData_Input_T2.substitute({"name": outputs[i][1], "tp": outputs[i][0]})
+    # const 
     for i in range(len(outputs)):
         item = outputs[i]
         if item[0]=="string":
             s += BackwardGetData_Input_T1_.substitute({"name": item[1], "tp": item[0]})
         else:
             s += BackwardGetData_Input_T1.substitute({"name": item[1], "tp": item[0]})
+    # grad
     for i in range(len(inputs)):
         item = inputs[i]
-        if item[0]=="string":
-            s += BackwardGetData_Output_.substitute({"name": item[1], "tp": item[0]})
+        if item[0] not in ['float', 'double']:
+            continue
         else:
             s += BackwardGetData_Output.substitute({"name": item[1], "tp": item[0]})
     return s 
