@@ -540,7 +540,11 @@ function Base.:hcat(args::PyObject...)
     end
 end
 
-# for TensorArray
+"""
+    stack(o::PyObject)
+
+Convert a `TensorArray` `o` to a normal tensor. The leading dimension is the size of the tensor array. 
+"""
 function stack(o::PyObject)
     o.stack()
 end

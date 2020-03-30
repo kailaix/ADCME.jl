@@ -1,4 +1,4 @@
-# Generalized α Scheme
+# Rayleigh Damping Generalized α Scheme
 
 ## Generalized $\alpha$ Scheme
 
@@ -42,9 +42,146 @@ The following figure provides a plot of spectral radii versus $\frac hT$[^radii]
 
 In ADCME, we provide an API to the generalized $\alpha$ scheme, [`αscheme`](@ref), and [`αscheme_time`](@ref), which computes $t_{n+1-\alpha_{f_2}}$.
 
+## Rayleigh Damping
+
+Rayleigh damping is widely used to model internal structural damping. It is  viscous damping that is proportional to a linear combination of mass and stiffness
+
+$$C = \alpha M + \beta K$$
+
+The relation between the damping value $\xi$ and the naturual frequency $\omega$ is given by 
+
+$$\xi =\frac12\left( \frac{\alpha}{\omega} + \beta\omega \right)$$
+
+In practice, we can measure two real frequencies $\xi_1$ and $\xi_2$, corresponding to $\omega_1$ and $\omega_2$ and find the coefficients via 
+$$
+\begin{bmatrix}
+\frac{1}{2\omega_1} & \frac{\omega_1}{2}\\
+\frac{1}{2\omega_2} & \frac{\omega_2}{2}
+\end{bmatrix}\begin{bmatrix}\alpha\\\beta\end{bmatrix} = \begin{bmatrix}\xi_1\\\xi_2\end{bmatrix}
+$$
+This approach will produce a curve that matches the two natural frequency points. In the case where the structure has one or two very dominant frequencies, Raleigh damping can closely approximate the behavior of a prescribed modal damping. 
+
+## Example: Elasticity
+
+In this example, we consider a plane stress plasticity deformation of a plate. The governing equation is given by
+$$
+\begin{aligned}
+\sigma_{ij,j} + f_i = \ddot u_i \\
+\sigma_{ij} = \mathsf{C} \epsilon_{ij}
+\end{aligned}
+$$
+The elasticity tensor $\mathsf{C}$ is calculated using a Young's modulus $E=1$ and a Poisson's ratio $\nu=0.35$. We consider a computational domain $[0,2]\times[0,1]$ and time horizon $t\in (0,1)$, the exact solution is given by 
+
+$$u_1(x,y,t) = e^{-t}x(2-x)y(1-y)\qquad u_2(x,y,t) = e^{-t}x^2(2-x)^2y^2(1-y)^2$$
+
+The other terms can be computed analytically based on the exact solutions.
+
+```julia
+using ADCME
+using PoreFlow 
+using PyPlot
+
+n = 20
+m = 2n
+NT = 200
+ρ = 1.0
+Δt = 1/NT 
+h = 1/n
+x = zeros((m+1)*(n+1))
+y = zeros((m+1)*(n+1))
+for i = 1:m+1
+    for j = 1:n+1
+        idx = (j-1)*(m+1)+i 
+        x[idx] = (i-1)*h 
+        y[idx] = (j-1)*h 
+    end
+end
+bd = bcnode("all", m, n, h)
+
+u1 = (x,y,t)->exp(-t)*x*(2-x)*y*(1-y)
+u2 = (x,y,t)->exp(-t)*x^2*(2-x)^2*y^2*(1-y)^2
+
+ts = Δt * ones(NT)
+dt = αscheme_time(ts, ρ = ρ )
+F = zeros(NT, 2(m+1)*(n+1))
+for i = 1:NT 
+    t = dt[i] 
+    f1 = (x,y)->(-4.93827160493827*x^2*y^2*(x - 2)*(y - 1) - 4.93827160493827*x^2*y*(x - 2)*(y - 1)^2 - 4.93827160493827*x*y^2*(x - 2)^2*(y - 1) - 4.93827160493827*x*y*(x - 2)^2*(y - 1)^2 + x*y*(x - 2)*(y - 1) - 0.740740740740741*x*(x - 2) - 3.20987654320988*y*(y - 1))*exp(-t)
+  	f2 = (x,y)->(x^2*y^2*(x - 2)^2*(y - 1)^2 - 3.20987654320988*x^2*y^2*(x - 2)^2 - 0.740740740740741*x^2*y^2*(y - 1)^2 - 12.8395061728395*x^2*y*(x - 2)^2*(y - 1) - 3.20987654320988*x^2*(x - 2)^2*(y - 1)^2 - 2.96296296296296*x*y^2*(x - 2)*(y - 1)^2 - 1.23456790123457*x*y - 1.23456790123457*x*(y - 1) - 0.740740740740741*y^2*(x - 2)^2*(y - 1)^2 - 1.23456790123457*y*(x - 2) - 1.23456790123457*(x - 2)*(y - 1))*exp(-t)
+    fval1 = eval_f_on_gauss_pts(f1, m, n, h)
+  	fval2 = eval_f_on_gauss_pts(f2, m, n, h)
+    F[i,:] = compute_fem_source_term(fval1, fval2, m, n, h)
+end
+
+E = 1.0
+ν = 0.35
+H = E/(1+ν)/(1-2ν)*[
+  1-ν ν 0
+  ν 1-ν 0
+  0 0 (1-2ν)/2
+]
+M = constant(compute_fem_mass_matrix(m, n, h))
+K = constant(compute_fem_stiffness_matrix(H, m, n, h))
+
+a0 = [(@. u1(x, y, 0.0)); (@. u2(x, y, 0.0))]
+u0 = -[(@. u1(x, y, 0.0)); (@. u2(x, y, 0.0))]
+d0 = [(@. u1(x, y, 0.0)); (@. u2(x, y, 0.0))]
+
+
+function solver(A, rhs)
+    A, _ = fem_impose_Dirichlet_boundary_condition_experimental(A, bd, m, n, h)
+    rhs = scatter_update(rhs, [bd; bd .+ (m+1)*(n+1)], zeros(2*length(bd)))
+    return A\rhs
+end
+d, u, a = αscheme(M, spzero(2(m+1)*(n+1)), K, F, d0, u0, a0, ts; solve=solver, ρ = ρ  )
+
+sess = Session()
+d_, u_, a_ = run(sess, [d, u, a])
+
+
+function plot_traj(idx)
+    figure(figsize=(12,3))
+    subplot(131)
+    plot((0:NT)*Δt, u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Acceleration")
+    plot((0:NT)*Δt, a_[:,idx], "y--", markersize=2)
+  	plot((0:NT)*Δt, u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Acceleration")
+    plot((0:NT)*Δt, a_[:,idx+(m+1)*(n+1)], "c--", markersize=2)
+    legend()
+    xlabel("Time")
+    ylabel("Value")
+
+    subplot(132)
+    plot((0:NT)*Δt, u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Displacement")
+    plot((0:NT)*Δt, d_[:,idx], "y--", markersize=2)
+  	plot((0:NT)*Δt, u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Displacement")
+    plot((0:NT)*Δt, d_[:,idx+(m+1)*(n+1)], "c--", markersize=2)
+    legend()
+    xlabel("Time")
+    ylabel("Value")
+
+    subplot(133)
+    plot((0:NT)*Δt, -u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Velocity")
+    plot((0:NT)*Δt, u_[:,idx], "y--", markersize=2)
+  	plot((0:NT)*Δt, -u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Velocity")
+    plot((0:NT)*Δt, u_[:,idx+(m+1)*(n+1)], "c--", markersize=2)
+    legend()
+    xlabel("Time")
+    ylabel("Value")
+
+    tight_layout()
+end
+
+idx2 = (n÷3)*(m+1) + m÷3
+plot_traj(idx2)
+```
+
+Using the above code, we plot the trajectories of $\mathbf{a}$, $\mathbf{v}$, and $\mathbf{d}$ at $(0.64,0.32)$, and obtain the following plot 
+
+![alpha_elasticity](./assets/alpha_elasticity.png)
+
 ## Example: Viscosity
 
-The [test code](https://github.com/kailaix/ADCME.jl/blob/master/test/ode.jl#L33) for [`αscheme`](@ref) shows a simple ODE example. In this section, we show how to use the generalized $\alpha$ scheme to solve the viscosity problem. The governing equation is given by 
+In this section, we show how to use the generalized $\alpha$ scheme to solve the viscosity problem. The governing equation is given by 
 
 $$\begin{aligned}
 \sigma_{3j,j} + f &= \ddot u \\
@@ -95,11 +232,6 @@ for i = 1:NT
     fval = eval_f_on_gauss_pts(f, m, n, h)
     F[i,:] = compute_fem_source_term1(fval, m, n, h)
 end
-
-# uexact(x, y, 0.0) #
-f = (x,y)-> -2*(y-y^2+2x-x^2)
-fval = eval_f_on_gauss_pts(f, m, n, h)
-F0 = compute_fem_source_term1(fval, m, n, h)
 
 M = constant(compute_fem_mass_matrix1(m, n, h))
 K = constant(compute_fem_stiffness_matrix1(diagm(0=>ones(2)), m, n, h))
