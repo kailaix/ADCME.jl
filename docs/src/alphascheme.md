@@ -8,11 +8,11 @@ $$M\mathbf{a} + C\mathbf v + K \mathbf d = \mathbf F$$
 
 where $M$, $C$ and $K$ are the generalized mass, damping, and stiffness matrices, $\mathbf a$, $\mathbf v$, and $\mathbf d$ are the generalized acceleration, velocity, and displacement, and $\mathbf F$ is the generalized force vector. The generalized $\alpha$ scheme solves for a discrete time step
 
-$$\begin{align}
+$$\begin{aligned}
 \mathbf d_{n+1} &= \mathbf d_n + h\mathbf v_n + h^2 \left(\left(\frac{1}{2}-\beta_2 \right)\mathbf a_n + \beta_2 \mathbf a_{n+1}  \right)\\
 \mathbf v_{n+1} &= \mathbf v_n + h((1-\gamma_2)\mathbf a_n + \gamma_2 \mathbf a_{n+1})\\
 \mathbf F(t_{n+1-\alpha_{f_2}}) &= M \mathbf a _{n+1-\alpha_{m_2}} + C \mathbf v_{n+1-\alpha_{f_2}} + K \mathbf{d}_{n+1-\alpha_{f_2}}
-\end{align}$$
+\end{aligned}$$
 
 Here $h$ is the time step and
 
@@ -36,7 +36,7 @@ $$\begin{aligned}
 
 The following figure provides a plot of spectral radii versus $\frac hT$[^radii]
 
-<img src="http://www.dymoresolutions.com/AnalysisControls/figures/DIS_fig8.png" style="zoom:67%;" />
+![](http://www.dymoresolutions.com/AnalysisControls/figures/DIS_fig8.png)
 
 [^radii]: http://www.dymoresolutions.com/AnalysisControls/CreateFEModel.html
 
@@ -46,10 +46,10 @@ In ADCME, we provide an API to the generalized $\alpha$ scheme, [`αscheme`](@re
 
 The [test code](https://github.com/kailaix/ADCME.jl/blob/master/test/ode.jl#L33) for [`αscheme`](@ref) shows a simple ODE example. In this section, we show how to use the generalized $\alpha$ scheme to solve the viscosity problem. The governing equation is given by 
 
-$$\begin{align}
+$$\begin{aligned}
 \sigma_{3j,j} + f &= \ddot u \\
 \sigma_{3j} &= \dot \epsilon_{3j}
-\end{align}$$
+\end{aligned}$$
 
 where $u(x,y,t)$ is the displacement in the $z$-direction. We assume zero Dirichlet boundary condition,  the computational domain is $[0,2]\times [0,1]$, and the exact solution is
 
@@ -57,7 +57,7 @@ $$u(x, y, t) = e^{-t} x(2-x)y(1-y)$$
 
 The weak form of the equation is 
 
-$$\int_\Omega \ddot u\delta u + \int_\Omega \dot \epsilon\delta \epsilon = \int_\Omega f \delta u  $$
+$$\int_\Omega \ddot u\delta u + \int_\Omega \dot \epsilon\delta \epsilon = \int_\Omega f \delta u$$
 
 In the discretization form we have
 

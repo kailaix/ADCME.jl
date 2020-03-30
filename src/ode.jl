@@ -32,13 +32,13 @@ with Runge-Kutta method.
 
 For example, the default solver, `RK4`, has the following numerical scheme per time step 
 ```math
-\begin{align}
+\begin{aligned}
 k_1 &= \Delta t f(t_n, y_n, \theta)\\
 k_2 &= \Delta t f(t_n+\Delta t/2, y_n + k_1/2, \theta)\\
 k_3 &= \Delta t f(t_n+\Delta t/2, y_n + k_2/2, \theta)\\
 k_4 &= \Delta t f(t_n+\Delta t, y_n + k_3, \theta)\\
 y_{n+1} &= y_n + \frac{k_1}{6} +\frac{k_2}{3} +\frac{k_3}{3} +\frac{k_4}{6}
-\end{align}
+\end{aligned}
 ```
 """
 function runge_kutta(f::Function, T::Union{PyObject, Float64}, 
@@ -116,11 +116,11 @@ $$M u_{tt} + C u_{t} + K u = F$$
 
 The generalized α scheme solves the equation by the time stepping
 ```math
-\begin{align}
+\begin{aligned}
 \bf d_{n+1} &= \bf d_n + h\bf v_n + h^2 \left(\left(\frac{1}{2}-\beta_2 \right)\bf a_n + \beta_2 \bf a_{n+1}  \right)\\
 \bf v_{n+1} &= \bf v_n + h((1-\gamma_2)\bf a_n + \gamma_2 \bf a_{n+1})\\
 \bf F(t_{n+1-\alpha_{f_2}}) &= M \bf a _{n+1-\alpha_{m_2}} + C \bf v_{n+1-\alpha_{f_2}} + K \bf{d}_{n+1-\alpha_{f_2}}
-\end{align}
+\end{aligned}
 ```
 where 
 ```math
