@@ -113,6 +113,8 @@ function SparseTensor(A::SparseMatrixCSC)
 end
 
 constant(o::SparseMatrixCSC) = SparseTensor(o)
+constant(o::SparseTensor) = o
+
 
 function SparseTensor(A::Array{Float64, 2})
     SparseTensor(sparse(A))
@@ -242,7 +244,7 @@ function Base.:lastindex(o::SparseTensor, i::Int64)
     return size(o,i)
 end
 
-function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{S}, PyObject,Array{S,1}},
     i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}}) where {S<:Real,T<:Real}
     squeeze_dims = Int64[]
     if isa(i1, Integer); i1 = [i1]; push!(squeeze_dims, 1); end
@@ -251,6 +253,8 @@ function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{T},
     if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
     if isa(i1, Colon); i1 = collect(1:lastindex(s,1)); end
     if isa(i2, Colon); i2 = collect(1:lastindex(s,2)); end
+    if isa(i1, Array{Bool,1}); i1 = findall(i1); end
+    if isa(i2, Array{Bool,1}); i2 = findall(i2); end
     m_, n_ = length(i1), length(i2)
     i1 = convert_to_tensor(i1, dtype=Int64)
     i2 = convert_to_tensor(i2, dtype=Int64)
@@ -278,7 +282,7 @@ A[i1, i2] = B
 ```
 """
 function scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
-    i1::Union{Integer, Colon, UnitRange{T}, PyObject,Array{S,1}},
+    i1::Union{Integer, Colon, UnitRange{S}, PyObject,Array{S,1}},
     i2::Union{Integer, Colon, UnitRange{T}, PyObject,Array{T,1}},
     B::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}})  where {S<:Real,T<:Real}
     if isa(i1, Integer); i1 = [i1]; push!(squeeze_dims, 1); end
@@ -287,6 +291,8 @@ function scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
     if isa(i2, UnitRange) || isa(i2, StepRange); i2 = collect(i2); end
     if isa(i1, Colon); i1 = collect(1:lastindex(A,1)); end
     if isa(i2, Colon); i2 = collect(1:lastindex(A,2)); end
+    if isa(i1, Array{Bool,1}); i1 = findall(i1); end
+    if isa(i2, Array{Bool,1}); i2 = findall(i2); end
     ii = convert_to_tensor(i1, dtype=Int64)
     jj = convert_to_tensor(i2, dtype=Int64)
 

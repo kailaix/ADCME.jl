@@ -311,3 +311,10 @@ end
     B = constant(A)
     @test run(sess, B)≈A
 end
+
+@test "get index" begin 
+    idof = [false;true]
+    M = spdiag(constant(ones(2)))
+    Md = M[idof, idof]
+    @test run(sess, Md) ≈ sparse(reshape([1.0],1,1))
+end
