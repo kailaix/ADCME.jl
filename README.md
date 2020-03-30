@@ -1,4 +1,4 @@
-![](docs/src/assets/icon.jpg)
+![](docs/src/assets/ADCME.gif)
 
 ---
 
