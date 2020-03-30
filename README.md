@@ -1,5 +1,6 @@
-![](docs/src/assets/ADCME.gif)
-
+<p align="center">
+  <img src="docs/src/assets/ADCME.gif" alt="ADCME"/>
+</p>
 ---
 
 
