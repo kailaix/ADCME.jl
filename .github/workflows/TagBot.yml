@@ -1,11 +1,24 @@
-name: TagBot
+name: Documentation
+
 on:
-  schedule:
-    - cron: 0 * * * *
+  push:
+    branches:
+      - master
+    tags: '*'
+  pull_request:
+
 jobs:
-  TagBot:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: JuliaRegistries/TagBot@v1
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          version: 1.4
+      - name: Install dependencies
+        run: julia --project=docs/ -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("ADCME"); Pkg.add("PyCall"); Pkg.add("PyPlot"); Pkg.add("LinearAlgebra"); Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+      - name: Build and deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # For authentication with SSH deploy key
+        run: julia --project=docs/ docs/make.jl
