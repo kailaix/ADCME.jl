@@ -312,7 +312,7 @@ end
     @test run(sess, B)≈A
 end
 
-@test "get index" begin 
+@testset "get index" begin 
     idof = [false;true]
     M = spdiag(constant(ones(2)))
     Md = M[idof, idof]
