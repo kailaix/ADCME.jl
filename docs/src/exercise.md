@@ -52,21 +52,21 @@ $$-\kappa_1 \frac{u_2^{k}-u_0^k}{2\Delta x} = 0\tag{5}$$
 
 **(b)** Let $U^k = \begin{bmatrix}u_1^k\\u_2^k\\\vdots \\u_n^k\end{bmatrix}$ (note the index starts from 1 and ends with $n$), using the finite difference scheme, together with proper elimination of boundary values $u_0^k$, $u_{n+1}^k$, we have the following formula
 
-$$AU^{k+1} = U^k + F^k$$
+$$AU^{k+1} = U^k + F^{k+1}$$
 
-Express the matrix $A\in \mathbb{R}^{n\times n}$ in terms of $\Delta t$, $\Delta x$ and $\{\kappa_i\}_{i=1}^{n}$. What is $F^k\in \mathbb{R}^n$?
+Express the matrix $A\in \mathbb{R}^{n\times n}$ in terms of $\Delta t$, $\Delta x$ and $\{\kappa_i\}_{i=1}^{n}$. What is $F^{k+1}\in \mathbb{R}^n$?
 
 Hint: Can you eliminate $u_0^k$ and $u_{n+1}^k$ in Equation 4 using Equation 5 and $u_{n+1}^k=0$?
 
 **(c)** The starter code `starter1.jl` precomputes the force vector $F^k$ and packs it into a matrix $F\in \mathbb{R}^{(m+1)\times n}$. Using `spdiag`[^spdiag]  to construct `A` as a `SparseTensor` (see the starter code for details). $\kappa$ is given by
 
-[^spdiag]: [https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.spdiag-Tuple{Integer,Vararg{Pair,N}%20where%20N}](https://kailaix.github.io/ADCME.jl/dev/api/#ADCME.spdiag-Tuple{Integer,Vararg{Pair,N} where N})
+[^spdiag]: [API Reference](https://kailaix.github.io/ADCME.jl/dev/api)
 
 $$\kappa(x) = 2+1.5x$$
 
  For debugging, check that your $A_{ij}$ is tridiagonal (You can use `run(sess, A)` to evaluate the `SparseTensor` `A`), and 
 
-$$A_{11} = 9, A_{12} = -4, A_{33} = 10.2, A_{10, 10} = 14.4$$
+$$A_{11} = 201, A_{12} = -200, A_{21} = -101.5, A_{33} = 207, A_{10, 10} = 228$$
 
 **(d)** The computational graph of the dynamical system can be efficiently constructed using `while_loop`. Implement the forward computation using `while_loop`. For debugging, you can plot the temperature on the left side. You should have something similar to the following plot 
 
@@ -106,4 +106,9 @@ The following question reminds you of extending an AD framework using custom ope
 The parameters used in this problem: $m=50$, $n=50$, $T=1$, $N_T=50$, $f(\mathbf{x},t) = e^{-t}\exp(-50((x-0.5)^2+(y-0.5)^2))$, $a = 1.5$, $b=1.0$, $c=2.0$. 
 
 **(c)** The data file `data.txt` is a $(N_T+1)\times 2$ matrix, where the first and the second columns are $u_1(t)$ and $u_2(t)$ respectively. Using these data to do inverse modeling and report the values $a, b$ and $c$. We do not provide a starter code intentionally, but the forward computation codes in (b) and Problem 1 will be helpful. 
+
+Hint: 
+
+1. For checking your program, you can save your own `data.txt` from (b), try to estimate $a$, $b$, and $c$, and check if you can recover the true values. 
+2. If the optimization stops too early, you can multiply your loss function by a large number (e.g., $10^{10}$) and run your `BFGS!` optimizer again. 
 

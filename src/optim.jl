@@ -431,7 +431,7 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     ta_u = write(ta_u, 1, u)
     ta_r = write(ta_r, 1, tol0)
     i = constant(2, dtype=Int32)
-    i_, ta_r_, ta_u_ = while_loop(condition, body, [i, ta_r, ta_u])
+    i_, ta_r_, ta_u_ = while_loop(condition, body, [i, ta_r, ta_u], back_prop=false)
     r_out, u_out = stack(ta_r_), stack(ta_u_)
     
     if options["verbose"]; @info "(4/4)Postprocessing Results..."; end
