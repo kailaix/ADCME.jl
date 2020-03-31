@@ -63,44 +63,21 @@ nr = newton_raphson(f, constant(rand(10)), missing,
 ```
 
 
-Finally we consider an advanced usage of the code, where we want to create a custom operator that solves
+Finally we consider the differentiable Newton-Raphson algorithm. Consider we want to construct a map $f:x\mapsto y$, which satisfies
 ```math
 y^3-x=0
 ```
-We compute the forward using Newton-Raphson and the backward with the implicit function theorem.
+
+In a later stage, we also want to evaluate $\frac{dy}{dx}$. To this end, we can use [`newton_raphson_with_grad`](@ref), which provides a differentiable implementation of the Newton-Raphson's algorithm. 
+
 ```julia
-using Random
-function myop_(x)
-    function f(θ, y)
-        y^3 - x, spdiag(3y^2)
-    end
-    nr = newton_raphson(f, constant(ones(length(x))), options=Dict("verbose"=>true))
-    y = nr.x
-    function myop_grad(dy, y)
-        dy/3y^2
-    end
-    # move variables to python space
-    s = randstring(8)
-py"""
-y_$$s = $y
-grad_$$s = $myop_grad
-"""
-    # workaround 
-    g = py"""lambda dy: grad_$$s(dy, y_$$s)"""
-    return y, g
+function f(θ, x)
+    x^3 - θ, 3spdiag(x^2)
 end
-tf_myop = tf.custom_gradient(myop_)
+
+θ = constant([2. .^3;3. ^3; 4. ^3])
+x = newton_raphson_with_grad(f, constant(ones(3)), θ)
+run(sess, x)≈[2.;3.;4.]
+run(sess, gradients(sum(x), θ))≈1/3*[2. .^3;3. ^3; 4. ^3] .^(-2/3)
 ```
 
-!!! note
-    Here `py"""lambda dy: grad_$$s(dy, y_$$s)"""` is related to a [workaround](https://github.com/JuliaPy/PyCall.jl/issues/367) for converting Julia function to Python function. 
-    Also we need to explicitly put Julia object to Python. 
-
-```julia
-x = constant(8ones(5))
-y = tf_myop(x)
-println(run(sess, y))
-
-l = sum(y)
-run(sess, gradients(l, x))
-```

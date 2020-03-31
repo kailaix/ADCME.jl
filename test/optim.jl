@@ -227,3 +227,20 @@ sess = Session(); init(sess)
 opt.minimize(sess)
 @test true
 =#
+
+@testset "newton_raphson_with_grad" begin 
+    function f(θ, x)
+        x^3 - θ, 3spdiag(x^2)
+    end
+
+    θ = [2. .^3;3. ^3; 4. ^3]
+    x = newton_raphson_with_grad(f, constant(ones(3)), θ)
+    @test run(sess, x)≈[2.;3.;4.]
+
+    θ = constant([2. .^3;3. ^3; 4. ^3])
+    x = newton_raphson_with_grad(f, constant(ones(3)), θ)
+    @test run(sess, x)≈[2.;3.;4.]
+
+    
+    @test run(sess, gradients(sum(x), θ))≈1/3*[2. .^3;3. ^3; 4. ^3] .^(-2/3)
+end

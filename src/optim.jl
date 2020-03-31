@@ -11,6 +11,7 @@ ScipyOptimizerMinimize,
 BFGS!,
 CustomOptimizer,
 newton_raphson,
+newton_raphson_with_grad,
 NonlinearConstrainedProblem
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
@@ -465,6 +466,43 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
     NRResult(sol, res, u_his', converged, iter)
 end
 
+"""
+    newton_raphson_with_grad(f::Function, u::Union{Array,PyObject}, θ::Union{Missing,PyObject}; options::Union{Dict{String, T}, Missing}=missing)
+
+Differentiable Newton-Raphson algorithm. See [`newton_raphson`](@ref) 
+
+# Example 
+```julia
+function f(θ, x)
+    x^3 - θ, 3spdiag(x^2)
+end
+
+θ = constant([2. .^3;3. ^3; 4. ^3])
+x = newton_raphson_with_grad(f, constant(ones(3)), θ)
+run(sess, x)≈[2.;3.;4.]
+run(sess, gradients(sum(x), θ))
+```
+"""
+function newton_raphson_with_grad(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject, Array{<:Real}}=missing; 
+     options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+    function forward(θ)
+        nr = newton_raphson(f, u0, θ; options = options)
+        return nr.x 
+    end
+
+    function backward(dy, x, θ)
+        r, A = f(θ, x)
+        g = independent(A'\dy)
+        -gradients(sum(r*g), θ)
+    end
+
+    if !isa(θ, PyObject)
+        @warn("θ is not a PyObject, no gradients is available")
+        return forward(θ)
+    end
+    fn = register(forward, backward)
+    return fn(θ)
+end
 
 @doc raw"""
     NonlinearConstrainedProblem(f::Function, L::Function, θ::PyObject, u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Integer
@@ -495,7 +533,7 @@ function NonlinearConstrainedProblem(f::Function, L::Function, θ::Union{Array{F
     top_grad = tf.convert_to_tensor(gradients(l, nr.x))
     A = A'
     g = A\top_grad
-    g = stop_gradient(g) # preventing gradients backprop
+    g = independent(g) # preventing gradients backprop
     l, nr.x, tf.convert_to_tensor(-gradients(sum(r*g), θ))
 end
 
