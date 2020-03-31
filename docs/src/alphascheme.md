@@ -1,4 +1,4 @@
-# Rayleigh Damping Generalized α Scheme
+# Generalized α Scheme
 
 ## Generalized $\alpha$ Scheme
 

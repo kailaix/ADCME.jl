@@ -182,7 +182,11 @@ end
 @doc raw"""
     ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xavier")
 
-Return the initial weights and bias values by TensorFlow as a vector. Three types of 
+Return the initial weights and bias values by TensorFlow as a vector. The neural network architecture is
+
+$$o_1 (Input layer) \rightarrow o_2 \rightarrow \cdots \rightarrow o_n (Output layer)$$
+
+Three types of 
 random initializers are provided
 
 - `xavier` (default). It is useful for `tanh` fully connected neural network. 
