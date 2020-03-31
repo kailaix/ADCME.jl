@@ -7,7 +7,8 @@ use_gpu,
 test_jacobian,
 install,
 load_system_op,
-install_adept
+install_adept,
+register
 
 """
     xavier_init(size, dtype=Float64)
@@ -399,3 +400,81 @@ link_directories(\${LIBDIR}/Adept-2/adept/.libs)
     end
 end
 
+# function register(forward::Function, backward::Function, fd_args::Int64, bd_args::Int64; multiple::Bool=false)
+#     fn_name = "customgrad_"*randstring(8)
+
+# fd = join(["o$k" for k = 1:fd_args], ",")
+# bd = join(["o$k" for k = 1:bd_args], ",")
+
+# py"""
+# forward_$$fn_name = lambda $$fd: $forward($$fd)
+# backward_$$fn_name = lambda $$bd: $backward($$bd)
+# """
+#     if !multiple
+# py"""
+# import tensorflow as tf
+# @tf.custom_gradient
+# def $$fn_name(*args):
+#     u = forward_$$fn_name(*args)
+#     def grad(dy):
+#         return backward_$$fn_name(dy, u, *args)
+#     return u, grad
+# """
+#     else
+# py"""
+# import tensorflow as tf
+# @tf.custom_gradient
+# def $$fn_name(*args):
+#     u = forward_$$fn_name(*args)
+#     def grad(*dy):
+#         dy = [y for y in dy if y is not None and y.dtype in [tf.float64, tf.float32]] # only float64 and float32 can backpropagate gradients
+#         return backward_$$fn_name(*dy, *u, *args)
+#     return u, grad
+# """
+#     end
+#     return py"$$fn_name"
+# end
+
+
+@doc raw"""
+    register(forward::Function, backward::Function; multiple::Bool=false)
+
+Register a function `forward` with back-propagated gradients rule `backward` to the backward. 
+∘ `forward`: it takes $n$ inputs and outputs $m$ tensors. When $m>1$, the keyword `multiple` must be true. 
+∘ `backward`: it takes $\tilde m$ top gradients from float/double output tensors of `forward`, $m$ outputs of the `forward`, 
+   and $n$ inputs of the `forward`. `backward` outputs $n$ gradients for each input of `forward`. When input $i$ of
+   `forward` is not float/double, `backward` should return `nothing` for the corresponding gradients. 
+   
+# Example 
+```julia
+forward = x->log(1+exp(x))
+backward = (dy, y, x)->dy*(1-1/(1+y))
+f = register(forward, backward)
+```
+"""
+function register(forward::Function, backward::Function; multiple::Bool=false)
+    fn_name = "customgrad_"*randstring(8)
+    if !multiple
+py"""
+import tensorflow as tf
+@tf.custom_gradient
+def $$fn_name(*args):
+    u = $forward(*args)
+    def grad(dy):
+        return $backward(dy, u, *args)
+    return u, grad
+"""
+    else
+py"""
+import tensorflow as tf
+@tf.custom_gradient
+def $$fn_name(*args):
+    u = forward_$$fn_name(*args)
+    def grad(*dy):
+        dy = [y for y in dy if y is not None and y.dtype in [tf.float64, tf.float32]] # only float64 and float32 can backpropagate gradients
+        return backward_$$fn_name(*dy, *u, *args)
+    return u, grad
+"""
+    end
+    return py"$$fn_name"
+end
