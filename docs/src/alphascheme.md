@@ -53,23 +53,23 @@ The relation between the damping value $\xi$ and the naturual frequency $\omega$
 $$\xi =\frac12\left( \frac{\alpha}{\omega} + \beta\omega \right)$$
 
 In practice, we can measure two real frequencies $\xi_1$ and $\xi_2$, corresponding to $\omega_1$ and $\omega_2$ and find the coefficients via 
-$$
-\begin{bmatrix}
+
+$$\begin{bmatrix}
 \frac{1}{2\omega_1} & \frac{\omega_1}{2}\\
 \frac{1}{2\omega_2} & \frac{\omega_2}{2}
-\end{bmatrix}\begin{bmatrix}\alpha\\\beta\end{bmatrix} = \begin{bmatrix}\xi_1\\\xi_2\end{bmatrix}
-$$
+\end{bmatrix}\begin{bmatrix}\alpha\\\beta\end{bmatrix} = \begin{bmatrix}\xi_1\\\xi_2\end{bmatrix}$$
+
 This approach will produce a curve that matches the two natural frequency points. In the case where the structure has one or two very dominant frequencies, Raleigh damping can closely approximate the behavior of a prescribed modal damping. 
 
 ## Example: Elasticity
 
 In this example, we consider a plane stress plasticity deformation of a plate. The governing equation is given by
-$$
-\begin{aligned}
+
+$$\begin{aligned}
 \sigma_{ij,j} + f_i = \ddot u_i \\
 \sigma_{ij} = \mathsf{C} \epsilon_{ij}
-\end{aligned}
-$$
+\end{aligned}$$
+
 The elasticity tensor $\mathsf{C}$ is calculated using a Young's modulus $E=1$ and a Poisson's ratio $\nu=0.35$. We consider a computational domain $[0,2]\times[0,1]$ and time horizon $t\in (0,1)$, the exact solution is given by 
 
 $$u_1(x,y,t) = e^{-t}x(2-x)y(1-y)\qquad u_2(x,y,t) = e^{-t}x^2(2-x)^2y^2(1-y)^2$$
