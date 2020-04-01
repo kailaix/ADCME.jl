@@ -22,7 +22,7 @@ The challenge here is that **the numerical solver is unstable if we plug in a ra
 
 $$\Delta {\sigma} =\mathsf{L}_{\theta}\mathsf{L}_{\theta}^T \Delta {\epsilon}$$
 
-where $\mathsf L_\theta$ is a Cholesky factor and therefore $\mathsf{L}_{\theta}\mathsf{L}_{\theta}^T $ is SPD. The formulation preserves both time consistency and weak convexity of the strain energy. In specific applications, the formulation is further customized. For example, 
+where $\mathsf L_\theta$ is a Cholesky factor and therefore $\mathsf{L}_{\theta}\mathsf{L}_{\theta}^T$ is SPD. The formulation preserves both time consistency and weak convexity of the strain energy. In specific applications, the formulation is further customized. For example, 
 
 $${\sigma}^{n+1} = \mathsf{M}_{\theta}({\epsilon}^{n+1}, {\epsilon}^{n}, {\sigma}^{n}) := \left\{\begin{aligned}
 & \mathsf{C}_{\theta}{\epsilon}^{n+1}  & \mbox{Linear Elasticity}\\
