@@ -115,7 +115,13 @@ For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![law](docs/src/assets/law.png)                              | ![law](docs/src/assets/earthquake.png)                       | ![law](docs/src/assets/geo.png)                              | ![law](docs/src/assets/algo.png)                             |
 
+**Domain specific software based on ADCME**
 
+[ADSeismic.jl](https://github.com/kailaix/ADSeismic.jl): Inverse Problems in Earthquake Location/Source-Time Function, FWI, Rupture Process 
+
+[FwiFlow.jl](https://github.com/lidongzh/FwiFlow.jl): Seismic Inversion, Two-phase Flow, Coupled seismic and flow equations 
+
+[NNFEM.jl](https://github.com/kailaix/NNFEM.jl/): Constitutive Modeling, Elasticity, Plasticity, Hyperelasticity, Finite Element Method on Unstructured Grid 
 
 
 # LICENSE

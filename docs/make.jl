@@ -12,7 +12,7 @@ pages = Any[
     "Resources" => ["newton_raphson.md", "parallel.md", "ode.md", "customop.md", "global.md", 
             "julia_customop.md", "nn.md", "extra.md", "ot.md", "resource_manager.md", "alphascheme.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
-            "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md"],
+            "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md", "apps_nnfem.md"],
     "api.md"
 ],
 authors = "Kailai Xu")
