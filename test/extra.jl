@@ -23,7 +23,7 @@ end
     @test n==length(ae_init([2,20,20,20,3]))
 end
 
-@test "register" begin 
+@testset "register" begin 
     forward = x->log(1+exp(x))
     backward = (dy, y, x)->dy*(1-1/(1+y))
     f = register(forward, backward)
