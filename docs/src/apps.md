@@ -15,3 +15,5 @@ We design data-driven algorithms for estimating unknown parameters, functions, f
 [Calibrating Multivariate Lévy Processes with Neural Networks](./apps_levy.md)
 
 [General Seismic Inversion using Automatic Differentiation](./apps_adseismic.md)
+
+[Symmetric Positive Definite Neural Networks (SPD-NN)](./apps_nnfem.md)
