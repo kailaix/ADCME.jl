@@ -302,16 +302,21 @@ function backtracking(compute_gradient::Function , u::PyObject, options::Dict)
 end
 
 """
-    newton_raphson(f::Function, u::Union{Array,PyObject}, θ::Union{Missing,PyObject}; options::Union{Dict{String, T}, Missing}=missing)
+    newton_raphson(func::Function, 
+    u0::Union{Array,PyObject}, 
+    θ::Union{Missing,PyObject, Array{<:Real}}=missing,
+    args::PyObject...; 
+    options::Union{Dict{String, T}, Missing}=missing) where T<:Real
 
 Newton Raphson solver for solving a nonlinear equation. 
-`f` has the signature 
+∘ `f` has the signature 
 - `f(θ::Union{Missing,PyObject}, u::PyObject)->(r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is off)
 - `f(θ::Union{Missing,PyObject}, u::PyObject)->(fval::PyObject, r::PyObject, A::Union{PyObject,SparseTensor})` (if `linesearch` is on)
 where `r` is the residual and `A` is the Jacobian matrix; in the case where `linesearch` is on, the function value `fval` must also be supplied.
-`θ` are external parameters.
-`u0` is the initial guess for `u`
-`options`:
+∘ `θ` are external parameters.
+∘ `u0` is the initial guess for `u`
+∘ `args`: additional inputs to the func function 
+∘ `options`:
 - `max_iter`: maximum number of iterations (default=100)
 - `verbose`: whether details are printed (default=false)
 - `rtol`: relative tolerance for termination (default=1e-12)
@@ -329,8 +334,12 @@ The parameters for `linesearch` are also supplied via `options`
 - `ls_maxstep`: maximum allowable steps
 - `ls_αinitial`: initial guess for the step size ``\\alpha``
 """
-function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject, Array{<:Real}}=missing; 
+function newton_raphson(func::Function, 
+    u0::Union{Array,PyObject}, 
+    θ::Union{Missing,PyObject, Array{<:Real}}=missing,
+    args::PyObject...; 
     options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+    f = (θ, u)->func(θ, u, args...)
     options_ = Dict(
             "max_iter"=>100,
             "verbose"=>false,
@@ -467,7 +476,11 @@ function newton_raphson(f::Function, u0::Union{Array,PyObject}, θ::Union{Missin
 end
 
 """
-    newton_raphson_with_grad(f::Function, u::Union{Array,PyObject}, θ::Union{Missing,PyObject}; options::Union{Dict{String, T}, Missing}=missing)
+    newton_raphson_with_grad(f::Function, 
+    u0::Union{Array,PyObject}, 
+    θ::Union{Missing,PyObject, Array{<:Real}}=missing,
+    args::PyObject...; 
+    options::Union{Dict{String, T}, Missing}=missing) where T<:Real
 
 Differentiable Newton-Raphson algorithm. See [`newton_raphson`](@ref) 
 
@@ -483,25 +496,36 @@ run(sess, x)≈[2.;3.;4.]
 run(sess, gradients(sum(x), θ))
 ```
 """
-function newton_raphson_with_grad(f::Function, u0::Union{Array,PyObject}, θ::Union{Missing,PyObject, Array{<:Real}}=missing; 
+function newton_raphson_with_grad(f::Function, 
+    u0::Union{Array,PyObject}, 
+    θ::Union{Missing,PyObject, Array{<:Real}}=missing,
+    args::PyObject...; 
      options::Union{Dict{String, T}, Missing}=missing) where T<:Real
-    function forward(θ)
-        nr = newton_raphson(f, u0, θ; options = options)
+    function forward(θ, args...)
+        nr = newton_raphson(f, u0, θ, args...; options = options)
         return nr.x 
     end
 
-    function backward(dy, x, θ)
-        r, A = f(θ, x)
+    function backward(dy, x, θ, xargs...)
+        θ = copy(θ)
+        args = [copy(z) for z in xargs]
+        r, A = f(θ, x, args...)
         g = independent(A'\dy)
-        -gradients(sum(r*g), θ)
+        s = sum(r*g)
+        gs = [-gradients(s, z) for z in args]
+        if length(args)==0
+            -gradients(s, θ)
+        else
+            -gradients(s, θ), gs...
+        end
     end
 
     if !isa(θ, PyObject)
         @warn("θ is not a PyObject, no gradients is available")
-        return forward(θ)
+        return forward(θ, args...)
     end
     fn = register(forward, backward)
-    return fn(θ)
+    return fn(θ, args...)
 end
 
 @doc raw"""
