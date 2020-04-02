@@ -48,7 +48,8 @@ function SparseTensor(I::Union{PyObject,Array{T,1}}, J::Union{PyObject,Array{T,1
     value = V
     shape = [m;n]
     sp = tf.SparseTensor(indices, value, shape)
-    SparseTensor(tf.sparse.reorder(sp), is_diag)
+    options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
+    SparseTensor(sp, is_diag)
 end
 
 function dense_to_sparse(o::Union{Array, PyObject})
@@ -88,7 +89,8 @@ function SparseTensor_(indices::Union{PyObject,Array{T,2}}, value::Union{PyObjec
     value = convert_to_tensor(value)
     shape = convert_to_tensor(shape)
     sp = tf.SparseTensor(indices-1, value, shape)
-    SparseTensor(tf.sparse.reorder(sp), is_diag)
+    options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
+    SparseTensor(sp, is_diag)
 end
 
 """
@@ -164,7 +166,7 @@ Base.:-(s1::SparseTensor, s2::SparseTensor) = s1 + (-s2)
 function Base.:adjoint(s::SparseTensor) 
     indices = [s.o.indices'[2,:] s.o.indices'[1,:]]
     sp = tf.SparseTensor(indices, s.o.values, (size(s,2), size(s,1)))
-    sp = tf.sparse.reorder(sp)
+    options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
     SparseTensor(sp, s._diag)
 end
 
@@ -583,5 +585,7 @@ function spdiag(n::Integer, pair::Pair...)
     jj = vcat(jj...)
     vv = vcat(vv...)
     indices = [ii jj] .- 1
-    SparseTensor(tf.sparse.reorder(tf.SparseTensor(indices, vv, (n, n))))
+    sp = tf.SparseTensor(indices, vv, (n, n))
+    options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
+    SparseTensor(sp)
 end

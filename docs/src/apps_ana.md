@@ -18,10 +18,10 @@ x = F(w, \theta)
 
 Here $w$ is a known stochastic process such as Gaussian processes, $\theta$ is an unknown parameter, distribution or stochastic processes. Consequently, the output of the model $x$ is also a stochastic process. $F$ can be a very complicated model such as a system of partial differential equations. Many models fall into this category; here  we solve an inverse modeling problem of boundary value Poisson equations
 
-\begin{cases}
+$$\begin{cases}
     -\nabla \cdot (a(x)\nabla u(x)) = 1 & x\in(0,1)\\\\
-    u(0) = u(1) = 0 & \mbox{otherwise}
-\end{cases}
+    u(0) = u(1) = 0 & \text{otherwise}
+\end{cases}$$
 
 ```math
 a(x) = 1-0.9\exp\left( -\frac{(x-\mu)^2}{2\sigma^2} \right)

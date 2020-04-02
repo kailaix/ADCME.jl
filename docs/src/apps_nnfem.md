@@ -25,9 +25,9 @@ $$\Delta {\sigma} =\mathsf{L}_{\theta}\mathsf{L}_{\theta}^T \Delta {\epsilon}$$
 where $\mathsf L_\theta$ is a Cholesky factor and therefore $\mathsf{L}_{\theta}\mathsf{L}_{\theta}^T$ is SPD. The formulation preserves both time consistency and weak convexity of the strain energy. In specific applications, the formulation is further customized. For example, 
 
 $${\sigma}^{n+1} = \mathsf{M}_{\theta}({\epsilon}^{n+1}, {\epsilon}^{n}, {\sigma}^{n}) := \left\{\begin{matrix}
-& \mathsf{C}_{\theta}{\epsilon}^{n+1}  & \mbox{Linear Elasticity}\\
-&\mathsf{L}_{\theta}({\epsilon}^{n+1} )\mathsf{L}_{\theta}({\epsilon}^{n+1})^T({\epsilon}^{n+1} -  {\epsilon}^{n})  + {\sigma}^{n} & \mbox{Nonlinear Elasticity}\\
-& (1 - D(\sigma^{n}, \tilde{\sigma}_Y)) \sigma_{\mathrm{elasticity}}^{n+1} + D(\sigma^{n}, \tilde{\sigma}_Y) \sigma_{\mathrm{plasticity}}^{n+1} & \mbox{Elasto-Plasticity}
+& \mathsf{C}_{\theta}{\epsilon}^{n+1}  & \text{Linear Elasticity}\\
+&\mathsf{L}_{\theta}({\epsilon}^{n+1} )\mathsf{L}_{\theta}({\epsilon}^{n+1})^T({\epsilon}^{n+1} -  {\epsilon}^{n})  + {\sigma}^{n} & \text{Nonlinear Elasticity}\\
+& (1 - D(\sigma^{n}, \tilde{\sigma}_Y)) \sigma_{\mathrm{elasticity}}^{n+1} + D(\sigma^{n}, \tilde{\sigma}_Y) \sigma_{\mathrm{plasticity}}^{n+1} & \text{Elasto-Plasticity}
 \end{matrix}\right.$$
 
 As a final remark, the challenge in learning plasticity behavior is that we have to capture the loading and unloading transitions. In this case, the tangent stiffness matrix exhibits a discontinuity. To alleviate the problem, we adjust the neural network by using a transition function $D$ in the elasto-plasticity case. 

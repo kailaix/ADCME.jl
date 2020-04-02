@@ -27,8 +27,18 @@ module ADCME
         error("ADCME is not properly built; run `Pkg.build(\"ADCME\")` to fix the problem.")
     end
     run_metadata = nothing
-    
-    
+
+    # global options to control ADCME behavior 
+    mutable struct OptionsSparse 
+        auto_reorder::Bool 
+        OptionsSparse() = new(true)
+    end
+    mutable struct Options 
+        sparse::OptionsSparse
+        Options() = new(OptionsSparse())
+    end
+    options = Options()
+        
     function __init__()
         # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB
