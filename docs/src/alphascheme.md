@@ -4,7 +4,7 @@
 
 The generalized $\alpha$ scheme is used to solve the second order linear differential equation of the form 
 
-$$ m\ddot{ \mathbf{u}} + \gamma\dot{\mathbf{u}} + k\mathbf{u} = \mathbf{f}$$
+$$m\ddot{ \mathbf{u}} + \gamma\dot{\mathbf{u}} + k\mathbf{u} = \mathbf{f}$$
 
 whose discretization form is 
 
