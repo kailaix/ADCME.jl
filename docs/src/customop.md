@@ -253,7 +253,7 @@ context->eigen_device<GPUDevice>()
     for (int index = blockIdx.x * blockDim.x + threadIdx.x; index < nthreads; index += blockDim.x * gridDim.x)
     ```
     and the kernel launch semantic is equivalent to 
-    ```cuda
+    ```c++
     forward_<<<config.block_count, config.thread_per_block, 0,
                                 d.stream()>>>(config.virtual_thread_count,
                                               			out, y, H0, n);

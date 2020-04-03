@@ -18,6 +18,7 @@ Several features of the library are
 * *MATLAB-style syntax*. Write `A*B` for matrix production instead of `tf.matmul(A,B)`.
 * *Custom operators*. Implement operators in C/C++ for bottleneck parts; incorporate legacy code or specially designed C/C++ code in `ADCME`; differentiate implicit schemes.
 * *Numerical Scheme*. Easy to implement numerical schemes for solving PDEs.
+* *Physics Constrained Learning*. Embed neural network into PDEs and solve with any numerical schemes, including implicit and iterative schemes. 
 * *Static graphs*. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
 * *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. 
 * *Sparse linear algebra*. Sparse linear algebra library tailored for scientific computing. 

@@ -16,7 +16,7 @@ The tutorial does not assume readers with experience in deep learning. However, 
 
 [ADCME Basics: Tensor, Type, Operator, Session & Kernel](./tu_basic.md)
 
-Mathematical Minimization with ADCME
+[PDE Constrained Optimization](./tu_optimization.md)
 
 [Sparse Linear Algebra in ADCME](./tu_sparse.md)
 

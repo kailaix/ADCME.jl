@@ -4,6 +4,10 @@
 
 The generalized $\alpha$ scheme is used to solve the second order linear differential equation of the form 
 
+$$ m\ddot{ \mathbf{u}} + \gamma\dot{\mathbf{u}} + k\mathbf{u} = \mathbf{f}$$
+
+whose discretization form is 
+
 $$M\mathbf{a} + C\mathbf v + K \mathbf d = \mathbf F$$
 
 where $M$, $C$ and $K$ are the generalized mass, damping, and stiffness matrices, $\mathbf a$, $\mathbf v$, and $\mathbf d$ are the generalized acceleration, velocity, and displacement, and $\mathbf F$ is the generalized force vector. The generalized $\alpha$ scheme solves for a discrete time step
@@ -63,7 +67,7 @@ This approach will produce a curve that matches the two natural frequency points
 
 ## Example: Elasticity
 
-In this example, we consider a plane stress plasticity deformation of a plate. The governing equation is given by
+In this example, we consider a plane stress elasticity deformation of a plate. The governing equation is given by
 
 $$\begin{aligned}
 \sigma_{ij,j} + f_i = \ddot u_i \\

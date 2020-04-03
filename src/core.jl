@@ -170,7 +170,7 @@ Loops over `loop_vars` while `condition` is true. This operator only creates one
 
 The following script computes 
 ```math
-\sum_{i=1}^10 i
+\sum_{i=1}^{10} i
 ```
 
 ```julia

@@ -206,7 +206,7 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
     aM = write(aM, 1, a0)
     i = constant(1, dtype=Int32)
     _, d, v, a = while_loop(condition, body, [i,dM, vM, aM])
-    stack(d), stack(v), stack(a)
+    set_shape(stack(d), (n+1, length(a0))), set_shape(stack(v), (n+1, length(a0))), set_shape(stack(a), (n+1, length(a0)))
 end
 
 
