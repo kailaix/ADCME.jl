@@ -148,14 +148,16 @@ which is the same expression as Equation 4. When $y$ is optimal, this expression
 * **Step 1.** Create the Lagrangian Equation 5.
 
 * **Step 2**. Conduct forward computation and solve for $u$ from 
-	$$F(y, u) = 0$$
+
+$$F(y, u) = 0$$
 
 * **Step 3.** Compute the adjoint variable $\lambda$ from 
-	$$\nabla_u J + \lambda^T \nabla_u F(y, u) = 0$$
+	
+$$\nabla_u J + \lambda^T \nabla_u F(y, u) = 0$$
 	
 * **Step 4.** Compute the sensitivity 
 
-  $$\frac{\partial \hat J}{\partial y} = \nabla_y J + \lambda^T \nabla_y F(y, u) $$
+$$\frac{\partial \hat J}{\partial y} = \nabla_y J + \lambda^T \nabla_y F(y, u)$$
 
 ### Link to Automatic Differentiation
 
@@ -170,12 +172,7 @@ $$\begin{aligned}
      & \  \mathbf{u}_4 = f_3(\mathbf{u}_3,  {\theta}).
 \end{aligned}$$
 
-where
-
-* $f_1$, $f_2$, $f_3$ are PDE constraints
-* $f_4$ is the loss function
-* $\mathbf{u}_1$ is the initial condition
-* $\theta$ is the model parameter
+where $f_1$, $f_2$, $f_3$ are PDE constraints, $f_4$ is the loss function, $\mathbf{u}_1$ is the initial condition, and $\theta$ is the model parameter.
 
 #### Adjoint-State Method
 
@@ -211,10 +208,10 @@ $\frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3}$ is the "total" gradien
 #### Relation between AD and Adjoint-State Method
 
 The backward operator is implemented using the chain rule
-$$\begin{equation*}
+$$\begin{aligned}
 	\frac{\partial J}{\partial \mathbf{u}_2} = \frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3} \frac{\partial f_2}{\partial \mathbf{u}_2}\qquad
 	\frac{\partial J}{\partial \theta} = \frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3} \frac{\partial f_2}{\partial \theta}
-\end{equation*}$$
+\end{aligned}$$
 
 The total gradient $\mathbf{u}_2$ received is
 
