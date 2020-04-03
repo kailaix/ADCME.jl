@@ -106,6 +106,7 @@ ode45(args...;kwargs...) = runge_kutta(args...;method="rk45", kwargs...)
         a0::Union{Array{Float64, 1}, PyObject}, 
         Δt::Array{Float64}; 
         solve::Union{Missing, Function} = missing,
+        extsolve::Union{Missing, Function} = missing, 
         ρ::Float64 = 1.0)
 
 Generalized α-scheme. 
@@ -142,6 +143,14 @@ Here the parameters are computed using
 \end{aligned}
 ```
 
+∘ `solve`: users can provide a solver function, `solve(A, rhs)` for solving `Ax = rhs`
+∘ `extsolve`: similar to `solve`, but the signature has the form 
+```julia
+extsolve(A, rhs, i)
+```
+This provides the users with more control, e.g., (time-dependent) Dirichlet boundary conditions. 
+See [Generalized α Scheme](https://kailaix.github.io/ADCME.jl/dev/alphascheme/) for details.
+
 !!! note 
     In the case $u$ has a nonzero essential boundary condition $u_b$, we let $\tilde u=u-u_b$, then 
     $$M \tilde u_{tt} + C \tilde u_t + K u = F - K u_b - C \dot u_b$$
@@ -155,7 +164,11 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
                       a0::Union{Array{Float64, 1}, PyObject}, 
                       Δt::Array{Float64}; 
                       solve::Union{Missing, Function} = missing,
+                      extsolve::Union{Missing, Function} = missing, 
                       ρ::Float64 = 1.0)
+    if !ismissing(solve) && !ismissing(extsolve)
+        error("You cannot provide `solve` and `extsolve` at the same time.")
+    end
     n = length(Δt)
     αm = (2ρ-1)/(ρ+1)
     αf = ρ/(1+ρ)
@@ -168,7 +181,7 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
     K = isa(K, SparseMatrixCSC) ? constant(K) : K
     Force, d0, v0, a0, Δt = convert_to_tensor([Force, d0, v0, a0, Δt], [Float64, Float64, Float64, Float64, Float64])
 
-    function equ(dc, vc, ac, dt, Force)
+    function equ(dc, vc, ac, dt, Force, i)
         dn = dc + dt*vc + dt^2/2*(1-2β)*ac 
         vn = vc + dt*((1-γ)*ac)
 
@@ -181,6 +194,8 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
 
         if !ismissing(solve)
             return solve(A, rhs)
+        elseif !ismissing(extsolve)
+            return extsolve(A, rhs, i)
         else 
             return A\rhs
         end
@@ -194,7 +209,7 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
         dc = read(dc_arr, i)
         vc = read(vc_arr, i)
         ac = read(ac_arr, i)
-        y = equ(dc, vc, ac, Δt[i], Force[i])
+        y = equ(dc, vc, ac, Δt[i], Force[i], i)
         dn = dc + Δt[i]*vc + Δt[i]^2/2*((1-2β)*ac+2β*y)
         vn = vc + Δt[i]*((1-γ)*ac+γ*y)
         i+1, write(dc_arr, i+1, dn), write(vc_arr, i+1, vn), write(ac_arr, i+1, y)
