@@ -467,7 +467,7 @@ Solving the constrained optimization method using \textcolor{red}{adjoint-state 
 
 \begin{itemize}
 	\item The Lagrange multiplier is 
-	{\footnotesize $$ J = f_4(\mathbf{u}_1, \mathbf{u}_2, \mathbf{u}_3, \mathbf{u}_4) + \bm{\lambda}^{T}_{2}(f_1(\mathbf{u}_1, \bm {\theta}) - \mathbf{u}_2) + \bm{\lambda}^T_{3}(f_2(\mathbf{u}_2, \bm {\theta}) - \mathbf{u}_3) + \bm{\lambda}^T_{4}(f_3(\mathbf{u}_3, \bm {\theta}) - \mathbf{u}_4)$$}
+	{\footnotesize $$ \mathcal{L} = f_4(\mathbf{u}_1, \mathbf{u}_2, \mathbf{u}_3, \mathbf{u}_4) + \bm{\lambda}^{T}_{2}(f_1(\mathbf{u}_1, \bm {\theta}) - \mathbf{u}_2) + \bm{\lambda}^T_{3}(f_2(\mathbf{u}_2, \bm {\theta}) - \mathbf{u}_3) + \bm{\lambda}^T_{4}(f_3(\mathbf{u}_3, \bm {\theta}) - \mathbf{u}_4)$$}
 	\item Therefore, the first order KKT condition of the constrained PDE system is 
 \begin{eqnarray*}
  && \bm{\lambda}_4^T = \frac{\partial f_4}{\partial \mathbf{u}_4} \nonumber \\
@@ -1062,7 +1062,7 @@ $\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Pr
 \begin{frame}
 	\frametitle{A General Approach to Inverse Modeling}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../summary.pdf}
+  \includegraphics[width=1.0\textwidth]{../summary.png}
 \end{figure}
 
 \end{frame}
