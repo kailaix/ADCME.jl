@@ -182,15 +182,15 @@ $$\mathcal{L}= f_4(\mathbf{u}_1, \mathbf{u}_2, \mathbf{u}_3, \mathbf{u}_4) + {\l
 
 Upon conducting the foward computation we have all $\mathbf{u}_i$ available. To compute the adjoint variable $\lambda_i$, we have 
 
-$$\begin{eqnarray*}
- && {\lambda}_4^T = \frac{\partial f_4}{\partial \mathbf{u}_4} \nonumber \\
- && {\lambda}_3^T = \frac{\partial f_4}{\partial  \mathbf{u}_3} + {\lambda}_4^T\frac{\partial f_3}{\partial  \mathbf{u}_3} \nonumber \\
- && {\lambda}_2^T = \frac{\partial f_4}{\partial  \mathbf{u}_2} + {\lambda}_3^T\frac{\partial f_2}{\partial  \mathbf{u}_2} \nonumber \\
-\end{eqnarray*}$$
+$$\begin{aligned}
+  {\lambda}_4^T &= \frac{\partial f_4}{\partial \mathbf{u}_4}  \\
+ {\lambda}_3^T &= \frac{\partial f_4}{\partial  \mathbf{u}_3} + {\lambda}_4^T\frac{\partial f_3}{\partial  \mathbf{u}_3}  \\
+  {\lambda}_2^T &= \frac{\partial f_4}{\partial  \mathbf{u}_2} + {\lambda}_3^T\frac{\partial f_2}{\partial  \mathbf{u}_2} 
+\end{aligned}$$
 
 The gradient of the objective function in the constrained optimization problem is given by 
 
-$$\frac{\partial \mathcal{L}}{\partial {\theta}} = {\lambda}_2^T\frac{\partial f_1}{\partial {\theta}} + {\lambda}_3^T\frac{\partial f_2}{\partial {\theta}} + {\lambda}_4^T\frac{\partial f_3}{\partial {\theta}} $$
+$$\frac{\partial \mathcal{L}}{\partial {\theta}} = {\lambda}_2^T\frac{\partial f_1}{\partial {\theta}} + {\lambda}_3^T\frac{\partial f_2}{\partial {\theta}} + {\lambda}_4^T\frac{\partial f_3}{\partial {\theta}}$$
 
 ![](./assets/adjoint2.png)
 
@@ -199,11 +199,11 @@ $$\frac{\partial \mathcal{L}}{\partial {\theta}} = {\lambda}_2^T\frac{\partial f
 Now let's see how the computation is linked to automatic differentiation. As explained in the previous tutorials, when we implement the automatic differentiation operator, we need to backpropagate the "top" gradients to its upstreams in the computational graph. Consider the operator $f_2$, we need to implement two operators 
 
 $$\begin{aligned}
-		\text{Forward:}&\; \mathbf{u}_3 = f_2(\mathbf{u}_2, \theta)\\
-		\text{Backward:}&\; \frac{\partial J}{\partial \mathbf{u}_2}, \frac{\partial J}{\partial \theta} = b_2\left(\frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3}, \mathbf{u}_2, \theta\right)
-	\end{aligned}$$
+\text{Forward:}&\; \mathbf{u}_3 = f_2(\mathbf{u}_2, \theta)\\
+\text{Backward:}&\; \frac{\partial J}{\partial \mathbf{u}_2}, \frac{\partial J}{\partial \theta} = b_2\left(\frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3}, \mathbf{u}_2, \theta\right)
+\end{aligned}$$
 
-$\frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3}$ is the "total" gradient $\mathbf{u}_3$ received from the downstream in the computational graph. 
+Here $\frac{\partial J^{\mathrm{tot}}}{\partial \mathbf{u}_3}$ is the "total" gradient $\mathbf{u}_3$ received from the downstream in the computational graph. 
 
 #### Relation between AD and Adjoint-State Method
 
