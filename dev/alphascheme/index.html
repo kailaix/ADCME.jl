@@ -114,7 +114,122 @@ function plot_traj(idx)
 end
 
 idx2 = (n÷3)*(m+1) + m÷3
-plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of <span>$\mathbf{a}$</span>, <span>$\mathbf{v}$</span>, and <span>$\mathbf{d}$</span> at <span>$(0.64,0.32)$</span>, and obtain the following plot </p><p><img src="../assets/alpha_elasticity.png" alt="alpha_elasticity"/></p><h2 id="Example:-Viscosity-1"><a class="docs-heading-anchor" href="#Example:-Viscosity-1">Example: Viscosity</a><a class="docs-heading-anchor-permalink" href="#Example:-Viscosity-1" title="Permalink"></a></h2><p>In this section, we show how to use the generalized <span>$\alpha$</span> scheme to solve the viscosity problem. The governing equation is given by </p><div>\[\begin{aligned}
+plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of <span>$\mathbf{a}$</span>, <span>$\mathbf{v}$</span>, and <span>$\mathbf{d}$</span> at <span>$(0.64,0.32)$</span>, and obtain the following plot </p><p><img src="../assets/alpha_elasticity.png" alt="alpha_elasticity"/></p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>When we have (time-dependent) Dirichlet boundary conditions, we need to impose the boundary acceleration in each time step. This can be achieved using <code>extsolve</code> in <a href="../api/#ADCME.αscheme-Tuple{Union{SparseTensor, SparseArrays.SparseMatrixCSC},Union{SparseTensor, SparseArrays.SparseMatrixCSC},Union{SparseTensor, SparseArrays.SparseMatrixCSC},Union{PyCall.PyObject, Array{Float64,N} where N},Union{Array{Float64,1}, PyCall.PyObject},Union{Array{Float64,1}, PyCall.PyObject},Union{Array{Float64,1}, PyCall.PyObject},Array{Float64,N} where N}"><code>αscheme</code></a>. </p><pre><code class="language-julia">function solver(A, rhs, i)
+    A, Abd = fem_impose_Dirichlet_boundary_condition(A, bd, m, n, h)
+    rhs = rhs - Abd * abd[i]
+    rhs = scatter_update(rhs, [bd; bd .+ (m+1)*(n+1)], abd[i]) 
+    return A\rhs
+end
+d, u, a = αscheme(M, spzero(2(m+1)*(n+1)), K, F, d0, u0, a0, ts; extsolve=solver, ρ = ρ  )</code></pre><p>Basically, we have</p><div>\[A_{II} a_I + A_{IB} a_B = f \Rightarrow A_{II} a_I = f-A_{IB}a_B\]</div><p>and <span>$a_B$</span>(<code>abd</code>) is the acceleration from the Dirichlet boundary condition.  </p></div></div><p>Here is a script for demonstrating how to impose the Dirichlet boundary condition</p><pre><code class="language-julia"># exp(-t)*(2-x)*x*(1-y)
+using Revise
+using ADCME
+using PoreFlow 
+using PyPlot
+
+n = 20
+m = 2n
+NT = 200
+ρ = 0.0
+Δt = 1/NT 
+h = 1/n
+x = zeros((m+1)*(n+1))
+y = zeros((m+1)*(n+1))
+for i = 1:m+1
+    for j = 1:n+1
+        idx = (j-1)*(m+1)+i 
+        x[idx] = (i-1)*h 
+        y[idx] = (j-1)*h 
+    end
+end
+bd = bcnode(&quot;all&quot;, m, n, h)
+
+u1 = (x,y,t)-&gt;exp(-t)*(0.5-x)^2*(2-y)^2
+u2 = (x,y,t)-&gt;exp(-t)*(0.5-x^2)^2*(2-sin(y))^2
+
+ts = Δt * ones(NT)
+dt = αscheme_time(ts, ρ = ρ )
+F = zeros(NT, 2(m+1)*(n+1))
+for i = 1:NT 
+    t = dt[i] 
+    f1 = (x,y)-&gt;-9.87654320987654*x*(0.5 - x^2)*(2 - sin(y))*exp(-t)*cos(y) + (0.5 - x)^2*(2 - y)^2*exp(-t) - 0.740740740740741*(0.5 - x)^2*exp(-t) - 3.20987654320988*(2 - y)^2*exp(-t)
+  	f2 = (x,y)-&gt;-2.96296296296296*x^2*(2 - sin(y))^2*exp(-t) + (0.5 - x^2)^2*(2 - sin(y))^2*exp(-t) - 3.20987654320988*(0.5 - x^2)^2*(2 - sin(y))*exp(-t)*sin(y) - 3.20987654320988*(0.5 - x^2)^2*exp(-t)*cos(y)^2 + 1.48148148148148*(0.5 - x^2)*(2 - sin(y))^2*exp(-t) - (0.740740740740741*x - 0.37037037037037)*(2*y - 4)*exp(-t) - (2*x - 1.0)*(1.72839506172839*y - 3.45679012345679)*exp(-t)
+    fval1 = eval_f_on_gauss_pts(f1, m, n, h)
+  	fval2 = eval_f_on_gauss_pts(f2, m, n, h)
+    F[i,:] = compute_fem_source_term(fval1, fval2, m, n, h)
+end
+
+abd = zeros(NT, (m+1)*(n+1)*2)
+for i = 1:NT 
+    t = dt[i]
+    abd[i,:] = [(@. u1(x, y, t)); (@. u2(x, y, t))] 
+end
+abd = constant(abd[:, [bd; bd .+ (m+1)*(n+1)]])
+
+E = 1.0
+ν = 0.35
+H = E/(1+ν)/(1-2ν)*[
+  1-ν ν 0
+  ν 1-ν 0
+  0 0 (1-2ν)/2
+]
+M = constant(compute_fem_mass_matrix(m, n, h))
+K = constant(compute_fem_stiffness_matrix(H, m, n, h))
+
+
+
+
+a0 = [(@. u1(x, y, 0.0)); (@. u2(x, y, 0.0))] 
+u0 = -[(@. u1(x, y, 0.0)); (@. u2(x, y, 0.0))] 
+d0 = [(@. u1(x, y, 0.0)); (@. u2(x, y, 0.0))] 
+
+
+function solver(A, rhs, i)
+    A, Abd = fem_impose_Dirichlet_boundary_condition(A, bd, m, n, h)
+    rhs = rhs - Abd * abd[i]
+    rhs = scatter_update(rhs, [bd; bd .+ (m+1)*(n+1)], abd[i]) 
+    return A\rhs
+end
+d, u, a = αscheme(M, spzero(2(m+1)*(n+1)), K, F, d0, u0, a0, ts; extsolve=solver, ρ = ρ  )
+
+
+sess = Session()
+d_, u_, a_ = run(sess, [d, u, a])
+
+
+function plot_traj(idx)
+    figure(figsize=(12,3))
+    subplot(131)
+    plot((0:NT)*Δt, u1.(x[idx], y[idx],(0:NT)*Δt), &quot;b-&quot;, label=&quot;x-Acceleration&quot;)
+    plot((0:NT)*Δt, a_[:,idx], &quot;y--&quot;, markersize=2)
+  	plot((0:NT)*Δt, u2.(x[idx], y[idx],(0:NT)*Δt), &quot;r-&quot;, label=&quot;y-Acceleration&quot;)
+    plot((0:NT)*Δt, a_[:,idx+(m+1)*(n+1)], &quot;c--&quot;, markersize=2)
+    legend()
+    xlabel(&quot;Time&quot;)
+    ylabel(&quot;Value&quot;)
+
+    subplot(132)
+    plot((0:NT)*Δt, u1.(x[idx], y[idx],(0:NT)*Δt), &quot;b-&quot;, label=&quot;x-Displacement&quot;)
+    plot((0:NT)*Δt, d_[:,idx], &quot;y--&quot;, markersize=2)
+  	plot((0:NT)*Δt, u2.(x[idx], y[idx],(0:NT)*Δt), &quot;r-&quot;, label=&quot;y-Displacement&quot;)
+    plot((0:NT)*Δt, d_[:,idx+(m+1)*(n+1)], &quot;c--&quot;, markersize=2)
+    legend()
+    xlabel(&quot;Time&quot;)
+    ylabel(&quot;Value&quot;)
+
+    subplot(133)
+    plot((0:NT)*Δt, -u1.(x[idx], y[idx],(0:NT)*Δt), &quot;b-&quot;, label=&quot;x-Velocity&quot;)
+    plot((0:NT)*Δt, u_[:,idx], &quot;y--&quot;, markersize=2)
+  	plot((0:NT)*Δt, -u2.(x[idx], y[idx],(0:NT)*Δt), &quot;r-&quot;, label=&quot;y-Velocity&quot;)
+    plot((0:NT)*Δt, u_[:,idx+(m+1)*(n+1)], &quot;c--&quot;, markersize=2)
+    legend()
+    xlabel(&quot;Time&quot;)
+    ylabel(&quot;Value&quot;)
+
+    tight_layout()
+end
+
+idx2 = (n÷3)*(m+1) + m÷2
+plot_traj(idx2)</code></pre><h2 id="Example:-Viscosity-1"><a class="docs-heading-anchor" href="#Example:-Viscosity-1">Example: Viscosity</a><a class="docs-heading-anchor-permalink" href="#Example:-Viscosity-1" title="Permalink"></a></h2><p>In this section, we show how to use the generalized <span>$\alpha$</span> scheme to solve the viscosity problem. The governing equation is given by </p><div>\[\begin{aligned}
 \sigma_{3j,j} + f &amp;= \ddot u \\
 \sigma_{3j} &amp;= \dot \epsilon_{3j}
 \end{aligned}\]</div><p>where <span>$u(x,y,t)$</span> is the displacement in the <span>$z$</span>-direction. We assume zero Dirichlet boundary condition,  the computational domain is <span>$[0,2]\times [0,1]$</span>, and the exact solution is</p><div>\[u(x, y, t) = e^{-t} x(2-x)y(1-y)\]</div><p>The weak form of the equation is </p><div>\[\int_\Omega \ddot u\delta u + \int_\Omega \dot \epsilon\delta \epsilon = \int_\Omega f \delta u\]</div><p>In the discretization form we have</p><div>\[M\mathbf{a} + K \mathbf{v} = \mathbf{F}\]</div><pre><code class="language-julia">using ADCME
@@ -196,4 +311,4 @@ end
 
 idx = (n÷2)*(m+1) + m÷2
 idx2 = (n÷3)*(m+1) + m÷3
-plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of <span>$\mathbf{a}$</span>, <span>$\mathbf{v}$</span>, and <span>$\mathbf{d}$</span> at <span>$(0.64,0.32)$</span>, and obtain the following plot </p><p><img src="../assets/alpha_visco.png" alt/></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-radii"><a class="tag is-link" href="#citeref-radii">radii</a>http://www.dymoresolutions.com/AnalysisControls/CreateFEModel.html</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../resource_manager/">« Resource Manager</a><a class="docs-footer-nextpage" href="../apps/">Overview »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 3 April 2020 02:06">Friday 3 April 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of <span>$\mathbf{a}$</span>, <span>$\mathbf{v}$</span>, and <span>$\mathbf{d}$</span> at <span>$(0.64,0.32)$</span>, and obtain the following plot </p><p><img src="../assets/alpha_visco.png" alt/></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-radii"><a class="tag is-link" href="#citeref-radii">radii</a>http://www.dymoresolutions.com/AnalysisControls/CreateFEModel.html</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../resource_manager/">« Resource Manager</a><a class="docs-footer-nextpage" href="../apps/">Overview »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 3 April 2020 04:24">Friday 3 April 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
