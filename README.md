@@ -48,6 +48,7 @@ pkg> add ADCME
 julia> ]
 pkg> test ADCME
 ```
+See [Troubleshooting](https://kailaix.github.io/ADCME.jl/dev/tu_customop/#Troubleshooting-1) if you encounter any compilation problems.
 
 4. (Optional) Enable GPU Support
 To enable GPU support, first, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).

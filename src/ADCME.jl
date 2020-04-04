@@ -31,7 +31,8 @@ module ADCME
     # global options to control ADCME behavior 
     mutable struct OptionsSparse 
         auto_reorder::Bool 
-        OptionsSparse() = new(true)
+        solver::String
+        OptionsSparse() = new(true, "SparseLU")
     end
     mutable struct Options 
         sparse::OptionsSparse

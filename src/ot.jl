@@ -3,7 +3,7 @@ export sinkhorn, dist, empirical_sinkhorn, dtw
 
 """
     sinkhorn(a::Union{PyObject, Array{Float64}}, b::Union{PyObject, Array{Float64}}, M::Union{PyObject, Array{Float64}};
-reg::Float64 = 1.0, iter::Int64 = 1000, tol::Float64 = 1e-9, method::String="sinkhorn")
+    reg::Float64 = 1.0, iter::Int64 = 1000, tol::Float64 = 1e-9, method::String="sinkhorn")
 
 Computes the optimal transport with Sinkhorn algorithm. 
 The implementation are adapted from https://github.com/rflamary/POT.  
@@ -46,7 +46,7 @@ end
 
 """
     empirical_sinkhorn(x::Union{PyObject, Array{Float64}}, y::Union{PyObject, Array{Float64}}, dist::Function;
-reg::Union{PyObject,Float64} = 1.0, iter::Int64 = 1000, tol::Float64 = 1e-9, method::String="sinkhorn")
+    reg::Union{PyObject,Float64} = 1.0, iter::Int64 = 1000, tol::Float64 = 1e-9, method::String="sinkhorn")
 
 Computes the empirical Wasserstein distance with sinkhorn algorithm. 
 The implementation are adapted from https://github.com/rflamary/POT.  

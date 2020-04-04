@@ -12,7 +12,7 @@ Material modeling aims to construct constitutive models to describe the relation
 
 In a [previous application](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/), we showed how to learn a constitutive relation, which is a (nonlinear) map from strain tensors to stress tensors, from state variables in a static equation. However, many constitutive relations also depend on the historic information, such as (elasto-)plasticity and viscosity. The constitutive relation is much more complex since they have the form 
 
-$${\sigma}(t) = \mathcal{M}({\epsilon}(t), \mathcal{I}(t)$$
+$${\sigma}(t) = \mathcal{M}({\epsilon}(t), \mathcal{I}(t))$$
 
 where $t$ is the time, $\sigma$, $\epsilon$ are strain and stress tensors,  $\mathcal{I}$ contains the historic information in $[0,t)$, and $\mathcal{M}$ is an unknown function. This is a high dimensional mapping and traditional methods, such as piecewise linear functions, suffer from the curse of dimensionality problem. This issue motivates us to use neural network as surrogate models. 
 

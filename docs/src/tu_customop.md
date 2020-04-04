@@ -45,7 +45,7 @@ The 2nd to the 7th lines specify the input arguments, the signature is `type`+`v
 The last line is the output, denoted by ` -> output` (do not forget the whitespace before and after `->`).  
 
 !!! note
-	If there are non-real type outputs, the corresponding top gradients input to the gradient kernel should be removed. 
+    If there are non-real type outputs, the corresponding top gradients input to the gradient kernel should be removed. 
 
 
 **Step 2: Implement the kernels**

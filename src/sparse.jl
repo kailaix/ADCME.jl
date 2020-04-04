@@ -335,20 +335,24 @@ function Base.:reshape(s::SparseTensor, shape::T...) where T<:Integer
 end
 
 @doc raw"""
-    \(s::SparseTensor, o::PyObject, method::String="SparseLU")
+    \(A::SparseTensor, o::PyObject, method::String="SparseLU")
     
 Solves the linear equation 
-$$s x = o$$
+$$A x = o$$
 
 # Method 
-For square matrices `s`, one of the following methods is available
+For square matrices $A$, one of the following methods is available
+- `auto`: using the solver specified by `ADCME.options.sparse.solver`
 - `SparseLU`
 - `SparseQR`
 - `SimplicialLDLT`
 - `SimplicialLLT`
 """
-function PyCall.:\(s::SparseTensor, o::PyObject, method::String="SparseLU")
+function PyCall.:\(s::SparseTensor, o::PyObject, method::String="auto")
     local u
+    if method=="auto"
+        method = options.sparse.solver
+    end
     if length(size(o))!=1
         error("input b must be a vector")
     end
