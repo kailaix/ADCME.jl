@@ -1,4 +1,4 @@
-# Custom Operators
+# Advanced: Custom Operators
 
 !!! note
     As a reminder, there are many built-in custom operators in `deps/CustomOps` and they are good resources for understanding custom operators. The following is a step-by-step instruction on how custom operators are implemented. 
@@ -115,34 +115,14 @@ It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`
 | `ADCME.CMAKE` | Cmake binary location                 |
 | `ADCME.MAKE`  | Make binary location                  |
 
-- Make a `build` directory in bash.
-```bash
-mkdir build
-cd build
-```
-- Configure `CMakeLists.txt` files.
-```bash
-cmake ..
-```
-or use a safer way 
+ADCME will properly handle the environment variable for you. So we always recommend you to compile custom operators using ADCME functions:
+
+First `cd` into your custom operator director (where `CMakeLists.txt` is located), create a directory `build` if it doesn't exist, `cd` into `build`, and do 
+
 ```julia-repl
 julia> using ADCME
 julia> ADCME.cmake()
 ```
-This step requires `Conda` and `PyCall` be properly installed. Try the following if necessary
-```julia
-julia> pkg
-pkg> add Conda
-pkg> add PyCall
-```
-- Build. 
-```bash
-make -j
-```
-
-!!! note
-    If the system `make` or `cmake` command is not compatible, try the pre-installed ADCME `make` located at `ADCME.MAKE` or `cmake` located at `ADCME.CMAKE`. 
-
 Based on your operation system, you will create `libMySparseSolver.{so,dylib,dll}`. This will be the dynamic library to link in `TensorFlow`. 
 
 **Step 4: Test**
@@ -151,13 +131,8 @@ Finally, you could use `gradtest.jl` to test the operator and its gradients (spe
 
 ![custom_op](assets/custom_op.png)
 
-
 !!! info 
-    If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. Using the built-in `cmake` and `make` will alleviate this problem in most cases. In the Linux system, you can check the compiler using 
-```bash
-readelf -p .comment libtensorflow_framework.so
-```
-Compatibility issues are frustrating. We hope you can submit an issue to ADCME developers; we are happy to resolve the compatibility issue and improve the robustness of ADCME.
+    If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.
 
 
 ## GPU Operators
@@ -310,8 +285,6 @@ The output is
 ```
 We can see that the tensors depending on `u` are also aware of the assign operator. The complete programs can be downloaded here: [CMakeLists.txt](https://kailaix.github.io/ADCME.jl/dev/codes/mutable/CMakeLists.txt), [MyAssign.cpp](https://kailaix.github.io/ADCME.jl/dev/codes/mutable/MyAssign.cpp), [gradtest.jl](https://kailaix.github.io/ADCME.jl/dev/codes/mutable/gradtest.jl).
 
-
-
 ### Third-party Plugins
 
 ADCME also allows third-party custom operators hosted on Github. To build your own custom operators, implement your own custom operators in a Github repository. The root directory of the repository should have the following files
@@ -345,3 +318,47 @@ op = load_system_op("OTNetwork")
 ```
 
 1. https://on-demand.gputechconf.com/ai-conference-2019/T1-3_Minseok%20Lee_Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)
+
+
+
+## Troubleshooting
+
+Here are some common errors you might encounter during custom operator compilation:
+
+**Q: The cmake output for the Julia path is empty.**
+
+```text
+Julia=
+```
+
+**A:** Check whether `which julia` outputs the Julia location you are using. 
+
+**Q: The cmake output for Python path, Eigen path, etc., is empty.**
+
+```text
+Python path=
+EIGEN_INC=
+TF_INC=
+TF_ABI=
+TF_LIB_FILE=
+```
+
+**A:** Update ADCME to the latest version and check whether or not the ADCME compiler string is empty
+
+```julia
+using ADCME
+ADCME.__STR__
+```
+
+**Q: Julia package precompilation errors that seem not linked to ADCME.**
+
+**A:** Remove the corresponding packages using `using Pkg; Pkg.rm(XXX)` and reinstall those packages. 
+
+**Q: Precompilation error linked to ADCME**
+
+```text
+ERROR: LoadError: ADCME is not properly built; run `Pkg.build("ADCME")` to fix the problem.
+```
+
+**A:** Build ADCME using `Pkg.build("ADCME")`. Exit Julia and open Julia again. Check whether `deps.jl` exists in the `deps` directory of your Julia package (optional).
+

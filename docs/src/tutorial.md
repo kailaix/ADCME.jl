@@ -32,9 +32,9 @@ The tutorial does not assume readers with experience in deep learning. However, 
 
 [Advanced: Automatic Differentiation for Implicit Operations](./tu_implicit.md)
 
-Advanced: Custom Operators 
+[Advanced: Custom Operators](./tu_customop.md)
 
-Advanced: Debugging 
+[Advanced: Debugging](./tu_debug.md)
 
 [Exercise](./exercise.md)[^exercise]
 

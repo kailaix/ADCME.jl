@@ -154,7 +154,7 @@ function plot_traj(idx)
     xlabel("Time")
     ylabel("Value")
 
-    subplot(132)
+    subplot(133)
     plot((0:NT)*Δt, u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Displacement")
     plot((0:NT)*Δt, d_[:,idx], "y--", markersize=2)
   	plot((0:NT)*Δt, u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Displacement")
@@ -163,7 +163,7 @@ function plot_traj(idx)
     xlabel("Time")
     ylabel("Value")
 
-    subplot(133)
+    subplot(132)
     plot((0:NT)*Δt, -u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Velocity")
     plot((0:NT)*Δt, u_[:,idx], "y--", markersize=2)
   	plot((0:NT)*Δt, -u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Velocity")
@@ -203,7 +203,6 @@ Using the above code, we plot the trajectories of $\mathbf{a}$, $\mathbf{v}$, an
 Here is a script for demonstrating how to impose the Dirichlet boundary condition
 
 ```julia
-# exp(-t)*(2-x)*x*(1-y)
 using Revise
 using ADCME
 using PoreFlow 
@@ -212,7 +211,7 @@ using PyPlot
 n = 20
 m = 2n
 NT = 200
-ρ = 0.0
+ρ = 0.5
 Δt = 1/NT 
 h = 1/n
 x = zeros((m+1)*(n+1))
@@ -227,21 +226,22 @@ end
 bd = bcnode("all", m, n, h)
 
 u1 = (x,y,t)->exp(-t)*(0.5-x)^2*(2-y)^2
-u2 = (x,y,t)->exp(-t)*(0.5-x^2)^2*(2-sin(y))^2
+u2 = (x,y,t)->exp(-t)*(0.5-x)*(0.5-y)
 
 ts = Δt * ones(NT)
 dt = αscheme_time(ts, ρ = ρ )
 F = zeros(NT, 2(m+1)*(n+1))
 for i = 1:NT 
     t = dt[i] 
-    f1 = (x,y)->-9.87654320987654*x*(0.5 - x^2)*(2 - sin(y))*exp(-t)*cos(y) + (0.5 - x)^2*(2 - y)^2*exp(-t) - 0.740740740740741*(0.5 - x)^2*exp(-t) - 3.20987654320988*(2 - y)^2*exp(-t)
-  	f2 = (x,y)->-2.96296296296296*x^2*(2 - sin(y))^2*exp(-t) + (0.5 - x^2)^2*(2 - sin(y))^2*exp(-t) - 3.20987654320988*(0.5 - x^2)^2*(2 - sin(y))*exp(-t)*sin(y) - 3.20987654320988*(0.5 - x^2)^2*exp(-t)*cos(y)^2 + 1.48148148148148*(0.5 - x^2)*(2 - sin(y))^2*exp(-t) - (0.740740740740741*x - 0.37037037037037)*(2*y - 4)*exp(-t) - (2*x - 1.0)*(1.72839506172839*y - 3.45679012345679)*exp(-t)
+    f1 = (x,y)->((x - 0.5)^2*(y - 2)^2 - 0.740740740740741*(x - 0.5)^2 - 3.20987654320988*(y - 2)^2 - 1.23456790123457)*exp(-t)
+  	f2 = (x,y)->(-3.93827160493827*x*y + 9.37654320987654*x + 1.96913580246914*y - 4.68827160493827)*exp(-t)
     fval1 = eval_f_on_gauss_pts(f1, m, n, h)
   	fval2 = eval_f_on_gauss_pts(f2, m, n, h)
     F[i,:] = compute_fem_source_term(fval1, fval2, m, n, h)
 end
 
 abd = zeros(NT, (m+1)*(n+1)*2)
+dt = αscheme_time(ts, ρ = ρ )
 for i = 1:NT 
     t = dt[i]
     abd[i,:] = [(@. u1(x, y, t)); (@. u2(x, y, t))] 
@@ -290,7 +290,7 @@ function plot_traj(idx)
     xlabel("Time")
     ylabel("Value")
 
-    subplot(132)
+    subplot(133)
     plot((0:NT)*Δt, u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Displacement")
     plot((0:NT)*Δt, d_[:,idx], "y--", markersize=2)
   	plot((0:NT)*Δt, u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Displacement")
@@ -299,7 +299,7 @@ function plot_traj(idx)
     xlabel("Time")
     ylabel("Value")
 
-    subplot(133)
+    subplot(132)
     plot((0:NT)*Δt, -u1.(x[idx], y[idx],(0:NT)*Δt), "b-", label="x-Velocity")
     plot((0:NT)*Δt, u_[:,idx], "y--", markersize=2)
   	plot((0:NT)*Δt, -u2.(x[idx], y[idx],(0:NT)*Δt), "r-", label="y-Velocity")
@@ -399,14 +399,14 @@ function plot_traj(idx)
     xlabel("Time")
     ylabel("Value")
 
-    subplot(132)
+    subplot(133)
     plot((0:NT)*Δt, uexact.(x[idx], y[idx],(0:NT)*Δt), "-", label="Displacement")
     plot((0:NT)*Δt, d_[:,idx], "--", markersize=2)
     legend()
     xlabel("Time")
     ylabel("Value")
 
-    subplot(133)
+    subplot(132)
     plot((0:NT)*Δt, -uexact.(x[idx], y[idx],(0:NT)*Δt), "-", label="Velocity")
     plot((0:NT)*Δt, u_[:,idx], "--", markersize=2)
     legend()

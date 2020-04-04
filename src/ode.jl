@@ -1,4 +1,4 @@
-export ode45, rk4, αscheme, αscheme_time
+export ode45, rk4, αscheme, αscheme_time, αscheme_atime
 
 function runge_kutta_one_step(f::Function, t::PyObject, y::PyObject, Δt::PyObject, θ::Union{PyObject, Missing})
     k1 = Δt*f(t, y, θ)
@@ -229,7 +229,7 @@ end
     αscheme_time(Δt::Array{Float64}; ρ::Float64 = 1.0)
 
 Returns the integration time $t_{i+1-\alpha_{f_2}}$ between $[t_i, t_{i+1}]$ using the alpha scheme. 
-If $\Delta t$ has length $n$, the output will also have length $n$.
+If $\Delta t$ has length $n$, the output will also have length $n$. 
 """
 function αscheme_time(Δt::Array{Float64}; ρ::Float64 = 1.0)
     n = length(Δt)
@@ -238,14 +238,16 @@ function αscheme_time(Δt::Array{Float64}; ρ::Float64 = 1.0)
     γ = 1/2-αm+αf 
     β = 0.25*(1-αm+αf)^2
     function equ(tc, dt)
-        tf = (1-αf)*(tc+dt) + αf*tc
+        tf1 = (1-αf)*(tc+dt) + αf*tc
+        return tf1
     end
 
-    tcs = Float64[]
+    tcf = Float64[]
     tc = 0.0
     for i = 1:n
-        push!(tcs, equ(tc, Δt[i]))
+        t1 = equ(tc, Δt[i])
+        push!(tcf, t1)
         tc += Δt[i]
     end
-    return tcs 
+    return tcf
 end

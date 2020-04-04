@@ -3,6 +3,9 @@ project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
 execute_process(COMMAND julia -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
+execute_process(COMMAND which julia OUTPUT_VARIABLE JULIA_BIN)
+message("Julia=${JULIA_BIN}")
+
 list(GET JL_OUT 0 BINDIR)
 list(GET JL_OUT 1 LIBDIR)
 list(GET JL_OUT 2 TF_INC)
