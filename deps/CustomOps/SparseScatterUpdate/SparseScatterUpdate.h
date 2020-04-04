@@ -15,6 +15,8 @@ public:
   int get_size(){return ii.size();};
 };
 
+// ii, jj are not necessarily sorted, 
+// however, ii, jj must not have repeated index
 void forward(const int64*oii, const int64*ojj, const double *ovv, int on,
             const int64*uii, const int64*ujj, const double *uvv, int un, int m, int n,
             const int64*ii, const int64*jj, int ni, int nj, IJV& ijv){
@@ -39,23 +41,20 @@ void backward(
             const int64*uii, const int64*ujj, const double *uvv, int un, int m, int n,
             const int64*ii, const int64*jj, int ni, int nj){
 
-    std::map<std::pair<int64, int64>, int> imap, jmap;
-    for(int i=0;i<un;i++){
-      imap[ std::make_pair(ii[uii[i]-1], jj[ujj[i]-1]) ] = i;
-      grad_uvv[i] = 0.0;
+    std::set<int64> iset, jset;
+    for(int i=0;i<ni;i++) iset.insert(ii[i]);
+    for(int i=0;i<nj;i++) jset.insert(jj[i]);
+
+
+    int k0 = 0, k1 = 0,  k2 = 0;
+    for (int i=0;i<on;i++){
+      if(iset.count(oii[i]) && jset.count(ojj[i])) 
+        grad_ovv[k1++] = 0.0;
+      else
+        grad_ovv[k1++] = grad_out_vv[k0++];
     }
-    for(int i=0;i<on;i++){
-      jmap[ std::make_pair(oii[i], ojj[i]) ] = i;
-      grad_ovv[i] = 0.0;
-    }
-    
-    for(int i=0;i<out_n;i++){
-      if (imap.count(std::make_pair(out_ii[i], out_jj[i]))) {
-        grad_uvv[ imap[std::make_pair(out_ii[i], out_jj[i])] ] += grad_out_vv[i];
-      }
-      else if(jmap.count(std::make_pair(out_ii[i], out_jj[i]))){
-        grad_ovv[ jmap[std::make_pair(out_ii[i], out_jj[i])] ] += grad_out_vv[i];
-      }
+    for (int i=0;i<un;i++){
+        grad_uvv[k2++] = grad_out_vv[k0++];
     }
 
 }
