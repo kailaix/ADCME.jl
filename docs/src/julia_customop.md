@@ -158,8 +158,32 @@ end
 
 The corresponding `Julia` function called by `my_op` must be exported in the module (such that it is in the Main module when invoked). One such example is given in [MyModule](https://github.com/kailaix/ADCME.jl/blob/master/examples/JuliaOpModule.jl)
 
+## Quick Reference for Implementing C++ Custom Operators in ADCME
 
+1. Set output shape
+```
+c->set_output(0, c->Vector(n));
+c->set_output(0, c->Matrix(m, n));
+c->set_output(0, c->Scalar());
+```
 
-## Reference Sheet
+2. Names
+`.Input` and `.Ouput` : names must be in lower case, no `_`, only letters.
 
-For implementation reference, see [Reference Sheet](https://github.com/kailaix/ADCME.jl/blob/master/examples/md/customop_reference_sheet.md)
+3. TensorFlow Input/Output to TensorFlow Tensors
+```
+grad.vec<double>();
+grad.scalar<double>();
+grad.matrix<double>();
+grad.flat<double>();
+```
+Obtain flat arrays
+```
+grad.flat<double>().data()
+```
+
+4. Scalars
+Allocate scalars using TensorShape()
+
+5. Allocate Shapes
+Although you can use -1 for shape reference, you must allocate exact shapes in `Compute`
