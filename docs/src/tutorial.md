@@ -28,7 +28,7 @@ The tutorial does not assume readers with experience in deep learning. However, 
 
 [Inverse Modeling Recipe](./tu_recipe.md)
 
-Neural Network Tutorial: Combining NN with Numerical Schemes 
+[Combining NN with Numerical Schemes](./tu_nn.md)
 
 [Advanced: Automatic Differentiation for Implicit Operations](./tu_implicit.md)
 

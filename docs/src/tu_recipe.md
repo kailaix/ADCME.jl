@@ -124,9 +124,15 @@ That's exact what we want.
 
 ## Debugging 
 
+### Sensitivity Analysis
+
 When the gradient test fails, we can perform _unit sensitivity analysis_. The idea is that given a function $y = f(x_1, x_2, \ldots, x_n)$, if we want to confirm that the gradients $\frac{\partial f}{\partial x_i}$ is correctly implemented, we can perform 1D gradient test with respect to a small perturbation $\varepsilon_i$: 
 
 $$y(\varepsilon_i) = f(x_1, x_2, \ldots, x_i + \varepsilon_i, \ldots, x_n)$$
+
+or in the case you are not sure about the scale of $x_i$, 
+
+$$y(\varepsilon_i) = f(x_1, x_2, \ldots, x_i (1 + \varepsilon_i), \ldots, x_n)$$
 
 As an example, if we want to check whether the gradients for `sigmoid` is correctly backpropagated in the above code, we have 
 
@@ -142,4 +148,12 @@ sess = Session(); init(sess)
 gradview(sess, ε, loss, 0.01)
 ```
 
-We will see a second order convergence for the automatic differentiation method while a first order convergence for the finite difference method. 
+We will see a second order convergence for the automatic differentiation method while a first order convergence for the finite difference method. The principle for identifying problematic operator is to go from downstream operators to top stream operators in the computational graph. For example, given the computational graph
+
+$$f_1\rightarrow f_2 \rightarrow \cdots \rightarrow f_i \rightarrow f_{i+1} \rightarrow \ldots \rightarrow f_n$$
+
+If we conduct sensitivity analysis for $f_i:o_i \mapsto o_{i+1}$, and find that the gradient is wrong, then we can infer that at least one of the operators in the downstream $f_i \rightarrow f_{i+1} \rightarrow \ldots \rightarrow f_n$ has problematic gradients. 
+
+### Check Your Training Data
+
+Sometimes it is also useful to check your training data. For example, if you are working with numerical schemes, check whether your training data are generated from reasonable physical parameters, and whether or not the numerical schemes are stable. 

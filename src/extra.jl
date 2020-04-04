@@ -66,7 +66,7 @@ function load_op(oplibpath::String, opname::String)
     end
 
     if !isfile(oplibpath)
-        error("File $oplibpath does not exist. Instruction:\nRunning `compile_op(oplibpath)` to compile the library first.")
+        error("File $oplibpath does not exist. Instruction:\nRunning `compile(oplibpath)` to compile the library first.")
     end
     fn_name = opname*randstring(8)
 py"""
@@ -96,7 +96,7 @@ function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=fals
         return load_op_grad_dict[(oplibpath,opname)]
     end
     if !isfile(oplibpath)
-        error("File $oplibpath does not exist. Instruction:\nRunning `compile_op(oplibpath)` to compile the library first.")
+        error("File $oplibpath does not exist. Instruction:\nRunning `compile(oplibpath)` to compile the library first.")
     end
     
     opname_grad = opname*"_grad"
