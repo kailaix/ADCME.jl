@@ -1,4 +1,4 @@
-# Miscellaneous Tools
+# Advanced: Debugging
 
 There are many handy tools implemented in `ADCME` for analysis, benchmarking, input/output, etc. 
 
