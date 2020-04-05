@@ -157,3 +157,7 @@ If we conduct sensitivity analysis for $f_i:o_i \mapsto o_{i+1}$, and find that 
 ### Check Your Training Data
 
 Sometimes it is also useful to check your training data. For example, if you are working with numerical schemes, check whether your training data are generated from reasonable physical parameters, and whether or not the numerical schemes are stable. 
+
+### Local Minimum
+
+To check whether or not the optimization converged to a local minimum, you can either check `meshview` or `lineview`. However, these functions only give you some hints and you should only rely solely on their results. A more reliable check is to consider `gradview`. In principle, if you have a local minimum, the gradient at the local minimum should be zero, and therefore the finite difference curve should also have second order convergence. 

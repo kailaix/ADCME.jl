@@ -69,7 +69,7 @@ function ScipyOptimizerMinimize(sess::PyObject, opt::PyObject; kwargs...)
     opt.minimize(sess;kwargs...)
 end
 
-@doc """
+@doc raw"""
     CustomOptimizer(opt::Function, name::String)
 
 creates a custom optimizer with struct name `name`. For example, we can integrate `Optim.jl` with `ADCME` by 
@@ -86,15 +86,21 @@ CustomOptimizer("Con") do f, df, c, dc, x0, nineq, neq, x_L, x_U
     minx
 end
 ```
+Here
+∘ `f`: a function that returns $f(x)$
+∘ `df`: a function that returns $\nabla f(x)$
+∘ `c`: a function that returns the constraints $c(x)$
+∘ `dc`: a function that returns $\nabla c(x)$
+∘ `x0`: initial guess
+∘ `nineq`: number of inequality constraints
+∘ `neq`: number of equality constraints
+∘ `x_L`: lower bounds of optimizable variables
+∘ `x_U`: upper bounds of optimizable variables
 Then we can create an optimizer with 
 ```
 opt = Con(loss, inequalities=[c1], equalities=[c2])
 ```
 To trigger the optimization, use
-```
-opt.minimize(sess)
-```
-or 
 ```
 minimize(opt, sess)
 ```
@@ -113,8 +119,11 @@ function CustomOptimizer(opt::Function)
                 local x_L, x_U
                 x0 = initial_val # rename 
                 nineq, neq = length(inequality_funcs), length(equality_funcs)
+                printstyled("[CustomOptimizer] Number of inequalities constraints = $nineq, Number of equality constraints = $neq\n", color=:blue)
                 nvar = Int64(sum([prod(self._vars[i].get_shape().as_list()) for i = 1:length(self._vars)]))
+                printstyled("[CustomOptimizer] Total number of variables = $nvar\n", color=:blue)
                 if isnothing(packed_bounds)
+                    printstyled("[CustomOptimizer] No bounds provided, use (-∞, +∞) as default\n", color=:blue)
                     x_L = -Inf*ones(nvar); x_U = Inf*ones(nvar)
                 else
                     x_L = vcat([x[1] for x in packed_bounds]...)
@@ -141,7 +150,7 @@ function CustomOptimizer(opt::Function)
                     end
                     return values[:]
                 end
-                $opt(f, df, c, dc, x0, nineq, neq, x_L, x_U)
+                $opt(f, df, c, dc, x0, x_L, x_U)
             end
         end
         return $name
@@ -180,6 +189,15 @@ sess = Session(); init(sess)
 cb(run(sess, [θ1, θ2]), 0, run(sess, loss))
 BFGS!(sess, loss, 100; vars=[θ1, θ2], callback=cb)
 ```
+
+# Example 3
+Use `bounds` to specify upper and lower bound of a variable. 
+```julia
+x = Variable(2.0)    
+loss = x^2
+sess = Session(); init(sess)
+BFGS!(sess, loss, bounds=Dict(x=>[1.0,3.0]))
+```
 """->
 function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
     vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, kwargs...)
@@ -205,6 +223,22 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
         end
         push!(out, __loss)
         __iter += 1
+    end
+    kwargs = Dict(kwargs)
+    if haskey(kwargs, :bounds)
+        kwargs[:var_to_bounds] = kwargs[:bounds]
+        delete!(kwargs, :bounds)
+    end
+    if haskey(kwargs, :var_to_bounds)
+        desc = "`bounds` or `var_to_bounds` keywords of `BFGS!` only accepts dictionaries whose keys are Variables"
+        for (k,v) in kwargs[:var_to_bounds]
+            if !(hasproperty(k, "trainable"))
+                error("The tensor $k does not have property `trainable`, indicating it is not a `Variable`. $desc\n")
+            end 
+            if !k.trainable
+                @warn("The variable $k is not trainable, ignoring the bounds")
+            end
+        end
     end
     opt = ScipyOptimizerInterface(loss, method="L-BFGS-B",options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12); kwargs...)
     @info "Optimization starts..."

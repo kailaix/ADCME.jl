@@ -59,23 +59,23 @@ end
 
 
 @testset "Optim" begin
-######################### integration with Optim.jl #########################
+    ######################### integration with Optim.jl #########################
 
-NonCon = CustomOptimizer() do f, df, c, dc, x0, args...
-    # @show f, df, c, dc, x0
-    res = Optim.optimize(f, df, x0; inplace = false)        
-    res.minimizer
-end
-reset_default_graph()
-x = Variable(rand(2))
-f = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
-f1(x) = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
-res = Optim.optimize(f1, rand(2))
-opt = NonCon(f)
-sess = Session(); init(sess)
-opt.minimize(sess)
-xmin = run(sess, x)
-@test norm(xmin-res.minimizer)<1e-2
+    NonCon = CustomOptimizer() do f, df, c, dc, x0, args...
+        @show f, df, c, dc, x0
+        res = Optim.optimize(f, df, x0; inplace = false)        
+        res.minimizer
+    end
+    reset_default_graph()
+    x = Variable(rand(2))
+    f = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
+    f1(x) = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
+    res = Optim.optimize(f1, rand(2))
+    opt = NonCon(f)
+    sess = Session(); init(sess)
+    opt.minimize(sess)
+    xmin = run(sess, x)
+    @test norm(xmin-res.minimizer)<1e-2
 
 end
 
@@ -183,7 +183,7 @@ end
     x = Variable(2.0)    
     loss = x^2
     init(sess)
-    BFGS!(sess, loss, var_to_bounds=Dict(x=>[1.0,3.0]))
+    BFGS!(sess, loss, bounds=Dict(x=>[1.0,3.0]))
     @test run(sess, x)≈1.0
 end
 
@@ -191,7 +191,7 @@ end
 @testset "Ipopt" begin
 ######################### integration with Ipopt.jl #########################
 # https://github.com/jainachin/tf-ipopt/blob/master/examples/hs071.py
-IPOPT = CustomOptimizer() do f, df, c, dc, x0, nineq, neq, x_L, x_U
+IPOPT = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U
     n = length(x0)
     nz = length(dc(x0))
     g_L, g_U = [-2e19;0.0], [0.0;0.0]
@@ -208,6 +208,7 @@ IPOPT = CustomOptimizer() do f, df, c, dc, x0, nineq, neq, x_L, x_U
     prob = Ipopt.createProblem(n, x_L, x_U, 2, g_L, g_U, nz, 0,
             f, (x,g)->(g[:]=c(x)), (x,g)->(g[:]=df(x)), eval_jac_g, nothing)
     addOption(prob, "hessian_approximation", "limited-memory")
+    addOption(prob, "max_iter", 100)
 
     prob.x = x0
     status = Ipopt.solveProblem(prob)
@@ -224,8 +225,7 @@ g = x1
 h = x1*x1 + x2*x2 - 1
 opt = IPOPT(loss, inequalities=[g], equalities=[h], var_to_bounds=Dict(x=>(-1.0,1.0)))
 sess = Session(); init(sess)
-opt.minimize(sess)
-@test true
+minimize(opt, sess)
 =#
 
 @testset "newton_raphson_with_grad" begin 

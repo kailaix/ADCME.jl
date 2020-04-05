@@ -10,7 +10,7 @@ pages = Any[
     "Tutorial"=>["tutorial.md", "tu_whatis.md", "tu_basic.md", "tu_optimization.md", "tu_sparse.md", "tu_fd.md", "tu_fem.md",
         "tu_inv.md", "tu_recipe.md", "tu_nn.md", "tu_implicit.md", "tu_customop.md","tu_debug.md", "exercise.md"],
     "Resources" => ["newton_raphson.md", "parallel.md", "ode.md", "global.md", 
-            "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md"],
+            "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md", "customopt.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
             "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md", "apps_nnfem.md"],
     "api.md"
