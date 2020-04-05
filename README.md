@@ -157,7 +157,7 @@ Here we show the estimated coefficient function and the reference one:
 <p align="center">
   <img src="./docs/src/assets/readmenn.png" style="zoom:50%;" />
 </p>
-See [Applications](https://kailaix.github.io/ADCME.jl/dev/apps/) for more inverse modeling techniques and examples.
+See ![Applications](https://kailaix.github.io/ADCME.jl/dev/apps/) for more inverse modeling techniques and examples.
 
 ### Under the Hood: Computational Graph
 
