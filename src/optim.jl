@@ -75,7 +75,7 @@ end
 creates a custom optimizer with struct name `name`. For example, we can integrate `Optim.jl` with `ADCME` by 
 constructing a new optimizer
 ```julia
-CustomOptimizer("Con") do f, df, c, dc, x0, nineq, neq, x_L, x_U
+CustomOptimizer("Con") do f, df, c, dc, x0, x_L, x_U
     opt = Opt(:LD_MMA, length(x0))
     bd = zeros(length(x0)); bd[end-1:end] = [-Inf, 0.0]
     opt.lower_bounds = bd
@@ -87,15 +87,25 @@ CustomOptimizer("Con") do f, df, c, dc, x0, nineq, neq, x_L, x_U
 end
 ```
 Here
+
 ∘ `f`: a function that returns $f(x)$
+
 ∘ `df`: a function that returns $\nabla f(x)$
+
 ∘ `c`: a function that returns the constraints $c(x)$
+
 ∘ `dc`: a function that returns $\nabla c(x)$
+
 ∘ `x0`: initial guess
+
 ∘ `nineq`: number of inequality constraints
+
 ∘ `neq`: number of equality constraints
+
 ∘ `x_L`: lower bounds of optimizable variables
+
 ∘ `x_U`: upper bounds of optimizable variables
+
 Then we can create an optimizer with 
 ```
 opt = Con(loss, inequalities=[c1], equalities=[c2])
@@ -123,7 +133,7 @@ function CustomOptimizer(opt::Function)
                 nvar = Int64(sum([prod(self._vars[i].get_shape().as_list()) for i = 1:length(self._vars)]))
                 printstyled("[CustomOptimizer] Total number of variables = $nvar\n", color=:blue)
                 if isnothing(packed_bounds)
-                    printstyled("[CustomOptimizer] No bounds provided, use (-∞, +∞) as default\n", color=:blue)
+                    printstyled("[CustomOptimizer] No bounds provided, use (-∞, +∞) as default; or you need to provide bounds in the function CustomOptimizer\n", color=:blue)
                     x_L = -Inf*ones(nvar); x_U = Inf*ones(nvar)
                 else
                     x_L = vcat([x[1] for x in packed_bounds]...)

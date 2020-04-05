@@ -81,3 +81,60 @@ Here is a detailed description of the code
 * We can add optimions to the Ipopt optimizer via `addOptions`. See [here](https://coin-or.github.io/Ipopt/OPTIONS.html) for a full list of available options. 
 
 * To add callbacks, you can simply refactor your functions `f`, `df`, `c`, or `dc`. 
+
+
+
+## NLopt Custom Optimizer
+Here is an example of using [NLopt](https://github.com/JuliaOpt/NLopt.jl) for optimization. 
+```julia
+using ADCME
+using NLopt
+
+p = ones(10)
+Con = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U 
+    opt = Opt(:LD_MMA, length(x0))
+    opt.upper_bounds = 10ones(length(x0))
+    opt.lower_bounds = zeros(length(x0))
+  	opt.lower_bounds[end-1:end] = [-Inf, 0.0]
+    opt.xtol_rel = 1e-4
+    opt.min_objective = (x,g)->(g[:]= df(x); return f(x)[1])
+    inequality_constraint!(opt, (x,g)->( g[:]= dc(x);c(x)[1]), 1e-8)
+    (minf,minx,ret) = NLopt.optimize(opt, x0)
+    minx
+end
+
+reset_default_graph() # be sure to reset the graph before any operation
+x = Variable([1.234; 5.678])
+y = Variable([1.0;2.0])
+loss = x[2]^2 + sum(y^2)
+c1 = (x[1]-1)^2 - x[2] 
+opt = Con(loss, inequalities=[c1])
+sess = Session(); init(sess)
+opt.minimize(sess)
+xmin = run(sess, x) # expected: (1., 0.)
+```
+
+Here is the detailed explanation
+
+* NLopt solver takes tthe following parameters 
+
+  ```
+  algorithm
+  stopval # stop minimizing when an objective value ≤ stopval is found
+  ftol_rel
+  ftol_abs
+  xtol_rel
+  xtol_abs
+  constrtol_abs
+  maxeval
+  maxtime
+  initial_step # a vector, initial step size 
+  population
+  seed
+  vector_storage # number of "remembered gradients" in algorithms such as "quasi-Newton"
+  lower_bounds
+  upper_bounds
+  ```
+
+* You can provide upper and lower bounds either via `var_to_bounds` or inside `CustomOptimizer`. 
+
