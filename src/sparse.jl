@@ -1,5 +1,6 @@
 using SparseArrays
 import Base: accumulate
+import LinearAlgebra: factorize
 export SparseTensor, SparseAssembler, 
 spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols,
 factorize, solve

@@ -59,14 +59,14 @@ import warnings;warnings.filterwarnings('ignore')
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
 
-        colibs = readlines("$(@__DIR__)/../deps/CustomOps/default_formulas.txt")
+        colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
         for c in colibs
-            push!(COLIB, eval(Meta.parse(c)))
+            push!(COLIB, c)
         end
-        if isfile("$(@__DIR__)/../deps/CustomOps/formulas.txt")
-            colibs = readlines("$(@__DIR__)/../deps/CustomOps/formulas.txt")
+        if isfile("$(@__DIR__)/../deps/CustomOps/formulas.jl")
+            colibs = include("$(@__DIR__)/../deps/CustomOps/formulas.jl")
             for c in colibs
-                push!(COLIB, eval(Meta.parse(c)))
+                push!(COLIB, c)
             end
         end
     end

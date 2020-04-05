@@ -323,7 +323,7 @@ end
     A = sprand(10,10,0.7)
     rhs1 = rand(10)
     rhs2 = rand(10)
-    Afac = factorize(A)
+    Afac = factorize(constant(A))
     v1 = Afac\rhs1
     v2 = Afac\rhs2
 

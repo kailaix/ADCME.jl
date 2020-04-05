@@ -358,10 +358,15 @@ function install(s::String; force::Bool = false)
         push!(COLIB, formula)
     end
 
-    rm("$(@__DIR__)/../deps/CustomOps/formulas.txt", force=true)
-    open("$(@__DIR__)/../deps/CustomOps/formulas.txt", "a") do io 
-        for c in COLIB
-            write(io, string(c)*"\n")
+    rm("$(@__DIR__)/../deps/CustomOps/formulas.jl", force=true)
+    open("$(@__DIR__)/../deps/CustomOps/formulas.jl", "a") do io 
+        n = length(COLIB)
+        for (k, c) in enumerate(COLIB)
+            if k == n 
+                write(io, string(c)*"\n")
+            else 
+                write(io, string(c)*",\n")
+            end
         end
     end
 end

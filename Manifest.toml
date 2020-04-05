@@ -71,9 +71,9 @@ version = "3.8.0"
 
 [[CompilerSupportLibraries_jll]]
 deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "ff8101d6736414bc93c0f8df77b1e4095ca988c3"
+git-tree-sha1 = "7c4f882c41faa72118841185afc58a2eb00ef612"
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "0.3.2+0"
+version = "0.3.3+0"
 
 [[Conda]]
 deps = ["JSON", "VersionParsing"]
@@ -88,9 +88,9 @@ version = "1.1.0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "5a431d46abf2ef2a4d5d00bd0ae61f651cf854c8"
+git-tree-sha1 = "73eb18320fe3ba58790c8b8f6f89420f0a622773"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.10"
+version = "0.17.11"
 
 [[Dates]]
 deps = ["Printf"]
@@ -130,9 +130,9 @@ version = "3.3.9+5"
 
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays"]
-git-tree-sha1 = "3eb5253af6186eada40de3df524a1c10f0c6bfa2"
+git-tree-sha1 = "51cc2f9bc4eb9c6c0e81ec2f779d1085583cc956"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.8.6"
+version = "0.8.7"
 
 [[FiniteDiff]]
 deps = ["ArrayInterface", "LinearAlgebra", "Requires", "SparseArrays", "StaticArrays"]
@@ -237,9 +237,9 @@ version = "0.5.3+3"
 
 [[Optim]]
 deps = ["Compat", "FillArrays", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
-git-tree-sha1 = "6c90bafe9ed040b2c61420415375a1ede86e031c"
+git-tree-sha1 = "62054d469d3631960e3f472ceb8624be5b11c34d"
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
-version = "0.20.5"
+version = "0.20.6"
 
 [[OrderedCollections]]
 deps = ["Random", "Serialization", "Test"]
@@ -255,9 +255,9 @@ version = "0.12.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "d6d82d5bdbb75048e574cd2d2c89dfbf2c74250c"
+git-tree-sha1 = "75d07cb840c300084634b4991761886d0d762724"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.0.0"
+version = "1.0.1"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Test", "UUIDs"]
