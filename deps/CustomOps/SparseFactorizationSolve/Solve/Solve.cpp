@@ -38,7 +38,7 @@ REGISTER_OP("Solve")
         shape_inference::ShapeHandle o_shape;
         TF_RETURN_IF_ERROR(c->WithRank(c->input(4), 0, &o_shape));
 
-        c->set_output(0, c->Vector(-1));
+        c->set_output(0, c->input(0));
     return Status::OK();
   });
 

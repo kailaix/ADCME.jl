@@ -15,7 +15,7 @@ void forward(int64 *o, const int64 *ii, const int64 *jj, const double *vv, int N
   auto solvert = new Eigen::SparseLU<SpMat>;;
   solver->analyzePattern(A);
   solver->factorize(A);
-  printf("A factorized!\n");
+  // printf("A factorized!\n");
 
 
   solvert->analyzePattern(B);
@@ -25,9 +25,9 @@ void forward(int64 *o, const int64 *ii, const int64 *jj, const double *vv, int N
 
   cache1.put(id, solver);
   cache2.put(id, solvert);
-  printf("B factorized!\n");
+  // printf("B factorized!\n");
 
-  printf("N = %d, d = %d, n = %d, id=%d\n",N, d, n, id);
+  printf("Factorization: current matrix id= %d, maximum cache size = %d\n", id, cache1.max_size());
 
   *o = id;
 }

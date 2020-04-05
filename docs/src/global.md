@@ -339,3 +339,5 @@ Key tensor3
 Key tensor1
 Key tensor3
 ```
+
+For example, in [this article](./factorization.md) we use the technique introduced here to design a custom operator for direct methods for sparse matrix solutions. 

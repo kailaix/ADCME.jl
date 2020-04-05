@@ -318,3 +318,15 @@ end
     Md = M[idof, idof]
     @test run(sess, Md) ≈ sparse(reshape([1.0],1,1))
 end
+
+@testset "sparse_factorization_and_solve" begin 
+    A = sprand(10,10,0.7)
+    rhs1 = rand(10)
+    rhs2 = rand(10)
+    Afac = factorize(A)
+    v1 = Afac\rhs1
+    v2 = Afac\rhs2
+
+    @test norm(run(sess, v1) - A\rhs1)<1e-10
+    @test norm(run(sess, v2) - A\rhs2)<1e-10
+end

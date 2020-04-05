@@ -1,6 +1,8 @@
 using SparseArrays
 import Base: accumulate
-export SparseTensor, SparseAssembler, spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols
+export SparseTensor, SparseAssembler, 
+spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols,
+factorize, solve
 
 mutable struct SparseTensor
     o::PyObject
@@ -593,3 +595,47 @@ function spdiag(n::Integer, pair::Pair...)
     options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
     SparseTensor(sp)
 end
+
+@doc raw"""
+    factorize(A::Union{SparseTensor, SparseMatrixCSC}, max_cache_size::Int64 = 999999)
+
+Factorizes $A$ for sparse matrix solutions. `max_cache_size` specifies the maximum cache sizes in the C++ kernels, 
+which determines the maximum number of factorized matrices. 
+The function returns the factorized matrix, which is basically `Tuple{SparseTensor, PyObject}`. 
+# Example 
+```julia
+A = sprand(10,10,0.7)
+Afac = factorize(A) # factorizing the matrix
+run(sess, Afac\rand(10)) # no factorization, solving the equation
+run(sess, Afac\rand(10)) # no factorization, solving the equation
+```
+"""
+function factorize(A::Union{SparseTensor, SparseMatrixCSC}, max_cache_size::Int64 = 999999)
+    sparse_factorization_ = load_system_op(COLIB["sparse_factorization"]...; multiple=false)
+    A = constant(A)
+    ii, jj, vv = find(A)
+    d = size(A, 1)
+    ii,jj,vv,d,max_cache_size = convert_to_tensor([ii,jj,vv,d,max_cache_size], [Int64,Int64,Float64,Int64,Int64])
+    o = stop_gradient(sparse_factorization_(ii,jj,vv,d,max_cache_size))
+    return (A, o)
+end
+
+@doc raw"""
+    solve(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject})
+
+Solves the equation `A_factorized * x = rhs` using the factorized sparse matrix. See [`factorize`](@ref).
+"""
+function solve(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject})
+    A, o = A_factorized
+    solve_ = load_system_op(COLIB["sparse_solve"]...; multiple=false)
+    ii, jj, vv = find(constant(A))
+    rhs,ii, jj, vv,o = convert_to_tensor([rhs,ii, jj, vv,o], [Float64,Int64, Int64, Float64,Int64])
+    out = solve_(rhs,ii, jj, vv,o)
+end
+
+@doc raw"""
+    Base.:\(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject})    
+
+A convenient overload for [`solve`](@ref). See [`factorize`](@ref).
+"""
+Base.:\(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject}) = solve(A_factorized, rhs)
