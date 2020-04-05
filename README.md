@@ -15,13 +15,15 @@ The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputation
 
 Several features of the library are
 
-* *MATLAB-style syntax*. Write `A*B` for matrix production instead of `tf.matmul(A,B)`.
-* *Custom operators*. Implement operators in C/C++ for bottleneck parts; incorporate legacy code or specially designed C/C++ code in `ADCME`; differentiate implicit schemes.
-* *Numerical Scheme*. Easy to implement numerical schemes for solving PDEs.
-* *Physics Constrained Learning*. Embed neural network into PDEs and solve with any numerical schemes, including implicit and iterative schemes. 
-* *Static graphs*. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
-* *Custom optimizers*. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. 
-* *Sparse linear algebra*. Sparse linear algebra library tailored for scientific computing. 
+* **MATLAB-style Syntax**. Write `A*B` for matrix production instead of `tf.matmul(A,B)`.
+* **Custom Operators**. Implement operators in C/C++ for performance critical parts; incorporate legacy code or specially designed C/C++ code in `ADCME`; automatic differentiation through implicit schemes and iterative solvers. 
+* **Numerical Scheme**. Easy to implement numerical schemes for solving PDEs.
+* **Physics Constrained Learning**. Embed neural network into PDEs and solve with any numerical schemes, including implicit and iterative schemes. 
+* **Static Graphs**. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
+* **Parallel Computing**. Concurrent execution and model/data parallel distributed optimization. 
+* **Custom Optimizers**. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. 
+* **Sparse Linear Algebra**. Sparse linear algebra library tailored for scientific computing. 
+* **Inverse Modeling**. Many inverse modeling algorithms have been developed and implemented in ADCME, with wide applications in solid mechanics, fluid dynamics, geophysics, and stochastic processes. 
 
 Start building your forward and inverse modeling using ADCME today!
 
