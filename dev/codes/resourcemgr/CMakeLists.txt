@@ -31,7 +31,7 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
+include_directories(${TF_INC} ${EIGEN_INC}/../../include ${EIGEN_INC} ${TORCH_INC})
 link_directories(${TF_LIB})
 
 add_library(TestResourceManager SHARED TestResourceManager.cpp)
