@@ -27,15 +27,12 @@ Several features of the library are
 
 Start building your forward and inverse modeling using ADCME today!
 
-| Documentation                                                | Tutorial                                                     | Research                                                     |
+| Documentation                                                | Tutorial                                                     | Applications                                                     |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kailaix.github.io/ADCME.jl/dev) | [![](https://img.shields.io/badge/tutorials-Inverse%20Modeling-brightgreen)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
+| [![](https://img.shields.io/badge/-Documentation-blue)](https://kailaix.github.io/ADCME.jl/dev) | [![](https://img.shields.io/badge/-Tutorial-green)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
+
 
 # Installation
-
-⚠️ The latest version only supports Julia≧1.3.
-
-⚠️ `PyCall` is forced to use the default interpreter by `ADCME`. Do not try to reset the interpreter by rebuilding `PyCall`. 
 
 1. Install [Julia](https://julialang.org/)
 
@@ -61,17 +58,23 @@ Pkg.build("ADCME")
 
 For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
 
+⚠️ `PyCall` is forced to use the default interpreter by `ADCME`. Do not try to reset the interpreter by rebuilding `PyCall`. 
+
 # Tutorial
 
-For a detailed tutorial, click [here](https://kailaix.github.io/ADCME.jl/dev/tutorial/). Consider solving the following problem
+Here we present two inverse problem examples. The first one is a parameter estimation problem, and the second one is a function inverse problem. 
 
--bu''(x)+u(x) = f(x), x∈[0,1], u(0)=u(1)=0
+### Parameter Inverse Problem 
+
+Consider solving the following problem
+
+![](./docs/src/assets/readme-eq1.svg)
 
 where 
 
-f(x) = 8 + 4x - 4x²
+![](./docs/src/assets/readme-eq2.svg)
 
-Assume that we have observed `u(0.5)=1`, we want to estimate `b`. The true value, in this case, should be `b=1`.
+Assume that we have observed `u(0.5)=1`, we want to estimate `b`.  In this case, he true value should be `b=1`.
 
 ```julia
 using LinearAlgebra
@@ -107,11 +110,62 @@ julia> gradients(loss, b)
 PyObject <tf.Tensor 'gradients_1/Mul_grad/Reshape:0' shape=() dtype=float64>
 ```
 
-Under the hood, a computational graph is created for gradients back-propagation.
+### Function Inverse Problem
+
+Consider a nonlinear PDE, 
+
+![](./docs/src/assets/readme-eq3.svg)
+
+where 
+
+![](./docs/src/assets/readme-eq4.svg)
+
+Here `f(x)` can be computed from an analytical solution 
+
+![](./docs/src/assets/readme-eq5.svg)
+
+In this problem, we are given the values of `u(x)` on the grid points and want to estimate the nonparametric function `b(u)`. We approximate `b(u)` using a neural network and use the [residual minimization method](https://kailaix.github.io/ADCME.jl/dev/tu_nn/) to find the optimal weights and biases of the neural network. The minimization problem is given by 
+
+![](./docs/src/assets/readme-eq6.svg)
+
+```julia
+using LinearAlgebra
+using ADCME
+using PyPlot
+
+n = 101 
+h = 1/(n-1)
+x = LinRange(0,1,n)|>collect
+
+u = sin.(π*x)
+f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
+b = squeeze(ae(u[2:end-1], [20,20,1])) 
+
+residual = -b.*(u[3:end]+u[1:end-2]-2u[2:end-1])/h^2 + u[2:end-1] - f[2:end-1]
+loss = sum(residual^2)
+
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+
+plot(x, (@. (1+x^2)/(1+2*x^2)), label="Reference")
+plot(u[2:end-1], run(sess, b), "o", markersize=5., label="Estimated")
+legend(); xlabel("\$u\$"); ylabel("\$b(u)\$"); grid("on")
+```
+
+Here we show the estimated coefficient function and the reference one:
+
+<p align="center">
+  <img src="./docs/src/assets/readmenn.png" style="zoom:50%;" />
+</p>
+See [Applications](https://kailaix.github.io/ADCME.jl/dev/apps/) for more inverse modeling techniques and examples.
+
+### Under the Hood: Computational Graph
+
+Under the hood, a static computational graph is automatic constructed. The computational graph guides the runtime execution and provides dependencies of  data flows for automatic differentiation. Here we show the computational graph in the parameter inverse problem:
 
 ![](docs/src/assets/code.png)
 
-For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
+See a detailed [tutorial](https://kailaix.github.io/ADCME.jl/dev/tutorial/), or a full [documentation](https://kailaix.github.io/ADCME.jl/dev). 
 
 # Featured Applications
 
@@ -131,3 +185,5 @@ For more documentation, see [here](https://kailaix.github.io/ADCME.jl/dev).
 # LICENSE
 
 ADCME.jl is released under MIT License. See [License](https://github.com/kailaix/ADCME.jl/tree/master/LICENSE) for details. 
+
+
