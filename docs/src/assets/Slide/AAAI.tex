@@ -1,0 +1,767 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%    PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+\usepackage{animate}
+\usepackage{float}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{extarrows}
+
+\newcommand{\ChoL}{\mathsf{L}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\bxi}{\bm{\xi}}
+\newcommand{\bmu}{\bm{\mu}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bJ}{\mathbf{J}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bM}{\mathbf{M}}
+
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bw}{\mathbf{w}}
+
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\sign}{\mathrm{sign}}
+\newcommand{\bt}[0]{\bm{\theta}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bzero}{\mathbf{0}}
+\renewcommand{\bf}{\mathbf{f}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bv}[0]{\mathbf{v}}
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage{soul}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+%
+%\usepackage{graphicx} % Allows including images
+%\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+%
+%
+%\usepackage{amsthm}
+%
+%\usepackage{todonotes}
+%\usepackage{floatrow}
+%
+%\usepackage{pgfplots,algorithmic,algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+%\usepackage[toc,page]{appendix}
+%\usepackage{float}
+%\usepackage{booktabs}
+%\usepackage{bm}
+%
+%\theoremstyle{definition}
+%
+\newcommand{\RR}[0]{\mathbb{R}}
+%
+%\newcommand{\bx}{\mathbf{x}}
+%\newcommand{\ii}{\mathrm{i}}
+%\newcommand{\bxi}{\bm{\xi}}
+%\newcommand{\bmu}{\bm{\mu}}
+%\newcommand{\bb}{\mathbf{b}}
+%\newcommand{\bA}{\mathbf{A}}
+%\newcommand{\bJ}{\mathbf{J}}
+%\newcommand{\bB}{\mathbf{B}}
+%\newcommand{\bM}{\mathbf{M}}
+%\newcommand{\bF}{\mathbf{F}}
+%
+%\newcommand{\by}{\mathbf{y}}
+%\newcommand{\bw}{\mathbf{w}}
+%\newcommand{\bn}{\mathbf{n}}
+%
+%\newcommand{\bX}{\mathbf{X}}
+%\newcommand{\bY}{\mathbf{Y}}
+%\newcommand{\bs}{\mathbf{s}}
+%\newcommand{\sign}{\mathrm{sign}}
+%\newcommand{\bt}[0]{\bm{\theta}}
+%\newcommand{\bc}{\mathbf{c}}
+%\newcommand{\bzero}{\mathbf{0}}
+%\renewcommand{\bf}{\mathbf{f}}
+%\newcommand{\bu}{\mathbf{u}}
+%\newcommand{\bv}[0]{\mathbf{v}}
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       \tableofcontents[currentsection]
+   \end{frame}
+}
+
+%----------------------------------------------------------------------------------------
+%    TITLE PAGE
+%----------------------------------------------------------------------------------------
+\usepackage{bm}
+\newcommand*{\TakeFourierOrnament}[1]{{%
+\fontencoding{U}\fontfamily{futs}\selectfont\char#1}}
+\newcommand*{\danger}{\TakeFourierOrnament{66}}
+
+\title[Physics Constrained Learning]{Data-driven Inverse Modeling with Incomplete Observation} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author[Kailai Xu, et al.]{Kailai Xu and Eric Darve\\ { Alexandre M. Tartakovsky, Jeff Burghardt, Dongzhuo Li, Jerry M. Harris, Weiqiang Zhu, Gregory C. Beroza} }% Your name
+%\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+%{
+%%ICME, Stanford University \\ % Your institution for the title page
+%%\medskip
+%%\textit{kailaix@stanford.edu}\quad \textit{darve@stanford.edu} % Your email address
+%}
+\date{}% Date, can be changed to a custom date
+% Mathematics of PDEs
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+\begin{document}
+
+\usebackgroundtemplate{%
+\begin{picture}(0,250)
+\centering
+	{{\includegraphics[width=1.0\paperwidth]{../background}}}
+\end{picture}
+  } 
+%\usebackgroundtemplate{%
+%  \includegraphics[width=\paperwidth,height=\paperheight]{figures/back}} 
+\begin{frame}
+
+\titlepage % Print the title page as the first slide
+
+
+\blfootnote{\scriptsize Full version: \url{https://kailaix.github.io/ADCME.jl/dev/assets/Slide/ADCME.pdf} }
+%dfa
+\end{frame}
+\usebackgroundtemplate{}
+
+\section{Inverse Modeling}
+
+
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	\begin{itemize}
+		\item \textbf{Inverse modeling} identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement.
+		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.t
+	\end{itemize}
+	\begin{figure}[hbt]
+	\centering
+  \includegraphics[width=0.8\textwidth]{../inverse2}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	\begin{figure}
+	\centering
+  \includegraphics[width=1.0\textwidth]{../inverse3}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	We can formulate inverse modeling as a PDE-constrained optimization problem 
+	\begin{equation*}
+		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+	\end{equation*}
+	\begin{itemize}
+		\item The \textcolor{red}{loss function} $L_h$ measures the discrepancy between the prediction $u_h$ and the observation $u_{\mathrm{obs}}$, e.g., $L_h(u_h) = \|u_h - u_{\mathrm{obs}}\|_2^2$. 
+		\item $\theta$ is the \textcolor{red}{model parameter} to be calibrated. 
+		\item The \textcolor{red}{physics constraints} $F_h(\theta, u_h)=0$ are described by a system of partial differential equations. Solving for $u_h$ may require solving linear systems or applying an iterative algorithm such as the Newton-Raphson method. 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Function Inverse Problem}
+	
+	\begin{equation*}
+		\min_{\textcolor{red}{f}} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\textcolor{red}{f}, u_h) = 0
+	\end{equation*}
+	
+	What if the unknown is a \textcolor{red}{function} instead of a set of parameters?
+\begin{itemize}
+	\item Koopman operator in dynamical systems.
+	\item Constitutive relations in solid mechanics. 
+	\item Turbulent closure relations in fluid mechanics.
+	\item ...
+\end{itemize}
+
+The candidate solution space is \textcolor{red}{infinite dimensional}.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Physics Based Machine Learning}
+	$$\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\;F_h(\textcolor{red}{NN_\theta}, u_h) = 0$$
+	\vspace{-0.5cm}
+	\begin{itemize}
+		\item Deep neural networks exhibit capability of approximating high dimensional and complicated functions. 
+		\item \textbf{Physics based machine learning}: \textcolor{red}{the unknown function is approximated by a deep neural network, and the physical constraints are enforced by numerical schemes}.
+		\item \textcolor{red}{Satisfy the physics to the largest extent}.
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.75\textwidth]{../physics_based_machine_learning.png}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Gradient Based Optimization}
+	\begin{equation}\label{equ:opt}
+		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+		\end{equation}
+	
+	\begin{itemize}
+		\item We can now apply a gradient-based optimization method to (\ref{equ:opt}).
+		\item The key is to \textcolor{red}{calculate the gradient descent direction} $g^k$
+		$$\theta^{k+1} \gets \theta^k - \alpha g^k$$ 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+	\centering
+  \includegraphics[width=0.6\textwidth]{../im.pdf}
+\end{figure}
+
+\end{frame}
+
+
+
+\section{Automatic Differentiation}
+
+\begin{frame}
+	\frametitle{Automatic Differentiation}
+The fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
+	\begin{itemize}
+		\item Deep learning (and many other machine learning techniques) and numerical schemes share the same computational model: composition of individual operators. 
+	\end{itemize}
+	
+
+\begin{minipage}[b]{0.4\textwidth}
+
+
+
+
+\begin{center}
+\textcolor{red}{Mathematical Fact}
+
+\
+
+	Back-propagation 
+
+$||$
+
+Reverse-mode
+
+ Automatic Differentiation 
+
+$||$
+ 
+ Discrete 
+ 
+ Adjoint-State Method
+\end{center}
+\end{minipage}~
+\begin{minipage}[b]{0.6\textwidth}
+\begin{figure}[hbt]
+\centering
+  \includegraphics[width=0.8\textwidth]{../compare-NN-PDE.png}
+\end{figure}
+\end{minipage}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Computational Graph for Numerical Schemes}
+	
+	\begin{itemize}
+		\item To leverage automatic differentiation for inverse modeling, we need to express the numerical schemes in the ``AD language'': computational graph. 
+		\item No matter how complicated a numerical scheme is, it can be decomposed into a collection of operators that are interlinked via state variable dependencies. 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../cgnum}
+\end{figure}
+
+	
+	
+\end{frame}
+
+
+
+
+
+%\begin{frame}
+%	\frametitle{Code Example}
+%	\begin{itemize}
+%		\item  Find $b$ such that $u(0.5)=1.0$ and
+%		$$-bu''(x)+u(x) = 8 + 4x - 4x^2, x\in[0,1], u(0)=u(1)=0$$
+%	\end{itemize}
+%	\begin{figure}[hbt]
+%  \includegraphics[width=0.8\textwidth]{../code.png}
+%\end{figure}
+%\end{frame}
+
+
+\section{Physics Constrained Learning}
+\begin{frame}
+
+
+	\frametitle{Challenges in AD}
+	
+	
+	\begin{minipage}[t]{0.49\textwidth}
+	\vspace{-3cm}
+\begin{itemize}
+	\item Most AD frameworks only deal with \textcolor{red}{explicit operators}, i.e., the functions that has analytical derivatives, or composition of these functions. 
+	\item Many scientific computing algorithms are \textcolor{red}{iterative} or \textcolor{red}{implicit} in nature.
+\end{itemize}
+\end{minipage}~
+\begin{minipage}[t]{0.49\textwidth}
+  \includegraphics[width=1.0\textwidth]{../sim.png}
+\end{minipage}
+
+	% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[]
+\begin{tabular}{@{}lll@{}}
+\toprule
+Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
+Linear           & Explicit          & $y=Ax$       \\
+Nonlinear        & Explicit          & $y = F(x)$   \\
+\textbf{Linear}           & \textbf{Implicit}          & $Ax = y$     \\
+\textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Example}
+	
+\begin{itemize}
+	\item Consider a function $f:x\rightarrow y$, which is implicitly defined by 
+	$$F(x,y) = x^3 - (y^3+y) = 0$$
+If not using the cubic formula for finding the roots, the forward computation consists of iterative algorithms, such as the Newton's method and bisection method
+\end{itemize}
+
+
+
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{algorithmic}
+\State $y^0 \gets 0$
+\State $k \gets 0$
+\While {$|F(x, y^k)|>\epsilon$}
+\State $\delta^k \gets F(x, y^k)/F'_y(x,y^k)$
+\State $y^{k+1}\gets y^k - \delta^k$
+\State $k \gets k+1$
+\EndWhile
+\State \textbf{Return} $y^k$
+\end{algorithmic}
+\end{minipage}~
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{algorithmic}
+\State $l \gets -M$, $r\gets M$, $m\gets 0$
+\While {$|F(x, m)|>\epsilon$}
+\State $c \gets \frac{a+b}{2}$
+\If{$F(x, m)>0$}
+\State $a\gets m$
+\Else
+\State $b\gets m$
+\EndIf
+\EndWhile
+\State \textbf{Return} $c$
+\end{algorithmic}
+
+\end{minipage}	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Example}
+	
+	\begin{itemize}
+%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyré, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+%		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
+		\item An efficient way is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$, treat $y$ as a function of $x$ and take the derivative on both sides
+		$$3x^2 - 3y(x)^2y'(x)-1=0\Rightarrow y'(x) = \frac{3x^2-1}{3y(x)^2}$$
+	The above gradient is \textcolor{red}{exact}.
+	\end{itemize}
+	\begin{center}
+			\textbf{Can we apply the same idea to inverse modeling?}
+	\end{center}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	 $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
+	\begin{itemize}
+\item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
+$${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
+\item Applying the \textcolor{red}{implicit function theorem}
+{  \scriptsize
+\begin{equation*}
+\frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}  \frac{\partial G_h(\theta)}{\partial \theta} = 0  \Rightarrow 
+     \frac{\partial G_h(\theta)}{\partial \theta} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
+\end{equation*}
+}
+\item Finally we have
+{\scriptsize
+\begin{equation*}
+    \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
+    = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}= - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
+    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
+    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}
+\end{equation*}
+}
+
+	\end{itemize}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}	
+	{\scriptsize$$\boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
+    = - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
+    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
+    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}$$}
+
+		Step 1: Calculate $w$ by solving a linear system (never invert the matrix!)
+{\scriptsize$$w^T = \underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}\rule[-9pt]{1pt}{0pt}}}_{1\times N} 
+        \;\;
+        \underbrace{\Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}$$}
+Step 2: Calculate the gradient by automatic differentiation 
+{\scriptsize$$w^T\;\underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p} = \frac{\partial (w^T\;  {F_h}(\theta, u_h))}{\partial \theta }\Bigg|_{u_h = {G_h}(\theta )}$$}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Methodology Summary}
+\begin{figure}[hbt]
+\centering
+  \includegraphics[width=0.8\textwidth]{../routine}
+\end{figure}
+
+\end{frame}
+
+
+\section{Applications}
+
+
+%\begin{frame}
+%	\frametitle{ADSeismic.jl: A General Approach to Seismic Inversion}
+%	\begin{itemize}
+%		\item Many seismic inversion problems can be solved within a unified framework. 
+%	\end{itemize}
+%	\begin{figure}[hbt]
+%  \includegraphics[width=1.0\textwidth]{../adseimic.jpeg}
+%\end{figure}
+%	
+%\end{frame}
+%
+%\begin{frame}
+%	\frametitle{ADSeismic.jl: Earthquake Location Example}
+%	\begin{itemize}
+%		\item The earthquake source function is parameterized by ($g(t)$ and $x_0$ are unknowns)
+%		$$f(x, t) =  \frac{g(t)}{2\pi \sigma^2} \exp \left( -\frac{||x - x_0||^2}{2 \sigma^2} \right)$$
+%	\end{itemize}
+%	\begin{figure}[hbt]
+%  \includegraphics[width=1.0\textwidth]{../source_time}
+%\end{figure}
+%\end{frame}
+%
+%
+%\begin{frame}
+%	\frametitle{ADSeismic.jl: Benchmark}
+%	\begin{itemize}
+%		\item ADCME makes the heterogeneous computation capability of TensorFlow available for scientific computing. 
+%	\end{itemize}
+%	\begin{figure}[hbt]
+%  \includegraphics[width=0.7\textwidth]{../benchmark}
+%\end{figure}
+%\end{frame}
+
+
+\begin{frame}
+	\frametitle{FwiFlow.jl: Elastic Full Waveform Inversion for Subsurface Flow Problems}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.8\textwidth]{../geo.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{FwiFlow.jl: Fully Nonlinear Implicit Schemes}
+\begin{itemize}
+	\item The governing equation is a nonlinear PDE
+\begin{minipage}[b]{0.48\textwidth}
+{\scriptsize
+	\begin{align*}
+	&\frac{\partial }{{\partial t}}(\phi {{S_i}}{\rho _i}) + \nabla  \cdot ({\rho _i}{\mathbf{v}_i}) = {\rho _i}{q_i},\quad 
+      i = 1,2	\\
+     & S_{1} + S_{2} = 1\\
+      &{\mathbf{v}_i} = - \frac{{\textcolor{blue}{K}{\textcolor{red}{k_{ri}}}}}{{{\tilde{\mu}_i}}}(\nabla {P_i} - g{\rho _i}\nabla Z), \quad
+      i=1, 2\\
+	&k_{r1}(S_1) = \frac{k_{r1}^o S_1^{L_1}}{S_1^{L_1} + E_1 S_2^{T_1}}\\
+	&k_{r2}(S_1) = \frac{ S_2^{L_2}}{S_2^{L_2} + E_2 S_1^{T_2}}
+	\end{align*}
+	}
+\end{minipage}~\vline
+\begin{minipage}[b]{0.48\textwidth}
+\flushleft
+	{\scriptsize \begin{eqnarray*}
+ && \rho \frac{\partial v_z}{\partial t} = \frac{\partial \sigma_{zz}}{\partial z} + \frac{\partial \sigma_{xz}}{\partial x} \nonumber \\
+ && \rho \frac{\partial v_x}{\partial t} = \frac{\partial \sigma_{xx}}{\partial x} + \frac{\partial \sigma_{xz}}{\partial z} \nonumber \\
+ && \frac{\partial \sigma_{zz}}{\partial t} = (\lambda + 2\mu)\frac{\partial v_z}{\partial z} + \lambda\frac{\partial v_x}{\partial x} \nonumber \\
+ && \frac{\partial \sigma_{xx}}{\partial t} = (\lambda + 2\mu)\frac{\partial v_x}{\partial x} + \lambda\frac{\partial v_z}{\partial z} \nonumber \\
+ && \frac{\partial \sigma_{xz}}{\partial t} = \mu (\frac{\partial v_z}{\partial x} + \frac{\partial v_x}{\partial z}),
+\end{eqnarray*}}
+\end{minipage}
+
+	\item For stability and efficiency, implicit methods are the industrial standards. 
+{\scriptsize	$$\phi (S_2^{n + 1} - S_2^n) - \nabla \cdot \left( {{m_{2}}(S_2^{n + 1})K\nabla \Psi _2^n} \right) \Delta t = 
+\left(q_2^n + q_1^n \frac{m_2(S^{n+1}_2)}{m_1(S^{n+1}_2)}\right) 
+\Delta t\quad m_i(s) = \frac{k_{ri}(s)}{\tilde \mu_i}
+$$} 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{FwiFlow.jl: Showcase}
+	\begin{itemize}
+		\item Task 1: Estimating the permeability from seismic data 
+		\begin{center}
+	B.C. +	\textcolor{red}{Two-Phase Flow Equation} + Wave Equation $\Rightarrow$ Seismic Data
+	\end{center}
+		\begin{figure}[hbt]
+		\centering
+  \includegraphics[width=0.6\textwidth]{../coupled}
+\end{figure}
+\item Task 2: Learning the rock physics model from sparse saturation data. The rock physics model is approximated by neural networks  
+{\scriptsize$$f_1(S_1; \theta_1) \approx k_{r1}(S_1)\qquad f_2(S_1; \theta_2) \approx k_{r2}(S_1)$$}
+\vspace{-0.4cm}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.3\textwidth]{../sat}~
+  \includegraphics[width=0.25\textwidth]{../rock}
+\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{FwiFlow.jl: Showcase}
+	\begin{itemize}
+		\item Task 3: Learning the \textcolor{red}{nonlocal} (space or time) hidden dynamics from seismic data. This is very challenging using traditional methods (e.g., the adjoint-state method) because the dynamics are history dependent. 
+	\end{itemize}
+	\begin{center}
+	B.C. +	\textcolor{red}{Time-/Space-fractional PDE} + Wave Equation $\Rightarrow$ Seismic Data
+	\end{center}
+\begin{table}[htpb]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Governing Equation & $\sigma=0$ & $\sigma=5$ \\ \midrule
+${}_0^CD_t^{\textbf{0.8}}m = 10\Delta m $ & \makecell{$a/a^*\ =1.0000$ \\  $\quad\alpha\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =0.9109$ \\  $\quad\alpha\quad =\mathbf{0.7993}$} \\ \hline
+${}_0^CD_t^{\textbf{0.2}}m = 10\Delta m $ & \makecell{$a/a^*\ =0.9994$ \\  $\quad\alpha\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =0.3474$ \\  $\quad\alpha\quad =\mathbf{0.1826}$}  \\   \bottomrule
+$\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.2}} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.2000}$} & \makecell{$a/a^*\ =1.0378$ \\   $\quad s\quad =\mathbf{0.2069}$} \\  \hline
+$\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.8}} m$ & \makecell{$a/a^*\ =1.0000$ \\   $\quad s\quad =\mathbf{0.8000}$} & \makecell{$a/a^*\ =1.0365$ \\   $\quad s\quad =\mathbf{0.8093}$}\\  \bottomrule
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+
+\newcommand{\bsigma}[0]{\bm{\sigma}}
+\newcommand{\bepsilon}[0]{\bm{\epsilon}}
+
+\begin{frame}
+	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
+%	
+	\begin{itemize}
+		\item Multi-physics Interaction of Coupled Geomechanics and Multi-Phase Flow Equations 
+{\small
+\begin{align*}
+\mathrm{div}\bsigma(\bu) - b \nabla p &= 0\\
+    \frac{1}{M} \frac{\partial p}{\partial t} + b\frac{\partial \epsilon_v(\bu)}{\partial t} - \nabla\cdot\left(\frac{k}{B_f\mu}\nabla p\right) &= f(x,t)	\\
+    	\bsigma &= \bsigma(\bepsilon, \dot\bepsilon)
+\end{align*}
+}
+\item Approximate the constitutive relation by a neural network
+{\small
+$$\bsigma^{n+1} = \mathcal{NN}_{\bt} (\bsigma^n, \bepsilon^n) + H\bepsilon^{n+1}$$}
+	\end{itemize}		
+	\begin{figure}[hbt]	
+	\centering
+  \includegraphics[width=0.5\textwidth]{../ip}~
+  \includegraphics[width=0.3\textwidth]{../cell}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
+	
+	\begin{itemize}
+		\item Comparison with space varying linear elasticity approximation
+		\begin{equation*}
+			\bsigma = H(x, y) \bepsilon
+		\end{equation*}
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../visco1}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.7\textwidth]{../visco2}
+\end{figure}
+
+\end{frame}
+
+
+
+\section{Some Perspectives}
+
+\begin{frame}
+	\frametitle{Scopes, Challenges, and Future Work}
+	\textcolor{red}{\textbf{Physics based Machine Learning}}: an innovative approach to inverse modeling. 
+	{\scriptsize
+	\begin{enumerate}
+		\item Deep neural networks provide a novel function approximator that outperforms traditional basis functions in certain scenarios. 
+		\item Numerical PDEs are not on the opposite side of machine learning. By expressing the known physical constraints using numerical schemes and approximating the unknown with machine learning models, we combine the best of the two worlds, leading to efficient and accurate inverse modeling tools. 
+	\end{enumerate}
+	}
+		
+		\textcolor{red}{\textbf{Automatic Differentiation}}: the core technique of physics based machine learning.
+		{\scriptsize
+		\begin{enumerate}
+		\item The AD technique is not new; it has existed for several decades and many software exists. 
+		\item The advent of deep learning drives the development of robust, scalable and flexible AD software that leverages the high performance computing environment. 
+		\item As deep learning techniques continue to grow, crafting the tool to incorporate machine learning and AD techniques for inverse modeling is beneficial in scientific computing.
+		\item However, AD is not a panacea. Many scientific computing algorithms cannot be directly translated to the AD language. 
+	\end{enumerate}
+	}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{ADCME}
+	\begin{itemize}
+	\item ADCME is the materialization of the physics based machine learning concept. 
+		\item ADCME allows users to use \textcolor{red}{high performance} and \textcolor{red}{mathematical friendly} programming language Julia to implement numerical schemes, and obtain the \textcolor{red}{comprehensive automatic differentiation functionality}, \textcolor{red}{heterogeneous computing capability}, \textcolor{red}{parallelism} and \textcolor{red}{scalability} provided by the TensorFlow backend. 
+	\end{itemize}
+	\begin{center}
+		\url{https://github.com/kailaix/ADCME.jl}
+	\end{center}
+	\vspace{-0.3cm}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../Julia.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{A General Approach to Inverse Modeling}
+	\begin{figure}[hbt]
+  \includegraphics[width=1.0\textwidth]{../summary.pdf}
+\end{figure}
+%
+\end{frame}
+
+%}
+%\usebackgroundtemplate{}
+%----------------------------------------------------------------------------------------
+%    PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+
+
+
+\end{document} 

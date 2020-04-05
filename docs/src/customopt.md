@@ -32,7 +32,7 @@ IPOPT = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U
         end
     end
   
-  	nele_jac = 0 # Number of non-zeros in Jacobian
+    nele_jac = 0 # Number of non-zeros in Jacobian
     prob = Ipopt.createProblem(n_variables, x_L, x_U, m, g_L, g_U, nz, nele_jac,
             f, (x,g)->(g[:]=c(x)), (x,g)->(g[:]=df(x)), eval_jac_g, nothing)
     addOption(prob, "hessian_approximation", "limited-memory")
@@ -116,7 +116,7 @@ xmin = run(sess, x) # expected: (1., 0.)
 
 Here is the detailed explanation
 
-* NLopt solver takes tthe following parameters 
+* NLopt solver takes the following parameters 
 
   ```
   algorithm
