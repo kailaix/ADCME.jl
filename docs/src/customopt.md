@@ -20,7 +20,7 @@ IPOPT = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U
     n_variables = length(x0)
     nz = length(dc(x0)) 
   	m = div(nz, n_variables) # Number of constraints
-    g_L, g_U = [-2e20;-2e20], [0.0;0.0]
+    g_L, g_U = [-Inf;-Inf], [0.0;0.0]
     function eval_jac_g(x, mode, rows, cols, values)
         if mode == :Structure
             rows[1] = 1; cols[1] = 1
@@ -69,8 +69,8 @@ Here is a detailed description of the code
   k = 1
   for i = 1:div(nz, n_variables)
     for j = 1:n_variables
-      row[k] = i 
-      col[k] = j
+      rows[k] = i 
+      cols[k] = j
       k += 1
     end
   end
