@@ -357,6 +357,8 @@ def Convert_ARGS():
         s1_ = "[" + s1 + "]"
         s2 = "["+",".join(s2)+"]"
         s = "{} = convert_to_tensor({}, {})".format(s1, s1_, s2)
+        if ',' not in s1:
+            s += "; {} = {}[1]".format(s1, s1)
     return s     
 
 def OUTPUT():

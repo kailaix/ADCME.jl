@@ -28,7 +28,7 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION
   set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
 
-include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC} ${TORCH_INC})
+include_directories(${TF_INC} ${EIGEN_INC}/../../include ${EIGEN_INC} ${TORCH_INC})
 include_directories(${JULIA_INC} ${PYTHON_INC})
 link_directories(${TF_LIB} ${JULIA_LIB})
 

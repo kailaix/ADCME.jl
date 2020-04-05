@@ -7,7 +7,7 @@ Random.seed!(233)
 
 function ${operator_name}(${ARGS})
     ${operator_name}_ = load_op_and_grad("./build/lib${OperatorName}","${operator_name}"${multiple})
-${CARGS}
+    ${CARGS}
     ${operator_name}_(${ARGS})
 end
 
