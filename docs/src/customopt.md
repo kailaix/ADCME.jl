@@ -158,8 +158,9 @@ Here is the detailed explanation
 * You can provide upper and lower bounds either via `var_to_bounds` or inside `CustomOptimizer`. 
 
 
-## Dropin substitute of `BFGS!`
+## Drop-in Substitutes of `BFGS!`
 
+### IPOPT
 The following codes are for unconstrained optimizattion of `BFGS!` optimizer. Copy and execute the following code to have access to `IPOPT!` function. 
 ```julia
 using PyCall
@@ -241,7 +242,7 @@ sess = Session(); init(sess)
 IPOPT!(sess, loss, vars=[x], callback = cb)
 ```
 
-
+### NLOPT
 Likewise, `NLOPT!` also has the dropin substitute of `BFGS!`
 
 ```julia
