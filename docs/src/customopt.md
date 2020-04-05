@@ -162,7 +162,7 @@ Here is the detailed explanation
 
 The following codes are for unconstrained optimizattion of `BFGS!` optimizer. Copy and execute the following code to have access to `IPOPT!` function. 
 ```julia
-using PyObject
+using PyCall
 using Ipopt
 using ADCME
 
