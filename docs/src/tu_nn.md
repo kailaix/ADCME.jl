@@ -83,7 +83,7 @@ Using physics based machine learning  to solve inverse problems requires techniq
 | Easy-to-implement              | ✔️                     | ✔️              | ❌                            |
 | Enforcing Physical Constraints | ❌                     | ❌              | ✔️                            |
 | Fast Convergence               | ❌                     | ❌              | ✔️                            |
-| Minimal Optimization Variables | ✔️                     | ❌              | ❌                            |
+| Minimal Optimization Variables | ✔️                     | ❌              | ✔️                            |
 
 
 
