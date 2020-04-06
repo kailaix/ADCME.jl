@@ -60,7 +60,7 @@ The penalty method is conceptually simple and easy to implement. Like the residu
 
 However, the penalty method treats $u$ as optimization variable and therefore typically has much more degrees of freedom than the original constrained optimization problem. Mathematically, the penalty method suffers from worse conditioning than the constrained one, making it unfavorable in many scenarios. 
 
-#Physics Constrained Learning
+## Physics Constrained Learning
 
 An alternative approach to the penalty method in the context of sparse observations is the **physics constrained learning** (PCL). The physics constrained learning reduces Equation 1 to an unconstrained optimization problem by two steps:
 
