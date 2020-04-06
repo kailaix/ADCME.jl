@@ -13,6 +13,9 @@ module ADCME
     using LinearAlgebra
     import Optim
     using SparseArrays
+    using LibGit2
+
+    ENV["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
     tf = PyNULL()
     DTYPE = Dict{Type, PyObject}()

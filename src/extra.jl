@@ -334,9 +334,9 @@ function install(s::String; force::Bool = false)
         end
     end
     try
-        run(`$GIT clone $s $(joinpath(codir, name))`)
+        LibGit2.clone(s, joinpath(codir, name))
     catch
-        run(`$GIT clone git://$(s[9:end]).git $(joinpath(codir, name))`)
+        LibGit2.clone("git://$(s[9:end]).git", joinpath(codir, name))
     end
 
     # If there is a build script `build.sh`, run the build script
@@ -380,7 +380,7 @@ function install_adept()
     PWD = pwd()
     cd(ADCME.LIBDIR)
     if !isdir("Adept-2")
-        run(`$GIT clone https://github.com/ADCMEMarket/Adept-2`)
+        LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     end
     cd("Adept-2")
     try

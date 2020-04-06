@@ -12,7 +12,7 @@ CC = easy_get("gcc")
 CXX = easy_get("g++")
 CMAKE = easy_get("cmake")
 MAKE = easy_get("make")
-GIT = easy_get("git")
+GIT = "LibGit2"
 PYTHON = easy_get("python")
     
 s = ""

@@ -7,7 +7,6 @@ using PyCall
 using SparseArrays
 using Test
 
-ENV["KMP_DUPLICATE_LIB_OK"]="TRUE"
 sess = Session()
 
 include("sparse.jl")

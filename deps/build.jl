@@ -33,7 +33,8 @@ pkgs = Conda._installed_packages()
 @info "Install binaries"
 ZIP = easy_get("zip")
 UNZIP = easy_get("unzip")
-GIT = easy_get("git")
+GIT = "LibGit2"
+
 
 @info "Install CONDA dependencies..."
 for pkg in ["make", "cmake", "tensorflow=1.14", "tensorflow-probability=0.7",

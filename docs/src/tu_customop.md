@@ -3,12 +3,16 @@
 !!! note
     As a reminder, there are many built-in custom operators in `deps/CustomOps` and they are good resources for understanding custom operators. The following is a step-by-step instruction on how custom operators are implemented. 
 
-## CPU Operators
-Custom operators are ways to add missing features in ADCME. Typically users do not have to worry about custom operators. However, in the following situation custom opreators might be very useful
+## The Need for Custom Operators 
+Custom operators are ways to add missing features or improve performance critical components in ADCME. Typically users do not have to worry about custom operators and performance of prototypes is in general pretty good. However, in the following situation custom opreators might be very useful
 
-- Direct implementation in ADCME is inefficient (bottleneck). 
-- There are legacy codes users want to reuse, such as GPU-accelerated codes. 
-- Special acceleration techniques such as checkpointing scheme. 
+- Direct implementation in ADCME is inefficient, e.g., vectorizing some codes is difficult. 
+- There are legacy codes users want to reuse, such as Fortran libraries.  
+- Special acceleration techniques, such as checkpointing scheme, MPI-enabled linear solvers, and FPGA/GPU-accelerated codes. 
+
+![](./assets/custom.png)
+
+## Build Custom Operators 
 
 In the following, we present an example of implementing a sparse solver for $Au=b$ as a custom operator.
 
@@ -122,6 +126,7 @@ First `cd` into your custom operator director (where `CMakeLists.txt` is located
 ```julia-repl
 julia> using ADCME
 julia> ADCME.cmake()
+julia> ADCME.make()
 ```
 Based on your operation system, you will create `libMySparseSolver.{so,dylib,dll}`. This will be the dynamic library to link in `TensorFlow`. 
 
@@ -135,7 +140,7 @@ Finally, you could use `gradtest.jl` to test the operator and its gradients (spe
     If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.
 
 
-## GPU Operators
+## Build GPU Custom Operators
 
 
 ### Dependencies
