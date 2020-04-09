@@ -326,6 +326,39 @@ op = load_system_op("OTNetwork")
 
 
 
+## Batch Build
+
+At some point, you might have a lot of custom operators. Building one-by-one will take up too much time. To reduce the building time, you might want to build all the operators all at once concurrently. To this end, you can consider batch build by using a common CMakeLists.txt. The commands in the CMakeLists.txt are the same as a typical custom operator, except that the designated libraries are different
+
+```cmake
+# ... The same as a typical CMake script ...
+
+# Specify all the library paths and library names. 
+set(LIBDIR_NAME VolumetricStrain ComputeVel DirichletBd
+    FemStiffness FemStiffness1 SpatialFemStiffness
+    SpatialVaryingTangentElastic Strain Strain1
+    StrainEnergy StrainEnergy1)
+set(LIB_NAME VolumetricStrain ComputeVel DirichletBd
+    FemStiffness UnivariateFemStiffness SpatialFemStiffness
+    SpatialVaryingTangentElastic StrainOp StrainOpUnivariate
+    StrainEnergy StrainEnergyUnivariate)
+
+# Copy and paste the following lines (no modification is required)
+list(LENGTH "LIBDIR_NAME" LIBLENGTH)
+message("Total number of libraries to make: ${LIBLENGTH}")
+MATH(EXPR LIBLENGTH "${LIBLENGTH}-1")
+foreach(IDX RANGE 0 ${LIBLENGTH})
+  list(GET LIBDIR_NAME ${IDX} _LIB_DIR)
+  list(GET LIB_NAME ${IDX} _LIB_NAME)
+  message("Compiling ${IDX}th library: ${_LIB_DIR}==>${_LIB_NAME}")
+  file(MAKE_DIRECTORY ${_LIB_DIR}/build)
+  add_library(${_LIB_NAME} SHARED ${_LIB_DIR}/${_LIB_NAME}.cpp)
+  set_property(TARGET ${_LIB_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(${_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${_LIB_DIR}/build)
+  target_link_libraries(${_LIB_NAME} ${TF_LIB_FILE})
+endforeach(IDX)
+```
+
 ## Troubleshooting
 
 Here are some common errors you might encounter during custom operator compilation:

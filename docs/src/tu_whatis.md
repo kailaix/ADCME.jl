@@ -18,11 +18,59 @@ There are in general two programmatic ways to construct computational graphs: st
 
 ## Automatic Differentiation
 
-(This section can be skipped in the first reading.)
+An important application of computational graphs is automatic differentiation (AD). In general, there are three modes of AD: reverse-mode, forward-mode, and mixed mode. In this tutorial, we focus on the forward-mode and reverse-mode.
 
-An important application of computational graphs is automatic differentiation (AD). In general, there are three modes of AD: reverse-mode, forward-mode, and mixed mode. In this tutorial, we focus on the reverse-mode, which computes the gradients with respect to independent variables by backward propagation, i.e., loop over the edges in reverse topological order starting with a final goal edge. 
+Basically, the forward mode and the reverse mode automatic differenation both use the. chain rule for computing the gradients. They evaluate the gradients of "small" functions analytically (symbolically) and chain all the computed **numerical** gradients via the chain rule
+
+$$\frac{\partial f\circ g (x)}{\partial x} = \frac{\partial f'\circ g(x)}{\partial g} {\frac{\partial g'(x)}{\partial x}}$$
+
+### Forward Mode
+
+In the forward mode, the gradients are computed in the same order as function evaluation, i.e., ${\frac{\partial g'(x)}{\partial x}}$ is computed first, and then $\frac{\partial f'\circ g(x)}{\partial g} {\frac{\partial g'(x)}{\partial x}}$ as a whole. The idea is the same for a computational graph, except that we need to **aggregate** all the gradients from up-streams first, and then **forward** the gradients to down-stream nodes. Here we show how the gradient 
+
+$$f(x) = \begin{bmatrix}
+			x^4\\
+			x^2 + \sin(x) \\
+			-\sin(x)\end{bmatrix}$$
+
+is computed.
+
+| Forward-mode AD in the Computational Graph | Example                       |
+| ------------------------------------------ | ----------------------------- |
+| ![](./assets/fad.png)                      | ![](./assets/forwardmode.png) |
 
 
+
+### Reverse Mode
+
+In contrast, the reverse-mode AD computes the gradient  in the reverse order of forward computation, i.e., $\frac{\partial f'\circ g(x)}{\partial g}$ is first evaluated and then $\frac{\partial f'\circ g(x)}{\partial g} {\frac{\partial g'(x)}{\partial x}}$ as a whole. In the computational graph, each node first aggregate all the gradients from down-streams  and then back-propagates the gradient to upstream nodes.
+
+We show how the gradients of $z = \sin(x_1+x_2) + x_2^2 x_3$ is evaluated. 
+
+
+
+| Reverse-mode AD in the Computational Graph | Step 1                 | Step 2                 | Step 3                 | Step 4                 |
+| ------------------------------------------ | ---------------------- | ---------------------- | ---------------------- | ---------------------- |
+| ![](./assets/rad.png)                      | ![](./assets/bd1.jpeg) | ![](./assets/bd2.jpeg) | ![](./assets/bd3.jpeg) | ![](./assets/bd4.jpeg) |
+
+
+
+## Comparison
+
+Reverse-mode AD reuses gradients from down-streams. Therefore, this mode is useful for many-to-few mappings. In contrast, forward-mode AD reuses gradients from upstreams. This mechanism makes forward-mode AD suitable for few-to-many mappings. Therefore, for inverse modeling problems where the objective function is usually a scalar, reverse-mode AD is most relevant. For uncertainty quantification or sensitivity analysis, the forward-mode AD is most useful. We summarize the two modes in the following table:
+
+For a function $f:\mathbf{R}^n \rightarrow \mathbf{R}^m$
+
+| Mode    | Suitable for... | Complexity[^OPS]               | Application      |
+| ------- | --------------- | ------------------------------ | ---------------- |
+| Forward | $m\gg n$        | $\leq 2.5\;\mathrm{OPS}(f(x))$ | UQ               |
+| Reverse | $m\ll n$        | $\leq 4\;\mathrm{OPS}(f(x))$   | Inverse Modeling |
+
+[^OPS]: See "Margossian CC. A review of automatic differentiation and its efficient implementation. Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery. 2019 Jul;9(4):e1305.".
+
+## A Mathematical Description of Reverse-mode Automatic Differentiation
+
+Because the reverse-mode automatic differentiation is very important for inverse modeling, we devote this section to a rigorious mathematical description of the reverse-mode automatic differentiation. 
 
 To explain how reverse-mode AD works, let's consider constructing a computational graph with independent variables 
 

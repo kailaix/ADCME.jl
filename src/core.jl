@@ -31,10 +31,13 @@ function get_collection(name::Union{String, Missing}=missing)
     if ismissing(name)
         res = tf.compat.v1.get_collection(TRAINABLE_VARIABLES)
     else
-        if !haskey(tf.get_default_graph()._collections, name)
-            res = PyObject[]
-        else
-            res = tf.get_default_graph()._collections[name]
+        res = []
+        vs = tf.compat.v1.get_collection(TRAINABLE_VARIABLES)
+        rname = @eval @r_str $name
+        for v in vs 
+            if occursin(rname, v.name)
+                push!(res, v)
+            end
         end
     end
     return unique(res)

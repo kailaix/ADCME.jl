@@ -32,7 +32,7 @@ function sinkhorn(a::Union{PyObject, Array{Float64}}, b::Union{PyObject, Array{F
         return sk(a,b,M,reg,iter,tol, constant(0))[2]
     elseif method=="lp"
         if !haskey(COLIB, "ot_network")
-            install("OTNetwork")
+            install("OTNetwork", force=true)
         end
         lp = load_system_op("ot_network"; multiple=true)
         if return_optimal
@@ -90,7 +90,7 @@ function dtw(s::Union{PyObject, Array{Float64}}, t::Union{PyObject, Array{Float6
             use_fast::Bool = false)
     use_fast = Int32(use_fast)
     if !haskey(COLIB, "fast_dtw")
-        install("FastDTW")
+        install("FastDTW", force=true)
     end
     dtw_ = load_system_op(COLIB["fast_dtw"]...; multiple=true)
     s,t, use_fast = convert_to_tensor([s,t,use_fast], [Float64,Float64, Int32])

@@ -229,7 +229,7 @@ function Base.:precompile(;force::Bool=false)
     e = 0; c = 0
     for k in ADCME.COLIB
         s = k.second[1]
-        f = compile(s)
+        f = compile(s, force=force)
         f==0 && (c+=1)
         f==2 && (e+=1)
     end

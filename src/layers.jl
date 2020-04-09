@@ -76,7 +76,7 @@ function fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1},
     θ::Union{Array{Float64,1}, PyObject};
     activation::String = "tanh")
     if !haskey(COLIB, "extended_nn")
-        install("ExtendedNN")
+        install("ExtendedNN", force=true)
     end
     extended_nn_ = load_system_op(COLIB["extended_nn"]...; multiple=true)
     config = [size(x,2);output_dims]
@@ -176,6 +176,26 @@ function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::U
         net = squeeze(net)
     end
     return net
+end
+
+function ae(x::Union{Array{Float64}, PyObject}, 
+    output_dims::Array{Int64}, 
+    θ::Union{Array{Array{Float64}}, Array{PyObject}};
+    activation::Union{Function,String} = "tanh")
+    if isa(θ, Array{Array{Float64}})
+        val = []
+        for t in θ
+            push!(val, θ'[:])
+        end
+        val = vcat(val...)
+    else
+        val = []
+        for t in θ
+            push!(val, reshape(θ, (-1,)))
+        end
+        vcat(val...)
+    end
+    ae(x, output_dims, θ, activation=activation)
 end
 
 
