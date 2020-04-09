@@ -93,7 +93,7 @@ end
 tf = pyimport("tensorflow")
 if haskey(ENV, "GPU");enable_gpu();end
 
-core_path = joinpath(splitdir(tf.__file__)[1], "../tensorflow_core")
+core_path = joinpath(tf.sysconfig.get_compile_flags()[1][3:end], "..")
 lib = readdir(core_path)
 tflib = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[1]])
 surfix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
