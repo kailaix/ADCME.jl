@@ -1,7 +1,6 @@
 export
 reset_default_graph,
 get_collection,
-add_collection,
 enable_eager_execution,
 control_dependencies,
 has_gpu,
@@ -28,6 +27,9 @@ reset_default_graph() = tf.compat.v1.reset_default_graph()
 Returns the collection with name `name`. If `name` is `missing`, returns all the trainable variables.
 """
 function get_collection(name::Union{String, Missing}=missing)
+    if name in [TRAINABLE_VARIABLES, UPDATE_OPS]
+        return tf.compat.v1.get_collection(name)
+    end
     if ismissing(name)
         res = tf.compat.v1.get_collection(TRAINABLE_VARIABLES)
     else
@@ -43,27 +45,6 @@ function get_collection(name::Union{String, Missing}=missing)
     return unique(res)
 end
 
-"""
-    add_collection(name::String, v::PyObject)
-
-Adds `v` to the collection with name `name`. If `name` does not exist, a new one is created.
-"""
-function add_collection(name::String, v::PyObject)
-    tf.get_default_graph().add_to_collection(name, v)
-    nothing
-end
-
-"""
-    add_collection(name::String, vs::PyObject...)
-
-Adds operators `vs` to the collection with name `name`. If `name` does not exist, a new one is created.
-"""
-function add_collection(name::String, vs::PyObject...)
-    for v in vs
-        add_collection(name, v)
-    end
-    nothing
-end
 
 """
     tensor(s::String)

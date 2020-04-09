@@ -108,11 +108,9 @@ end
 end
 
 @testset "get and add collection" begin
-    a = constant(ones(10))
+    a = Variable(ones(10), name="my_collect1")
     b = 2a 
-    add_collection("my_collect", a)
-    add_collection("my_collect", a, b)
-    @test get_collection("my_collect")==[a,b]
+    @test get_collection("my_collect")==[a]
 end
 
 @testset "has_gpu" begin

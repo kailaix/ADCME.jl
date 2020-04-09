@@ -37,7 +37,7 @@ GIT = "LibGit2"
 
 
 @info "Install CONDA dependencies..."
-for pkg in ["make", "cmake", "tensorflow=1.14", "tensorflow-probability=0.7",
+for pkg in ["make", "cmake", "tensorflow=1.15", "tensorflow-probability=0.7",
             "matplotlib"]
     if split(pkg,"=")[1] in pkgs; continue; end 
     Conda.add(pkg)
@@ -49,7 +49,7 @@ function enable_gpu()
     pkgs = Conda._installed_packages()
 
     if !("tensorflow-gpu" in pkgs)
-        Conda.add("tensorflow-gpu=1.14")
+        Conda.add("tensorflow-gpu=1.15")
     end
     
     if !("cudatoolkit" in pkgs)
@@ -93,8 +93,9 @@ end
 tf = pyimport("tensorflow")
 if haskey(ENV, "GPU");enable_gpu();end
 
-lib = readdir(splitdir(tf.__file__)[1])
-tflib = joinpath(splitdir(tf.__file__)[1],lib[findall(occursin.("libtensorflow_framework", lib))[1]])
+core_path = joinpath(splitdir(tf.__file__)[1], "../tensorflow_core")
+lib = readdir(core_path)
+tflib = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[1]])
 surfix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
 if !isfile(joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix"))
     @info "making symbolic link to libtensorflow_framework"
