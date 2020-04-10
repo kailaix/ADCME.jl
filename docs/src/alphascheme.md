@@ -10,7 +10,27 @@ whose discretization form is
 
 $$M\mathbf{a} + C\mathbf v + K \mathbf d = \mathbf F$$
 
-where $M$, $C$ and $K$ are the generalized mass, damping, and stiffness matrices, $\mathbf a$, $\mathbf v$, and $\mathbf d$ are the generalized acceleration, velocity, and displacement, and $\mathbf F$ is the generalized force vector. The generalized $\alpha$ scheme solves for a discrete time step
+Here $M$, $C$ and $K$ are the generalized mass, damping, and stiffness matrices, $\mathbf a$, $\mathbf v$, and $\mathbf d$ are the generalized acceleration, velocity, and displacement, and $\mathbf F$ is the generalized force vector. 
+
+
+
+There are two types of boundary conditions
+
+* Dirichlet (essential) boundary condition. In this case, the displacement $\mathbf{u}$ is specified at a point $\mathbf{x}_0$
+
+$$\mathbf{u}(\mathbf{x}_0, t) = \mathbf{h}(t)$$
+
+This boundary condition usually requires updating matrices $M$, $C$ and $K$ at each time step. 
+
+* Essential boundry condition. In this case the external force is specified
+
+$${\sigma}(\mathbf{x})\mathbf{n}(\mathbf{x}) = \mathbf{t}(\mathbf{x})$$
+
+This term goes directly into $\mathbf{F}$. 
+
+
+
+The generalized $\alpha$ scheme solves for a discrete time step
 
 $$\begin{aligned}
 \mathbf d_{n+1} &= \mathbf d_n + h\mathbf v_n + h^2 \left(\left(\frac{1}{2}-\beta_2 \right)\mathbf a_n + \beta_2 \mathbf a_{n+1}  \right)\\
