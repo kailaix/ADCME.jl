@@ -63,14 +63,16 @@ Dropout(args...;kwargs...) = tf.keras.layers.Dropout(args...;kwargs...)
 
 Creates a fully connected neural network with output dimension `o` and inputs $x\in \mathbb{R}^{m\times n}$. 
 
-$$n \rightarrow o_1 \rightarrow o_2 \rightarrow \ldots \rightarrow o_k$$
+$$x \rightarrow o_1 \rightarrow o_2 \rightarrow \ldots \rightarrow o_k$$
 
 `θ` is the weights and biases of the neural network, e.g., `θ = ae_init(output_dims)`.
 
 `fc` outputs two tensors:
 
-- $u\in \mathbb{R}^{m\times o_k}$, the output of the neural network 
-- $\partial u\in \mathbb{R}^{m \times o_k \times n}$, the sensitivity of the neural network per sample.
+- the output of the neural network: $u\in \mathbb{R}^{m\times o_k}$.
+
+- the sensitivity of the neural network per sample: $\frac{\partial u}{\partial x}\in \mathbb{R}^{m \times o_k \times n}$
+
 """
 function fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
     θ::Union{Array{Float64,1}, PyObject};

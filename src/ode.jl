@@ -158,18 +158,18 @@ See [Generalized α Scheme](https://kailaix.github.io/ADCME.jl/dev/alphascheme/)
 function αscheme(M::Union{SparseTensor, SparseMatrixCSC}, 
                       C::Union{SparseTensor, SparseMatrixCSC}, 
                       K::Union{SparseTensor, SparseMatrixCSC}, 
-                      Force::Union{Array{Float64}, PyObject}, 
+                      Force::Union{Array{Float64, 2}, PyObject}, 
                       d0::Union{Array{Float64, 1}, PyObject}, 
                       v0::Union{Array{Float64, 1}, PyObject}, 
                       a0::Union{Array{Float64, 1}, PyObject}, 
-                      Δt::Array{Float64}; 
+                      Δt::Array{Float64, 1}; 
                       solve::Union{Missing, Function} = missing,
                       extsolve::Union{Missing, Function} = missing, 
                       ρ::Float64 = 1.0)
     if !ismissing(solve) && !ismissing(extsolve)
         error("You cannot provide `solve` and `extsolve` at the same time.")
     end
-    n = length(Δt)
+    nt = length(Δt)
     αm = (2ρ-1)/(ρ+1)
     αf = ρ/(1+ρ)
     γ = 1/2-αm+αf 
@@ -202,7 +202,7 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
     end
 
     function condition(i, tas...)
-        return i<=n
+        return i<=nt
     end
     function body(i, tas...)
         dc_arr, vc_arr, ac_arr = tas
@@ -215,13 +215,13 @@ function αscheme(M::Union{SparseTensor, SparseMatrixCSC},
         i+1, write(dc_arr, i+1, dn), write(vc_arr, i+1, vn), write(ac_arr, i+1, y)
     end
 
-    dM = TensorArray(n+1); vM = TensorArray(n+1); aM = TensorArray(n+1)
+    dM = TensorArray(nt+1); vM = TensorArray(nt+1); aM = TensorArray(nt+1)
     dM = write(dM, 1, d0)
     vM = write(vM, 1, v0)
     aM = write(aM, 1, a0)
     i = constant(1, dtype=Int32)
     _, d, v, a = while_loop(condition, body, [i,dM, vM, aM])
-    set_shape(stack(d), (n+1, length(d0))), set_shape(stack(v), (n+1, length(v0))), set_shape(stack(a), (n+1, length(a0)))
+    set_shape(stack(d), (nt+1, length(d0))), set_shape(stack(v), (nt+1, length(v0))), set_shape(stack(a), (nt+1, length(a0)))
 end
 
 
