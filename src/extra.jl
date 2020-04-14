@@ -385,7 +385,16 @@ function install_adept()
     cd("Adept-2")
     try
         if !isdir("adept/.libs")
-            run(`autoreconf -i`)
+            autoconf = joinpath(BINDIR, "autoreconf")
+            if !isfile(autoconf)
+                try 
+                    autoreconf = strip(read(pipeline(`which autoreconf`), String))
+                catch
+                    Conda.add("autoconf", channel="conda-forge")
+                    autoconf = joinpath(BINDIR, "autoreconf")
+                end
+            end
+            run(`$autoreconf -i`)
             run(`./configure`)
             run(`$MAKE`)
             run(`$MAKE check`)
@@ -395,7 +404,8 @@ function install_adept()
         printstyled("Compliation failed", color=:red)
     finally
         cd(PWD)
-        printstyled("""∘ Add the following lines to CMakeLists.txt 
+        printstyled("""
+∘ Add the following lines to CMakeLists.txt 
 
 include_directories(\${LIBDIR}/Adept-2/include)
 link_directories(\${LIBDIR}/Adept-2/adept/.libs)

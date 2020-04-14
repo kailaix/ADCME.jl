@@ -12,6 +12,7 @@ module ADCME
     using Random
     using LinearAlgebra
     import Optim
+    import Conda
     using SparseArrays
     using LibGit2
 
