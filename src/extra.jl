@@ -386,7 +386,7 @@ function install_adept()
     try
         if !isdir("adept/.libs")
             AUTORECONF = joinpath(BINDIR, "autoreconf")
-            if !isfile(autoconf)
+            if !isfile(AUTORECONF)
                 try 
                     AUTORECONF = strip(read(pipeline(`which autoreconf`), String))
                 catch
@@ -394,16 +394,18 @@ function install_adept()
                     AUTORECONF = joinpath(BINDIR, "autoreconf")
                 end
             end
-            run(`$AUTORECONF -i`)
-            run(`./configure`)
-            run(`$MAKE`)
-            run(`$MAKE check`)
-            run(`$MAKE install`)
+            ENV_ = copy(ENV)
+            if haskey(ENV_, "LD_LIBRARY_PATH")
+                ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+            else
+                ENV_["LD_LIBRARY_PATH"] = LIBDIR
+            end
+            run(setenv(run(`$AUTORECONF -i`), ENV_))
+            run(setenv(run(`./configure`), ENV_))
+            run(setenv(run(`$MAKE`), ENV_))
+            run(setenv(run(`$MAKE check`), ENV_))
+            run(setenv(run(`$MAKE install`), ENV_))
         end
-    catch
-        printstyled("Compliation failed", color=:red)
-    finally
-        cd(PWD)
         printstyled("""
 ∘ Add the following lines to CMakeLists.txt 
 
@@ -412,6 +414,10 @@ link_directories(\${LIBDIR}/Adept-2/adept/.libs)
 
 ∘ Add `adept` to `target_link_libraries`
 """, color=:green)
+    catch
+        printstyled("Compliation failed\n", color=:red)
+    finally
+        cd(PWD)
     end
 end
 
