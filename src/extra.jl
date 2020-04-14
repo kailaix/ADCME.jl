@@ -385,16 +385,16 @@ function install_adept()
     cd("Adept-2")
     try
         if !isdir("adept/.libs")
-            autoconf = joinpath(BINDIR, "autoreconf")
+            AUTORECONF = joinpath(BINDIR, "autoreconf")
             if !isfile(autoconf)
                 try 
-                    autoreconf = strip(read(pipeline(`which autoreconf`), String))
+                    AUTORECONF = strip(read(pipeline(`which autoreconf`), String))
                 catch
                     Conda.add("autoconf", channel="conda-forge")
-                    autoconf = joinpath(BINDIR, "autoreconf")
+                    AUTORECONF = joinpath(BINDIR, "autoreconf")
                 end
             end
-            run(`$autoreconf -i`)
+            run(`$AUTORECONF -i`)
             run(`./configure`)
             run(`$MAKE`)
             run(`$MAKE check`)
