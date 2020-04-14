@@ -5,6 +5,15 @@ export SparseTensor, SparseAssembler,
 spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols,
 factorize, solve
 
+"""
+    SparseTensor
+
+A sparse matrix object. It has two fields 
+
+- `o`: internal data structure 
+
+- `_diag`: `true` if the sparse matrix is marked as "diagonal".
+"""
 mutable struct SparseTensor
     o::PyObject
     _diag::Bool

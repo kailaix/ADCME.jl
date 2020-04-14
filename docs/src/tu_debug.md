@@ -47,11 +47,6 @@ Below shows an example of profiling results.
 
 ![](./assets/profile.png)
 
-## Save and Load Python Object
-```@docs
-psave
-pload
-```
 
 ## Save and Load Diary
 

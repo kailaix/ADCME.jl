@@ -146,7 +146,11 @@ We can see that the complexity of the back-propagation is bounded by that of the
 
 As a concrete example, we consider the example of evaluating $\frac{dz(x_1,x_2,x_3)}{dx_i}$, where $z = \sin(x_1+x_2) + x_2^2x_3$. The gradients are  backward propagated exactly in the reverse order of the forward propagation. 
 
-![](./assets/bd.jpeg)
+| Step 1                 | Step 2                 | Step 3                 | Step 4                 |
+| ---------------------- | ---------------------- | ---------------------- | ---------------------- |
+| ![](./assets/bd1.jpeg) | ![](./assets/bd2.jpeg) | ![](./assets/bd3.jpeg) | ![](./assets/bd4.jpeg) |
+
+
 
 ## TensorFlow
 
