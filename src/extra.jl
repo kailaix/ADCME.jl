@@ -433,6 +433,16 @@ function install_adept(force::Bool=false)
     cd("Adept-2/adept")
     if !("openblas" in Conda._installed_packages())
         Conda.add("openblas", channel="anaconda")
+
+        required_file = Sys.isapple() ? ".dylib" : (Sys.islinux() ? ".so" : ".dll")
+        required_file = joinpath(ADCME.LIBDIR, "libopenblas")*required_file
+        if !isfile(required_file)
+            files = readdir(ADCME.LIBDIR)
+            files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
+            target = joinpath(ADCME.LIBDIR, files[1])
+            symlink(target, required_file)
+            @info "Symlink $(required_file) --> $(files[1])"
+        end
     end
     try
         if force==true 
