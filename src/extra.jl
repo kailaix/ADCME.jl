@@ -246,10 +246,25 @@ function Base.:precompile(force::Bool=true)
     try
         run(`which julia`)
     catch
-        error("""julia cannot be found using `which julia`. This will break custom operator.
-To fix the error, add the julia binary path to your PATH environment variable.""")
+        printstyled(
+"""Julia cannot be found using `which julia`. This will break custom operator.
+To fix the error, add the julia binary path to your PATH environment variable:
+
+export PATH=$(Sys.BINDIR):\$PATH
+
+""",
+        color=:red)
+        error("Waiting for fixing the Julia binary path.")
     end 
 
+    if !(ADCME.LIBDIR in split(ENV["LD_LIBRARY_PATH"], ':'))
+        @warn "$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH; this may break the custom operator utilties.
+You could add the path to LD_LIBRARY_PATH:
+
+export LD_LIBRARY_PATH = $(ADCME.LIBDIR):\$LD_LIBRARY_PATH
+
+"
+    end
     PWD = pwd()
     if (!force) && isfile("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt") && 
             isdir("$(@__DIR__)/../deps/CustomOps/build")
