@@ -51,3 +51,33 @@ using ADCME;
 print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
 ```
 
+**Quick Overview**
+
+Let's consider a simple problem: we want to solve the unconstrained optimization problem
+
+$$f(\mathbf{x}) = \sum_{i=1}^{n-1}\left[ 100(x_{i+1}-x_i^2) + (1-x_i)^2 \right]$$
+
+where $x_i\in [-10,10]$ and $n=100$. 
+
+We solve the problem using the L-BFGS-B method. 
+
+```julia
+using ADCME
+n = 100
+x = Variable(rand(n)) # Use `Variable` to mark the quantity that gets updated in optimization
+f = sum(100((x[2:end]-x[1:end-1])^2 + (1-x[1:end-1])^2)) # Use typical Julia syntax 
+sess = Session(); init(sess) # Create and initialize a session is mandatory for activating the computational graph
+BFGS!(sess, f, var_to_bounds = Dict(x=>[-10.,10.]))
+```
+
+To get the value of $\mathbf{x}$, we use [`run`](@ref) to extract the values 
+
+```julia
+run(sess, x)
+```
+
+The above command will return a value close to  the optimal values $\mathbf{x} = [1\ 1\ \ldots\ 1]$. 
+
+**Contributing**
+
+Contribution and suggestions are always welcome. In addition, we are also looking for research collaborations. You can submit issues for suggestions, questions, bugs, and feature requests, or submit pull requests to contribute directly. You can also contact the authors for research collaboration. 
