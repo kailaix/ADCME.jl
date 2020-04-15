@@ -44,7 +44,7 @@ for pkg in ["make", "cmake", "tensorflow=1.15", "tensorflow-probability=0.7",
     if occursin("=", pkg)
         p = split(pkg,"=")[1]
         v = split(pkg,"=")[2]
-        if occursin(v, string(pkgs_dict[p][1]))
+        if haskey(pkgs_dict, p) && occursin(v, string(pkgs_dict[p][1]))
             continue
         end
     end
