@@ -9,6 +9,7 @@ using Test
 
 sess = Session()
 
+include("layers.jl")
 include("sparse.jl")
 include("random.jl")
 include("io.jl")
@@ -20,4 +21,4 @@ include("newton.jl")
 include("optim.jl")
 include("ot.jl")
 include("ode.jl")
-include("layers.jl")
+

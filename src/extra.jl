@@ -238,16 +238,32 @@ function compile(s::String; force::Bool=false, customdir::Bool = false)
 end
 
 """
-    precompile()
+    precompile(force::Bool=true)
 
-Compiles all the operators in `formulas.txt`. Report #succeded, #existed and #failed. 
+Compiles all the operators in `formulas.txt`. 
 """
-function Base.:precompile()
-    refresh_cmake()
+function Base.:precompile(force::Bool=true)
+    try
+        run(`which julia`)
+    catch
+        error("""julia cannot be found using `which julia`. This will break custom operator.
+To fix the error, add the julia binary path to your PATH environment variable.""")
+    end 
+
     PWD = pwd()
+    if (!force) && isfile("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt") && 
+            isdir("$(@__DIR__)/../deps/CustomOps/build")
+        @info "Reuse existing cmake files"
+        PWD = pwd()
+        cd("$(@__DIR__)/../deps/CustomOps/build")
+        ADCME.cmake()
+        ADCME.make()
+        cd(PWD)
+        return 
+    end
+    refresh_cmake()
     cd("$(@__DIR__)/../deps/CustomOps")
-    rm("build", force=true, recursive=true)
-    mkdir("build")
+    !isdir("build") && mkdir("build")
     cd("build")
     ADCME.cmake()
     ADCME.make()
@@ -405,6 +421,7 @@ function install_adept(force::Bool=false)
     end
     try
         if force==true 
+            @info "remove .libs ..."
             rm(".libs", force=true, recursive=true)
         end
         if !isdir(".libs") 
