@@ -372,39 +372,37 @@ function install(s::String; force::Bool = false)
 end
 
 """
-    install_adept()
+    install_adept(force::Bool=false)
 
 Install adept-2 library: https://github.com/rjhogan/Adept-2
 """
-function install_adept()
+function install_adept(force::Bool=false)
     PWD = pwd()
     cd(ADCME.LIBDIR)
     if !isdir("Adept-2")
         LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     end
-    cd("Adept-2")
+    cd("Adept-2/adept")
+    if !("openblas" in Conda._installed_packages())
+        Conda.add("openblas", channel="anaconda")
+    end
     try
-        if !isdir("adept/.libs")
-            AUTORECONF = joinpath(BINDIR, "autoreconf")
-            if !isfile(AUTORECONF)
-                try 
-                    AUTORECONF = strip(read(pipeline(`which autoreconf`), String))
-                catch
-                    Conda.add("autoconf", channel="conda-forge")
-                    AUTORECONF = joinpath(BINDIR, "autoreconf")
-                end
-            end
-            ENV_ = copy(ENV)
-            if haskey(ENV_, "LD_LIBRARY_PATH")
-                ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
-            else
-                ENV_["LD_LIBRARY_PATH"] = LIBDIR
-            end
-            run(setenv(run(`$AUTORECONF -i`), ENV_))
-            run(setenv(run(`./configure`), ENV_))
-            run(setenv(run(`$MAKE`), ENV_))
-            run(setenv(run(`$MAKE check`), ENV_))
-            run(setenv(run(`$MAKE install`), ENV_))
+        if force==true 
+            rm(".libs", force=true, recursive=true)
+        end
+        if !isdir(".libs")
+            @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
+            cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
+            @info """Remove $(joinpath(pwd(), "build")) ... """
+            rm("build", force=true, recursive=true)
+            @info "Make $(joinpath(pwd(), "build")) ... "
+            mkdir("build")
+            @info "Change directory into $(joinpath(pwd(), "build")) ... "
+            cd("build")
+            @info "Cmake ... "
+            ADCME.cmake()
+            @info "Make ... "
+            ADCME.make()
         end
         printstyled("""
 ∘ Add the following lines to CMakeLists.txt 
