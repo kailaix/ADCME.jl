@@ -46,6 +46,10 @@ function make()
     run(setenv(`$MAKE -j`, ENV_))
 end
 
+function clean()
+    run(`$MAKE clean`)
+end
+
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
@@ -156,7 +160,7 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
     # @show libfile
     if !isfile(libfile)
         @info "Lib $s exists in registery but was not initialized. Compiling..."
-        compile(s)
+        ADCME.precompile()
     end
     if return_str
         return oplibpath
@@ -226,15 +230,17 @@ end
 Compiles all the operators in `formulas.txt`. Report #succeded, #existed and #failed. 
 """
 function Base.:precompile(;force::Bool=false)
-    e = 0; c = 0
-    for k in ADCME.COLIB
-        s = k.second[1]
-        f = compile(s, force=force)
-        f==0 && (c+=1)
-        f==2 && (e+=1)
-    end
-    printstyled("Total | Existed | Compiled | Failed\n", color=:green)
-    printstyled("$(length(ADCME.COLIB))    |    $e   |    $c    |    $(length(ADCME.COLIB)-e-c)", color=:green)
+    if !force && isdir("$(@__DIR__)/../deps/CustomOps/build")
+        return 
+    end 
+    PWD = pwd()
+    cd("$(@__DIR__)/../deps/CustomOps")
+    rm("build", force=true, recursive=true)
+    mkdir("build")
+    cd("build")
+    ADCME.cmake()
+    ADCME.make()
+    cd(PWD)
 end
 
 """
@@ -390,7 +396,7 @@ function install_adept(force::Bool=false)
         if force==true 
             rm(".libs", force=true, recursive=true)
         end
-        if !isdir(".libs")
+        if !isdir(".libs") 
             @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
             cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
             @info """Remove $(joinpath(pwd(), "build")) ... """
