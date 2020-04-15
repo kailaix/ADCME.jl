@@ -37,8 +37,7 @@ link_directories(${TF_LIB})
 
 
 
-set(LIBDIR_NAME OT/SinkhornKnopp SparseAccumulate SparseConcate SparseFactorizationSolve
-    SparseIndexing SparseLeastSquare SparseMatMul SparseScatterUpdate SparseSolver)
+set(LIBDIR_NAME )
 
 # Copy and paste the following lines (no modification is required)
 list(LENGTH "LIBDIR_NAME" LIBLENGTH)

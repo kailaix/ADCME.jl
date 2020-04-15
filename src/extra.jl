@@ -135,6 +135,19 @@ end
         return s
 end
 
+function refresh_cmake()
+    NEWLIB = String[]
+    for c in COLIB
+        push!(NEWLIB, c.second[1])
+    end
+    NEWLIB = unique(NEWLIB)
+    cmakecnt = read(joinpath(@__DIR__, "../deps/CustomOps/CMakeListsTemplate.txt"),String)
+    cmakecnt = replace(cmakecnt, "set(LIBDIR_NAME"=>"set(LIBDIR_NAME "*join(NEWLIB, ' '))
+    open(joinpath(@__DIR__, "../deps/CustomOps/CMakeLists.txt"), "w") do io 
+        write(io, cmakecnt)
+    end
+end
+
 """
     load_system_op(s::String, oplib::String, grad::Bool=true)
 
@@ -225,14 +238,12 @@ function compile(s::String; force::Bool=false, customdir::Bool = false)
 end
 
 """
-    precompile(;force::Bool=false)
+    precompile()
 
 Compiles all the operators in `formulas.txt`. Report #succeded, #existed and #failed. 
 """
-function Base.:precompile(;force::Bool=false)
-    if !force && isdir("$(@__DIR__)/../deps/CustomOps/build")
-        return 
-    end 
+function Base.:precompile()
+    refresh_cmake()
     PWD = pwd()
     cd("$(@__DIR__)/../deps/CustomOps")
     rm("build", force=true, recursive=true)

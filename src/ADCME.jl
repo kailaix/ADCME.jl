@@ -43,6 +43,7 @@ module ADCME
         Options() = new(OptionsSparse())
     end
     options = Options()
+
         
     function __init__()
         # install_custom_op_dependency() # always install dependencies
@@ -65,6 +66,7 @@ module ADCME
         for c in colibs
             push!(COLIB, c)
         end
+        
         if isfile("$(@__DIR__)/../deps/CustomOps/formulas.jl")
             colibs = include("$(@__DIR__)/../deps/CustomOps/formulas.jl")
             for c in colibs
