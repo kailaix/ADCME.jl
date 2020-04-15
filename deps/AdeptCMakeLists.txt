@@ -33,6 +33,8 @@ file(GLOB ALLSRC
 )
 
 add_library(adept SHARED ${ALLSRC})
+add_definitions(-DHAVE_BLAS)
+
 set_property(TARGET adept PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(adept openblas)
 set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR}/Adept-2/adept/.libs)
