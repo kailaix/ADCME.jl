@@ -78,6 +78,7 @@ function fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1},
     θ::Union{Array{Float64,1}, PyObject};
     activation::String = "tanh")
     if !haskey(COLIB, "extended_nn")
+        install_adept()
         install("ExtendedNN", force=true)
     end
     extended_nn_ = load_system_op(COLIB["extended_nn"]...; multiple=true)
