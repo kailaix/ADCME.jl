@@ -28,7 +28,8 @@ easy_get = pkg->begin
     end
 end
 
-pkgs = Conda._installed_packages()
+pkgs_dict = Conda._installed_packages_dict()
+pkgs = collect(keys(pkgs_dict))
 
 @info "Install binaries"
 ZIP = easy_get("zip")
@@ -39,7 +40,14 @@ GIT = "LibGit2"
 @info "Install CONDA dependencies..."
 for pkg in ["make", "cmake", "tensorflow=1.15", "tensorflow-probability=0.7",
             "matplotlib"]
-    if split(pkg,"=")[1] in pkgs; continue; end 
+    if pkg in pkgs; continue; end 
+    if occursin("=", pkg)
+        p = split(pkg,"=")[1]
+        v = split(pkg,"=")[2]
+        if occursin(v, string(pkgs_dict[p][1]))
+            continue
+        end
+    end
     Conda.add(pkg)
 end
 !("hdf5" in pkgs) && Conda.add("hdf5", channel="anaconda")

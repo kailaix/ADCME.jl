@@ -31,9 +31,9 @@ Start building your forward and inverse modeling using ADCME today!
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [![](https://img.shields.io/badge/-Documentation-blue)](https://kailaix.github.io/ADCME.jl/dev) | [![](https://img.shields.io/badge/-Tutorial-green)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
 
-## Why graph mode TensorFlow?
+## Graph-mode TensorFlow for High Performance Scientific Computing
 
-Static computational graph enables compilation time optimization. Below is a benchmark of common AD software from [here](https://github.com/microsoft/ADBench). In inverse modeling, we usually have a scalar-valued objective function, so the left panel is most relevant for ADCME. 
+Static computational graph (graph-mode AD) enables compilation time optimization. Below is a benchmark of common AD software from [here](https://github.com/microsoft/ADBench). In inverse modeling, we usually have a scalar-valued objective function, so the left panel is most relevant for ADCME. 
 
 ![](https://raw.githubusercontent.com/microsoft/ADBench/master/Documents/figs/2020_Jan.png)
 
