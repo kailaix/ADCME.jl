@@ -30,6 +30,19 @@ except Exception:
 
 This Python script can be inserted to Julia and use interpolation to invoke Julia functions (in the comment line).
 
+As an application, we can use this trick to debug "NotFoundError" for custom operators
+```julia
+using ADCME, PyCall
+py"""
+import tensorflow as tf
+import traceback
+try:
+    tf.load_op_library("../libMyOp.so")
+except Exception:
+    print(traceback.format_exc())
+"""
+```
+
 ## Profiling
 
 Profiling can be done with the help of [`run_profile`](@ref) and [`save_profile`](@ref)

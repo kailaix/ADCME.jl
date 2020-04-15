@@ -445,6 +445,8 @@ include_directories(\${LIBDIR}/Adept-2/include)
 link_directories(\${LIBDIR}/Adept-2/adept/.libs)
 
 ∘ Add `adept` to `target_link_libraries`
+
+∘ Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
 """, color=:green)
     catch
         printstyled("Compliation failed\n", color=:red)
