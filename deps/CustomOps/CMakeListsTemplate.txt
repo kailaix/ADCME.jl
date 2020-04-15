@@ -35,7 +35,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC})
 link_directories(${TF_LIB})
 
-
+include_directories(${LIBDIR}/Adept-2/include)
+IF(EXISTS ${LIBDIR}/Adept-2/adept/.libs)
+  link_directories(${LIBDIR}/Adept-2/adept/.libs)
+ENDIF()
 
 set(LIBDIR_NAME )
 
