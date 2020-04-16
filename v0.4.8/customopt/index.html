@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Custom Optimizer · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li class="is-active"><a class="tocitem" href>Custom Optimizer</a><ul class="internal"><li><a class="tocitem" href="#Ipopt-Custom-Optimizer-1"><span>Ipopt Custom Optimizer</span></a></li><li><a class="tocitem" href="#NLopt-Custom-Optimizer-1"><span>NLopt Custom Optimizer</span></a></li><li><a class="tocitem" href="#Drop-in-Substitutes-of-BFGS!-1"><span>Drop-in Substitutes of <code>BFGS!</code></span></a></li></ul></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Resources</a></li><li class="is-active"><a href>Custom Optimizer</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Custom Optimizer</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/customopt.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Custom-Optimizer-1"><a class="docs-heading-anchor" href="#Custom-Optimizer-1">Custom Optimizer</a><a class="docs-heading-anchor-permalink" href="#Custom-Optimizer-1" title="Permalink"></a></h1><p>In this article, we describe how to make your custom optimizer</p><article class="docstring"><header><a class="docstring-binding" id="ADCME.CustomOptimizer" href="#ADCME.CustomOptimizer"><code>ADCME.CustomOptimizer</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">CustomOptimizer(opt::Function, name::String)</code></pre><p>creates a custom optimizer with struct name <code>name</code>. For example, we can integrate <code>Optim.jl</code> with <code>ADCME</code> by  constructing a new optimizer</p><pre><code class="language-julia">CustomOptimizer(&quot;Con&quot;) do f, df, c, dc, x0, x_L, x_U
+    opt = Opt(:LD_MMA, length(x0))
+    bd = zeros(length(x0)); bd[end-1:end] = [-Inf, 0.0]
+    opt.lower_bounds = bd
+    opt.xtol_rel = 1e-4
+    opt.min_objective = (x,g)-&gt;(g[:]= df(x); return f(x)[1])
+    inequality_constraint!(opt, (x,g)-&gt;( g[:]= dc(x);c(x)[1]), 1e-8)
+    (minf,minx,ret) = NLopt.optimize(opt, x0)
+    minx
+end</code></pre><p>Here</p><p>∘ <code>f</code>: a function that returns <span>$f(x)$</span></p><p>∘ <code>df</code>: a function that returns <span>$\nabla f(x)$</span></p><p>∘ <code>c</code>: a function that returns the constraints <span>$c(x)$</span></p><p>∘ <code>dc</code>: a function that returns <span>$\nabla c(x)$</span></p><p>∘ <code>x0</code>: initial guess</p><p>∘ <code>nineq</code>: number of inequality constraints</p><p>∘ <code>neq</code>: number of equality constraints</p><p>∘ <code>x_L</code>: lower bounds of optimizable variables</p><p>∘ <code>x_U</code>: upper bounds of optimizable variables</p><p>Then we can create an optimizer with </p><pre><code class="language-none">opt = Con(loss, inequalities=[c1], equalities=[c2])</code></pre><p>To trigger the optimization, use</p><pre><code class="language-none">minimize(opt, sess)</code></pre><p>Note thanks to the global variable scope of Julia, <code>step_callback</code>, <code>optimizer_kwargs</code> can actually  be passed from Julia environment directly.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/kailaix/ADCME.jl/blob/892bd7dc10ecf51b63d6af14536431fc71497e2a/src/optim.jl#L72-L120">source</a></section></article><p>We will show here a few examples of custom optimizer. These examples can be cast to your specific applications. </p><h2 id="Ipopt-Custom-Optimizer-1"><a class="docs-heading-anchor" href="#Ipopt-Custom-Optimizer-1">Ipopt Custom Optimizer</a><a class="docs-heading-anchor-permalink" href="#Ipopt-Custom-Optimizer-1" title="Permalink"></a></h2><p>For a concrete example, let us consider using <a href="https://github.com/JuliaOpt/Ipopt.jl">Ipopt</a> as a constrained optimization optimizer. </p><pre><code class="language-julia">using Ipopt
+using ADCME
+
+IPOPT = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U
+    n_variables = length(x0)
+    nz = length(dc(x0)) 
+  	m = div(nz, n_variables) # Number of constraints
+    g_L, g_U = [-Inf;-Inf], [0.0;0.0]
+    function eval_jac_g(x, mode, rows, cols, values)
+        if mode == :Structure
+            rows[1] = 1; cols[1] = 1
+            rows[2] = 1; cols[2] = 1
+            rows[3] = 2; cols[3] = 1
+            rows[4] = 2; cols[4] = 1
+        else
+            values[:]=dc(x)
+        end
+    end
+  
+    nele_jac = 0 # Number of non-zeros in Jacobian
+    prob = Ipopt.createProblem(n_variables, x_L, x_U, m, g_L, g_U, nz, nele_jac,
+            f, (x,g)-&gt;(g[:]=c(x)), (x,g)-&gt;(g[:]=df(x)), eval_jac_g, nothing)
+    addOption(prob, &quot;hessian_approximation&quot;, &quot;limited-memory&quot;)
+    addOption(prob, &quot;max_iter&quot;, 100)
+  	addOption(prob, &quot;print_level&quot;, 2) # 0 -- 15, the larger the number, the more detailed the information
+
+    prob.x = x0
+    status = Ipopt.solveProblem(prob)
+    println(Ipopt.ApplicationReturnStatus[status])
+    println(prob.x)
+    prob.x
+end
+
+reset_default_graph() # be sure to reset graph before any optimization
+x = Variable([1.0;1.0])
+x1 = x[1]; x2 = x[2]; 
+loss = x2
+g = x1
+h = x1*x1 + x2*x2 - 1
+opt = IPOPT(loss, inequalities=[g], equalities=[h], var_to_bounds=Dict(x=&gt;(-1.0,1.0)))
+sess = Session(); init(sess)
+minimize(opt, sess)</code></pre><p>Here is a detailed description of the code</p><ul><li><code>Ipopt.createProblem</code> has signature</li></ul><pre><code class="language-julia">function createProblem(
+  n::Int,                     # Number of variables
+  x_L::Vector{Float64},       # Variable lower bounds
+  x_U::Vector{Float64},       # Variable upper bounds
+  m::Int,                     # Number of constraints
+  g_L::Vector{Float64},       # Constraint lower bounds
+  g_U::Vector{Float64},       # Constraint upper bounds
+  nele_jac::Int,              # Number of non-zeros in Jacobian
+  nele_hess::Int,             # Number of non-zeros in Hessian
+  eval_f,                     # Callback: objective function
+  eval_g,                     # Callback: constraint evaluation
+  eval_grad_f,                # Callback: objective function gradient
+  eval_jac_g,                 # Callback: Jacobian evaluation
+  eval_h = nothing)           # Callback: Hessian evaluation</code></pre><ul><li><p>Typically <span>$\nabla c(x)$</span> is a <span>$m\times n$</span> sparse matrix, where <span>$m$</span> is the number of constraints, <span>$n$</span> is the number of variables. <code>nz = length(dc(x0))</code> computes the number of nonzeros in the Jacobian matrix. </p></li><li><p><code>g_L</code>, <code>g_U</code> specify the constraint lower and upper bounds: <span>$g_L \leq c(x) \leq g_U$</span>. If <span>$g_L=g_U=0$</span>, the constraint is reduced to equality constraint. Each of the parameters should have the same length as the number of variables, i.e., <span>$n$</span></p></li><li><p><code>eval_jac_g</code> has two modes. In the <code>Structure</code> mode, as we mentioned, the constraint <span>$\nabla c(x)$</span> is a sparse matrix, and therefore we should specify the nonzero pattern of the sparse matrix in <code>row</code> and <code>col</code>. However, in our application, we usually assume a dense Jacobian matrix, and therefore, we can always use the following code for <code>Structure</code></p><pre><code class="language-julia">k = 1
+for i = 1:div(nz, n_variables)
+  for j = 1:n_variables
+    rows[k] = i 
+    cols[k] = j
+    k += 1
+  end
+end</code></pre><p>For the other mode, <code>eval_jac_g</code> simply assign values to the array. </p></li><li><p>We can add optimions to the Ipopt optimizer via <code>addOptions</code>. See <a href="https://coin-or.github.io/Ipopt/OPTIONS.html">here</a> for a full list of available options. </p></li><li><p>To add callbacks, you can simply refactor your functions <code>f</code>, <code>df</code>, <code>c</code>, or <code>dc</code>. </p></li></ul><h2 id="NLopt-Custom-Optimizer-1"><a class="docs-heading-anchor" href="#NLopt-Custom-Optimizer-1">NLopt Custom Optimizer</a><a class="docs-heading-anchor-permalink" href="#NLopt-Custom-Optimizer-1" title="Permalink"></a></h2><p>Here is an example of using <a href="https://github.com/JuliaOpt/NLopt.jl">NLopt</a> for optimization. </p><pre><code class="language-julia">using ADCME
+using NLopt
+
+p = ones(10)
+Con = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U 
+    opt = Opt(:LD_MMA, length(x0))
+    opt.upper_bounds = 10ones(length(x0))
+    opt.lower_bounds = zeros(length(x0))
+  	opt.lower_bounds[end-1:end] = [-Inf, 0.0]
+    opt.xtol_rel = 1e-4
+    opt.min_objective = (x,g)-&gt;(g[:]= df(x); return f(x)[1])
+    inequality_constraint!(opt, (x,g)-&gt;( g[:]= dc(x);c(x)[1]), 1e-8)
+    (minf,minx,ret) = NLopt.optimize(opt, x0)
+    minx
+end
+
+reset_default_graph() # be sure to reset the graph before any operation
+x = Variable([1.234; 5.678])
+y = Variable([1.0;2.0])
+loss = x[2]^2 + sum(y^2)
+c1 = (x[1]-1)^2 - x[2] 
+opt = Con(loss, inequalities=[c1])
+sess = Session(); init(sess)
+opt.minimize(sess)
+xmin = run(sess, x) # expected: (1., 0.)</code></pre><p>Here is the detailed explanation</p><ul><li><p>NLopt solver takes the following parameters </p><pre><code class="language-none">algorithm
+stopval # stop minimizing when an objective value ≤ stopval is found
+ftol_rel
+ftol_abs
+xtol_rel
+xtol_abs
+constrtol_abs
+maxeval
+maxtime
+initial_step # a vector, initial step size 
+population
+seed
+vector_storage # number of &quot;remembered gradients&quot; in algorithms such as &quot;quasi-Newton&quot;
+lower_bounds
+upper_bounds</code></pre><p>For a full list of optimization algorithms, see <a href="https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/">NLopt algorithms</a>.</p></li><li><p>You can provide upper and lower bounds either via <code>var_to_bounds</code> or inside <code>CustomOptimizer</code>. </p></li></ul><h2 id="Drop-in-Substitutes-of-BFGS!-1"><a class="docs-heading-anchor" href="#Drop-in-Substitutes-of-BFGS!-1">Drop-in Substitutes of <code>BFGS!</code></a><a class="docs-heading-anchor-permalink" href="#Drop-in-Substitutes-of-BFGS!-1" title="Permalink"></a></h2><h3 id="IPOPT-1"><a class="docs-heading-anchor" href="#IPOPT-1">IPOPT</a><a class="docs-heading-anchor-permalink" href="#IPOPT-1" title="Permalink"></a></h3><p>The following codes are for unconstrained optimizattion of <code>BFGS!</code> optimizer. Copy and execute the following code to have access to <code>IPOPT!</code> function. </p><pre><code class="language-julia">using PyCall
+using Ipopt
+using ADCME
+
+
+function IPOPT!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
+            verbose::Int64=0, vars::Array{PyObject}=PyObject[], 
+                    callback::Union{Function, Nothing}=nothing, kwargs...)
+    losses = Float64[]
+    loss_ = 0
+    cnt_ = -1
+    iter_ = 0
+    IPOPT = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U
+        n_variables = length(x0)
+        nz = length(dc(x0)) 
+        m = div(nz, n_variables) # Number of constraints
+        # g_L, g_U = [-Inf;-Inf], [0.0;0.0]
+        g_L = Float64[]
+        g_U = Float64[]
+        function eval_jac_g(x, mode, rows, cols, values); end
+        function eval_f(x)
+          loss_ = f(x)
+          iter_ += 1
+          if iter_==1
+            push!(losses, loss_)
+            if !isnothing(callback)
+                callback(run(sess, vars), cnt_, loss_)
+            end
+          end
+          println(&quot;iter $iter_, current loss= $loss_&quot;)
+          return loss_
+        end
+
+        function eval_g(x, g)
+          if cnt_&gt;=1
+            push!(losses, loss_)
+            if !isnothing(callback)
+                callback(run(sess, vars), cnt_, loss_)
+            end
+          end
+          cnt_ += 1
+          if cnt_&gt;=1
+            println(&quot;================ ITER $cnt_ ===============&quot;)
+          end
+          g[:]=df(x)
+        end
+      
+        nele_jac = 0 # Number of non-zeros in Jacobian
+        prob = Ipopt.createProblem(n_variables, x_L, x_U, m, g_L, g_U, nz, nele_jac,
+                eval_f, (x,g)-&gt;(), eval_g, eval_jac_g, nothing)
+        addOption(prob, &quot;hessian_approximation&quot;, &quot;limited-memory&quot;)
+        addOption(prob, &quot;max_iter&quot;, max_iter)
+        addOption(prob, &quot;print_level&quot;, verbose) # 0 -- 15, the larger the number, the more detailed the information
+
+        prob.x = x0
+        status = Ipopt.solveProblem(prob)
+        if status == 0
+          printstyled(Ipopt.ApplicationReturnStatus[status],&quot;\n&quot;, color=:green)
+        else 
+          printstyled(Ipopt.ApplicationReturnStatus[status],&quot;\n&quot;, color=:red)
+        end
+        prob.x
+    end
+    opt = IPOPT(loss; kwargs...)
+    minimize(opt, sess)
+    return losses
+end</code></pre><p>The usage is exactly the same as <a href="../api/#ADCME.BFGS!"><code>BFGS!</code></a>. Therefore, you can simply replace <code>BFGS!</code> to <code>Ipopt</code>. For example</p><pre><code class="language-julia">x = Variable(rand(10))
+loss = sum((x-0.6)^2 + (x^2-2x+0.8)^4)
+cb = (vs, i, l)-&gt;println(&quot;$i, $l&quot;)
+sess = Session(); init(sess)
+IPOPT!(sess, loss, vars=[x], callback = cb)</code></pre><h3 id="NLOPT-1"><a class="docs-heading-anchor" href="#NLOPT-1">NLOPT</a><a class="docs-heading-anchor-permalink" href="#NLOPT-1" title="Permalink"></a></h3><p>Likewise, <code>NLOPT!</code> also has the dropin substitute of <code>BFGS!</code></p><pre><code class="language-julia">using ADCME
+using NLopt
+using PyCall
+
+function NLOPT!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
+            algorithm::Union{Symbol, Enum} = :LD_LBFGS, vars::Array{PyObject}=PyObject[], 
+                    callback::Union{Function, Nothing}=nothing, kwargs...)
+    losses = Float64[]
+    iter_ = 0 
+    NLOPT = CustomOptimizer() do f, df, c, dc, x0, x_L, x_U 
+        opt = Opt(algorithm, length(x0))
+        opt.upper_bounds = x_U
+        opt.lower_bounds = x_L
+        opt.maxeval = max_iter
+        opt.min_objective = (x,g)-&gt;begin
+            g[:]= df(x); 
+            iter_ += 1
+            l = f(x)[1]
+            println(&quot;================ ITER $iter_ ===============&quot;)
+            println(&quot;current loss= $l&quot;)
+            push!(losses, l)
+            if !isnothing(callback)
+                callback(run(sess, vars), iter_, l)
+            end
+            return f(x)[1]
+        end
+        (minf,minx,ret) = NLopt.optimize(opt, x0)
+        minx
+    end
+    opt = NLOPT(loss; kwargs...)
+    minimize(opt, sess)
+    return losses
+end</code></pre><p>For example</p><pre><code class="language-julia">x = Variable(rand(10))
+loss = sum((x-0.6)^2 + (x^2-2x+0.8)^4)
+cb = (vs, i, l)-&gt;println(&quot;$i, $l&quot;)
+sess = Session(); init(sess)
+NLOPT!(sess, loss, vars=[x], callback = cb, algorithm = :LD_TNEWTON)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../factorization/">« Direct Methods for Sparse Matrices</a><a class="docs-footer-nextpage" href="../apps/">Overview »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 16 April 2020 01:06">Thursday 16 April 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
