@@ -556,6 +556,7 @@ function newton_raphson_with_grad(func::Function,
         θ = copy(θ)
         args = [copy(z) for z in xargs]
         r, A = f(θ, x, args...)
+        dy = tf.convert_to_tensor(dy)
         g = independent(A'\dy)
         s = sum(r*g)
         gs = [-gradients(s, z) for z in args]

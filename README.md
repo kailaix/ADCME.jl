@@ -115,7 +115,7 @@ julia> gradients(loss, b)
 PyObject <tf.Tensor 'gradients_1/Mul_grad/Reshape:0' shape=() dtype=float64>
 ```
 
-### Function Inverse Problem
+### Function Inverse Problem: Full Field Data
 
 Consider a nonlinear PDE, 
 
@@ -129,7 +129,7 @@ Here `f(x)` can be computed from an analytical solution
 
 ![](./docs/src/assets/readme-eq5.svg)
 
-In this problem, we are given the values of `u(x)` on the grid points and want to estimate the nonparametric function `b(u)`. We approximate `b(u)` using a neural network and use the [residual minimization method](https://kailaix.github.io/ADCME.jl/dev/tu_nn/) to find the optimal weights and biases of the neural network. The minimization problem is given by 
+In this problem, we are given the full field data of `u(x)` (the discrete value of `u(x)` is given on a very fine grid) and want to estimate the nonparametric function `b(u)`. We approximate `b(u)` using a neural network and use the [residual minimization method](https://kailaix.github.io/ADCME.jl/dev/tu_nn/) to find the optimal weights and biases of the neural network. The minimization problem is given by 
 
 ![](./docs/src/assets/readme-eq6.svg)
 
@@ -162,6 +162,65 @@ Here we show the estimated coefficient function and the reference one:
 <p align="center">
   <img src="./docs/src/assets/readmenn.png" style="zoom:50%;" />
 </p>
+
+### Function Inverse Problem: Sparse Data
+
+Now we consider the same problem as above, but only consider we have access to sparse observations. We assume that on the grid only the values of `u(x)` on every other 5th grid point are observable. We use the [physics constrained learning](https://arxiv.org/pdf/2002.10521.pdf) technique and train a neural network surrogate for `b(u)` by minimizing 
+
+![](./docs/src/assets/readme-eq7.svg)
+
+Here `uᶿ` is the solution to 
+
+![](./docs/src/assets/readme-eq8.svg)
+
+
+```julia
+using Revise
+using LinearAlgebra
+using ADCME
+using PyPlot
+
+n = 101 
+h = 1/(n-1)
+x = LinRange(0,1,n)|>collect
+
+u = sin.(π*x)
+f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
+
+function residual_and_jac(θ, x)
+    nn = squeeze(ae(reshape(x,:,1), [20,20,1], θ)) + 1.0
+    u_full = vector(2:n-1, x, n)
+    res = -nn.*(u_full[3:end]+u_full[1:end-2]-2u_full[2:end-1])/h^2 + u_full[2:end-1] - f[2:end-1]
+    J = gradients(res, x)
+    @info res, J 
+    res, J
+end
+
+θ = Variable(ae_init([1,20,20,1]))
+u_est = newton_raphson_with_grad(residual_and_jac, constant(zeros(n-2)),θ;
+             options=Dict("tol"=>1e-4, "rtol"=>1e-4))
+residual = u_est[1:5:end] - u[2:end-1][1:5:end]
+loss = sum(residual^2)
+
+b = squeeze(ae(reshape(x,:,1), [20,20,1], θ)) + 1.0
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+
+figure(figsize=(10,4))
+subplot(121)
+plot(x, (@. (1+x^2)/(1+2*x^2)), label="Reference")
+plot(x, run(sess, b), "o", markersize=5., label="Estimated")
+legend(); xlabel("\$u\$"); ylabel("\$b(u)\$"); grid("on")
+subplot(122)
+plot(x, (@. sin(π*x)), label="Reference")
+plot(x[2:end-1], run(sess, u_est), "--", label="Estimated")
+plot(x[2:end-1][1:5:end], run(sess, u_est)[1:5:end], "x", markersize=5., label="Data")
+legend(); xlabel("\$x\$"); ylabel("\$u\$"); grid("on")
+```
+
+We show the reconstructed `b(u)` and the solution `u` computed from `b(u)`. We see that even though the neural network model fits the data very well, `b(u)` is not the same as the true one. This problem is ubiquitous in inverse modeling, where the unknown may not be unique. 
+
+![](./assets/buu.png)
 
 See [Applications](https://kailaix.github.io/ADCME.jl/dev/tutorial/) for more inverse modeling techniques and examples.
 
