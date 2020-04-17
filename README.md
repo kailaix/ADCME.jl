@@ -144,6 +144,9 @@ x = LinRange(0,1,n)|>collect
 
 u = sin.(π*x)
 f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
+# `ae` is short for autoencorder. 
+# Here we create a neural network with 2 hidden layers, and 20 neuron per layer. 
+# The default activation function is tanh.
 b = squeeze(ae(u[2:end-1], [20,20,1])) 
 
 residual = -b.*(u[3:end]+u[1:end-2]-2u[2:end-1])/h^2 + u[2:end-1] - f[2:end-1]
@@ -175,7 +178,6 @@ Here `uᶿ` is the solution to (we add 1 to the neural network to ensure the ini
 
 
 ```julia
-using Revise
 using LinearAlgebra
 using ADCME
 using PyPlot
@@ -193,7 +195,6 @@ function residual_and_jac(θ, x)
     u_full = vector(2:n-1, x, n)
     res = -nn.*(u_full[3:end]+u_full[1:end-2]-2u_full[2:end-1])/h^2 + u_full[2:end-1] - f[2:end-1]
     J = gradients(res, x)
-    @info res, J 
     res, J
 end
 θ = Variable(ae_init([1,20,20,1]))
