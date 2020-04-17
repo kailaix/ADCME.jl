@@ -172,10 +172,11 @@ Now we consider the same problem as above, but only consider we have access to s
 
 ![](./docs/src/assets/readme-eq7.svg)
 
-Here `uᶿ` is the solution to (we add 1 to the neural network to ensure the initial guess does not result in a singular Jacobian matrix in the Newton Raphson solver)
+Here `uᶿ` is the solution to the PDE with
 
 ![](./docs/src/assets/readme-eq8.svg)
 
+We add 1 to the neural network to ensure the initial guess does not result in a singular Jacobian matrix in the Newton Raphson solver.
 
 ```julia
 using LinearAlgebra
