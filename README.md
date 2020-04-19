@@ -144,6 +144,9 @@ x = LinRange(0,1,n)|>collect
 
 u = sin.(π*x)
 f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
+# `ae` is short for autoencorder. 
+# Here we create a neural network with 2 hidden layers, and 20 neuron per layer. 
+# The default activation function is tanh.
 b = squeeze(ae(u[2:end-1], [20,20,1])) 
 
 residual = -b.*(u[3:end]+u[1:end-2]-2u[2:end-1])/h^2 + u[2:end-1] - f[2:end-1]
@@ -169,13 +172,13 @@ Now we consider the same problem as above, but only consider we have access to s
 
 ![](./docs/src/assets/readme-eq7.svg)
 
-Here `uᶿ` is the solution to 
+Here `uᶿ` is the solution to the PDE with
 
 ![](./docs/src/assets/readme-eq8.svg)
 
+We add 1 to the neural network to ensure the initial guess does not result in a singular Jacobian matrix in the Newton Raphson solver.
 
 ```julia
-using Revise
 using LinearAlgebra
 using ADCME
 using PyPlot
@@ -187,15 +190,14 @@ x = LinRange(0,1,n)|>collect
 u = sin.(π*x)
 f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
 
+# we use a Newton Raphson solver to solve the nonlinear PDE problem 
 function residual_and_jac(θ, x)
     nn = squeeze(ae(reshape(x,:,1), [20,20,1], θ)) + 1.0
     u_full = vector(2:n-1, x, n)
     res = -nn.*(u_full[3:end]+u_full[1:end-2]-2u_full[2:end-1])/h^2 + u_full[2:end-1] - f[2:end-1]
     J = gradients(res, x)
-    @info res, J 
     res, J
 end
-
 θ = Variable(ae_init([1,20,20,1]))
 u_est = newton_raphson_with_grad(residual_and_jac, constant(zeros(n-2)),θ;
              options=Dict("tol"=>1e-4, "rtol"=>1e-4))
@@ -220,7 +222,7 @@ legend(); xlabel("\$x\$"); ylabel("\$u\$"); grid("on")
 
 We show the reconstructed `b(u)` and the solution `u` computed from `b(u)`. We see that even though the neural network model fits the data very well, `b(u)` is not the same as the true one. This problem is ubiquitous in inverse modeling, where the unknown may not be unique. 
 
-![](./assets/buu.png)
+![](./docs/src/assets/buu.png)
 
 See [Applications](https://kailaix.github.io/ADCME.jl/dev/tutorial/) for more inverse modeling techniques and examples.
 
