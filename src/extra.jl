@@ -8,7 +8,8 @@ test_jacobian,
 install,
 load_system_op,
 install_adept,
-register
+register,
+debug
 
 """
     xavier_init(size, dtype=Float64)
@@ -557,4 +558,20 @@ def $$fn_name(*args):
 """
     end
     return py"$$fn_name"
+end
+
+"""
+    debug(sess::PyObject, o::PyObject)
+
+In the case a session run yields `InvalidArgumentError()`, this function can help print the exact error. 
+"""
+function debug(sess::PyObject, o::PyObject)
+py"""
+import tensorflow as tf
+import traceback
+try:
+    $sess.run($o)
+except Exception:
+    print(traceback.format_exc())
+"""
 end

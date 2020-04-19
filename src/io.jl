@@ -7,7 +7,8 @@ scalar,
 writepb,
 psave,
 pload,
-activate
+activate,
+logging
 
 
 pybytes(b) = PyObject(
@@ -208,3 +209,19 @@ function writepb(writer::PyObject, sess::PyObject)
     return
 end
 
+
+"""
+    logging(file::Union{Nothing,String}, o::PyObject...; summarize::Int64 = 3, sep::String = " ")
+
+Logging `o` to `file`. This operator must be used with [`bind`](@ref). 
+"""
+function logging(file::Union{Nothing,String}, o::PyObject...; summarize::Int64 = 3, sep::String = " ")
+    if isnothing(file)
+        tf.print(o..., summarize=summarize, sep=sep)
+    else
+        filepath = "file://$(abspath(file))"
+        tf.print(o..., output_stream=filepath, summarize=summarize, sep=sep)
+    end
+end
+
+logging(o::PyObject...; summarize::Int64 = 3, sep::String = " ") = logging(nothing, summarize=summarize, sep=sep)
