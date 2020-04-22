@@ -144,7 +144,7 @@ x = LinRange(0,1,n)|>collect
 
 u = sin.(π*x)
 f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
-# `ae` is short for autoencorder. 
+# `ae` is short for autoencoder. 
 # Here we create a neural network with 2 hidden layers, and 20 neuron per layer. 
 # The default activation function is tanh.
 b = squeeze(ae(u[2:end-1], [20,20,1])) 
