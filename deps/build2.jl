@@ -35,7 +35,7 @@ adding("GIT", GIT)
 adding("PYTHON", PYTHON)
 adding("TF_LIB_FILE", TF_LIB_FILE)
 adding("LIBCUDA", "")
-
+adding("CUDA_INC", "")
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"
 open("deps.jl", "w") do io 

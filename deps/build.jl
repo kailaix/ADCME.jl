@@ -145,6 +145,7 @@ $verinfo
 end
 
 LIBCUDA = ""
+CUDA_INC = ""
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     @info " ########### CUDA dynamic libraries  ########### "
     pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")
@@ -170,8 +171,7 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
 
     NVCC = readlines(pipeline(`which nvcc`))[1]
-    NVCC_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
-    TF_INC = TF_INC*":"*NVCC_INC
+    CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
 end
 
 s = ""
@@ -194,6 +194,9 @@ adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
 adding("TF_LIB_FILE", TF_LIB_FILE)
 adding("LIBCUDA", LIBCUDA)
+adding("CUDA_INC", CUDA_INC)
+
+
 
 
 t = "join(["*join(t, ",")*"], \";\")"
