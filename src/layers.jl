@@ -26,9 +26,13 @@ Dropout,
 ae,
 ae_num,
 ae_init,
-ae_to_code,
 fc,
+fc_num,
+fc_init,
+ae_to_code,
+fcx,
 sparse_softmax_cross_entropy_with_logits
+
 
 # for a keras layer, `training` is a keyword
 # dropout = tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None)(dense, training=is_training)
@@ -57,7 +61,7 @@ Dropout(args...;kwargs...) = tf.keras.layers.Dropout(args...;kwargs...)
 
 
 @doc raw"""
-    fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
+    fcx(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
     θ::Union{Array{Float64,1}, PyObject};
     activation::String = "tanh")
 
@@ -67,14 +71,14 @@ $$x \rightarrow o_1 \rightarrow o_2 \rightarrow \ldots \rightarrow o_k$$
 
 `θ` is the weights and biases of the neural network, e.g., `θ = ae_init(output_dims)`.
 
-`fc` outputs two tensors:
+`fcx` outputs two tensors:
 
 - the output of the neural network: $u\in \mathbb{R}^{m\times o_k}$.
 
 - the sensitivity of the neural network per sample: $\frac{\partial u}{\partial x}\in \mathbb{R}^{m \times o_k \times n}$
 
 """
-function fc(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
+function fcx(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
     θ::Union{Array{Float64,1}, PyObject};
     activation::String = "tanh")
     if !haskey(COLIB, "extended_nn")
@@ -92,6 +96,8 @@ end
 """
     ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default";
         activation::Union{Function,String} = "tanh")
+
+Alias: `fc`
 
 Creates a neural network with intermediate numbers of neurons `output_dims`.
 """
@@ -121,6 +127,8 @@ end
 """
     ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject};
     activation::Union{Function,String} = "tanh")
+
+Alias: `fc`
 
 Creates a neural network with intermediate numbers of neurons `output_dims`. The weights are given by `θ`
 
@@ -181,6 +189,23 @@ function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::U
     return net
 end
 
+"""
+    ae(x::Union{Array{Float64}, PyObject}, 
+        output_dims::Array{Int64}, 
+        θ::Union{Array{Array{Float64}}, Array{PyObject}};
+        activation::Union{Function,String} = "tanh")
+
+Alias: `fc`
+
+Constructs a neural network with given weights and biases `θ`
+
+# Example
+```julia
+x = constant(rand(10,30))
+θ = ae_init([30, 20, 20, 5])
+y = ae(x, [20, 20, 5], θ) # 10×5
+```
+"""
 function ae(x::Union{Array{Float64}, PyObject}, 
     output_dims::Array{Int64}, 
     θ::Union{Array{Array{Float64}}, Array{PyObject}};
@@ -204,6 +229,7 @@ end
 
 @doc raw"""
     ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xavier")
+    fc_init(output_dims::Array{Int64})
 
 Return the initial weights and bias values by TensorFlow as a vector. The neural network architecture is
 
@@ -224,6 +250,13 @@ W^l_i \sim \sqrt{\frac{2}{n_l + n_{l-1}}}
 of vanishing/exploding gradients. 
 ```math 
 W^l_i \sim \sqrt{\frac{2}{n_{l-1}}}
+```
+
+# Example
+```julia
+x = constant(rand(10,30))
+θ = ae_init([30, 20, 20, 5])
+y = ae(x, [20, 20, 5], θ) # 10×5
 ```
 """
 function ae_init(output_dims::Array{Int64}; T::Type=Float64, method::String="xavier")
@@ -251,10 +284,19 @@ end
 
 """
     ae_num(output_dims::Array{Int64})
+    fc_num(output_dims::Array{Int64})
 
 Estimates the number of weights and biases for the neural network. Note the first dimension
 should be the feature dimension (this is different from [`ae`](@ref) since in `ae` the feature
 dimension can be inferred), and the last dimension should be the output dimension. 
+
+# Example
+```julia
+x = constant(rand(10,30))
+θ = ae_init([30, 20, 20, 5])
+@assert ae_num([30, 20, 20, 5])==length(θ)
+y = ae(x, [20, 20, 5], θ)
+```
 """
 function ae_num(output_dims::Array{Int64})
     offset = 0
@@ -479,3 +521,16 @@ function depthwise_conv2d(input, num_outputs, args...;
     end
     return res
 end
+
+"""
+$(@doc ae)
+"""
+fc = ae
+"""
+$(@doc ae_num)
+"""
+fc_num = ae_num
+"""
+$(@doc ae_init)
+"""
+fc_init = ae_init

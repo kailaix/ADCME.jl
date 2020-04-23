@@ -25,6 +25,13 @@ It is recommended to install ADCME via
 using Pkg; Pkg.add("ADCME")
 ```
 
+Make sure to run the ADCME doctor to check the health of your ADCME installation.
+
+```
+using ADCME
+doctor()
+```
+
 However, in some cases, you may want to install the package and configure the environment manually. 
 
 Step 1: Install `ADCME` on a computer with Internet access and zip all files from the following paths

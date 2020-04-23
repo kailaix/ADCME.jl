@@ -37,14 +37,18 @@
     nr = Array{Any}(undef, 8)
     fs = [f1,f2,f3,f4,f5,f6,f7,f8]
 
+    ADCME.options.newton_raphson.linesearch = true
+    ADCME.options.newton_raphson.verbose = false
+    ADCME.options.newton_raphson.rtol = 1e-12
+    ADCME.options.newton_raphson.linesearch_options.αinitial = 1.0
     for i = 5:7
-    nr[i] = newton_raphson(fs[i], constant(rand(1)), missing, 
-                options=Dict("verbose"=>false, "tol"=>1e-12, "linesearch"=>true, "ls_αinitial"=>1.0))
+    nr[i] = newton_raphson(fs[i], constant(rand(1)), missing)
     end
 
+    reset_default_options()
+    ADCME.options.newton_raphson.verbose = false
     for i = 1:4
-        nr[i] = newton_raphson(fs[i], constant(rand(1)), missing, 
-                options=Dict("verbose"=>false, "tol"=>1e-12))
+        nr[i] = newton_raphson(fs[i], constant(rand(1)), missing)
     end
     sess = Session(); init(sess)
     nrr = [run(sess, nr[i]) for i = 1:7]

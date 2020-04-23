@@ -1,3 +1,9 @@
+if VERSION>=v"1.4" && Sys.isapple() && !(haskey(ENV, "DOCUMENTER_KEY"))
+    error("""Your Julia version is ≥1.4, and your operation system is MacOSX. 
+Currently, there is a compatibility issue for this combination. 
+Please downgrade your Julia version.""")
+end
+
 begin 
 if haskey(ENV, "MANUAL")
     include("build2.jl")

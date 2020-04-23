@@ -281,15 +281,15 @@ function Base.:run(sess::PyObject, nr::NRResult)
 end
 
 
-function backtracking(compute_gradient::Function , u::PyObject, options::Dict)
+function backtracking(compute_gradient::Function , u::PyObject)
     f0, r0, _, δ0 = compute_gradient(u)
     df0 = -sum(r0.*δ0) 
-    c1 = haskey(options, "ls_c1") ? options["ls_c1"] : 1e-4
-    ρ_hi = haskey(options, "ls_ρ_hi") ? options["ls_ρ_hi"] : 0.5
-    ρ_lo = haskey(options, "ls_ρ_lo") ? options["ls_ρ_lo"] : 0.1
-    iterations = haskey(options, "ls_iterations") ? options["ls_iterations"] : 1000
-    maxstep = haskey(options, "ls_maxstep") ? options["ls_maxstep"] : Inf
-    αinitial = haskey(options, "ls_αinitial") ? options["ls_αinitial"] : 1.0
+    c1 = options.newton_raphson.linesearch_options.c1
+    ρ_hi = options.newton_raphson.linesearch_options.ρ_hi
+    ρ_lo = options.newton_raphson.linesearch_options.ρ_lo
+    iterations = options.newton_raphson.linesearch_options.iterations
+    maxstep = options.newton_raphson.linesearch_options.maxstep
+    αinitial = options.newton_raphson.linesearch_options.αinitial
 
     @assert !isnothing(f0)
     @assert ρ_lo < ρ_hi
@@ -347,10 +347,9 @@ end
 
 """
     newton_raphson(func::Function, 
-    u0::Union{Array,PyObject}, 
-    θ::Union{Missing,PyObject, Array{<:Real}}=missing,
-    args::PyObject...; 
-    options::Union{Dict{String, T}, Missing}=missing, kwargs...) where T<:Real
+        u0::Union{Array,PyObject}, 
+        θ::Union{Missing,PyObject, Array{<:Real}}=missing,
+        args::PyObject...) where T<:Real
 
 Newton Raphson solver for solving a nonlinear equation. 
 ∘ `func` has the signature 
@@ -361,43 +360,30 @@ where `r` is the residual and `A` is the Jacobian matrix; in the case where `lin
 ∘ `u0` is the initial guess for `u`
 ∘ `args`: additional inputs to the func function 
 ∘ `kwargs`: keyword arguments to `func`
-∘ `options`:
+
+The solution can be configured via `ADCME.options.newton_raphson`
+
 - `max_iter`: maximum number of iterations (default=100)
-- `verbose`: whether details are printed (default=false)
 - `rtol`: relative tolerance for termination (default=1e-12)
 - `tol`: absolute tolerance for termination (default=1e-12)
 - `LM`: a float number, Levenberg-Marquardt modification ``x^{k+1} = x^k - (J^k + \\mu^k)^{-1}g^k`` (default=0.0)
 - `linesearch`: whether linesearch is used (default=false)
 
 Currently, the backtracing algorithm is implemented.
-The parameters for `linesearch` are also supplied via `options`
+The parameters for `linesearch` are supplied via `options.newton_raphson.linesearch_options`
 
-- `ls_c1`: stop criterion, ``f(x^k) < f(0) + \\alpha c_1  f'(0)``
-- `ls_ρ_hi`: the new step size ``\\alpha_1\\leq \\rho_{hi}\\alpha_0`` 
-- `ls_ρ_lo`: the new step size ``\\alpha_1\\geq \\rho_{lo}\\alpha_0`` 
-- `ls_iterations`: maximum number of iterations for linesearch
-- `ls_maxstep`: maximum allowable steps
-- `ls_αinitial`: initial guess for the step size ``\\alpha``
+- `c1`: stop criterion, ``f(x^k) < f(0) + \\alpha c_1  f'(0)``
+- `ρ_hi`: the new step size ``\\alpha_1\\leq \\rho_{hi}\\alpha_0`` 
+- `ρ_lo`: the new step size ``\\alpha_1\\geq \\rho_{lo}\\alpha_0`` 
+- `iterations`: maximum number of iterations for linesearch
+- `maxstep`: maximum allowable steps
+- `αinitial`: initial guess for the step size ``\\alpha``
 """
 function newton_raphson(func::Function, 
     u0::Union{Array,PyObject}, 
     θ::Union{Missing,PyObject, Array{<:Real}}=missing,
-    args::PyObject...; 
-    options::Union{Dict{String, T}, Missing}=missing, kwargs...) where T<:Real
+    args::PyObject...; kwargs...) where T<:Real
     f = (θ, u)->func(θ, u, args...; kwargs...)
-    options_ = Dict(
-            "max_iter"=>100,
-            "verbose"=>false,
-            "rtol"=>1e-12,
-            "tol"=>1e-12,
-            "linesearch"=>false
-        )
-    if !ismissing(options)
-        for k in keys(options)
-            options_[k] = options[k]
-        end
-    end
-    options = options_
     if length(size(u0))!=1
         error("ADCME: Initial guess must be a vector")
     end
@@ -406,28 +392,35 @@ function newton_raphson(func::Function,
     end
     u = convert_to_tensor(u0)
 
+    max_iter = options.newton_raphson.max_iter
+    verbose = options.newton_raphson.verbose
+    oprtol = options.newton_raphson.rtol
+    optol = options.newton_raphson.tol
+    LM = options.newton_raphson.LM
+    linesearch = options.newton_raphson.linesearch
+
     function condition(i,  ta_r, ta_u)
-        if options["verbose"]; @info "(2/4)Parsing Condition..."; end
-        if_else(tf.math.logical_and(tf.equal(i,2), tf.less(i, options["max_iter"]+1)), 
+        if verbose; @info "(2/4)Parsing Condition..."; end
+        if_else(tf.math.logical_and(tf.equal(i,2), tf.less(i, max_iter+1)), 
             constant(true),
             ()->begin
                 tol = read(ta_r, i-1)
                 rel_tol = read(ta_r, i-2)
-                if options["verbose"]
-                    op = tf.print("Iteration =",i-1, "| Tol =", tol, "( $(options["tol"]) )", "| Rel_Tol =", rel_tol, 
-                        "( $(options["rtol"]) )", summarize=-1)
+                if verbose
+                    op = tf.print("Iteration =",i-1, "| Tol =", tol, "( $(optol) )", "| Rel_Tol =", rel_tol, 
+                        "( $(oprtol) )", summarize=-1)
                     tol = bind(tol, op)
                 end
                 return tf.math.logical_and(
-                    tf.math.logical_and(tol>=options["tol"], rel_tol>=options["rtol"]),
-                    i<=options["max_iter"]
+                    tf.math.logical_and(tol>=optol, rel_tol>=oprtol),
+                    i<=max_iter
                 )
             end
         )
     end
     function body(i, ta_r, ta_u)
         local δ, val, r_
-        if options["verbose"]; @info "(3/4)Parsing Main Loop..."; end
+        if verbose; @info "(3/4)Parsing Main Loop..."; end
         u_ = read(ta_u, i-1)
 
         function compute_gradients(x)
@@ -438,8 +431,8 @@ function newton_raphson(func::Function,
             else
                 val, r_, J = out
             end
-            if haskey(options, "LM") # Levenberg-Marquardt
-                μ = options["LM"]
+            if LM>0.0 # Levenberg-Marquardt
+                μ = LM
                 μ = convert_to_tensor(μ)
                 δ = (J + μ*spdiag(size(J,1)))\r_ 
             else
@@ -450,9 +443,9 @@ function newton_raphson(func::Function,
 
 
 
-        if options["linesearch"]
-            if options["verbose"]; @info "Perform Linesearch..."; end
-            step_size = backtracking(compute_gradients, u_, options)
+        if linesearch
+            if verbose; @info "Perform Linesearch..."; end
+            step_size = backtracking(compute_gradients, u_)
         else
             step_size = 1.0
         end
@@ -461,7 +454,7 @@ function newton_raphson(func::Function,
         δ = step_size * δ
         new_u = u_ - δ
 
-        if options["verbose"]
+        if verbose
             op = tf.print(i," step size = ", step_size)
             new_u = bind(new_u, op)
         end
@@ -470,47 +463,47 @@ function newton_raphson(func::Function,
     end
     
     
-    if options["verbose"]; @info "(1/4)Intializing TensorArray..."; end
+    if verbose; @info "(1/4)Intializing TensorArray..."; end
     out = f(θ, u)
     r0 = length(out)==2 ? out[1] : out[2]
     tol0 = norm(r0)
-    if options["verbose"]
-        op = tf.print("Iteration = 1", "| Tol =", tol0, "( $(options["tol"]) )", "| Rel_Tol = ---", 
-        "( $(options["rtol"]) )", summarize=-1)
+    if verbose
+        op = tf.print("Iteration = 1", "| Tol =", tol0, "( $(optol) )", "| Rel_Tol = ---", 
+        "( $(oprtol) )", summarize=-1)
         tol0 = bind(tol0, op)
     end
 
-    ta_r = TensorArray(options["max_iter"])
-    ta_u = TensorArray(options["max_iter"])
+    ta_r = TensorArray(max_iter)
+    ta_u = TensorArray(max_iter)
     ta_u = write(ta_u, 1, u)
     ta_r = write(ta_r, 1, tol0)
     i = constant(2, dtype=Int32)
     i_, ta_r_, ta_u_ = while_loop(condition, body, [i, ta_r, ta_u], back_prop=false)
     r_out, u_out = stack(ta_r_), stack(ta_u_)
     
-    if options["verbose"]; @info "(4/4)Postprocessing Results..."; end
+    if verbose; @info "(4/4)Postprocessing Results..."; end
     sol = if_else(
-        tf.less(tol0,options["tol"]),
+        tf.less(tol0,optol),
         u,
         u_out[i_-1]
     )
     res = if_else(
-        tf.less(tol0,options["tol"]),
+        tf.less(tol0,optol),
         reshape(tol0, 1),
         tf.slice(r_out, [1],[i_-2])
     )
     u_his = if_else(
-        tf.less(tol0,options["tol"]),
+        tf.less(tol0,optol),
         reshape(u, 1, length(u)),
         tf.slice(u_out, [0; 0], [i_-2; length(u)])
     )
     iter = if_else(
-        tf.less(tol0,options["tol"]),
+        tf.less(tol0,optol),
         constant(1),
         cast(Int64,i_)-2
     )
     converged = if_else(
-        tf.less(i_, options_["max_iter"]),
+        tf.less(i_, max_iter),
         constant(true),
         constant(false)
     )
@@ -524,10 +517,11 @@ end
     newton_raphson_with_grad(f::Function, 
     u0::Union{Array,PyObject}, 
     θ::Union{Missing,PyObject, Array{<:Real}}=missing,
-    args::PyObject...; 
-    options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+    args::PyObject...) where T<:Real
 
-Differentiable Newton-Raphson algorithm. See [`newton_raphson`](@ref) 
+Differentiable Newton-Raphson algorithm. See [`newton_raphson`](@ref).
+
+Use `ADCME.options.newton_raphson` to supply options. 
 
 # Example 
 ```julia
@@ -544,11 +538,10 @@ run(sess, gradients(sum(x), θ))
 function newton_raphson_with_grad(func::Function, 
     u0::Union{Array,PyObject}, 
     θ::Union{Missing,PyObject, Array{<:Real}}=missing,
-    args::PyObject...; 
-     options::Union{Dict{String, T}, Missing}=missing, kwargs...) where T<:Real
+    args::PyObject...; kwargs...) where T<:Real
     f = ( θ, u, args...) -> func(θ, u, args...; kwargs...)
     function forward(θ, args...)
-        nr = newton_raphson(f, u0, θ, args...; options = options)
+        nr = newton_raphson(f, u0, θ, args...)
         return nr.x 
     end
 
@@ -596,9 +589,9 @@ It returns a tuple (`L`: loss, `C`: constraints, and `Graidents`)
 
 """
 function NonlinearConstrainedProblem(f::Function, L::Function, θ::Union{Array{Float64,1},PyObject},
-     u0::Union{PyObject, Array{Float64}}; options::Union{Dict{String, T}, Missing}=missing) where T<:Real
+     u0::Union{PyObject, Array{Float64}}) where T<:Real
     θ = convert_to_tensor(θ)
-    nr = newton_raphson(f, u0, θ, options = options)
+    nr = newton_raphson(f, u0, θ)
     r, A = f(θ, nr.x)
     l = L(nr.x)
     top_grad = tf.convert_to_tensor(gradients(l, nr.x))

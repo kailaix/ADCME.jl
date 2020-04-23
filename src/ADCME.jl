@@ -31,19 +31,6 @@ module ADCME
         error("ADCME is not properly built; run `Pkg.build(\"ADCME\")` to fix the problem.")
     end
     run_metadata = nothing
-
-    # global options to control ADCME behavior 
-    mutable struct OptionsSparse 
-        auto_reorder::Bool 
-        solver::String
-        OptionsSparse() = new(true, "SparseLU")
-    end
-    mutable struct Options 
-        sparse::OptionsSparse
-        Options() = new(OptionsSparse())
-    end
-    options = Options()
-
         
     function __init__()
         # install_custom_op_dependency() # always install dependencies
@@ -75,6 +62,7 @@ module ADCME
         end
     end
 
+    include("options.jl")
     include("core.jl")
     include("io.jl")
     include("optim.jl")

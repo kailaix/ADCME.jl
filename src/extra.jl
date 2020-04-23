@@ -9,7 +9,8 @@ install,
 load_system_op,
 install_adept,
 register,
-debug
+debug,
+doctor
 
 """
     xavier_init(size, dtype=Float64)
@@ -132,7 +133,7 @@ def $$fn_name(*args):
 end
         s = py"$$fn_name"
         load_op_grad_dict[(oplibpath,opname)] = s
-        printstyled("Load library operator (with gradient): $oplibpath ==> $opname\n", color=:green)
+        printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
         return s
 end
 
@@ -574,4 +575,102 @@ try:
 except Exception:
     print(traceback.format_exc())
 """
+end
+
+"""
+    doctor()
+
+Reports health of the current installed ADCME package. If some components are broken, possible fix is proposed.
+"""
+function doctor()
+    function yes(name)
+        printstyled("[✔️] $name\n", color=:green, bold=true)
+    end
+    function no(name, diagnose, instruction)
+        printstyled("[✘] $name\n", color=:red, bold=true)
+        printstyled("\n[Reason]\n", color=:magenta)
+        printstyled("$diagnose\n\n", color=:blue)
+        printstyled("\n[Instruction]\n", color=:magenta)
+        printstyled("$instruction\n\n", color=:blue)
+    end
+
+    c = true 
+    if VERSION>=v"1.4" && Sys.isapple() 
+        c = false
+    end
+
+    if c 
+        yes("Julia version")
+    else
+        no("Julia version", 
+"""Your Julia version is $VERSION, and your system is MACOSX. This combination has a compatability issue.""",
+"""Downgrade your Julia to ≦1.3""")
+    end 
+
+
+
+    c = splitdir(PyCall.python)[1]==Conda.PYTHONDIR
+    if c 
+        yes("Python executable file")
+    else
+        no("Python executable file", 
+"""PyCall Python path $(splitdir(PyCall.python)) and Conda Python path $(Conda.PYTHONDIR) does not match.""",
+"""Rebuild PyCall with Conda Python:
+
+using Pkg
+ENV["PYTHON"] = ""
+Pkg.build("PyCall")
+""")
+    end 
+
+    c = true 
+    try 
+        run(`which julia`)
+    catch
+        c = false
+    end
+
+    if c 
+        yes("Julia path")
+    else
+        no("Julia path", 
+"""`which julia` outputs nothing. This will break custom operator compilation.""",
+"""Add your julia binary path to your environment path, e.g. (Unix systems) 
+
+export PATH=$(Sys.BINDIR):\$PATH
+
+For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
+For Windows, you need to add it to system environment.""")
+    end
+
+    c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ENV["LD_LIBRARY_PATH"], ADCME.LIBDIR)
+    if c 
+        yes("Dynamic library path")
+    else
+        no("Dynamic library path", 
+"""$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH. This will break custom operator compilation.""",
+"""Add your dynamic library path path to your environment path, e.g. (Unix systems) 
+
+export LD_LIBRARY_PATH=$(ADCME.LIBDIR):\$LD_LIBRARY_PATH
+
+For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
+For Windows, you need to add it to system environment.""")
+    end
+    
+
+    c = haskey(ENV, "PATH") && occursin(ENV["PATH"], ADCME.BINDIR)
+    if c 
+        yes("Binaries path")
+    else
+        no("Binaries path", 
+"""$(ADCME.BINDIR) is not in PATH. This path contains compatible tools such as a GCC compiler, `cmake`, `make`, etc.""",
+"""The fix is OPTIONAL.
+Add your binary path to your environment path, e.g. (Unix systems) 
+
+export PATH=$(ADCME.BINDIR):\$PATH
+
+For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
+For Windows, you need to add it to system environment.""")
+    end
+    
 end

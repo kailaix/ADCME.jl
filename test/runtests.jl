@@ -7,6 +7,8 @@ using PyCall
 using SparseArrays
 using Test
 
+doctor()
+
 sess = Session()
 
 include("layers.jl")

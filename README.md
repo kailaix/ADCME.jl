@@ -39,18 +39,25 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 
 # Installation
 
-1. Install [Julia](https://julialang.org/)
+⚠️ Currently, there is an [incompatible issue](https://github.com/JuliaPy/PyCall.jl/issues/762) with Julia 1.4 on some MacOS systems and tensorflow 1.x. We suggest you use [Julia 1.3](https://julialang.org/downloads/oldreleases/#v131_dec_30_2019) before the problem is fixed. 
 
+1. Install [Julia](https://julialang.org/)
 2. Install `ADCME`
 ```
-julia> ]
-pkg> add ADCME
+using Pkg
+Pkg.add("ADCME")
+```
+
+3. Run the ADCME built-in `doctor` and follow instructions to fix computing environment problems
+```julia
+using ADCME
+doctor()
 ```
 
 3. (Optional) Test `ADCME.jl`
 ```
-julia> ]
-pkg> test ADCME
+using Pkg
+Pkg.test("ADCME")
 ```
 See [Troubleshooting](https://kailaix.github.io/ADCME.jl/dev/tu_customop/#Troubleshooting-1) if you encounter any compilation problems.
 
@@ -62,8 +69,6 @@ Pkg.build("ADCME")
 ```
 
 For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
-
-⚠️ `PyCall` is forced to use the default interpreter by `ADCME`. Do not try to reset the interpreter by rebuilding `PyCall`. 
 
 # Tutorial
 
@@ -144,10 +149,10 @@ x = LinRange(0,1,n)|>collect
 
 u = sin.(π*x)
 f = @. (1+u^2)/(1+2u^2) * π^2 * u + u 
-# `ae` is short for autoencorder. 
+# `fc` is short for fully connected neural network. 
 # Here we create a neural network with 2 hidden layers, and 20 neuron per layer. 
 # The default activation function is tanh.
-b = squeeze(ae(u[2:end-1], [20,20,1])) 
+b = squeeze(fc(u[2:end-1], [20,20,1])) 
 
 residual = -b.*(u[3:end]+u[1:end-2]-2u[2:end-1])/h^2 + u[2:end-1] - f[2:end-1]
 loss = sum(residual^2)
@@ -192,19 +197,19 @@ f = @. (1+u^2)/(1+2u^2) * π^2 * u + u
 
 # we use a Newton Raphson solver to solve the nonlinear PDE problem 
 function residual_and_jac(θ, x)
-    nn = squeeze(ae(reshape(x,:,1), [20,20,1], θ)) + 1.0
+    nn = squeeze(fc(reshape(x,:,1), [20,20,1], θ)) + 1.0
     u_full = vector(2:n-1, x, n)
     res = -nn.*(u_full[3:end]+u_full[1:end-2]-2u_full[2:end-1])/h^2 + u_full[2:end-1] - f[2:end-1]
     J = gradients(res, x)
     res, J
 end
-θ = Variable(ae_init([1,20,20,1]))
+θ = Variable(fc_init([1,20,20,1]))
 u_est = newton_raphson_with_grad(residual_and_jac, constant(zeros(n-2)),θ;
              options=Dict("tol"=>1e-4, "rtol"=>1e-4))
 residual = u_est[1:5:end] - u[2:end-1][1:5:end]
 loss = sum(residual^2)
 
-b = squeeze(ae(reshape(x,:,1), [20,20,1], θ)) + 1.0
+b = squeeze(fc(reshape(x,:,1), [20,20,1], θ)) + 1.0
 sess = Session(); init(sess)
 BFGS!(sess, loss)
 

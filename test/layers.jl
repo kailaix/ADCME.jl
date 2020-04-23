@@ -1,8 +1,8 @@
-@testset "fc" begin 
+@testset "fcx" begin 
     config = [2, 20,20,20,3]
     x = constant(rand(10,2))
     θ = ae_init(config)
-    u, du = fc(x, config[2:end], θ)
+    u, du = fcx(x, config[2:end], θ)
     y = ae(x, config[2:end], θ)
 
     @test run(sess, u) ≈ run(sess, y)

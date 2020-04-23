@@ -33,9 +33,10 @@ end
     @test_nowarn run(sess,gradients(sum(f(x)), x))
 
 
+    ADCME.options.newton_raphson.verbose = true
     function forward2(x, θ)
         f = (θ, y)->(y^3+1.0-θ -x, spdiag(3y^2))
-        nr = newton_raphson(f, constant(ones(length(x))), θ, options=Dict("verbose"=>true))
+        nr = newton_raphson(f, constant(ones(length(x))), θ)
         y = nr.x 
         return y 
     end

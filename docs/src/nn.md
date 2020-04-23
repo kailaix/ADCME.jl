@@ -24,10 +24,10 @@ In scientific computing, sometimes we not only want to evaluate the neural netwo
 
 $$y = NN_{\theta}(x)$$
 
-We also want to compute $\nabla_x NN_{\theta}(x)$. ADCME provides a function [`fc`](@ref) (short for _fully-connected_)
+We also want to compute $\nabla_x NN_{\theta}(x)$. ADCME provides a function [`fcx`](@ref) (short for _fully-connected_)
 
 ```julia
-y3, dy3 = fc(x, config, θ)
+y3, dy3 = fcx(x, config, θ)
 ```
 
 Here `dy3` will be a $10\times 3 \times 2$ tensor, where `dy3[i,:,:]` is the Jacobian matrix of the $i$-th output with respect to the $i$-th input (Note the $i$-th output is independent of $j$-th input, whenever $i\neq j$).  

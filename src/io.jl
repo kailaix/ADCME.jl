@@ -50,11 +50,13 @@ end
 Saves the values of `vars` in the session `sess`. The result is written into `file` as a dictionary. If `vars` is nothing, it saves all the trainable variables.
 See also [`save`](@ref), [`load`](@ref)
 """
-function save(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
+function save(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject},  Array{Any}}=nothing, args...; kwargs...)
     if vars==nothing
         vars = get_collection(TRAINABLE_VARIABLES)
     elseif isa(vars, PyObject)
         vars = [vars]
+    elseif isa(vars, Array{Any})
+        vars = Array{PyObject}(vars)
     end
     d = Dict{String, Any}()
     vals = run(sess, vars, args...;kwargs...)

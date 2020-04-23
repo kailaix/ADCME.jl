@@ -42,10 +42,11 @@ end
     ```
 
 !!! note
-    `newton_raphson` also accepts a keyword argument `options` through which we can specify special options for the optimization. For example
+    We can provide options to `newton_raphson` using `ADCME.options.newton_raphson`. For example
     ```julia
-    nr = newton_raphson(f, constant(rand(10)), missing, 
-                options=Dict("verbose"=>true, "tol"=>1e-12))
+    ADCME.options.newton_raphson.verbose = true 
+    ADCME.options.newton_raphson.tol = 1e-6
+    nr = newton_raphson(f, constant(rand(10)), missing)
     ```
     This might be useful for debugging.
 
@@ -58,8 +59,11 @@ end
 
 The corresponding driver code is
 ```julia
-nr = newton_raphson(f, constant(rand(10)), missing, 
-                options=Dict("verbose"=>false, "tol"=>1e-12, "linesearch"=>true, "ls_αinitial"=>1.0))
+ADCME.options.newton_raphson.verbose = false
+ADCME.options.newton_raphson.linesearch = true
+ADCME.options.newton_raphson.tol = 1e-12
+ADCME.options.newton_raphson.linesearch_options.αinitial = 1.0
+nr = newton_raphson(f, constant(rand(10)), missing
 ```
 
 

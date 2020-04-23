@@ -89,7 +89,8 @@ end
         r = A*u - rhs
         r, constant(A)
     end
-    nr = newton_raphson(newton_raphson_f, zeros(10), missing, options=Dict("verbose"=>true))
+    ADCME.options.newton_raphson.verbose = true
+    nr = newton_raphson(newton_raphson_f, zeros(10), missing)
     nr = run(sess, nr)
     @test nr.x≈A\rhs
 
@@ -98,7 +99,10 @@ end
         r = u^3+u - u0
         r, spdiag(3u^2+1.0)
     end
-    nr = newton_raphson(newton_raphson_f2, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
+
+    ADCME.options.newton_raphson.verbose = true
+    ADCME.options.newton_raphson.tol = 1e-5
+    nr = newton_raphson(newton_raphson_f2, rand(10), missing)
     nr = run(sess, nr)
     uval = nr.x
     @test norm(uval.^3+uval-u0)<1e-3
@@ -110,7 +114,7 @@ end
         r = [u^2;u] - [rs.^2;rs]
         r, [spdiag(2*u); spdiag(10)]
     end
-    nr = newton_raphson(newton_raphson_f3, rand(10), missing, options=Dict("verbose"=>true, "tol"=>1e-5))
+    nr = newton_raphson(newton_raphson_f3, rand(10), missing)
     nr = run(sess, nr)
     uval = nr.x
     @test norm(uval-rs)<1e-3

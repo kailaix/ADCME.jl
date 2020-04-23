@@ -53,6 +53,9 @@ The implementation are adapted from https://github.com/rflamary/POT.
 """
 function empirical_sinkhorn(x::Union{PyObject, Array{Float64}}, y::Union{PyObject, Array{Float64}};
     reg::Union{PyObject,Float64} = 1.0, iter::Int64 = 1000, tol::Float64 = 1e-9, method::String="sinkhorn", dist::Function=dist, return_optimal::Bool=false)
+    x, y = convert_to_tensor([x,y], [Float64, Float64])
+    length(size(x))==1 && (x = reshape(x, :, 1))
+    length(size(y))==1 && (y = reshape(y, :, 1))
     M = dist(x, y)
     a = tf.ones(tf.shape(x)[1], dtype=tf.float64)/cast(Float64, tf.shape(x)[1])
     b = tf.ones(tf.shape(y)[1], dtype=tf.float64)/cast(Float64, tf.shape(y)[1])
