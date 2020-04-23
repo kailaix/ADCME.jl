@@ -34,6 +34,7 @@ adding("MAKE", MAKE)
 adding("GIT", GIT)
 adding("PYTHON", PYTHON)
 adding("TF_LIB_FILE", TF_LIB_FILE)
+adding("LIBCUDA", "")
 
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"

@@ -5,7 +5,23 @@ Please downgrade your Julia version.""")
 end
 
 begin 
-if haskey(ENV, "MANUAL")
+
+if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
+    try 
+        run(`which nvcc`)
+    catch
+        error("""You specified ENV["GPU"]=1 but nvcc cannot be found (`which nvcc` failed.
+Make sure `nvcc` is available.""")
+    end
+    s = join(readlines(pipeline(`nvcc --version`)), " ")
+    ver = parse(Int64, match(r"V(\d+)\.\d", s)[1])
+    if ver!=10
+        error("TensorFlow backend of ADCME requires CUDA 10. But you have CUDA $ver")
+    end
+end
+
+
+if haskey(ENV, "MANUAL") && ENV["MANUAL"] == "1"
     include("build2.jl")
     @goto writedeps
 end
@@ -37,86 +53,36 @@ end
 pkgs_dict = Conda._installed_packages_dict()
 pkgs = collect(keys(pkgs_dict))
 
-@info "Install binaries"
+@info " ########### Install binaries ########### "
 ZIP = easy_get("zip")
 UNZIP = easy_get("unzip")
 GIT = "LibGit2"
 
 
-@info "Install CONDA dependencies..."
-for pkg in ["make", "cmake", "tensorflow=1.15", "tensorflow-probability=0.7",
-            "matplotlib"]
-    if pkg in pkgs; continue; end 
-    if occursin("=", pkg)
-        p = split(pkg,"=")[1]
-        v = split(pkg,"=")[2]
-        if haskey(pkgs_dict, p) && occursin(v, string(pkgs_dict[p][1]))
-            continue
-        end
-    end
-    Conda.add(pkg)
+@info " ########### Install CONDA dependencies ########### "
+!("make" in pkgs) && Conda.add("make")
+!("cmake" in pkgs) && Conda.add("cmake")
+!("matplotlib" in pkgs) && Conda.add("matplotlib")
+
+if haskey(ENV, "GPU") && ENV["GPU"]=="1" && Sys.isapple()
+    @warn "MacOSX does not support Tensorflow GPU, ignoring GPU..."
 end
+
+if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
+    !("tensorflow-gpu" in pkgs) && Conda.add("tensorflow-gpu=1.15")
+else 
+    if !("tensorflow" in pkgs || "tensorflow-gpu" in pkgs)
+        Conda.add("tensorflow=1.15")
+    end
+end
+!("tensorflow-probability" in pkgs) && Conda.add("tensorflow-probability=0.7")
 !("hdf5" in pkgs) && Conda.add("hdf5", channel="anaconda")
 
-
-function enable_gpu()
-    pkgs = Conda._installed_packages()
-
-    if !("tensorflow-gpu" in pkgs)
-        Conda.add("tensorflow-gpu=1.15")
-    end
-    
-    if !("cudatoolkit" in pkgs)
-        Conda.add("cudatoolkit", channel="anaconda")
-    end
-
-    gpus = joinpath(splitdir(tf.__file__)[1], "include/third_party/gpus")
-    if !isdir(gpus)
-    mkdir(gpus)
-    end
-    gpus = joinpath(gpus, "cuda")
-    if !isdir(gpus)
-    mkdir(gpus)
-    end
-    incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
-    if !isdir(joinpath(gpus, "include"))
-        cp(incpath, joinpath(gpus, "include"))
-    end
-
-    pth = joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
-    # compatible 
-    files = readdir(pth)
-    for f in files
-        if f[end-2:end]==".10" && !isfile(joinpath(pth, f*".0"))
-            symlink(joinpath(pth, f), joinpath(pth, f*".0"))
-        end
-        if f[end-4:end]==".10.1" && !isfile(joinpath(pth, f[1:end-2]*".0"))
-            symlink(joinpath(pth, f), joinpath(pth, f[1:end-2]*".0"))
-        end
-    end
-    
-    @info("Run the following command in shell
-
-    echo 'export LD_LIBRARY_PATH=$pth:\$LD_LIBRARY_PATH' >> ~/.bashrc")
-end
-
-
-
-
-@info "Preparing environment for custom operators"
+@info " ########### Preparing environment for custom operators ########### "
 tf = pyimport("tensorflow")
-if haskey(ENV, "GPU");enable_gpu();end
-
-core_path = joinpath(tf.sysconfig.get_compile_flags()[1][3:end], "..")
+core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
 lib = readdir(core_path)
-tflib = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[1]])
-surfix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
-if !isfile(joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix"))
-    @info "making symbolic link to libtensorflow_framework"
-    symlink(tflib, joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix"))
-end
-tflib = joinpath(splitdir(tflib)[1], "libtensorflow_framework.$surfix")
-
+TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
 TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
 TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
@@ -134,7 +100,7 @@ function install_custom_op_dependency()
     end
 
     if !isdir("$LIBDIR/eigen3")    
-        run(`$UNZIP $LIBDIR/eigen.zip`)
+        run(`$UNZIP -qq $LIBDIR/eigen.zip`)
         mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
     end
 end
@@ -145,7 +111,7 @@ install_custom_op_dependency()
 # readelf -p .comment libtensorflow_framework.so 
 # strings libstdc++.so.6 | grep GLIBCXX
 if Sys.islinux() 
-    verinfo = read(`readelf -p .comment $tflib`, String)
+    verinfo = read(`readelf -p .comment $TF_LIB_FILE`, String)
     if occursin("5.4", verinfo)
         if !("gcc-5" in Conda._installed_packages())
             try
@@ -178,6 +144,35 @@ $verinfo
     symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
 end
 
+LIBCUDA = ""
+if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
+    @info " ########### CUDA dynamic libraries  ########### "
+    pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")
+    files = readdir(pkg_dir)
+    libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
+    if length(libpath)==0
+        error("cudatoolkit* not found in $pkg_dir")
+    elseif length(libpath)>1
+        @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
+    end
+    LIBCUDA = joinpath(pkg_dir, libpath[1], "lib")
+
+    libpath = filter(x->startswith(x, "cudnn") && isdir(joinpath(pkg_dir,x)), files)
+    if length(libpath)==0
+        error("cudnn* not found in $pkg_dir")
+    elseif length(libpath)>1
+        @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
+    end
+    LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
+
+    @info " ########### CUDA include headers  ########### "
+    cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
+    cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
+
+    NVCC = readlines(pipeline(`which nvcc`))[1]
+    NVCC_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
+    TF_INC = TF_INC*":"*NVCC_INC
+end
 
 s = ""
 t = []
@@ -197,7 +192,9 @@ adding("CMAKE", joinpath(Conda.BINDIR, "cmake"))
 adding("MAKE", joinpath(Conda.BINDIR, "make"))
 adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
-adding("TF_LIB_FILE", tflib)
+adding("TF_LIB_FILE", TF_LIB_FILE)
+adding("LIBCUDA", LIBCUDA)
+
 
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"
