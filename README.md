@@ -204,8 +204,10 @@ function residual_and_jac(θ, x)
     res, J
 end
 θ = Variable(fc_init([1,20,20,1]))
-u_est = newton_raphson_with_grad(residual_and_jac, constant(zeros(n-2)),θ;
-             options=Dict("tol"=>1e-4, "rtol"=>1e-4))
+ADCME.options.newton_raphson.rtol = 1e-4 # relative tolerance
+ADCME.options.newton_raphson.tol = 1e-4 # absolute tolerance
+ADCME.options.newton_raphson.verbose = true # print details in newton_raphson
+u_est = newton_raphson_with_grad(residual_and_jac, constant(zeros(n-2)),θ)
 residual = u_est[1:5:end] - u[2:end-1][1:5:end]
 loss = sum(residual^2)
 
