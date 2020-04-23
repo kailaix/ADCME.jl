@@ -142,57 +142,44 @@ Finally, you could use `gradtest.jl` to test the operator and its gradients (spe
 
 ## Build GPU Custom Operators
 
+### Install GPU-enabled TensorFlow (Linux and Windows)
 
-### Dependencies
-To create a GPU custom operator, you must have an NVCC compiler and a CUDA toolkit installed on your system. To install NVCC, see [the installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html). To check you have successfully installed NVCC, type
-```bash
-which nvcc
-```
-It should gives you the location of `nvcc` compiler. 
+To use  CUDA in ADCME, we need to install a GPU-enabled version of TensorFlow. In ADCME, this is achieved by simply rebuilding ADCME with `GPU` environment variabe. 
 
-For quick installation of other dependencies, you can try
 ```julia
+using Pkg
 ENV["GPU"] = 1
 Pkg.build("ADCME")
 ```
 
-#### Manual Installation
+We can inspect the dependencies being installed:
 
-In case 
+```
+    package                    |            build
+    ---------------------------|-----------------
+    _tflow_select-2.1.0        |              gpu           2 KB
+    cudatoolkit-10.0.130       |                0       261.2 MB
+    cudnn-7.6.5                |       cuda10.0_0       165.0 MB
+    cupti-10.0.130             |                0         1.5 MB
+    tensorflow-1.15.0          |gpu_py37h0f0df58_0           4 KB
+    tensorflow-base-1.15.0     |gpu_py37h9dcbed7_0       156.5 MB
+    tensorflow-gpu-1.15.0      |       h0d30ee6_0           3 KB
+    ------------------------------------------------------------
+                                           Total:       584.2 MB
+```
 
-- To install CUDA toolkit (if you do not have one), you can install via conda
+Note ADCME uses TensorFlow 1.15, and the official tensorflow.so is built with CUDA 10.0, and CUDNN 7.6.5. The corresponding libraries are in 
+
 ```julia
-using Conda
-Conda.add("cudatoolkit", channel="anaconda")
+~/.julia/conda/3/pkgs/cudatoolkit*
+~/.julia/conda/3/pkgs/cudnn*
+~/.julia/conda/3/pkgs/cupti*
 ```
 
-- The next step is to cp the CUDA include file to tensorflow include directory. This could be done with 
-```julia
-using ADCME
-gpus = joinpath(splitdir(tf.__file__)[1], "include/third_party/gpus")
-if !isdir(gpus)
-  mkdir(gpus)
-end
-gpus = joinpath(gpus, "cuda")
-if !isdir(gpus)
-  mkdir(gpus)
-end
-incpath = joinpath(splitdir(strip(read(`which nvcc`, String)))[1], "../include/")
-if !isdir(joinpath(gpus, "include"))
-    mv(incpath, gpus)
-end
-```
 
-- Finally, add the CUDA library path to `LD_LIBRARY_PATH`. This can be done by adding the following line to `.bashrc`
-```bash
-export LD_LIBRARY_PATH=<path>:$LD_LIBRARY_PATH
-```
-where `<path>` is 
-```julia
-joinpath(Conda.ROOTENV, "pkgs/cudatoolkit-10.1.168-0/lib/")
-```
 
 ### File Organization
+
 There should be three files in your source directories
 - `MyOp.cpp`: driver file
 - `MyOp.cu`: GPU implementation

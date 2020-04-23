@@ -152,19 +152,21 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
-        error("cudatoolkit* not found in $pkg_dir")
+        @warn "cudatoolkit* not found in $pkg_dir"
     elseif length(libpath)>1
         @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
+        LIBCUDA = joinpath(pkg_dir, libpath[1], "lib")
     end
-    LIBCUDA = joinpath(pkg_dir, libpath[1], "lib")
+    
 
     libpath = filter(x->startswith(x, "cudnn") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
-        error("cudnn* not found in $pkg_dir")
+        @warn "cudnn* not found in $pkg_dir"
     elseif length(libpath)>1
         @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
+        LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
     end
-    LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
+    
 
     @info " ########### CUDA include headers  ########### "
     cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
