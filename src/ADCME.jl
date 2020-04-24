@@ -15,6 +15,7 @@ module ADCME
     import Conda
     using SparseArrays
     using LibGit2
+    using Libdl
 
     ENV["KMP_DUPLICATE_LIB_OK"]="TRUE"
 

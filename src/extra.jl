@@ -316,6 +316,9 @@ end
 
 
 function use_gpu(i::Union{Nothing,Int64}=nothing)
+    if length(CUDA_INC)==0
+        error("""ADCME is not built against GPU. Set ENV["GPU"]=1 and rebuild GPU.""")
+    end
     dl = pyimport("tensorflow.python.client.device_lib")
     if !isnothing(i) && i>=1
         i = join(collect(0:i-1),',') 
@@ -643,7 +646,7 @@ For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.b
 For Windows, you need to add it to system environment.""")
     end
 
-    c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ENV["LD_LIBRARY_PATH"], ADCME.LIBDIR)
+    c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBDIR, ENV["LD_LIBRARY_PATH"])
     if c 
         yes("Dynamic library path")
     else
@@ -658,7 +661,7 @@ For Windows, you need to add it to system environment.""")
     end
     
 
-    c = haskey(ENV, "PATH") && occursin(ENV["PATH"], ADCME.BINDIR)
+    c = haskey(ENV, "PATH") && occursin(ADCME.BINDIR, ENV["PATH"])
     if c 
         yes("Binaries path")
     else
@@ -671,6 +674,40 @@ export PATH=$(ADCME.BINDIR):\$PATH
 
 For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
 For Windows, you need to add it to system environment.""")
+    end
+
+    if length(ADCME.CUDA_INC)>0
+        c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBCUDA, ENV["LD_LIBRARY_PATH"])
+        if c 
+            yes("CUDA LD_LIBRARY_PATH")
+        else
+            no("CUDA LD_LIBRARY_PATH", 
+    """$(ADCME.LIBCUDA) is not in LD_LIBRARY_PATH. This path contains compatible tools such as a GCC compiler, `cmake`, `make`, etc.""",
+    """The fix is OPTIONAL.
+    Add your binary path to your environment path, e.g. (Unix systems) 
+    
+    export LD_LIBRARY_PATH=$(ADCME.LIBCUDA):\$LD_LIBRARY_PATH
+    
+    For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
+    For Windows, you need to add it to system environment.""")
+        end
+
+        try 
+            Libdl.dlpath("libcuda")
+            Libdl.dlpath("libcudnn")
+            Libdl.dlpath("libcublas")
+            yes("CUDA Library")
+        catch
+            no("CUDA Library", 
+    """libcuda, libcudnn, and (or) libcublas can not be loaded.""",
+    """If you intend to use GPU, this fix is mandatory. Make sure cudatoolkit and cudnn libraries can be found in
+$(ADCME.LIBCUDA)
+and `nvcc` is in your path.""")
+        end
+    else
+        no("GPU Support", 
+    """ADCME is not compiled against GPU.""",
+    """If you intend to use GPU, set ENV["GPU"] = 1 and then rebuild ADCME.""")
     end
     
 end

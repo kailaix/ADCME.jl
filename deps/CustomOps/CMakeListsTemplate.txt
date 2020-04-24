@@ -32,8 +32,7 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-include_directories(${TF_INC} ${HEADERS} ${EIGEN_INC})
-link_directories(${TF_LIB})
+include_directories(${TF_INC} ${EIGEN_INC})
 
 include_directories(${LIBDIR}/Adept-2/include)
 IF(EXISTS ${LIBDIR}/Adept-2/adept/.libs)
