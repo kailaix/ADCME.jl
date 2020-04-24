@@ -87,6 +87,27 @@ function get_variable(name; kwargs...)
     tf.compat.v1.get_variable(name;kwargs...)
 end
 
+
+"""
+    get_variable(o::Union{PyObject, Number, Array{<:Number}}; 
+        name::Union{String, Missing} = missing, 
+        scope::String = "")
+
+Creates a new variable with initial value `o`
+"""
+function get_variable(o::Union{PyObject, Number, Array{<:Number}}; 
+    name::Union{String, Missing} = missing, 
+    scope::String = "")
+    o = constant(o)
+    if ismissing(name)
+        name = "unnamed_"*randstring(10)
+    end
+    variable_scope(scope, reuse=false) do 
+        v = get_variable(name = name, initializer=o, dtype = get_dtype(o))
+    end
+    return v
+end
+
 """
     placeholder(dtype::Type; kwargs...)
 
