@@ -155,6 +155,9 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
         @warn "cudatoolkit* not found in $pkg_dir"
     elseif length(libpath)>1
         @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
+    end
+
+    if length(libpath)>=1
         LIBCUDA = joinpath(pkg_dir, libpath[1], "lib")
     end
     
@@ -164,13 +167,14 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
         @warn "cudnn* not found in $pkg_dir"
     elseif length(libpath)>1
         @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
-        LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
     end
-    
 
-    @info " ########### CUDA include headers  ########### "
-    cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
-    cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
+    if length(libpath)>=1
+        LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
+        @info " ########### CUDA include headers  ########### "
+        cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
+        cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
+    end
 
     NVCC = readlines(pipeline(`which nvcc`))[1]
     CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
@@ -209,5 +213,6 @@ end
 
 @label writedeps  
 
+@info " ########### Finished  ########### "
 
 end

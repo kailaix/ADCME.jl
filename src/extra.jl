@@ -316,7 +316,7 @@ end
 
 
 function use_gpu(i::Union{Nothing,Int64}=nothing)
-    if length(LIBCUDA)==0
+    if length(CUDA_INC)==0
         error("""ADCME is not built against GPU. Set ENV["GPU"]=1 and rebuild GPU.""")
     end
     dl = pyimport("tensorflow.python.client.device_lib")
