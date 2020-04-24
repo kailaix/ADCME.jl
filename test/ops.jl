@@ -402,3 +402,37 @@ end
     A = rand(10,10)
     @test tr(A) ≈ run(sess, tr(constant(A)))
 end
+
+@testset "trilu" begin 
+    for num = -5:5
+        lu = 1
+        m = 10
+        n = 5
+        u = rand(1, m, n)
+        ref = zeros(size(u,1), m, n)
+        for i = 1:size(u,1)
+            ref[i,:,:] = tril(u[i,:,:], num)
+        end
+        out = tril(constant(u),num)
+        sess = Session(); init(sess)
+        @test norm(run(sess, out)- ref)≈0
+    end
+
+    for num = -5:5
+        lu = 0
+        m = 5
+        n = 10
+        u = rand(1,m, n)
+        ref = zeros(size(u,1), m, n)
+        for i = 1:size(u,1)
+            if lu==0
+                ref[i,:,:] = triu(u[i,:,:], num)
+            else 
+                ref[i,:,:] = tril(u[i,:,:], num)
+            end
+        end
+        out = triu(constant(u),num)
+        sess = Session(); init(sess)
+        @test norm(run(sess, out)- ref)≈0
+    end
+end

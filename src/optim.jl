@@ -263,7 +263,6 @@ Applies the BFGS optimizer to `value_and_gradients_function`
 """
 function BFGS!(value_and_gradients_function::Function, 
     initial_position::Union{PyObject, Array{Float64}}, max_iter::Int64=50, args...;kwargs...)
-    tfp = pyimport("tensorflow_probability")
     tfp.optimizer.bfgs_minimize(value_and_gradients_function, 
         initial_position=initial_position, args...;max_iterations=max_iter, kwargs...)[5]
 end
@@ -613,6 +612,7 @@ The gradients `grads` must be provided. Typically, `grads[i] = gradients(loss, v
 
 # Example 1
 ```julia
+import Optim # required
 a = Variable(0.0)
 loss = (a-1)^2
 g = gradients(loss, a)
@@ -622,6 +622,7 @@ BFGS!(sess, loss, g, a)
 
 # Example 2
 ```julia 
+import Optim # required
 a = Variable(0.0)
 loss = (a^2+a-1)^2
 g = gradients(loss, a)
@@ -634,6 +635,9 @@ BFGS!(sess, loss, g, a; callback = cb)
 """
 function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyObject}, 
         vars::Union{Array{PyObject},PyObject}; callback::Union{Function, Missing}=missing, kwargs...) where T<:Union{Nothing, PyObject}
+    if !isdefined(Main, :Optim)
+        error("Package Optim.jl must be imported in the main module using `import Optim` or `using Optim`")
+    end
     if isa(grads, PyObject); grads = [grads]; end
     if isa(vars, PyObject); vars = [vars]; end
     if length(grads)!=length(vars); error("ADCME: length of grads and vars do not match"); end
@@ -687,7 +691,7 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
         false
     end
 
-    Optim.optimize(f, g!, x0, Optim.LBFGS(), Optim.Options(show_trace=true, callback=callback1,
+    Main.Optim.optimize(f, g!, x0, Main.Optim.LBFGS(), Main.Optim.Options(show_trace=true, callback=callback1,
          kwargs...))
     return __losses
 end

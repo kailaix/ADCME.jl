@@ -82,7 +82,7 @@ function Base.:copy(o::PyObject)
     return tf.identity(o)
 end
 
-function get_variable(name; kwargs...)
+function get_variable(name::String; kwargs...)
     kwargs = jlargs(kwargs)
     tf.compat.v1.get_variable(name;kwargs...)
 end
@@ -93,20 +93,50 @@ end
         name::Union{String, Missing} = missing, 
         scope::String = "")
 
-Creates a new variable with initial value `o`
+Creates a new variable with initial value `o`. If `name` exists, `get_variable` returns the variable instead of create a new one.
 """
 function get_variable(o::Union{PyObject, Number, Array{<:Number}}; 
     name::Union{String, Missing} = missing, 
     scope::String = "")
+    local v
     o = constant(o)
     if ismissing(name)
         name = "unnamed_"*randstring(10)
     end
-    variable_scope(scope, reuse=false) do 
-        v = get_variable(name = name, initializer=o, dtype = get_dtype(o))
+    variable_scope(scope) do 
+        v = tf.compat.v1.get_variable(name = name, initializer=o, dtype=DTYPE[get_dtype(o)])
     end
     return v
 end
+
+
+"""
+    get_variable(dtype::Type;
+    shape::Union{Array{<:Integer}, NTuple{N, <:Integer}}, 
+    name::Union{Missing,String} = missing
+    scope::String = "")
+
+Creates a new variable with initial value `o`. If `name` exists, `get_variable` returns the variable instead of create a new one.
+"""
+function get_variable(dtype::Type;
+     shape::Union{Array{<:Integer}, NTuple{N, <:Integer}}, 
+     name::Union{Missing,String} = missing,
+     scope::String = "") where N
+    local v
+    dtype = DTYPE[dtype]
+    if ismissing(name)
+        name = "unnamed_"*randstring(10)
+    end
+    variable_scope(scope) do 
+        v = tf.compat.v1.get_variable(name = name, shape=shape, dtype = dtype)
+    end
+    return v
+end
+
+get_variable(dtype::Type,
+    shape::Union{Array{<:Integer}, NTuple{N, <:Integer}}, 
+    name::Union{Missing,String} = missing,
+    scope::String = "") where N = get_variable(dtype, shape=shape, name=name, scope = scope)
 
 """
     placeholder(dtype::Type; kwargs...)

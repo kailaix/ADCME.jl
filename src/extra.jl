@@ -148,6 +148,7 @@ function refresh_cmake()
     open(joinpath(@__DIR__, "../deps/CustomOps/CMakeLists.txt"), "w") do io 
         write(io, cmakecnt)
     end
+    NEWLIB
 end
 
 """

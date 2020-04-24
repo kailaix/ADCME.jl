@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
     vec, \, cos, sin, sign, map, prod
-import LinearAlgebra: tr, diag, det, norm, diagm, dot, I, svd
+import LinearAlgebra: tr, diag, det, norm, diagm, dot, I, svd, tril, triu
 import Statistics: mean, std
 import FFTW: fft, ifft
 export 
@@ -70,7 +70,9 @@ dot,
 set_shape,
 selu, 
 elu,
-tr
+tr,
+tril, 
+triu 
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -985,4 +987,91 @@ end
 
 function tr(o::PyObject)
     tf.linalg.trace(o)
+end
+
+
+
+function tril(o::PyObject, num::Int64 = 0)
+    flag = false
+    if length(size(o))==2
+        flag = true 
+        o = tf.expand_dims(o, 0)
+    end
+    tri_lu_ = load_system_op(COLIB["tri_lu"]...; multiple=false)
+    u,num,lu = convert_to_tensor([o,num,1], [Float64,Int64,Int64])
+    out = tri_lu_(u,num,lu)
+    if flag 
+        return out[1]
+    else
+        return out 
+    end
+end
+
+function triu(o::PyObject, num::Int64 = 0)
+    flag = false
+    if length(size(o))==2
+        flag = true 
+        o = tf.expand_dims(o, 0)
+    end
+    tri_lu_ = load_system_op(COLIB["tri_lu"]...; multiple=false)
+    u,num,lu = convert_to_tensor([o,num,0], [Float64,Int64,Int64])
+    out = tri_lu_(u,num,lu)
+    if flag 
+        return out[1]
+    else
+        return out 
+    end
+end
+
+"""
+    split(o::PyObject, 
+        num_or_size_splits::Union{Integer, Array{<:Integer}, PyObject}; kwargs...)
+    
+Splits `o` according to `num_or_size_splits`
+
+# Example 1
+```julia
+a = constant(rand(10,8,6))
+split(a, 5)
+```
+Expected output:
+```
+5-element Array{PyCall.PyObject,1}:
+ PyObject <tf.Tensor 'split_5:0' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:1' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:2' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:3' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:4' shape=(2, 8, 6) dtype=float64>
+```
+
+# Example 2
+```julia
+a = constant(rand(10,8,6))
+split(a, [4,3,1], dims=2)
+```
+Expected output:
+```
+3-element Array{PyCall.PyObject,1}:
+ PyObject <tf.Tensor 'split_6:0' shape=(10, 4, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_6:1' shape=(10, 3, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_6:2' shape=(10, 1, 6) dtype=float64>
+```
+
+# Example 3
+```julia
+a = constant(rand(10,8,6))
+split(a, 3, dims=3)
+```
+Expected output:
+```
+3-element Array{PyCall.PyObject,1}:
+ PyObject <tf.Tensor 'split_7:0' shape=(10, 8, 2) dtype=float64>
+ PyObject <tf.Tensor 'split_7:1' shape=(10, 8, 2) dtype=float64>
+ PyObject <tf.Tensor 'split_7:2' shape=(10, 8, 2) dtype=float64>
+```
+"""
+function Base.:split(o::PyObject, 
+    num_or_size_splits::Union{Integer, Array{<:Integer}, PyObject}; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.split(o, num_or_size_splits; kwargs...)
 end

@@ -67,7 +67,6 @@ for op in [:Beta, :Bernoulli,:Gamma, :TruncatedNormal, :Binomial, :Cauchy,
     @eval begin
         export $opname
         function $opname(shape...;kwargs...)
-            tfp = pyimport("tensorflow_probability")
             if !haskey(kwargs, :dtype); T = Float64; 
             else T=kwargs[:dtype]; end
             kwargs = jlargs(kwargs)
