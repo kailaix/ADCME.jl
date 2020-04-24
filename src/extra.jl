@@ -676,7 +676,7 @@ For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.b
 For Windows, you need to add it to system environment.""")
     end
 
-    if length(ADCME.LIBCUDA)>0
+    if length(ADCME.CUDA_INC)>0
         c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBCUDA, ENV["LD_LIBRARY_PATH"])
         if c 
             yes("CUDA LD_LIBRARY_PATH")
