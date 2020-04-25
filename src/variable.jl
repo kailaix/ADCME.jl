@@ -23,7 +23,9 @@ tensor,
 convert_to_tensor,
 hessian_vector,
 TensorArray,
-gradient_checkpointing
+gradient_checkpointing,
+zeros_like,
+ones_like
 
 """
     constant(value; kwargs...)
@@ -629,4 +631,38 @@ function gradient_checkpointing(type::String="speed")
         error("ADCME: $type not defined")
     end
     @info "Loaded: $type"
+end
+
+"""
+    zeros_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+
+Returns a all-zero tensor, which has the same size as `o`.
+
+# Example
+```julia
+a = rand(100,10)
+b = zeros_like(a)
+@assert run(sess, b)≈zeros(100,10)
+```
+"""
+function zeros_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.zeros_like(o, args...;kwargs...)
+end
+
+"""
+    ones_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+
+Returns a all-one tensor, which has the same size as `o`.
+
+# Example
+```julia
+a = rand(100,10)
+b = ones_like(a)
+@assert run(sess, b)≈ones(100,10)
+```
+"""
+function ones_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.ones_like(o, args...;kwargs...)
 end

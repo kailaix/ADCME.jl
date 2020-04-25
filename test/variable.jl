@@ -137,3 +137,11 @@ end
     @test run(sess, sym(A)) ≈ 0.5 * (A + A')
     @test all(eigvals(run(sess, spd(A))) .> 0.0)
 end
+
+@testset "ones/zeros like" begin 
+    a = rand(100,10)
+    b = ones_like(a)
+    @test run(sess, b)≈ones(100,10)
+    b = zeros_like(a)
+    @test run(sess, b)≈zeros(100,10)
+end
