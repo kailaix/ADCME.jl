@@ -1,5 +1,6 @@
-export AffineConstantFlow, AffineHalfFlow, SlowMAF,
-       Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel
+export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF,
+       Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel,
+       autoregressive_network
 
 abstract type FlowOp end 
 
@@ -105,8 +106,71 @@ end
 #------------------------------------------------------------------------------------------
 mutable struct MAF <: FlowOp
     dim::Int64 
-    layers::Array{Function}
-    
+    net::Function
+    parity::Bool
+end
+
+function MAF(dim::Int64, parity::Bool, config::Array{Int64}; name::Union{String, Missing} = missing, 
+    activation::Union{Nothing,String} = "relu", kwargs...)
+    push!(config, 2)
+    kwargs = jlargs(kwargs)
+    if ismissing(name)
+        name = "MAF_"*randstring(10)
+    end
+    net = x->autoregressive_network(x, config, name; activation = activation)
+    MAF(dim, net, parity)
+end
+
+function forward(fo::MAF, x::Union{Array{<:Real}, PyObject})
+    st = fo.net(x)
+    # @info st, split(st, 1, dims=2)
+    s, t = squeeze.(split(st, 2, dims=3))
+    z = x .* exp(s) + t 
+    if fo.parity
+        z = reverse(z, dims=2)
+    end
+    log_det = sum(s, dims=2)
+    return z, log_det
+end
+
+function backward(fo::MAF, z::Union{Array{<:Real}, PyObject})
+    x = zeros_like(z)
+    log_det = zeros(size(z, 1))
+    if fo.parity
+        z = reverse(z, dims=2)
+    end
+    for i = 1:fo.dim
+        st = fo.net(copy(x))
+        s, t = squeeze.(split(st, 2, dims=3))
+        x = scatter_update(x, :, i, (z[:, i] - t[:, i]) * exp(-s[:, i]))
+        log_det += -s[:,i]
+    end
+    return x, log_det
+end
+
+"""
+    autoregressive_network(x::Union{Array{Float64}, PyObject}, config::Array{<:Integer}, 
+    scope::String="default"; activation::String=nothing, kwargs...)
+
+Creates an masked autoencoder for distribution estimation. 
+"""
+function autoregressive_network(x::Union{Array{Float64}, PyObject}, config::Array{<:Integer}, 
+    scope::String="default"; activation::Union{Nothing,String}="tanh", kwargs...)
+    local y
+    x = constant(x)
+    params = config[end]
+    hidden_units = PyVector(config[1:end-1])
+    event_shape = [size(x, 2)]
+    if haskey(STORAGE, scope*"/autoregressive_network/")
+        made = STORAGE[scope*"/autoregressive_network/"]
+        y = made(x)
+    else
+        made = ADCME.tfp.bijectors.AutoregressiveNetwork(params=params, hidden_units = hidden_units,
+            event_shape = event_shape, activation = activation, kwargs...)
+        STORAGE[scope*"/autoregressive_network/"] = made
+        y = made(x)
+    end
+    return y
 end
 
 #------------------------------------------------------------------------------------------

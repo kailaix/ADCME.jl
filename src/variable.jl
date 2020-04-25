@@ -80,6 +80,14 @@ function cell(arr::Array, args...;kwargs...)
     tf.ragged.constant(arr, args...;kwargs...)
 end
 
+"""
+    copy(o::PyObject)
+
+Creates a tensor that has the same value that is currently stored in a variable.
+
+!!! note
+    The output is a graph node that will have that value when evaluated. Any time you evaluate it, it will grab the current value of `o`. 
+"""
 function Base.:copy(o::PyObject)
     return tf.identity(o)
 end

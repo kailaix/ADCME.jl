@@ -20,9 +20,12 @@ module ADCME
 
     tf = PyNULL()
     tfp = PyNULL()
+
+
+    #------------------------------------------------------------------------------------------
+    # Global Storage 
     DTYPE = Dict{Type, PyObject}()
-    # a list of custom operators 
-    COLIB = Dict{String, Tuple{String, String, String, Bool}}()
+    COLIB = Dict{String, Tuple{String, String, String, Bool}}() # custom operators
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
@@ -32,6 +35,7 @@ module ADCME
         error("ADCME is not properly built; run `Pkg.build(\"ADCME\")` to fix the problem.")
     end
     run_metadata = nothing
+    STORAGE = Dict{String, Any}()
         
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB

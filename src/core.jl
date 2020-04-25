@@ -20,7 +20,12 @@ Base.:values(o::PyObject) = o.numpy()
 
 Resets the graph by removing all the operators. 
 """
-reset_default_graph() = tf.compat.v1.reset_default_graph()
+function reset_default_graph()
+    global STORAGE
+    tf.compat.v1.reset_default_graph()
+    STORAGE = Dict{String, Any}()
+    nothing
+end
 """
     get_collection(name::Union{String, Missing})
 
