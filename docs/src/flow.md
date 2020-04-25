@@ -125,3 +125,37 @@ axis("scaled")
 ```
 
 ![](./assets/moonresult.png)
+
+## Models
+
+Here is a collection of different flow-based generative models (assuming the dimension is `dim`). In the following, we use the same neural network architecture:
+
+```julia
+function mlp(x, k, id)
+    x = constant(x)
+    variable_scope("layer$k$id") do
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 1)
+    end
+    return x
+end
+```
+
+### RealNVP
+
+```julia
+flows = [AffineHalfFlow(dim, mod(i,2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i = 0:8]
+```
+
+### NICE
+
+```julia
+flow1 = [AffineHalfFlow(2, mod(i,2)==1, missing, x->mlp(x, i, 1)) for i = 0:4]
+flow2 = [AffineConstantFlow(2, shift=false)]
+flows = [flow1;flow2]
+prior = ADCME.MultivariateNormalDiag(loc=zeros(2))
+model = NormalizingFlowModel(prior, flows)
+```
+

@@ -70,13 +70,27 @@ end
     A = scatter_add(A, 3, 2.)
     B = [1.;1.;3.]
 
-    C = Variable(ones(9))
-    D = scatter_add(C, [2], [1], 1., 3, 3)
-    G = reshape(D, 3, 3)
+    C = Variable(ones(3,3))
+    D = scatter_add(C, [2], [1], 1.)
     E = [1. 1. 1; 2. 1. 1.; 1. 1. 1.]
     init(sess)
     @test run(sess, A)≈B
-    @test run(sess, G)≈E
+    @test run(sess, D)≈E
+
+    F = scatter_update(C, 1:2, :, 2ones(2, 3))
+    @test run(sess, F)≈[ 2.0  2.0  2.0
+                        2.0  2.0  2.0
+                        1.0  1.0  1.0]
+
+    F = scatter_update(C, 1, :, 2ones(1, 3))
+    @test run(sess, F)≈[2.0  2.0  2.0
+                        1.0  1.0  1.0
+                        1.0  1.0  1.0]
+
+    F = scatter_update(C, 1, 2, 2.0)
+    @test run(sess, F)≈[1.0  2.0  1.0
+                    1.0  1.0  1.0
+                    1.0  1.0  1.0]
 
     A = Variable(rand(10))
     B = Variable(rand(5))

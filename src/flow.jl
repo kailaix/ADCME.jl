@@ -1,4 +1,4 @@
-export AffineConstantFlow, AffineHalfFlow, 
+export AffineConstantFlow, AffineHalfFlow, SlowMAF,
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel
 
 abstract type FlowOp end 
@@ -6,8 +6,8 @@ abstract type FlowOp end
 #------------------------------------------------------------------------------------------
 mutable struct AffineConstantFlow <: FlowOp
     dim::Int64
-    s::PyObject
-    t::PyObject
+    s::Union{Missing,PyObject}
+    t::Union{Missing,PyObject}
 end
 
 function AffineConstantFlow(dim::Int64, name::Union{String, Missing}=missing; scale::Bool=true, shift::Bool=true)
@@ -41,12 +41,66 @@ function forward(fo::AffineConstantFlow, x)
     return z, log_det
 end
 
-function backward(fo::AffineConstantFlow, x)
-    s = ismissing(fo.s) ? tf.zeros_like(x) : fo.s
-    t = ismissing(fo.t) ? tf.zeros_like(x) : fo.t
+function backward(fo::AffineConstantFlow, z)
+    s = ismissing(fo.s) ? tf.zeros_like(z) : fo.s
+    t = ismissing(fo.t) ? tf.zeros_like(z) : fo.t
     x = (z-t) .* exp(-s)
     log_det = sum(-s, dims=2)
     return x, log_det
+end
+
+#------------------------------------------------------------------------------------------
+mutable struct SlowMAF <: FlowOp
+    dim::Int64 
+    layers::Array{Function}
+    order::Array{Int64}
+end
+
+function SlowMAF(dim::Int64, parity::Bool, nns::Array)
+    local order
+    @assert length(nns)==dim - 1
+    if parity
+        order = Array(1:dim)
+    else 
+        order = reverse(Array(1:dim))
+    end
+    SlowMAF(dim, nns, order)
+end
+
+function forward(fo::SlowMAF, x::Union{Array{<:Real}, PyObject})
+    z = tf.zeros_like(x)
+    log_det = zeros(size(x,1))
+    for i = 1:fo.dim
+        if i==1
+            st = constant(zeros(size(x,1), 2))
+        else
+            st = fo.layers[i-1](x[:,1:i])
+        end
+        s, t = st[:,1], st[:,2]
+        # z[:, fo.order[i]] = x[:, i]*exp(s) + t 
+        # @info x[:, i]*exp(s) + t
+        z = scatter_update(z, :, fo.order[i], x[:, i]*exp(s) + t)
+        log_det += s 
+    end
+    return z, log_det
+end
+
+function backward(fo::SlowMAF, z::Union{Array{<:Real}, PyObject})
+    x = tf.zeros_like(z)
+    log_det = zeros(size(z,1))
+    for i = 1:dim 
+        if i==1
+            st = constant(zeros(size(x,1), 2))
+        else
+            st = fo.layers[i-1](x[:,1:i])
+        end
+        s, t = st[:,1], st[:,2]
+        # @info (z[:, order[i]] - t) * exp(-s)
+        x = scatter_update(x, :, i, (z[:, order[i]] - t) * exp(-s))
+        # x[:, i] = (z[:, order[i]] - t) * exp(-s)
+        log_det += -s 
+    end
+    return x, log_det 
 end
 
 #------------------------------------------------------------------------------------------
