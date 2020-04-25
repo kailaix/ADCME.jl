@@ -31,13 +31,14 @@ fc_num,
 fc_init,
 ae_to_code,
 fcx,
+bn,
 sparse_softmax_cross_entropy_with_logits
 
 
 # for a keras layer, `training` is a keyword
 # dropout = tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None)(dense, training=is_training)
 
-Dense(args...;kwargs...) = tf.keras.layers.Dense(args...;kwargs...)
+# Dense(args...;kwargs...) = tf.keras.layers.Dense(args...;kwargs...)
 ELU(args...;kwargs...) = tf.keras.layers.ELU(args...;kwargs...)
 Flatten(args...;kwargs...) = tf.keras.layers.Flatten(args...;kwargs...)
 LeakyReLU(args...;kwargs...) = tf.keras.layers.LeakyReLU(args...;kwargs...)
@@ -386,9 +387,14 @@ for (op, tfop) in [(:conv1d, :conv1d), (:conv2d, :conv2d), (:conv2d_in_plane, :c
     end
 end
 
+"""
+    dense(inputs::Union{PyObject, Array{<:Real}}, units::Int64, args...; 
+        activation::Union{String, Function} = nothing, kwargs...)
 
-export dense, bn
-function dense(inputs, units, args...; activation = nothing, kwargs...) 
+Creates a fully connected layer with the activation function specified by `activation`
+"""
+function dense(inputs::Union{PyObject, Array{<:Real}}, units::Int64, args...; activation::Union{String, Function, Nothing} = nothing, kwargs...) 
+    inputs = constant(inputs)
     string2fn = Dict(
         "relu" => relu,
         "tanh" => tanh,

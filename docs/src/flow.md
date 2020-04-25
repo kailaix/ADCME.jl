@@ -1,3 +1,28 @@
+# Flow-based Generative Model
+
+In this article we introduce the ADCME module for flow-based generative models. The flow-based generative models can be used to model the joint distribution of high-dimensional random variables. It constructs a sequence of invertible transformation of distributions
+$$
+x = f(u) \quad u \sim \pi(u)
+$$
+based on the change of variable equation
+$$
+p(x) = \pi(f^{-1}(x)) \left|\det\left(\frac{\partial f^{-1}}{\partial x}\right)\right|
+$$
+Compared to other generative models such as variational autoencoder (VAE) and generative neural networks (GAN), the flow-based generative models give us explicit formuas of density functions. For model training, we can directly minimizes the posterier log likelihood in the flow-based generative models, while use approximate likelihood functions in VAE and adversarial training in GAN. In general, the flow-based generative model is easier to train than VAE and GAN. In the following, we give some examples of using flow-based generatives models in ADCME. 
+
+## Type Hierarchy
+
+The flow-based generative model is organized as follows, from botton level to top level:
+
+* `FlowOp`. This consists of unit invertible transformations, such as [`AffineConstantFlow`](@ref) and [`Invertible1x1Conv`](@ref).
+* `NormalizingFlow`. This is basically a sequence of `FlowOp`. It is not exposed to users. 
+* `NormalizingFlowModel`. This is a container of the sequence of `FlowOp`s and a prior distribution. `NormalizingFlowModel` is callable and can "normalize" the data distribution. We can also sample from `NormalizingFlowModel`, where the prior distribution is transformed to data distribution. 
+
+## A Simple Example
+
+Let's consider a simple example for transforming the two moons dataset to a univariate Gaussian distribution. First, we adapt a function from [here](https://github.com/wildart/nmoons) and use it to generate the dataset
+
+```julia
 using Revise
 using ADCME
 using PyCall
@@ -48,9 +73,14 @@ end
 
 x = sample_moons(128)
 scatter(x[:,1],x[:,2])
-axis("scaled"); xlabel("x"); ylabel("y")
+axis("equal")
+```
 
+![](./assets/moons.png)
 
+Next we construct a flow-based generative model, as follows:
+
+```julia
 function mlp(x, k, id)
     x = constant(x)
     variable_scope("layer$k$id") do
@@ -70,7 +100,11 @@ x = placeholder(Float64, shape=[128,2])
 zs, prior_logpdf, logdet = model(x)
 log_pdf = prior_logpdf + logdet
 loss = -sum(log_pdf)
+```
 
+Finally, we maximize the log llikelihood function using [`AdamOptimizer`](@ref)
+
+```julia
 sess = Session(); init(sess)
 opt = AdamOptimizer(1e-4).minimize(loss)
 sess = Session(); init(sess)
@@ -87,4 +121,7 @@ z = zs[end]
 z = run(sess, z)
 scatter(x[:,1], x[:,2], c="b", s=5, label="data")
 scatter(z[:,1], z[:,2], c="r", s=5, label="prior --> posterior")
-axis("scaled"); xlabel("x"); ylabel("y")
+axis("scaled")
+```
+
+![](./assets/moonresult.png)

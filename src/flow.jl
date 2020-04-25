@@ -1,6 +1,6 @@
 export AffineConstantFlow, AffineHalfFlow, 
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel
-       
+
 abstract type FlowOp end 
 
 #------------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ function forward(fo::AffineHalfFlow, x::Union{Array{<:Real}, PyObject})
     s = fo.s_cond(x0)
     t = fo.t_cond(x0)
     z0 = x0
-    z1 = exp(s) * x1 + t 
+    z1 = exp(s) .* x1 + t 
     if fo.parity
         z0, z1 = z1, z0 
     end
@@ -144,8 +144,8 @@ function backward(fo::AffineHalfFlow, z::Union{Array{<:Real}, PyObject})
     s = fo.s_cond(z0)
     t = fo.t_cond(z0)
     x0 = z0 
-    x1 = (z1-t)*exp(-s)
-    if parity
+    x1 = (z1-t).*exp(-s)
+    if fo.parity
         x0, x1 = x1, x0
     end
     x = [x0 x1]
@@ -154,11 +154,13 @@ function backward(fo::AffineHalfFlow, z::Union{Array{<:Real}, PyObject})
 end
 
 #------------------------------------------------------------------------------------------
-mutable struct NormalizingFlow <: FlowOp
-    flows
+mutable struct NormalizingFlow 
+    flows::Array
+    NormalizingFlow(flows::Array) = new(flows)
 end
 
-function forward(fo::NormalizingFlow, x)
+function forward(fo::NormalizingFlow, x::Union{PyObject, Array{<:Real,2}})
+    x = constant(x)
     m = size(x,1)
     log_det = constant(zeros(m))
     zs = PyObject[x]
@@ -170,7 +172,8 @@ function forward(fo::NormalizingFlow, x)
     return zs, log_det
 end
 
-function backward(fo::NormalizingFlow, z)
+function backward(fo::NormalizingFlow, z::Union{PyObject, Array{<:Real,2}})
+    z = constant(z)
     m = size(z,1)
     log_det = constant(zeros(m))
     xs = [z]
@@ -184,27 +187,33 @@ end
 
 #------------------------------------------------------------------------------------------
 mutable struct NormalizingFlowModel
-    prior
+    prior::ADCMEDistribution
     flow::NormalizingFlow
 end
 
-function NormalizingFlowModel(prior, flows::Array{FlowOp})
+function NormalizingFlowModel(prior::T, flows::Array{<:FlowOp}) where T<:ADCMEDistribution
     NormalizingFlowModel(prior, NormalizingFlow(flows))
 end
 
-function forward(nf::NormalizingFlow, x)
+function forward(nf::NormalizingFlowModel, x::Union{PyObject, Array{<:Real,2}})
+    x = constant(x)
     zs, log_det = forward(nf.flow, x)
-    prior_logprob = log_prob(fo.prior, zs[end])
+    prior_logprob = logpdf(nf.prior, zs[end])
     return zs, prior_logprob, log_det
 end
 
-function backward(nf::NormalizingFlow, z)
+function backward(nf::NormalizingFlowModel, z::Union{PyObject, Array{<:Real,2}})
+    z = constant(z)
     xs, log_det = backward(nf.flow, z)
     return xs, log_det
 end
 
-function sample(nf::NormalizingFlow, num_samples)
-    z = sample(nf.prior, num_samples)
-    xs, _ = backward(flow, z)
+function Base.:rand(nf::NormalizingFlowModel, num_samples::Int64)
+    z = rand(nf.prior, num_samples)
+    xs, _ = backward(nf.flow, z)
     return xs 
 end
+
+#------------------------------------------------------------------------------------------
+(o::FlowOp)(x::Union{PyObject, Array{<:Real,2}}) = forward(o, x)
+(o::NormalizingFlowModel)(x::Union{PyObject, Array{<:Real,2}}) = forward(o, x)
