@@ -450,3 +450,11 @@ end
         @test norm(run(sess, out)- ref)≈0
     end
 end
+
+@testset "reverse" begin 
+    a = rand(10,2)
+    A = constant(a)
+    @test run(sess, reverse(A, dims=1)) == reverse(a, dims=1)
+    @test run(sess, reverse(A, dims=2)) == reverse(a, dims=2)
+    @test run(sess, reverse(A, dims=-1)) == reverse(a, dims=2)
+end

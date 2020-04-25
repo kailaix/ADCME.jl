@@ -1,6 +1,6 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
-    vec, \, cos, sin, sign, map, prod
+    vec, \, cos, sin, sign, map, prod, reverse
 import LinearAlgebra: tr, diag, det, norm, diagm, dot, I, svd, tril, triu
 import Statistics: mean, std
 import FFTW: fft, ifft
@@ -1112,4 +1112,26 @@ function Base.:split(o::PyObject,
     num_or_size_splits::Union{Integer, Array{<:Integer}, PyObject}; kwargs...)
     kwargs = jlargs(kwargs)
     tf.split(o, num_or_size_splits; kwargs...)
+end
+
+"""
+    reverse(o::PyObject, kwargs...)
+
+Given a tensor `o`, and an index `dims` representing the set of dimensions of tensor to reverse.
+
+# Example 
+```julia
+a = rand(10,2)
+A = constant(a)
+@assert run(sess, reverse(A, dims=1)) == reverse(a, dims=1)
+@assert run(sess, reverse(A, dims=2)) == reverse(a, dims=2)
+@assert run(sess, reverse(A, dims=-1)) == reverse(a, dims=2)
+```
+"""
+function reverse(o::PyObject; dims::Integer = -1)
+    if dims==-1
+        dims = length(size(o))
+    end
+    dims = convert_to_tensor([dims-1], dtype=Int32)
+    tf.reverse(o, dims)
 end
