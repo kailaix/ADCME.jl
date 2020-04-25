@@ -561,7 +561,7 @@ function _jlindex2indices(len::Int64,
     elseif isa(indices, UnitRange{Int64}) || isa(indices, StepRange{Int64, Int64})
         indices = collect(indices)
     elseif isa(indices, Colon)
-        indices = (1:len |> collect)
+        indices = Array(1:len)
     elseif isa(indices, Int64)
         indices = [indices]
     end
@@ -587,6 +587,7 @@ for (op1, op2) = [(:_scatter_add, :tensor_scatter_nd_add), (:_scatter_sub, :tens
             end
             indices = _jlindex2indices(length(ref),indices)
             indices = reshape(indices, (-1,1))
+            # @info ref, indices, updates
             tf.$op2(ref, indices, updates)
         end
     end
@@ -645,9 +646,6 @@ for (op1, op2) = [(:scatter_update2, :scatter_update), (:scatter_add2, :scatter_
             updates::Union{Array{<:Real}, Real, PyObject})
             m, n = size(A)
             updates = convert_to_tensor(updates, dtype=get_dtype(A))
-            if length(size(updates))==1
-                updates = reshape(updates, (-1,1))
-            end
             @assert length(size(A))==2
             xind = _jlindex2indices(m,xind)
             yind = _jlindex2indices(n,yind)

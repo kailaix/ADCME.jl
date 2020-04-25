@@ -77,9 +77,7 @@ function forward(fo::SlowMAF, x::Union{Array{<:Real}, PyObject})
             st = fo.layers[i-1](x[:,1:i])
         end
         s, t = st[:,1], st[:,2]
-        # z[:, fo.order[i]] = x[:, i]*exp(s) + t 
-        # @info x[:, i]*exp(s) + t
-        z = scatter_update(z, :, fo.order[i], x[:, i]*exp(s) + t)
+        z = scatter_update(z, :, fo.order[i],  x[:, i]*exp(s) + t)
         log_det += s 
     end
     return z, log_det
@@ -88,16 +86,14 @@ end
 function backward(fo::SlowMAF, z::Union{Array{<:Real}, PyObject})
     x = tf.zeros_like(z)
     log_det = zeros(size(z,1))
-    for i = 1:dim 
+    for i = 1:fo.dim 
         if i==1
             st = constant(zeros(size(x,1), 2))
         else
             st = fo.layers[i-1](x[:,1:i])
         end
         s, t = st[:,1], st[:,2]
-        # @info (z[:, order[i]] - t) * exp(-s)
-        x = scatter_update(x, :, i, (z[:, order[i]] - t) * exp(-s))
-        # x[:, i] = (z[:, order[i]] - t) * exp(-s)
+        x = scatter_update(x, :, i, (z[:, fo.order[i]] - t) * exp(-s))
         log_det += -s 
     end
     return x, log_det 
