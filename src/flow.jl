@@ -54,6 +54,7 @@ mutable struct SlowMAF <: FlowOp
     dim::Int64 
     layers::Array{Function}
     order::Array{Int64}
+    p::PyObject
 end
 
 function SlowMAF(dim::Int64, parity::Bool, nns::Array)
@@ -64,7 +65,8 @@ function SlowMAF(dim::Int64, parity::Bool, nns::Array)
     else 
         order = reverse(Array(1:dim))
     end
-    SlowMAF(dim, nns, order)
+    p = Variable(zeros(2))
+    SlowMAF(dim, nns, order, p)
 end
 
 function forward(fo::SlowMAF, x::Union{Array{<:Real}, PyObject})
@@ -72,9 +74,10 @@ function forward(fo::SlowMAF, x::Union{Array{<:Real}, PyObject})
     log_det = zeros(size(x,1))
     for i = 1:fo.dim
         if i==1
-            st = constant(zeros(size(x,1), 2))
+            st = repeat(fo.p', size(x,1), 1)
         else
-            st = fo.layers[i-1](x[:,1:i])
+            st = fo.layers[i-1](x[:,1:i-1])
+            @assert size(st, 2)==2
         end
         s, t = st[:,1], st[:,2]
         z = scatter_update(z, :, fo.order[i],  x[:, i]*exp(s) + t)
@@ -88,15 +91,22 @@ function backward(fo::SlowMAF, z::Union{Array{<:Real}, PyObject})
     log_det = zeros(size(z,1))
     for i = 1:fo.dim 
         if i==1
-            st = constant(zeros(size(x,1), 2))
+            st = repeat(fo.p', size(x,1), 1)
         else
-            st = fo.layers[i-1](x[:,1:i])
+            st = fo.layers[i-1](x[:,1:i-1])
         end
         s, t = st[:,1], st[:,2]
         x = scatter_update(x, :, i, (z[:, fo.order[i]] - t) * exp(-s))
         log_det += -s 
     end
     return x, log_det 
+end
+
+#------------------------------------------------------------------------------------------
+mutable struct MAF <: FlowOp
+    dim::Int64 
+    layers::Array{Function}
+    
 end
 
 #------------------------------------------------------------------------------------------

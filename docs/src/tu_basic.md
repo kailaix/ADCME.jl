@@ -140,3 +140,10 @@ Here we show a list of commonly used operators in ADCME.
 | Elementwise Multiplication        | `a.*b`                                          |
 | Elementwise Power                 | `a^2`                                           |
 | SVD                               | `svd(a)`                                        |
+| `A[indices] = updates`            | `A = scatter_update(A, indices, updates)`       |
+| `A[indices] += updates`           | `A = scatter_add(A, indices, updates)`          |
+| `A[indices] -= updates`           | `A = scatter_sub(A, indices, updates)`          |
+| `A[idx, idy] = updates`           | `A = scatter_update(A, idx, idy, updates)`      |
+| `A[idx, idy] += updates`          | `A = scatter_add(A, idx, idy, updates)`         |
+| `A[idx, idy] -= updates`          | `A = scatter_sub(A, idx, idy, updates)`         |
+
