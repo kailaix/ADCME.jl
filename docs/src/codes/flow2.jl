@@ -120,21 +120,39 @@ end
 # # run(sess,zs)
 
 
-# GLOW
+# # GLOW
+# function mlp(x, k, id)
+#     x = constant(x)
+#     variable_scope("layer$k$id") do
+#         x = dense(x, 24, activation="leaky_relu")
+#         x = dense(x, 24, activation="leaky_relu")
+#         x = dense(x, 24, activation="leaky_relu")
+#         x = dense(x, 1)
+#     end
+#     return x
+# end
+# flows = [Invertible1x1Conv(2, "conv$i") for i = 0:2]
+# norms = [ActNorm(2, "ActNorm$i") for i = 0:2]
+# couplings = [AffineHalfFlow(2, mod(i, 2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i = 0:length(flows)-1]
+# flows = permutedims(hcat(norms, flows, couplings))[:]
+
+
+# NeuralCouplingFlow
 function mlp(x, k, id)
     x = constant(x)
-    variable_scope("layer$k$id") do
-        x = dense(x, 24, activation="leaky_relu")
-        x = dense(x, 24, activation="leaky_relu")
-        x = dense(x, 24, activation="leaky_relu")
-        x = dense(x, 1)
+    variable_scope("fc$k$id") do
+        x = dense(x, 16, activation="leaky_relu")
+        x = dense(x, 16, activation="leaky_relu")
+        x = dense(x, 16, activation="leaky_relu")
+        x = dense(x, 3K-1)
     end
     return x
 end
-flows = [Invertible1x1Conv(2, "conv$i") for i = 0:2]
+K = 8
+flows = [NeuralCouplingFlow(2, x->mlp(x, i, 0), x->mlp(x, i, 1), K) for i = 0:2]
+convs = [Invertible1x1Conv(2, "conv$i") for i = 0:2]
 norms = [ActNorm(2, "ActNorm$i") for i = 0:2]
-couplings = [AffineHalfFlow(2, mod(i, 2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i = 0:length(flows)-1]
-flows = permutedims(hcat(norms, flows, couplings))[:]
+flows = permutedims(hcat(norms, convs, flows))[:]
 
 prior = ADCME.MultivariateNormalDiag(loc=zeros(2))
 model = NormalizingFlowModel(prior, flows)
@@ -160,9 +178,9 @@ for i = 1:10000
     end
 end
 
-x = sample_moons(128*8)
 # because in ActNorm, we have a condition control flow that requires normalizing over x, a placeholder is required.
-z = run(sess, model_samples[end], x=>sample_moons(128)) 
+z = run(sess, model_samples[end],x=>sample_moons(128)) 
+x = sample_moons(128*8)
 scatter(x[:,1], x[:,2], c="b", s=5, label="data")
 scatter(z[:,1], z[:,2], c="r", s=5, label="prior --> posterior")
-axis("scaled"); xlabel("x"); ylabel("y")
+axis("scaled"); xlabel("x"); ylabel("y")#

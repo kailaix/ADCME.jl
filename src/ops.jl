@@ -102,6 +102,9 @@ function PyCall.:*(o1::PyObject, o2::PyObject)
     if s1==nothing || s2==nothing
         error("o1 and o2 should be tensors of rank 0, 1, 2")
     end
+    if length(s1) == 0 || length(s2)==0
+        return tf.multiply(o1, o2)
+    end
     if length(s1)==2 && length(s2)==2
         return tf.matmul(o1, o2)
     elseif length(s1)==2 && length(s2)==1
@@ -111,14 +114,6 @@ function PyCall.:*(o1::PyObject, o2::PyObject)
     elseif length(s1)==1 && length(s2)==2
         error("[rand 1] x [rank 2] not defined")
     elseif length(s1)==1 && length(s2)==1
-        return tf.multiply(o1, o2)
-    elseif length(s1)==1 && length(s2)==0
-        return tf.multiply(o1, o2)
-    elseif length(s1)==0 && length(s2)==2
-        return tf.multiply(o1, o2)
-    elseif length(s1)==0 && length(s2)==1
-        return tf.multiply(o1, o2)
-    elseif length(s1)==0 && length(s2)==0
         return tf.multiply(o1, o2)
     else
         @warn("Unusual usage of multiplication. Check carefully")
@@ -404,6 +399,7 @@ function sign(o::PyObject; kwargs...)
 end
 
 function softmax(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
     tf.math.softmax(o; kwargs...)
 end
 

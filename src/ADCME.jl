@@ -3,6 +3,7 @@ __precompile__(true)
 module ADCME
 
     export tf,
+    tfp,
     AUTO_REUSE,
     GLOBAL_VARIABLES,
     TRAINABLE_VARIABLES,

@@ -1,5 +1,5 @@
 export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
-       Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel,
+       Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel, NeuralCouplingFlow,
        autoregressive_network
 
 abstract type FlowOp end 
@@ -325,6 +325,89 @@ function backward(fo::AffineHalfFlow, z::Union{Array{<:Real}, PyObject})
     x = [x0 x1]
     log_det = sum(-s, dims=2)
     return x, log_det
+end
+
+#------------------------------------------------------------------------------------------
+mutable struct NeuralCouplingFlow <: FlowOp
+    dim::Int64 
+    K::Int64
+    B::Int64 
+    f1::Function
+    f2::Function 
+end
+
+function NeuralCouplingFlow(dim::Int64, f1::Function, f2::Function, K::Int64=8, B::Int64=3)
+    NeuralCouplingFlow(dim, K, B, f1, f2)
+end
+
+function forward(fo::NeuralCouplingFlow, x::Union{Array{<:Real}, PyObject})
+    x = constant(x)
+    dim, K, B, f1, f2 = fo.dim, fo.K, fo.B, fo.f1, fo.f2
+    RQS = tfp.bijectors.RationalQuadraticSpline
+    
+    log_det = constant(zeros(size(x,1)))
+    lower, upper = x[:,1:dim÷2], x[:,dim÷2+1:end]
+
+    f1_out = f1(lower)
+    @assert size(f1_out,2)==(3K-1)*(dim÷2)
+    out = reshape(f1_out, (-1, dim÷2, 3K-1))
+    W, H, D = split(out, [K, K, K-1], dims=3)
+    
+    W, H = softmax(W, dims=3), softmax(H, dims=3)
+    W, H = 2B*W, 2B*H
+    D = softplus(D)
+   
+    rqs = RQS(W, H, D, range_min=-B)
+    upper, ld = rqs.forward(upper), rqs.forward_log_det_jacobian(upper, dim÷2)
+    log_det += ld
+
+    f2_out = f2(upper) 
+    @assert size(f2_out,2)==(3K-1)*(dim÷2)
+    out = reshape(f2_out, (-1, dim÷2, 3K -1))
+    W, H, D = split(out, [K, K, K-1], dims=3)
+    W, H = softmax(W, dims=3), softmax(H, dims=3)
+    W, H = 2B*W, 2B*H 
+    D = softplus(D)
+
+    rqs = RQS(W, H, D, range_min=-B)
+    lower, ld = rqs.forward(lower), rqs.forward_log_det_jacobian(lower, dim÷2)
+    log_det += ld
+
+    return [lower upper], log_det
+end
+
+function backward(fo::NeuralCouplingFlow, x::Union{Array{<:Real}, PyObject})
+    x = constant(x)
+    dim, K, B, f1, f2 = fo.dim, fo.K, fo.B, fo.f1, fo.f2
+    RQS = tfp.bijectors.RationalQuadraticSpline
+
+    log_det = constant(zeros(size(x,1)))
+    lower, upper = x[:,1:dim÷2], x[:,dim÷2+1:end]
+
+    f2_out = f2(upper)
+    @assert size(f2_out,2)==(3K-1)*(dim÷2)
+    out = reshape(f2_out, (-1, dim÷2, 3K-1))
+    W, H, D = split(out, [K, K, K-1], dims=3)
+    W, H = softmax(W, dims=3), softmax(H, dims=3)
+    W, H = 2B*W, 2B*H 
+    D = softplus(D)
+    
+    rqs = RQS(W, H, D, range_min=-B)
+    lower, ld = rqs.inverse(lower), rqs.inverse_log_det_jacobian(lower, dim÷2)
+    log_det += ld
+
+    f1_out = f1(lower) 
+    @assert size(f1_out,2)==(3K-1)*(dim÷2)
+    out = reshape(f1_out, (-1, dim÷2, 3K -1))
+    W, H, D = split(out, [K, K, K-1], dims=3)
+    W, H = softmax(W, dims=3), softmax(H, dims=3)
+    W, H = 2B*W, 2B*H 
+    D = softplus(D)
+    rqs = RQS(W, H, D, range_min=-B)
+    upper, ld = rqs.inverse(upper), rqs.inverse_log_det_jacobian(upper, dim÷2)
+    log_det += ld
+
+    return [lower upper], log_det
 end
 
 #------------------------------------------------------------------------------------------
