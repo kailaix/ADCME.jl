@@ -1,4 +1,4 @@
-export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF,
+export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel,
        autoregressive_network
 
@@ -26,29 +26,59 @@ function AffineConstantFlow(dim::Int64, name::Union{String, Missing}=missing; sc
     AffineConstantFlow(dim, s, t)
 end
 
-
-function ActNorm(x, name::Union{String, Missing}=missing)
-    dim = size(x,2)
-    s = -log(std(x, dims=1))
-    t = -mean(x .* exp(s), dims=1)
-    AffineConstantFlow(dim, reshape(s, 1, :), reshape(t, 1, :))
-end
-
-function forward(fo::AffineConstantFlow, x)
-    s = ismissing(fo.s) ? tf.zeros_like(x) : fo.s
-    t = ismissing(fo.t) ? tf.zeros_like(x) : fo.t
+function forward(fo::AffineConstantFlow, x::Union{Array{<:Real}, PyObject})
+    s = ismissing(fo.s) ? zeros_like(x) : fo.s
+    t = ismissing(fo.t) ? zeros_like(x) : fo.t
     z = x .* exp(s) + t 
     log_det = sum(s, dims=2)
     return z, log_det
 end
 
-function backward(fo::AffineConstantFlow, z)
-    s = ismissing(fo.s) ? tf.zeros_like(z) : fo.s
-    t = ismissing(fo.t) ? tf.zeros_like(z) : fo.t
+function backward(fo::AffineConstantFlow, z::Union{Array{<:Real}, PyObject})
+    s = ismissing(fo.s) ? zeros_like(z) : fo.s
+    t = ismissing(fo.t) ? zeros_like(z) : fo.t
     x = (z-t) .* exp(-s)
     log_det = sum(-s, dims=2)
     return x, log_det
 end
+
+
+#------------------------------------------------------------------------------------------
+mutable struct ActNorm <: FlowOp
+    fo::AffineConstantFlow
+    initialized::PyObject 
+end
+
+function ActNorm(dim::Int64, name::Union{String, Missing}=missing)
+    if ismissing(name)
+        name = "ActNorm_"*randstring(10)
+    end
+    initialized = get_variable(1, name = name)
+    ActNorm(AffineConstantFlow(dim), initialized)
+end
+
+function forward(actnorm::ActNorm, x::Union{Array{<:Real}, PyObject})    
+    x = constant(x)
+    actnorm.fo.s, actnorm.fo.t = tf.cond(tf.equal(actnorm.initialized,constant(0)), 
+        ()->(actnorm.fo.s, actnorm.fo.t), #actnorm.fo.s, actnorm.fo.t),
+        ()->begin
+            setzero = assign(actnorm.initialized, 0)
+            x0 = copy(x)
+            s0 = reshape(-log(std(x0, dims=1)), 1, :)
+            t0 = reshape(mean(-x0 .* exp(s0), dims=1), 1, :)
+            op = assign([actnorm.fo.s, actnorm.fo.t], [s0, t0])
+            p = tf.print("ActNorm: initializing s and t...")
+            op[1] = bind(op[1], setzero)
+            op[1] = bind(op[1], p)
+            op[1], op[2]
+        end)    
+    forward(actnorm.fo, x)
+end
+
+function backward(actnorm::ActNorm, z::Union{Array{<:Real}, PyObject})
+    backward(actnorm.fo, z)
+end
+
 
 #------------------------------------------------------------------------------------------
 mutable struct SlowMAF <: FlowOp
@@ -174,15 +204,35 @@ function autoregressive_network(x::Union{Array{Float64}, PyObject}, config::Arra
 end
 
 #------------------------------------------------------------------------------------------
-mutable struct Invertible1x1Conv <: FlowOp
-    dim
-    P
-    L
-    S
-    U
+mutable struct IAF <: FlowOp
+    maf::MAF
 end
 
-function Invertible1x1Conv(dim, name=missing)
+function IAF(dim::Int64, parity::Bool, config::Array{Int64}; name::Union{String, Missing} = missing, 
+    activation::Union{Nothing,String} = "relu", kwargs...)
+    MAF(dim, parity, config; name=name, activation=activation, kwargs...)
+end
+
+function forward(fo::IAF, x::Union{Array{<:Real}, PyObject})
+    backward(fo.maf, x)
+end
+
+function backward(fo::IAF, z::Union{Array{<:Real}, PyObject})
+    forward(fo.maf, z)
+end
+
+
+
+#------------------------------------------------------------------------------------------
+mutable struct Invertible1x1Conv <: FlowOp
+    dim::Int64
+    P::Array{Float64}
+    L::PyObject
+    S::PyObject
+    U::PyObject
+end
+
+function Invertible1x1Conv(dim::Int64, name::String=missing)
     if ismissing(name)
         name = randstring(10)
     end
@@ -195,24 +245,24 @@ function Invertible1x1Conv(dim, name=missing)
 end
 
 function _assemble_W(fo::Invertible1x1Conv)
-    L = tril(L, -1) + diagm(0=>ones(dim))
-    U = triu(U, 1)
-    W = P * L * (U + diagm(S))
+    L = tril(fo.L, -1) + diagm(0=>ones(fo.dim))
+    U = triu(fo.U, 1)
+    W = fo.P * L * (U + diagm(fo.S))
     return W
 end
 
-function forward(fo::Invertible1x1Conv, x)
+function forward(fo::Invertible1x1Conv, x::Union{Array{<:Real}, PyObject})
     W = _assemble_W(fo)
     z = x*W 
     log_det = sum(log(abs(fo.S)))
     return z, log_det
 end
 
-function backward(fo::Invertible1x1Conv, z)
+function backward(fo::Invertible1x1Conv, z::Union{Array{<:Real}, PyObject})
     W = _assemble_W(fo)
     Winv = inv(W)
     x = z*Winv
-    log_det = -sum(log(abs(S)))
+    log_det = -sum(log(abs(fo.S)))
     return x, log_det 
 end
     
@@ -313,6 +363,17 @@ end
 mutable struct NormalizingFlowModel
     prior::ADCMEDistribution
     flow::NormalizingFlow
+end
+
+function Base.:show(io::IO, model::NormalizingFlowModel)
+    typevec = typeof.(model.flow.flows)
+    println("( $(string(typeof(model.prior))[7:end]) )")
+    println("\t↓")
+    for i = 1:length(typevec)-1
+        println(typevec[i])
+        println("\t↓")
+    end
+    println(typevec[end])
 end
 
 function NormalizingFlowModel(prior::T, flows::Array{<:FlowOp}) where T<:ADCMEDistribution

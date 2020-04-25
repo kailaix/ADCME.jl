@@ -98,25 +98,59 @@ end
 # model = NormalizingFlowModel(prior, flows)
 
 
-# MAF 
-flows = [MAF(2, mod(i,2)==1, [24, 24, 24], name="layer$i") for i = 0:3]
+# # MAF 
+# flows = [MAF(2, mod(i,2)==1, [24, 24, 24], name="layer$i") for i = 0:3]
+# prior = ADCME.MultivariateNormalDiag(loc=zeros(2))
+# model = NormalizingFlowModel(prior, flows)
+
+
+# # IAF 
+# flows = [IAF(2, mod(i,2)==1, [24, 24, 24], name="layer$i") for i = 0:3]
+# prior = ADCME.MultivariateNormalDiag(loc=zeros(2))
+# model = NormalizingFlowModel(prior, flows)
+
+# # ActNorm 
+# flow2 = [ActNorm(2, "ActNorm$i") for i = 1:length(flows)]
+# flows = permutedims(hcat(flow2, flows))[:]
+# # error()
+# # msample = rand(model,1)
+# # zs, prior_logprob, log_det = model([0.0040 0.4426])
+# # sess = Session(); init(sess)
+# # run(sess, msample)
+# # run(sess,zs)
+
+
+# GLOW
+function mlp(x, k, id)
+    x = constant(x)
+    variable_scope("layer$k$id") do
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 1)
+    end
+    return x
+end
+flows = [Invertible1x1Conv(2, "conv$i") for i = 0:2]
+norms = [ActNorm(2, "ActNorm$i") for i = 0:2]
+couplings = [AffineHalfFlow(2, mod(i, 2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i = 0:length(flows)-1]
+flows = permutedims(hcat(norms, flows, couplings))[:]
+
 prior = ADCME.MultivariateNormalDiag(loc=zeros(2))
 model = NormalizingFlowModel(prior, flows)
 
-# msample = rand(model,1)
-# zs, prior_logprob, log_det = model([0.0040 0.4426])
-# sess = Session(); init(sess)
-# run(sess, msample)
-# run(sess,zs)
-
-
 # error()
 x = placeholder(Float64, shape=[128,2])
+# x = placeholder(rand(128,2))
+
 zs, prior_logpdf, logdet = model(x)
 log_pdf = prior_logpdf + logdet
 loss = -sum(log_pdf)
+
+model_samples = rand(model, 128*8)
 # error()
 sess = Session(); init(sess)
+# error()
 opt = AdamOptimizer(1e-4).minimize(loss)
 sess = Session(); init(sess)
 for i = 1:10000
@@ -127,9 +161,8 @@ for i = 1:10000
 end
 
 x = sample_moons(128*8)
-zs = rand(model, 128*8)
-z = zs[end]
-z = run(sess, z)
+# because in ActNorm, we have a condition control flow that requires normalizing over x, a placeholder is required.
+z = run(sess, model_samples[end], x=>sample_moons(128)) 
 scatter(x[:,1], x[:,2], c="b", s=5, label="data")
 scatter(z[:,1], z[:,2], c="r", s=5, label="prior --> posterior")
 axis("scaled"); xlabel("x"); ylabel("y")
