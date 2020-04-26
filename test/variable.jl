@@ -145,3 +145,13 @@ end
     b = zeros_like(a)
     @test run(sess, b)≈zeros(100,10)
 end
+
+@testset "gradient_magnitude" begin 
+    x = constant(rand(10))
+    y = constant(rand(20))
+    l = sum(x) + sum(y)
+
+    gx, gy = gradients(l, [x,y])
+    n = gradient_magnitude(l, [x, y])
+    @test run(sess, n)≈sqrt(norm(run(sess, gx))^2 + norm(run(sess,gy))^2)
+end

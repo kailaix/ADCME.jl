@@ -656,6 +656,8 @@ function gradient_magnitude(l::PyObject, o::Union{Array, PyObject})
         o = [o]
     end
     tf.global_norm(gradients(l, o))
+end
+
 """
     zeros_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
 
