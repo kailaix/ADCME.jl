@@ -6,7 +6,7 @@ $$x = f(u) \quad u \sim \pi(u)$$
 
 based on the change of variable equation
 
-$$p(x) = \pi(f^{-1}(x)) \left|\det\left(\frac{\partial f^{-1}}{\partial x}\right)\right|$$
+$$p(x) = \pi(f^{-1}(x)) \left|\det\left(\frac{\partial f^{-1}(x)}{\partial x}\right)\right|$$
 
 Compared to other generative models such as variational autoencoder (VAE) and generative neural networks (GAN), the flow-based generative models give us explicit formuas of density functions. For model training, we can directly minimizes the posterier log likelihood in the flow-based generative models, while use approximate likelihood functions in VAE and adversarial training in GAN. In general, the flow-based generative model is easier to train than VAE and GAN. In the following, we give some examples of using flow-based generatives models in ADCME. 
 

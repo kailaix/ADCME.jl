@@ -136,3 +136,4 @@ struct LRUCache<T, U>::Impl {
 
 extern LRUCache<int, Eigen::SparseLU<SpMat>*> cache1;
 extern LRUCache<int, Eigen::SparseLU<SpMat>*> cache2;
+extern LRUCache<int, SpMat*> SpMat_cache;

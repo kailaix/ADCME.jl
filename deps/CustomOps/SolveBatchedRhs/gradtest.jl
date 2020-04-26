@@ -1,41 +1,39 @@
-using Revise
-
 using ADCME
 using PyCall
 using LinearAlgebra
 using PyPlot
-using SparseArrays
 using Random
-# Random.seed!(233)
+Random.seed!(233)
 
+function solve_batched_rhs(a,rhs)
+    solve_batched_rhs_ = load_op_and_grad("./build/libSolveBatchedRhs","solve_batched_rhs")
+    a,rhs = convert_to_tensor([a,rhs], [Float64,Float64])
+    solve_batched_rhs_(a,rhs)
+end
 
+a = rand(10,5)
+rhs = rand(100, 10)
+sol = (a\rhs')'
 # TODO: specify your input parameters
-A = sprand(10,5,0.3)
-f = rand(10)
-sol = A\f
-u = constant(A)\f
+u = solve_batched_rhs(a,rhs)
+sess = Session(); init(sess)
+@show run(sess, u) - sol
 
-sess = Session()
-init(sess)
-@show run(sess, u)-sol
-# error()
+# uncomment it for testing gradients
+# error() 
 
 
 # TODO: change your test parameter to `m`
+#       in the case of `multiple=true`, you also need to specify which component you are testings
 # gradient check -- v
 function scalar_function(m)
-    return sum((constant(A)\m)^2)
-    B = SparseTensor(ii, jj, m, size(A)...)
-    return sum((B\Array([f f]'))^2)
+    return sum(solve_batched_rhs(m,rhs)^2)
+    # return sum(solve_batched_rhs(a,m)^2)
 end
 
-ii, jj, vv = find(constant(A))
-
 # TODO: change `m_` and `v_` to appropriate values
-# m_ = constant(rand(length(vv)))
-# v_ = rand(length(vv))
-m_ = constant(rand(5,10))
-v_ = rand(5,10)
+m_ = constant(rand(10,10))
+v_ = rand(10,10)
 y_ = scalar_function(m_)
 dy_ = gradients(y_, m_)
 ms_ = Array{Any}(undef, 5)
@@ -52,8 +50,7 @@ for i = 1:5
     w_[i] = s_[i] - g_*sum(v_.*dy_)
 end
 
-sess = Session()
-init(sess)
+sess = Session(); init(sess)
 sval_ = run(sess, s_)
 wval_ = run(sess, w_)
 close("all")
