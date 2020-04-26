@@ -1,0 +1,5 @@
+TriLu
+double u(?,?,?)
+int64 num()
+int64 lu()
+double v(?,?,?) -> output

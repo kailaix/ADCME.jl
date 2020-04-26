@@ -70,13 +70,27 @@ end
     A = scatter_add(A, 3, 2.)
     B = [1.;1.;3.]
 
-    C = Variable(ones(9))
-    D = scatter_add(C, [2], [1], 1., 3, 3)
-    G = reshape(D, 3, 3)
+    C = Variable(ones(3,3))
+    D = scatter_add(C, [2], [1], 1.)
     E = [1. 1. 1; 2. 1. 1.; 1. 1. 1.]
     init(sess)
     @test run(sess, A)≈B
-    @test run(sess, G)≈E
+    @test run(sess, D)≈E
+
+    F = scatter_update(C, 1:2, :, 2ones(2, 3))
+    @test run(sess, F)≈[ 2.0  2.0  2.0
+                        2.0  2.0  2.0
+                        1.0  1.0  1.0]
+
+    F = scatter_update(C, 1, :, 2ones(1, 3))
+    @test run(sess, F)≈[2.0  2.0  2.0
+                        1.0  1.0  1.0
+                        1.0  1.0  1.0]
+
+    F = scatter_update(C, 1, 2, 2.0)
+    @test run(sess, F)≈[1.0  2.0  1.0
+                    1.0  1.0  1.0
+                    1.0  1.0  1.0]
 
     A = Variable(rand(10))
     B = Variable(rand(5))
@@ -401,4 +415,46 @@ end
 @testset "trace" begin 
     A = rand(10,10)
     @test tr(A) ≈ run(sess, tr(constant(A)))
+end
+
+@testset "trilu" begin 
+    for num = -5:5
+        lu = 1
+        m = 10
+        n = 5
+        u = rand(1, m, n)
+        ref = zeros(size(u,1), m, n)
+        for i = 1:size(u,1)
+            ref[i,:,:] = tril(u[i,:,:], num)
+        end
+        out = tril(constant(u),num)
+        sess = Session(); init(sess)
+        @test norm(run(sess, out)- ref)≈0
+    end
+
+    for num = -5:5
+        lu = 0
+        m = 5
+        n = 10
+        u = rand(1,m, n)
+        ref = zeros(size(u,1), m, n)
+        for i = 1:size(u,1)
+            if lu==0
+                ref[i,:,:] = triu(u[i,:,:], num)
+            else 
+                ref[i,:,:] = tril(u[i,:,:], num)
+            end
+        end
+        out = triu(constant(u),num)
+        sess = Session(); init(sess)
+        @test norm(run(sess, out)- ref)≈0
+    end
+end
+
+@testset "reverse" begin 
+    a = rand(10,2)
+    A = constant(a)
+    @test run(sess, reverse(A, dims=1)) == reverse(a, dims=1)
+    @test run(sess, reverse(A, dims=2)) == reverse(a, dims=2)
+    @test run(sess, reverse(A, dims=-1)) == reverse(a, dims=2)
 end

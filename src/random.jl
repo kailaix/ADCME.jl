@@ -1,4 +1,4 @@
-export seed!, categorical, choice
+export seed!, categorical, choice, logpdf
 # random variables
 for op in [:uniform, :normal]
     @eval begin
@@ -9,7 +9,7 @@ for op in [:uniform, :normal]
             tf.random.$op(shape;kwargs...)
         end
         $op() = squeeze($op(1, dtype=Float64))
-        Docs.getdoc(::typeof($op)) = Docs.getdoc(tf.random.$op)
+        # Docs.getdoc(::typeof($op)) = Docs.getdoc(tf.random.$op)
     end
 end
 
@@ -67,7 +67,6 @@ for op in [:Beta, :Bernoulli,:Gamma, :TruncatedNormal, :Binomial, :Cauchy,
     @eval begin
         export $opname
         function $opname(shape...;kwargs...)
-            tfp = pyimport("tensorflow_probability")
             if !haskey(kwargs, :dtype); T = Float64; 
             else T=kwargs[:dtype]; end
             kwargs = jlargs(kwargs)
@@ -82,4 +81,39 @@ end
 
 function seed!(k::Int64)
     tf.random.set_random_seed(k)
+end
+
+
+abstract type ADCMEDistribution end
+
+for op in [:Beta, :Bernoulli,:Gamma, :TruncatedNormal, :Binomial, :Cauchy, 
+    :Chi, :Chi2, :Exponential, :Gumbel, 
+    :HalfCauchy, :HalfNormal, :Horseshoe, :InverseGamma,
+    :InverseGaussian, :Kumaraswamy, :Pareto, :SinhArcsinh,
+    :StudentT, :VonMises, :Normal, :Uniform,
+    :Poisson, :MultivariateNormalDiag, :MultivariateNormalFullCovariance,
+    :Empirical]
+    @eval begin
+        mutable struct $op <: ADCMEDistribution
+            o::PyObject
+            $op(args...;kwargs...) = new(tfp.distributions.$op(args...;kwargs...))
+        end
+    end
+    # @eval Docs.getdoc($op) = Docs.getdoc($op.o)
+end
+
+Base.:rand(dist::T) where T<:ADCMEDistribution = dist.o.sample()
+Base.:rand(dist::T, shape::Integer) where T<:ADCMEDistribution = dist.o.sample(shape)
+Base.:rand(dist::T, shape::Tuple{Vararg{Int64,N}} where N) where T<:ADCMEDistribution = dist.o.sample(shape)
+Base.:rand(dist::T, shape::Array{Int64}) where T<:ADCMEDistribution = dist.o.sample(shape)
+Base.:rand(dist::T, shape::PyObject) where T<:ADCMEDistribution = dist.o.sample(shape)
+Base.:rand(dist::T, d::Integer, dims::Integer...) where T<:ADCMEDistribution = dist.o.sample([d;dims])
+
+"""
+    logpdf(dist::T, x) where T<:ADCMEDistribution
+
+Returns the log(prob) for a distribution `dist`.
+"""
+function logpdf(dist::T, x) where T<:ADCMEDistribution
+    dist.o.log_prob(x)
 end

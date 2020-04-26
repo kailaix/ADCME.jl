@@ -6,6 +6,11 @@ end
 
 begin 
 
+FORCE_INSTALL_TF = false
+if haskey(ENV, "FORCE_INSTALL_TF") && ENV["FORCE_INSTALL_TF"]=="1"
+    FORCE_INSTALL_TF = true 
+end
+
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     try 
         run(`which nvcc`)
@@ -69,13 +74,17 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && Sys.isapple()
 end
 
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
-    !("tensorflow-gpu" in pkgs) && Conda.add("tensorflow-gpu=1.15")
+    if FORCE_INSTALL_TF || (!("tensorflow-gpu" in pkgs))
+        Conda.add("tensorflow-gpu=1.15")
+    end
 else 
-    if !("tensorflow" in pkgs || "tensorflow-gpu" in pkgs)
+    if FORCE_INSTALL_TF || (!("tensorflow" in pkgs || "tensorflow-gpu" in pkgs))
         Conda.add("tensorflow=1.15")
     end
 end
-!("tensorflow-probability" in pkgs) && Conda.add("tensorflow-probability=0.7")
+if FORCE_INSTALL_TF || (!("tensorflow-probability" in pkgs))
+    Conda.add("tensorflow-probability=0.8")
+end
 !("hdf5" in pkgs) && Conda.add("hdf5", channel="anaconda")
 
 @info " ########### Preparing environment for custom operators ########### "

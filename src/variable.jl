@@ -24,7 +24,9 @@ tensor,
 convert_to_tensor,
 hessian_vector,
 TensorArray,
-gradient_checkpointing
+gradient_checkpointing,
+zeros_like,
+ones_like
 
 """
     constant(value; kwargs...)
@@ -79,14 +81,73 @@ function cell(arr::Array, args...;kwargs...)
     tf.ragged.constant(arr, args...;kwargs...)
 end
 
+"""
+    copy(o::PyObject)
+
+Creates a tensor that has the same value that is currently stored in a variable.
+
+!!! note
+    The output is a graph node that will have that value when evaluated. Any time you evaluate it, it will grab the current value of `o`. 
+"""
 function Base.:copy(o::PyObject)
     return tf.identity(o)
 end
 
-function get_variable(name; kwargs...)
+function get_variable(name::String; kwargs...)
     kwargs = jlargs(kwargs)
     tf.compat.v1.get_variable(name;kwargs...)
 end
+
+
+"""
+    get_variable(o::Union{PyObject, Bool, Array{<:Number}}; 
+        name::Union{String, Missing} = missing, 
+        scope::String = "")
+
+Creates a new variable with initial value `o`. If `name` exists, `get_variable` returns the variable instead of create a new one.
+"""
+function get_variable(o::Union{PyObject, Bool, Number, Array{<:Number}}; 
+    name::Union{String, Missing} = missing, 
+    scope::String = "")
+    local v
+    o = constant(o)
+    if ismissing(name)
+        name = "unnamed_"*randstring(10)
+    end
+    variable_scope(scope) do 
+        v = tf.compat.v1.get_variable(name = name, initializer=o, dtype=DTYPE[get_dtype(o)])
+    end
+    return v
+end
+
+
+"""
+    get_variable(dtype::Type;
+    shape::Union{Array{<:Integer}, NTuple{N, <:Integer}}, 
+    name::Union{Missing,String} = missing
+    scope::String = "")
+
+Creates a new variable with initial value `o`. If `name` exists, `get_variable` returns the variable instead of create a new one.
+"""
+function get_variable(dtype::Type;
+     shape::Union{Array{<:Integer}, NTuple{N, <:Integer}}, 
+     name::Union{Missing,String} = missing,
+     scope::String = "") where N
+    local v
+    dtype = DTYPE[dtype]
+    if ismissing(name)
+        name = "unnamed_"*randstring(10)
+    end
+    variable_scope(scope) do 
+        v = tf.compat.v1.get_variable(name = name, shape=shape, dtype = dtype)
+    end
+    return v
+end
+
+get_variable(dtype::Type,
+    shape::Union{Array{<:Integer}, NTuple{N, <:Integer}}, 
+    name::Union{Missing,String} = missing,
+    scope::String = "") where N = get_variable(dtype, shape=shape, name=name, scope = scope)
 
 """
     placeholder(dtype::Type; kwargs...)
@@ -595,4 +656,36 @@ function gradient_magnitude(l::PyObject, o::Union{Array, PyObject})
         o = [o]
     end
     tf.global_norm(gradients(l, o))
+"""
+    zeros_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+
+Returns a all-zero tensor, which has the same size as `o`.
+
+# Example
+```julia
+a = rand(100,10)
+b = zeros_like(a)
+@assert run(sess, b)≈zeros(100,10)
+```
+"""
+function zeros_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.zeros_like(o, args...;kwargs...)
+end
+
+"""
+    ones_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+
+Returns a all-one tensor, which has the same size as `o`.
+
+# Example
+```julia
+a = rand(100,10)
+b = ones_like(a)
+@assert run(sess, b)≈ones(100,10)
+```
+"""
+function ones_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.ones_like(o, args...;kwargs...)
 end
