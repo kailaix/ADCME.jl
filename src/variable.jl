@@ -9,6 +9,7 @@ get_variable,
 placeholder,
 variable_scope,
 gradients,
+gradient_magnitude,
 hessian,
 constant_initializer,
 glorot_normal_initializer,
@@ -578,4 +579,20 @@ function gradient_checkpointing(type::String="speed")
         error("ADCME: $type not defined")
     end
     @info "Loaded: $type"
+end
+
+@doc raw"""
+    gradient_magnitude(l::PyObject, o::Union{Array, PyObject})
+
+Returns the gradient sum 
+
+$$\sqrt{\sum_{i=1}^n \|\frac{\partial l}{\partial o_i}\|^2}$$
+
+This function is useful for debugging the training
+"""
+function gradient_magnitude(l::PyObject, o::Union{Array, PyObject})
+    if isa(o, PyObject)
+        o = [o]
+    end
+    tf.global_norm(gradients(l, o))
 end
