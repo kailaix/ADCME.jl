@@ -3,6 +3,7 @@ __precompile__(true)
 module ADCME
 
     export tf,
+    tfp,
     AUTO_REUSE,
     GLOBAL_VARIABLES,
     TRAINABLE_VARIABLES,
@@ -11,7 +12,6 @@ module ADCME
     using PyCall
     using Random
     using LinearAlgebra
-    import Optim
     import Conda
     using SparseArrays
     using LibGit2
@@ -20,9 +20,13 @@ module ADCME
     ENV["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
     tf = PyNULL()
+    tfp = PyNULL()
+
+
+    #------------------------------------------------------------------------------------------
+    # Global Storage 
     DTYPE = Dict{Type, PyObject}()
-    # a list of custom operators 
-    COLIB = Dict{String, Tuple{String, String, String, Bool}}()
+    COLIB = Dict{String, Tuple{String, String, String, Bool}}() # custom operators
 
     libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
@@ -32,11 +36,13 @@ module ADCME
         error("ADCME is not properly built; run `Pkg.build(\"ADCME\")` to fix the problem.")
     end
     run_metadata = nothing
+    STORAGE = Dict{String, Any}()
         
     function __init__()
-        # install_custom_op_dependency() # always install dependencies
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB
         copy!(tf, pyimport("tensorflow"))
+        copy!(tfp, pyimport("tensorflow_probability"))
+
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,
             Int64=>tf.int64,
@@ -77,5 +83,6 @@ module ADCME
     include("gan.jl")
     include("ot.jl")
     include("ode.jl")
+    include("flow.jl")
 end
 

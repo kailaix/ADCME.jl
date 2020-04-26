@@ -148,6 +148,7 @@ function refresh_cmake()
     open(joinpath(@__DIR__, "../deps/CustomOps/CMakeLists.txt"), "w") do io 
         write(io, cmakecnt)
     end
+    NEWLIB
 end
 
 """
@@ -608,6 +609,30 @@ function doctor()
         no("Julia version", 
 """Your Julia version is $VERSION, and your system is MACOSX. This combination has a compatability issue.""",
 """Downgrade your Julia to ≦1.3""")
+    end 
+
+    c = (tf.__version__[1:6]=="1.15.0")
+    if c 
+        yes("TensorFlow version")
+    else
+        no("TensorFlow version", 
+"""Your TensorFlow version is $(tf.__version__). ADCME is only tested against 1.15.0.""",
+"""Set ENV["FORCE_INSTALL_TF"] = 1 and rebuild ADCME
+julia> ENV["FORCE_INSTALL_TF"] = 1
+julia> ]
+pkg> build ADCME""")
+    end 
+
+    c = (tfp.__version__[1:5]=="0.8.0")
+    if c 
+        yes("TensorFlow-Probability version")
+    else
+        no("TensorFlow-Probability version", 
+"""Your TensorFlow-Probability version is $(tfp.__version__). ADCME is only tested against 0.8.0.""",
+"""Set ENV["FORCE_INSTALL_TF"] = 1 and rebuild ADCME
+julia> ENV["FORCE_INSTALL_TF"] = 1
+julia> ]
+pkg> build ADCME""")
     end 
 
 

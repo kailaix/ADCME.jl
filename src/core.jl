@@ -20,7 +20,12 @@ Base.:values(o::PyObject) = o.numpy()
 
 Resets the graph by removing all the operators. 
 """
-reset_default_graph() = tf.compat.v1.reset_default_graph()
+function reset_default_graph()
+    global STORAGE
+    tf.compat.v1.reset_default_graph()
+    STORAGE = Dict{String, Any}()
+    nothing
+end
 """
     get_collection(name::Union{String, Missing})
 
@@ -213,6 +218,13 @@ end
 
 - If `condition` is a scalar boolean, it outputs `fn1` or `fn2` (a function with no input argument or a tensor) based on whether `condition` is true or false.
 - If `condition` is a boolean array, if returns `condition .* fn1 + (1 - condition) .* fn2`
+
+!!! info 
+    If you encounter an error like this:
+    ```
+    tensorflow.python.framework.errors_impl.InvalidArgumentError: Retval[0] does not have value
+    ```
+    It's probably that your code within `if_else` is not valid. 
 """
 function if_else(condition::Union{PyObject,Array,Bool}, fn1, fn2, args...;kwargs...)
     if isa(condition, Array) || isa(condition, Bool)

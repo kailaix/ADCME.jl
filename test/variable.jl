@@ -36,6 +36,11 @@ end
     # @test_nowarn constant(rand(10,10), dtype=Float64)
     @test get_dtype(constant(rand(10,10))) == Float64
     @test get_dtype(Variable(rand(Int64,10,10))) == Int64
+    v = get_variable(rand(10,10), name="test_get_variable")
+    u = get_variable(rand(10,10), name="test_get_variable")
+    @test u==v
+    w = get_variable(Float64, shape=[10,20])
+    @test size(w)==(10,20)
 end
 
 
@@ -131,4 +136,12 @@ end
     A = rand(10,10)
     @test run(sess, sym(A)) ≈ 0.5 * (A + A')
     @test all(eigvals(run(sess, spd(A))) .> 0.0)
+end
+
+@testset "ones/zeros like" begin 
+    a = rand(100,10)
+    b = ones_like(a)
+    @test run(sess, b)≈ones(100,10)
+    b = zeros_like(a)
+    @test run(sess, b)≈zeros(100,10)
 end

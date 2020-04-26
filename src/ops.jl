@@ -1,7 +1,7 @@
 import Base:*, broadcast, reshape, exp, log, tanh, sum, 
     adjoint, inv, argmax, argmin, ^, max, maximum, min, minimum,
-    vec, \, cos, sin, sign, map, prod
-import LinearAlgebra: tr, diag, det, norm, diagm, dot, I, svd
+    vec, \, cos, sin, sign, map, prod, reverse
+import LinearAlgebra: tr, diag, det, norm, diagm, dot, I, svd, tril, triu
 import Statistics: mean, std
 import FFTW: fft, ifft
 export 
@@ -38,10 +38,6 @@ cast,
 group,
 clip,
 scatter_add,
-scatter_div,
-scatter_max,
-scatter_min,
-scatter_mul,
 scatter_sub,
 scatter_update,
 stack,
@@ -70,7 +66,9 @@ dot,
 set_shape,
 selu, 
 elu,
-tr
+tr,
+tril, 
+triu 
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -104,6 +102,9 @@ function PyCall.:*(o1::PyObject, o2::PyObject)
     if s1==nothing || s2==nothing
         error("o1 and o2 should be tensors of rank 0, 1, 2")
     end
+    if length(s1) == 0 || length(s2)==0
+        return tf.multiply(o1, o2)
+    end
     if length(s1)==2 && length(s2)==2
         return tf.matmul(o1, o2)
     elseif length(s1)==2 && length(s2)==1
@@ -113,14 +114,6 @@ function PyCall.:*(o1::PyObject, o2::PyObject)
     elseif length(s1)==1 && length(s2)==2
         error("[rand 1] x [rank 2] not defined")
     elseif length(s1)==1 && length(s2)==1
-        return tf.multiply(o1, o2)
-    elseif length(s1)==1 && length(s2)==0
-        return tf.multiply(o1, o2)
-    elseif length(s1)==0 && length(s2)==2
-        return tf.multiply(o1, o2)
-    elseif length(s1)==0 && length(s2)==1
-        return tf.multiply(o1, o2)
-    elseif length(s1)==0 && length(s2)==0
         return tf.multiply(o1, o2)
     else
         @warn("Unusual usage of multiplication. Check carefully")
@@ -406,6 +399,7 @@ function sign(o::PyObject; kwargs...)
 end
 
 function softmax(o::PyObject; kwargs...)
+    kwargs = jlargs(kwargs)
     tf.math.softmax(o; kwargs...)
 end
 
@@ -554,115 +548,157 @@ function unstack(o::PyObject, args...;kwargs...)
     tf.unstack(o, args...; kwargs...)
 end
 
-for (op1, op2) = [(:scatter_add, :tensor_scatter_nd_add), (:scatter_sub, :tensor_scatter_nd_sub), (:scatter_update,:tensor_scatter_nd_update)]
-    @eval begin
-        function $op1(ref, indices, updates)
-            indices = convert_to_tensor(indices)
-            updates = convert_to_tensor(updates)
-            ref = convert_to_tensor(ref)
-            if length(size(ref))==1
-                indices = reshape(indices-1, length(indices), 1)
-            else
-                error("Only 1D $op1 is implemented")
+
+
+function _jlindex2indices(len::Int64, 
+    indices::Union{PyObject, Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}})
+    if isa(indices, BitArray{1}) || isa(indices, Array{Bool,1})
+        indices = findall(indices)
+    elseif isa(indices, UnitRange{Int64}) || isa(indices, StepRange{Int64, Int64})
+        indices = collect(indices)
+    elseif isa(indices, Colon)
+        indices = Array(1:len)
+    elseif isa(indices, Int64)
+        indices = [indices]
+    end
+    if isa(indices, PyObject)
+        return indices - 1
+    else
+        return constant(indices .- 1)
+    end
+end
+
+
+for (op1, op2) = [(:_scatter_add, :tensor_scatter_nd_add), (:_scatter_sub, :tensor_scatter_nd_sub), 
+                    (:_scatter_update,:tensor_scatter_nd_update)]
+    @eval begin 
+        function $op1(ref::PyObject, 
+            indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+            updates::Union{Array{<:Real}, Real, PyObject})
+            updates = convert_to_tensor(updates, dtype=get_dtype(ref))
+            @assert length(size(updates)) <= 1
+            @assert length(size(ref))==1
+            if length(size(updates))==0
+                updates = reshape(updates, (-1,))
             end
+            indices = _jlindex2indices(length(ref),indices)
+            indices = reshape(indices, (-1,1))
+            # @info ref, indices, updates
             tf.$op2(ref, indices, updates)
         end
     end
 end
 
-# https://github.com/tensorflow/tensorflow/issues/2358#issuecomment-274590896
-for (op1, op2) = [(:scatter_add, :add), (:scatter_sub, :subtract), (:scatter_mul,:multiply), (:scatter_div, div)]
-    @eval begin
-        function $op1(ref::PyObject, indices, updates; kwargs...)
-            if isa(indices, BitArray{1}) || isa(indices, Array{Bool,1})
-                indices = findall(indices)
-            elseif isa(indices, UnitRange{Int64}) || isa(indices, StepRange{Int64, Int64})
-                indices = collect(indices)
-            elseif isa(indices, Colon)
-                indices = (1:size(ref,1) |> collect)
+"""
+    scatter_update(a::PyObject, 
+        indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        updates::Union{Array{<:Real}, Real, PyObject})
+
+Updates array `ref`
+```
+a[indices] = updates
+```
+"""
+scatter_update(a::PyObject, 
+    indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    updates::Union{Array{<:Real}, Real, PyObject}) = _scatter_update(a, indices, updates)
+
+"""
+    scatter_sub(a::PyObject, 
+        indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        updates::Union{Array{<:Real}, Real, PyObject})
+
+Updates array `ref`
+```
+a[indices] -= updates
+```
+"""
+scatter_sub(a::PyObject, 
+    indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    updates::Union{Array{<:Real}, Real, PyObject}) = _scatter_sub(a, indices, updates)
+
+
+"""
+    scatter_add(a::PyObject, 
+        indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        updates::Union{Array{<:Real}, Real, PyObject})
+
+Updates array `ref`
+```
+a[indices] += updates
+```
+"""
+scatter_add(a::PyObject, 
+    indices::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    updates::Union{Array{<:Real}, Real, PyObject}) = _scatter_add(a, indices, updates)
+
+
+for (op1, op2) = [(:scatter_update2, :scatter_update), (:scatter_add2, :scatter_add), 
+    (:scatter_sub2,:scatter_sub)]
+    @eval begin 
+        function $op1(A::PyObject, 
+            xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+            yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+            updates::Union{Array{<:Real}, Real, PyObject})
+            m, n = size(A)
+            updates = convert_to_tensor(updates, dtype=get_dtype(A))
+            @assert length(size(A))==2
+            xind = _jlindex2indices(m,xind)
+            yind = _jlindex2indices(n,yind)
+            if length(size(updates))==0
+                updates = reshape(updates, (1,1))
             end
-            
-            indices = indices .- 1
-            
-            if isa(indices, Number)
-                indices = reshape([indices], 1, 1)
-            else
-                indices = reshape(indices, length(indices), 1)
-            end
-            
-            if isa(updates, Number)
-                updates = reshape([updates], 1)
-            elseif isa(updates, Array)
-                updates = reshape(updates, length(updates))
-            elseif isa(updates, PyObject)
-                if length(size(updates))==0
-                    updates = reshape(updates, 1)
-                else
-                    updates = reshape(updates, size(updates,1))
-                end
-            end
-            ref_shape = size(ref)
-            scattered_updates = tf.scatter_nd(indices, updates, ref_shape)
-            output = tf.$op2(ref, scattered_updates)
+            indices = reshape(repeat(xind, 1, length(yind)), (-1,)) * n + repeat(yind, length(xind)) 
+            out = $op2(reshape(A, (-1,)), indices + 1, reshape(updates, (-1,)))
+            reshape(out, (m, n))
         end
     end
 end
 
-const Index = Union{Int64, Array{Int64,1}, UnitRange{Int64}, StepRange{Int64,Int64}}
+"""
+    scatter_update(A::PyObject, 
+        xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        updates::Union{Array{<:Real}, Real, PyObject})
 
-function _sub2ind_scatter_update(idx::Index, idy::Index, M::Int64, N::Int64)
-    if isa(idx, Int64)
-        idx = [idx]
-    end
-    if isa(idy, Int64)
-        idy = [idy]
-    end
-    idx = collect(idx)
-    idy = collect(idy)
-    if maximum(idx)>M || maximum(idy)>N || minimum(idx)<1 || minimum(idy)<1
-        error("Invalid argument for idx and idy")
-    end
-    ind = zeros(Int64, length(idx)*length(idy))
-    for i = 1:length(idx)
-        for j = 1:length(idy)
-            # ind[(i-1)*length(idy)+j] = idy[j] + (idx[i]-1)*N
-            ind[i + (j-1)*length(idx)] = idx[i] + (idy[j]-1)*M
-        end
-    end
-    ind
-end
+```julia
+A[xind, yind] = updates
+```
+"""
+scatter_update(A::PyObject, 
+    xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    updates::Union{Array{<:Real}, Real, PyObject}) = scatter_update2(A, xind, yind, updates)
 
-# matrix row major
-for op = [:scatter_add, :scatter_sub, :scatter_mul, :scatter_div]
-    @eval begin
-        function $op(ref::PyObject, idx::Index, idy::Index, updates, 
-                    M::Union{Nothing,Int64}=nothing, N::Union{Nothing,Int64}=nothing; kwargs...)
-            if length(size(ref))==2 &&  (M!=nothing) && (N!=nothing)
-                error("No need to provide M, N for a matrix")
-            end
-            is_matrix = false
-            if M==nothing || N==nothing
-                if length(size(ref))!=2
-                    error("M,N not provided, ref must be a matrix")
-                end
-                M, N = size(ref)
-                ref = reshape(ref, M*N)
-                is_matrix = true
-            end
-            indices = _sub2ind_scatter_update(idx, idy, M, N)
-            if isa(updates, Array)
-                updates = updates[:]
-            elseif isa(updates, PyObject)
-                updates = reshape(updates, length(idx)*length(idy))
-            end
-            ref = $op(ref, indices, updates; kwargs...)
-            if is_matrix
-                ref = reshape(ref, M, N)
-            end
-            return ref
-        end
-    end
-end
+"""
+    scatter_add(A::PyObject, 
+        xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        updates::Union{Array{<:Real}, Real, PyObject})
+
+```julia
+A[xind, yind] += updates
+```
+"""
+scatter_add(A::PyObject, 
+    xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    updates::Union{Array{<:Real}, Real, PyObject}) = scatter_add2(A, xind, yind, updates)
+
+"""
+    scatter_add(A::PyObject, 
+        xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+        updates::Union{Array{<:Real}, Real, PyObject})
+
+```julia
+A[xind, yind] -= updates
+```
+"""
+scatter_sub(A::PyObject, 
+    xind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    yind::Union{Colon, Int64, Array{Int64}, BitArray{1}, Array{Bool,1}, UnitRange{Int64}, StepRange{Int64, Int64}, PyObject},
+    updates::Union{Array{<:Real}, Real, PyObject}) = scatter_sub2(A, xind, yind, updates)
 
 function norm(o::PyObject, args...;kwargs...)
     kwargs = jlargs(kwargs)
@@ -985,4 +1021,113 @@ end
 
 function tr(o::PyObject)
     tf.linalg.trace(o)
+end
+
+
+
+function tril(o::PyObject, num::Int64 = 0)
+    flag = false
+    if length(size(o))==2
+        flag = true 
+        o = tf.expand_dims(o, 0)
+    end
+    tri_lu_ = load_system_op(COLIB["tri_lu"]...; multiple=false)
+    u,num,lu = convert_to_tensor([o,num,1], [Float64,Int64,Int64])
+    out = tri_lu_(u,num,lu)
+    if flag 
+        return out[1]
+    else
+        return out 
+    end
+end
+
+function triu(o::PyObject, num::Int64 = 0)
+    flag = false
+    if length(size(o))==2
+        flag = true 
+        o = tf.expand_dims(o, 0)
+    end
+    tri_lu_ = load_system_op(COLIB["tri_lu"]...; multiple=false)
+    u,num,lu = convert_to_tensor([o,num,0], [Float64,Int64,Int64])
+    out = tri_lu_(u,num,lu)
+    if flag 
+        return out[1]
+    else
+        return out 
+    end
+end
+
+"""
+    split(o::PyObject, 
+        num_or_size_splits::Union{Integer, Array{<:Integer}, PyObject}; kwargs...)
+    
+Splits `o` according to `num_or_size_splits`
+
+# Example 1
+```julia
+a = constant(rand(10,8,6))
+split(a, 5)
+```
+Expected output:
+```
+5-element Array{PyCall.PyObject,1}:
+ PyObject <tf.Tensor 'split_5:0' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:1' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:2' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:3' shape=(2, 8, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_5:4' shape=(2, 8, 6) dtype=float64>
+```
+
+# Example 2
+```julia
+a = constant(rand(10,8,6))
+split(a, [4,3,1], dims=2)
+```
+Expected output:
+```
+3-element Array{PyCall.PyObject,1}:
+ PyObject <tf.Tensor 'split_6:0' shape=(10, 4, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_6:1' shape=(10, 3, 6) dtype=float64>
+ PyObject <tf.Tensor 'split_6:2' shape=(10, 1, 6) dtype=float64>
+```
+
+# Example 3
+```julia
+a = constant(rand(10,8,6))
+split(a, 3, dims=3)
+```
+Expected output:
+```
+3-element Array{PyCall.PyObject,1}:
+ PyObject <tf.Tensor 'split_7:0' shape=(10, 8, 2) dtype=float64>
+ PyObject <tf.Tensor 'split_7:1' shape=(10, 8, 2) dtype=float64>
+ PyObject <tf.Tensor 'split_7:2' shape=(10, 8, 2) dtype=float64>
+```
+"""
+function Base.:split(o::PyObject, 
+    num_or_size_splits::Union{Integer, Array{<:Integer}, PyObject}; kwargs...)
+    kwargs = jlargs(kwargs)
+    tf.split(o, num_or_size_splits; kwargs...)
+end
+
+"""
+    reverse(o::PyObject, kwargs...)
+
+Given a tensor `o`, and an index `dims` representing the set of dimensions of tensor to reverse.
+
+# Example 
+```julia
+a = rand(10,2)
+A = constant(a)
+@assert run(sess, reverse(A, dims=1)) == reverse(a, dims=1)
+@assert run(sess, reverse(A, dims=2)) == reverse(a, dims=2)
+@assert run(sess, reverse(A, dims=-1)) == reverse(a, dims=2)
+```
+"""
+function reverse(o::PyObject; dims::Integer = -1)
+    if dims==-1
+        dims = length(size(o))
+    end
+    dims = convert_to_tensor([dims-1], dtype=Int32)
+    tf.reverse(o, dims)
 end
