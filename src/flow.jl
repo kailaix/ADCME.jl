@@ -5,6 +5,11 @@ export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
 abstract type FlowOp end 
 
 #------------------------------------------------------------------------------------------
+# Users can define their own FlowOp in the Main
+forward(fo::T, x::Union{Array{<:Real}, PyObject}) where T<:FlowOp  = Main.forward(fo, x)
+backward(fo::T, z::Union{Array{<:Real}, PyObject}) where T<:FlowOp = Main.backward(fo, z)
+
+#------------------------------------------------------------------------------------------
 mutable struct LinearFlow <: FlowOp
     indim::Int64 
     outdim::Int64 
@@ -100,7 +105,7 @@ function LinearFlow(A::Union{PyObject, Array{<:Real,2}},
     if ismissing(b)
         b = zeros(outdim)
     end
-    LinearFlow(indim, outdim, A, b, name=name)
+    LinearFlow(indim, outdim, A, b)
 end
 
 function forward(fo::LinearFlow, x::Union{Array{<:Real}, PyObject})
