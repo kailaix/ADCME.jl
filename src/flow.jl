@@ -1,8 +1,120 @@
 export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel, NeuralCouplingFlow,
-       autoregressive_network
+       autoregressive_network, FlowOp, LinearFlow, TanhFlow, AffineScalarFlow, InvTanhFlow
 
 abstract type FlowOp end 
+
+#------------------------------------------------------------------------------------------
+mutable struct LinearFlow <: FlowOp
+    indim::Int64 
+    outdim::Int64 
+    A::PyObject
+    b::PyObject
+end
+
+@doc raw"""
+    LinearFlow(indim::Int64, outdim::Int64, A::Union{PyObject, Array{<:Real,2}, Missing}=missing, 
+        b::Union{PyObject, Array{<:Real,1}, Missing}=missing, name::Union{String, Missing}=missing)
+    LinearFlow(A::Union{PyObject, Array{<:Real,2}},
+        b::Union{PyObject, Array{<:Real,1}, Missing} = missing; name::Union{String, Missing}=missing)
+
+Creates a linear flow operator, 
+
+$$x = Az + b$$
+
+The operator is not necessarily invertible. $A$ has the size `outdim×indim`, $b$ is a length `outdim` vector.
+
+# Example 1: Reconstructing a Gaussian random variable using invertible A
+```julia
+using ADCME
+using Distributions 
+
+d = MvNormal([2.0;3.0],[2.0 1.0;1.0 2.0])
+flows = [LinearFlow(2, 2)]
+prior = ADCME.MultivariateNormalDiag(loc = zeros(2))
+model = NormalizingFlowModel(prior, flows)
+x = rand(d, 10000)'|>Array
+zs, prior_logpdf, logdet = model(x)
+log_pdf = prior_logpdf + logdet
+loss = -sum(log_pdf)
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+run(sess, flows[1].b) # approximately [2.0 3.0]
+run(sess, flows[1].A * flows[1].A') # approximate [2.0 1.0;1.0 2.0]
+```
+
+# Example 2: Reconstructing a Gaussian random variable using non-invertible A
+```julia
+using ADCME
+using Distributions 
+
+d = Normal()
+A = reshape([2. 1.], 2, 1)
+b = Variable(ones(2)) 
+flows = [LinearFlow(A, b)]
+prior = ADCME.MultivariateNormalDiag(loc = zeros(1))
+model = NormalizingFlowModel(prior, flows)
+
+x = rand(d, 10000, 1)
+x = x * [2.0 1.0] .+ [1.0 3.0]
+
+x = [2.0 2.0]
+zs, prior_logpdf, logdet = model(x)
+log_pdf = prior_logpdf + logdet
+loss = -sum(log_pdf)
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+run(sess, b[1]*2 + b[2]) # approximate 6.0
+```
+"""
+function LinearFlow(indim::Int64, outdim::Int64, A::Union{PyObject, Array{<:Real,2}, Missing}=missing, 
+        b::Union{PyObject, Array{<:Real,1}, Missing}=missing; name::Union{String, Missing}=missing)
+    if ismissing(name)
+        name = randstring(10)
+    end
+    if ismissing(A)
+        A = get_variable(Float64, shape=[outdim,indim], name=name*"_A")
+    end
+
+    if ismissing(b)
+        b = get_variable(Float64, shape=[1,outdim], name=name*"_b")
+    end
+
+    A = constant(A)
+    b = constant(b)
+    b = reshape(b, (1,-1))
+
+    if size(A)!=(outdim,indim)
+        error("Expected A shape: $((outdim,indim)), but got $(size(A))")
+    end
+    if size(b)!=(1,outdim)
+        error("Expected b shape: $((1,outdim)), but got $(size(b))")
+    end
+
+    LinearFlow(indim, outdim, A, b)
+end
+
+function LinearFlow(A::Union{PyObject, Array{<:Real,2}},
+    b::Union{PyObject, Array{<:Real}, Missing} = missing; name::Union{String, Missing}=missing)
+    outdim, indim = size(A)
+    if ismissing(b)
+        b = zeros(outdim)
+    end
+    LinearFlow(indim, outdim, A, b, name=name)
+end
+
+function forward(fo::LinearFlow, x::Union{Array{<:Real}, PyObject})
+    if fo.indim==fo.outdim
+        return solve_batch(fo.A, x - fo.b), -log(abs(det(fo.A)))
+    else
+        return solve_batch(fo.A, x - fo.b), -1/2*log(abs(det(fo.A'*fo.A)))
+    end
+end
+
+function backward(fo::LinearFlow, z::Union{Array{<:Real}, PyObject})
+    z * fo.A' + fo.b, nothing
+end
+
 
 #------------------------------------------------------------------------------------------
 mutable struct AffineConstantFlow <: FlowOp
@@ -410,6 +522,63 @@ function backward(fo::NeuralCouplingFlow, x::Union{Array{<:Real}, PyObject})
     return [lower upper], log_det
 end
 
+
+#------------------------------------------------------------------------------------------
+mutable struct TanhFlow <: FlowOp
+    dim::Int64
+    o::PyObject
+end
+
+function TanhFlow(dim::Int64)
+    TanhFlow(dim, tfp.bijectors.Tanh())
+end
+
+function forward(fo::TanhFlow, x::Union{Array{<:Real}, PyObject})
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 2)
+end
+
+function backward(fo::TanhFlow, z::Union{Array{<:Real}, PyObject})
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 2)
+end
+
+#------------------------------------------------------------------------------------------
+mutable struct InvTanhFlow <: FlowOp
+    dim::Int64
+    o::PyObject
+end
+
+function InvTanhFlow(dim::Int64)
+    InvTanhFlow(dim, tfp.bijectors.Tanh())
+end
+
+function backward(fo::InvTanhFlow, x::Union{Array{<:Real}, PyObject})
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 2)
+end
+
+function forward(fo::InvTanhFlow, z::Union{Array{<:Real}, PyObject})
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 2)
+end
+
+#------------------------------------------------------------------------------------------
+mutable struct AffineScalarFlow <: FlowOp
+    dim::Int64
+    o::PyObject
+end
+
+function AffineScalarFlow(dim::Int64, shift::Float64 = 0.0, scale::Float64 = 1.0) 
+    AffineScalarFlow(dim, tfp.bijectors.AffineScalar(shift=shift, scale=constant(scale)))
+end
+
+function forward(fo::AffineScalarFlow, x::Union{Array{<:Real}, PyObject})
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 2)
+end
+
+function backward(fo::AffineScalarFlow, z::Union{Array{<:Real}, PyObject})
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 2)
+end
+
+
+
 #------------------------------------------------------------------------------------------
 mutable struct NormalizingFlow 
     flows::Array
@@ -436,7 +605,11 @@ function backward(fo::NormalizingFlow, z::Union{PyObject, Array{<:Real,2}})
     xs = [z]
     for flow in reverse(fo.flows)
         z, ld = backward(flow, z)
-        log_det += ld 
+        if isnothing(ld) || isnothing(log_det)
+            log_det = nothing
+        else
+            log_det += ld 
+        end
         push!(xs, z)
     end
     return xs, log_det
@@ -453,10 +626,10 @@ function Base.:show(io::IO, model::NormalizingFlowModel)
     println("( $(string(typeof(model.prior))[7:end]) )")
     println("\t↓")
     for i = 1:length(typevec)-1
-        println(typevec[i])
+        println("$(typevec[i]) (dim = $(model.flow.flows[i].dim))")
         println("\t↓")
     end
-    println(typevec[end])
+    println("$(typevec[end]) (dim = $(model.flow.flows[end].dim))")
 end
 
 function NormalizingFlowModel(prior::T, flows::Array{<:FlowOp}) where T<:ADCMEDistribution
