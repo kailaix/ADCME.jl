@@ -1,6 +1,6 @@
 export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel, NeuralCouplingFlow,
-       autoregressive_network
+       autoregressive_network, FlowOp
 
 abstract type FlowOp end 
 
