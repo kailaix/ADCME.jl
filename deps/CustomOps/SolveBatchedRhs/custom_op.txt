@@ -1,0 +1,4 @@
+SolveBatchedRhs
+double a(?,?)
+double rhs(?,?)
+double v(?,?) -> output

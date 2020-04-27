@@ -1,59 +1,20 @@
+using Revise
+
 using ADCME
 using PyCall
 using LinearAlgebra
 using PyPlot
+using SparseArrays
 using Random
-Random.seed!(233)
+# Random.seed!(233)
 
-################## Load Operator ##################
-if Sys.islinux()
-py"""
-import tensorflow as tf
-libSparseLeastSquare = tf.load_op_library('build/libSparseLeastSquare.so')
-@tf.custom_gradient
-def sparse_least_square(ii,jj,vv,ff,n):
-    u = libSparseLeastSquare.sparse_least_square(ii,jj,vv,ff,n)
-    def grad(dy):
-        return libSparseLeastSquare.sparse_least_square_grad(dy, u, ii,jj,vv,ff,n)
-    return u, grad
-"""
-elseif Sys.isapple()
-py"""
-import tensorflow as tf
-libSparseLeastSquare = tf.load_op_library('build/libSparseLeastSquare.dylib')
-@tf.custom_gradient
-def sparse_least_square(ii,jj,vv,ff,n):
-    u = libSparseLeastSquare.sparse_least_square(ii,jj,vv,ff,n)
-    def grad(dy):
-        return libSparseLeastSquare.sparse_least_square_grad(dy, u, ii,jj,vv,ff,n)
-    return u, grad
-"""
-elseif Sys.iswindows()
-py"""
-import tensorflow as tf
-libSparseLeastSquare = tf.load_op_library('build/libSparseLeastSquare.dll')
-@tf.custom_gradient
-def sparse_least_square(ii,jj,vv,ff,n):
-    u = libSparseLeastSquare.sparse_least_square(ii,jj,vv,ff,n)
-    def grad(dy):
-        return libSparseLeastSquare.sparse_least_square_grad(dy, u, ii,jj,vv,ff,n)
-    return u, grad
-"""
-end
-
-sparse_least_square = py"sparse_least_square"
-################## End Load Operator ##################
 
 # TODO: specify your input parameters
-ii = Int32[1;1;2;2;3;3]
-jj = Int32[1;2;1;2;1;2]
-vv = Float64[1;2;3;4;5;6]
-ff = Float64[1;1;1]
-A = Float64[1 2;3 4;5 6]; f = Float64[1;1;1]
+A = sprand(10,5,0.3)
+f = rand(10)
 sol = A\f
-n = 2
-# error()
-u = sparse_least_square(ii,jj,vv,ff,constant(n, dtype=Int32))
+u = constant(A)\f
+
 sess = Session()
 init(sess)
 @show run(sess, u)-sol
@@ -63,12 +24,18 @@ init(sess)
 # TODO: change your test parameter to `m`
 # gradient check -- v
 function scalar_function(m)
-    return sum(tanh(sparse_least_square(ii,jj,m,ff,n)))
+    return sum((constant(A)\m)^2)
+    B = SparseTensor(ii, jj, m, size(A)...)
+    return sum((B\Array([f f]'))^2)
 end
 
+ii, jj, vv = find(constant(A))
+
 # TODO: change `m_` and `v_` to appropriate values
-m_ = constant(vv)
-v_ = rand(6)
+# m_ = constant(rand(length(vv)))
+# v_ = rand(length(vv))
+m_ = constant(rand(5,10))
+v_ = rand(5,10)
 y_ = scalar_function(m_)
 dy_ = gradients(y_, m_)
 ms_ = Array{Any}(undef, 5)

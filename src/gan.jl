@@ -40,11 +40,11 @@ Builds the GAN instances. This function returns `gan` for convenience.
 function build!(gan::GAN)
     gan.noise = placeholder(get_dtype(gan.dat), shape=(gan.batch_size, gan.latent_dim))
     gan.ids = placeholder(Int32, shape=(gan.batch_size,))
-    variable_scope("generator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
+    variable_scope("generator_$(gan.ganid)") do
         gan.fake_data = gan.generator(gan.noise, gan)
     end
     gan.true_data = tf.gather(gan.dat,gan.ids-1)
-    variable_scope("discriminator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
+    variable_scope("discriminator_$(gan.ganid)") do
         gan.d_loss, gan.g_loss = gan.loss(gan)
     end
     gan.d_vars = Array{PyObject}(get_collection("discriminator_$(gan.ganid)"))
@@ -53,8 +53,8 @@ function build!(gan::GAN)
     gan.g_vars = length(gan.g_vars)>0 ? gan.g_vars : missing
     gan.update = Array{PyCall.PyObject}(get_collection(UPDATE_OPS))
     gan.update = length(gan.update)>0 ? gan.update : missing
-    gan.STORAGE["d_grad_magnitude"] = gradient_magnitude(gan.d_loss, gan.d_vars)
-    gan.STORAGE["g_grad_magnitude"] = gradient_magnitude(gan.g_loss, gan.g_vars)
+    # gan.STORAGE["d_grad_magnitude"] = gradient_magnitude(gan.d_loss, gan.d_vars)
+    # gan.STORAGE["g_grad_magnitude"] = gradient_magnitude(gan.g_loss, gan.g_vars)
     gan
 end 
 
@@ -300,9 +300,9 @@ Samples `n` instances from `gan`.
 function sample(gan::GAN, n::Int64)
     local out
     @info "Using a normal latent vector"
-    noise = normal(n, gan.latent_dim)
+    noise = constant(randn(n, gan.latent_dim))
     gan.is_training = false
-    variable_scope("generator_$(gan.ganid)", initializer=random_uniform_initializer(0.0,1e-3)) do
+    variable_scope("generator_$(gan.ganid)") do
         out = gan.generator(noise, gan)
     end
     gan.is_training = placeholder(true)

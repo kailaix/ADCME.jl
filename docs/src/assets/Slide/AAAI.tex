@@ -1,3 +1,5 @@
+%Deep neural networks (DNNs) have been demonstrated effective for approximating complex and high dimensional functions. In the data-driven inverse modeling, we use DNNs to substitute unknown physical relations, such as constitutive relations, in a physical system described by partial differential equations (PDEs). The coupled system of DNNs and PDEs enables describing complex physical relations while satisfying the physics to the largest extent. However, training the DNNs embedded in PDEs is challenging because input-output pairs of DNNs may not be available, and the physical system may be highly nonlinear, leading to an implicit numerical scheme. We propose an approach, physics constrained learning, to train the DNNs from sparse observations data that are not necessarily input-output pairs of DNNs while enforcing the PDE constraints numerically. Particularly, we present an efficient automatic differentiation based technique that differentiates through implicit PDE solvers. We demonstrate the effectiveness of our method on various problems in solid mechanics and fluid dynamics. Our PCL method enables learning a neural-network-based physical relation from any observations that are interlinked with DNNs through PDEs. 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Beamer Presentation
 % LaTeX Template
@@ -15,7 +17,7 @@
 %    PACKAGES AND THEMES
 %----------------------------------------------------------------------------------------
 
-\documentclass{beamer}
+\documentclass[usenames,dvipsnames]{beamer}
 \usepackage{animate}
 \usepackage{float}
 \usepackage{bm}
@@ -174,7 +176,7 @@
 \fontencoding{U}\fontfamily{futs}\selectfont\char#1}}
 \newcommand*{\danger}{\TakeFourierOrnament{66}}
 
-\title[Physics Constrained Learning]{Data-driven Inverse Modeling with Incomplete Observation} % The short title appears at the bottom of every slide, the full title is only on the title page
+\title[Physics Constrained Learning]{Data-driven Inverse Modeling with Sparse Observation} % The short title appears at the bottom of every slide, the full title is only on the title page
 
 \author[Kailai Xu, et al.]{Kailai Xu and Eric Darve\\ { Alexandre M. Tartakovsky, Jeff Burghardt, Dongzhuo Li, Jerry M. Harris, Weiqiang Zhu, Gregory C. Beroza} }% Your name
 %\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
@@ -408,7 +410,7 @@ $||$
 Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
 Linear           & Explicit          & $y=Ax$       \\
 Nonlinear        & Explicit          & $y = F(x)$   \\
-\textbf{Linear}           & \textbf{Implicit}          & $Ax = y$     \\
+\textbf{Linear}           & \textbf{Implicit}          & $Ay = x$     \\
 \textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
 \end{tabular}
 \end{table}
@@ -459,9 +461,26 @@ If not using the cubic formula for finding the roots, the forward computation co
 
 \begin{frame}
 	\frametitle{Example}
+
+	\begin{itemize}
+		%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyrï¿½, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+		%		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
+		\item An efficient way to do automatic differentiation is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$; treat $y$ as a function of $x$ and take the derivative on both sides
+		      $$3x^2 - 3y(x)^2y'(x)-y'(x)=0\Rightarrow y'(x) = \frac{3x^2}{3y^2+1}$$
+		      The above gradient is \textcolor{red}{exact}.
+	\end{itemize}
+	\begin{center}
+		\textbf{Can we apply the same idea to inverse modeling?}
+	\end{center}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Example}
 	
 	\begin{itemize}
-%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyré, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel PeyrÃ©, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
 %		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
 		\item An efficient way is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$, treat $y$ as a function of $x$ and take the derivative on both sides
 		$$3x^2 - 3y(x)^2y'(x)-1=0\Rightarrow y'(x) = \frac{3x^2-1}{3y(x)^2}$$
@@ -476,56 +495,35 @@ If not using the cubic formula for finding the roots, the forward computation co
 
 \begin{frame}
 	\frametitle{Physics Constrained Learning}
-	 $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
+	$${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
 	\begin{itemize}
-\item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
-$${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
-\item Applying the \textcolor{red}{implicit function theorem}
-{  \scriptsize
-\begin{equation*}
-\frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}  \frac{\partial G_h(\theta)}{\partial \theta} = 0  \Rightarrow 
-     \frac{\partial G_h(\theta)}{\partial \theta} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
-\end{equation*}
-}
-\item Finally we have
-{\scriptsize
-\begin{equation*}
-    \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
-    = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}= - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
-    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
-    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}
-\end{equation*}
-}
+		\item Assume that we solve for $u_h=G_h(\theta)$ with $F_h(\theta, u_h)=0$, and then
+		      $${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
+		\item Applying the \textcolor{red}{implicit function theorem}
+		      {  \scriptsize
+			      \begin{equation*}
+				      \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}
+				      \textcolor{red}{\frac{\partial G_h(\theta)}{\partial \theta}}
+				      = 0 \Rightarrow
+				      \textcolor{red}{\frac{\partial G_h(\theta)}{\partial \theta}} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
+			      \end{equation*}
+		      }
+		\item Finally we have
+			      {\scriptsize
+				      \begin{equation*}
+					      \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }}
+					      = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}=
+					      - \textcolor{red}{ \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} } \;
+					      \textcolor{blue}{ \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} } \;
+					      \textcolor{ForestGreen}{ \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )} }
+					      }
+				      \end{equation*}
+			      }
 
 	\end{itemize}
-	
-\end{frame}
-
-
-\begin{frame}
-	\frametitle{Physics Constrained Learning}	
-	{\scriptsize$$\boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }} 
-    = - \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} \;
-    \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} \;
-    \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}$$}
-
-		Step 1: Calculate $w$ by solving a linear system (never invert the matrix!)
-{\scriptsize$$w^T = \underbrace{\frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}\rule[-9pt]{1pt}{0pt}}}_{1\times N} 
-        \;\;
-        \underbrace{\Big( {\frac{{\partial {F_h}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1}}_{N\times N}$$}
-Step 2: Calculate the gradient by automatic differentiation 
-{\scriptsize$$w^T\;\underbrace{\frac{{\partial {F_h}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )}}_{N\times p} = \frac{\partial (w^T\;  {F_h}(\theta, u_h))}{\partial \theta }\Bigg|_{u_h = {G_h}(\theta )}$$}
-	
-\end{frame}
-
-\begin{frame}
-	\frametitle{Methodology Summary}
-\begin{figure}[hbt]
-\centering
-  \includegraphics[width=0.8\textwidth]{../routine}
-\end{figure}
 
 \end{frame}
+
 
 
 \section{Applications}

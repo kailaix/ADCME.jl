@@ -214,3 +214,8 @@ void LRUCache<T, U>::Impl::bump_to_front(Node* node) {
 
 template class LRUCache<int, Eigen::SparseLU<SpMat>*>;
 LRUCache<int, Eigen::SparseLU<SpMat>*> cache1(-1), cache2(-1);
+
+
+template class LRUCache<int, SpMat*>;
+LRUCache<int, SpMat*> SpMat_cache(100);
+

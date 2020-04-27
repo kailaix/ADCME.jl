@@ -25,11 +25,11 @@ REGISTER_OP("SparseLeastSquare")
         shape_inference::ShapeHandle vv_shape;
         TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 1, &vv_shape));
         shape_inference::ShapeHandle ff_shape;
-        TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 1, &ff_shape));
+        TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 2, &ff_shape));
         shape_inference::ShapeHandle n_shape;
         TF_RETURN_IF_ERROR(c->WithRank(c->input(4), 0, &n_shape));
 
-        c->set_output(0, c->Vector(-1));
+        c->set_output(0, c->Matrix(c->Dim(c->input(3), 0), -1 ));
     return Status::OK();
   });
 class SparseLeastSquareOp : public OpKernel {
@@ -61,16 +61,17 @@ public:
     DCHECK_EQ(ii_shape.dims(), 1);
     DCHECK_EQ(jj_shape.dims(), 1);
     DCHECK_EQ(vv_shape.dims(), 1);
-    DCHECK_EQ(ff_shape.dims(), 1);
+    DCHECK_EQ(ff_shape.dims(), 2);
     DCHECK_EQ(n_shape.dims(), 0);
 
     // extra check
         
     // create output shape
     int n_ = *(n.flat<int>().data());
-    int m = ff_shape.dim_size(0);
+    int m = ff_shape.dim_size(1);
     int nv = ii_shape.dim_size(0);  
-    TensorShape u_shape({n_});
+    int nbatch = ff_shape.dim_size(0);
+    TensorShape u_shape({nbatch, n_});
             
     // create output tensor
     
@@ -89,7 +90,7 @@ public:
     // implement your forward function here 
 
     // TODO:
-    forward(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, ff_tensor, m, n_);
+    forward(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, ff_tensor, m, n_, nbatch);
 
   }
 };
@@ -139,18 +140,19 @@ public:
     const TensorShape& n_shape = n.shape();
     
     
-    DCHECK_EQ(grad_u_shape.dims(), 1);
-    DCHECK_EQ(u_shape.dims(), 1);
+    DCHECK_EQ(grad_u_shape.dims(), 2);
+    DCHECK_EQ(u_shape.dims(), 2);
     DCHECK_EQ(ii_shape.dims(), 1);
     DCHECK_EQ(jj_shape.dims(), 1);
     DCHECK_EQ(vv_shape.dims(), 1);
-    DCHECK_EQ(ff_shape.dims(), 1);
+    DCHECK_EQ(ff_shape.dims(), 2);
     DCHECK_EQ(n_shape.dims(), 0);
 
     // extra check
     // int m = Example.dim_size(0);
     int n_ = *(n.flat<int>().data());
-    int m = ff_shape.dim_size(0);
+    int m = ff_shape.dim_size(1);
+    int nbatch = ff_shape.dim_size(0);
     int nv = ii_shape.dim_size(0); 
     // create output shape
     
@@ -191,8 +193,10 @@ public:
     // implement your backward function here 
 
     // TODO:
+    grad_vv->flat<double>().setZero();
+    grad_ff->flat<double>().setZero();
     backward(grad_vv_tensor, grad_ff_tensor, grad_u_tensor, ii_tensor, jj_tensor, vv_tensor, \
-        u_tensor, ff_tensor, nv, m, n_);    
+        u_tensor, ff_tensor, nv, m, n_, nbatch);    
   }
 };
 REGISTER_KERNEL_BUILDER(Name("SparseLeastSquareGrad").Device(DEVICE_CPU), SparseLeastSquareGradOp);
