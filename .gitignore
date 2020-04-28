@@ -31,3 +31,4 @@ deps/deps.jl
 !deps/build2.jl
 deps/CustomOps/CMakeLists.txt
 docs/src/assets/Slide/figures
+!deps/Anaconda/build.sh
