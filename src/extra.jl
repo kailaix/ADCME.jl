@@ -731,3 +731,14 @@ and `nvcc` is in your path.""")
     println("Dependency file is located at: $(joinpath(@__DIR__, "../deps/deps.jl"))")
     
 end
+
+function test_gpu()
+    run(`which nvcc`)
+    cd("$(@__DIR__)/../examples/gpu_custom_op")
+    mkdir("build")
+    cd("build")
+    ADCME.cmake()
+    ADCME.make()
+    cd("..")
+    include("gputest.jl")
+end

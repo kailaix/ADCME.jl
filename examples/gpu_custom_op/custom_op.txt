@@ -1,0 +1,3 @@
+GpuTest
+double a(?)
+double b(?) -> output
