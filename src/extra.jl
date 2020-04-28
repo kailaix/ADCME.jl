@@ -701,20 +701,22 @@ For Windows, you need to add it to system environment.""")
 $(ADCME.LIBCUDA)
 and `nvcc` is in your path.""")
         end
+
+        c = isdir(ADCME.CUDA_INC) && "cuda.h" in readdir(ADCME.CUDA_INC)
+        if c 
+            yes("CUDA Include Library")
+        else 
+            no("CUDA Include Library",
+            """Cuda include library does not exist or `cuda.h` is missing.""",
+        """It might be possible that your cuda include library is located somewhere else other than $(ADCME.CUDA_INC). Fix the dependency file.""")
+        end
     else
         no("GPU Support", 
     """ADCME is not compiled against GPU.""",
     """If you intend to use GPU, set ENV["GPU"] = 1 and then rebuild ADCME.""")
     end
 
-    c = isdir(ADCME.CUDA_INC) && "cuda.h" in readdir(ADCME.CUDA_INC)
-    if c 
-        yes("CUDA Include Library")
-    else 
-        no("CUDA Include Library",
-        """Cuda include library does not exist or `cuda.h` is missing.""",
-    """It might be possible that your cuda include library is located somewhere else other than $(ADCME.CUDA_INC). Fix the dependency file.""")
-    end
+    
 
     println("Dependency file is located at: $(joinpath(@__DIR__, "../deps/deps.jl"))")
     
