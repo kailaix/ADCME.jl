@@ -156,7 +156,7 @@ This will install all GPU dependencies.
 
 ### Building a GPU custom operator 
 
-We consider a toy example where the custom operator is a function $f: x\rightarrow 2x$. To begin with, we create a `custom_op.txt` via [`customp()`](@ref)
+We consider a toy example where the custom operator is a function $f: x\rightarrow 2x$. To begin with, we create a `custom_op.txt` via [`customp`](@ref)
 
 ```text
 GpuTest

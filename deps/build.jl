@@ -97,9 +97,12 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
 Make sure `nvcc` is available.""")
     end
     s = join(readlines(pipeline(`nvcc --version`)), " ")
-    ver = parse(Int64, match(r"V(\d+\.\d)", s)[1])
-    if ver!=10.0
+    ver = match(r"V(\d+\.\d)", s)[1]
+    if ver[1:2]!="10"
         error("TensorFlow backend of ADCME requires CUDA 10.0. But you have CUDA $ver")
+    end
+    if ver[1:4]!="10.0"
+        @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
 
     if !("adcme-gpu" in Conda._installed_packages())
