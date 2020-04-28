@@ -25,7 +25,6 @@ deps/CustomOps/Laplace2D
 deps/CustomOps/OT
 deps/CustomOps/OTNetwork
 deps/CustomOps/FastDTW
-deps/CustomOps/ExtendNN
 deps/CustomOps/formulas.jl
 deps/deps.jl
 !deps/build2.jl
