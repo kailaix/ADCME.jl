@@ -1,9 +1,4 @@
 using ADCME
-using PyCall
-using LinearAlgebra
-using PyPlot
-using Random
-Random.seed!(233)
 
 function gpu_test(a)
     gpu_test_ = load_op_and_grad("$(@__DIR__)/build/libGpuTest","gpu_test")
@@ -12,7 +7,7 @@ function gpu_test(a)
 end
 
 # TODO: specify your input parameters
-a = rand(100)
+a = rand(3)
 u = gpu_test(a)
 sess = Session(); init(sess)
 v1 = run(sess, u)

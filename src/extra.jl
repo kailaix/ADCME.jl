@@ -732,7 +732,14 @@ and `nvcc` is in your path.""")
     
 end
 
+
+"""
+    test_gpu()
+
+Tests the GPU ultilities
+"""
 function test_gpu()
+    PWD = pwd()
     run(`which nvcc`)
     cd("$(@__DIR__)/../examples/gpu_custom_op")
     mkdir("build")
@@ -741,4 +748,5 @@ function test_gpu()
     ADCME.make()
     cd("..")
     include("gputest.jl")
+    cd(PWD)
 end
