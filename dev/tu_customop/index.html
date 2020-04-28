@@ -52,37 +52,172 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 julia&gt; ADCME.cmake()
 julia&gt; ADCME.make()</code></pre><p>Based on your operation system, you will create <code>libMySparseSolver.{so,dylib,dll}</code>. This will be the dynamic library to link in <code>TensorFlow</code>. </p><p><strong>Step 4: Test</strong></p><p>Finally, you could use <code>gradtest.jl</code> to test the operator and its gradients (specify appropriate data in <code>gradtest.jl</code> first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. Note you need to modify this file first, e.g., creating data and modifying the function <code>scalar_function</code>. </p><p><img src="../assets/custom_op.png" alt="custom_op"/></p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile <code>libtensorflow_framework.{so,dylib}</code>. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.</p></div></div><h2 id="Build-GPU-Custom-Operators-1"><a class="docs-heading-anchor" href="#Build-GPU-Custom-Operators-1">Build GPU Custom Operators</a><a class="docs-heading-anchor-permalink" href="#Build-GPU-Custom-Operators-1" title="Permalink"></a></h2><h3 id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)-1"><a class="docs-heading-anchor" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)-1">Install GPU-enabled TensorFlow (Linux and Windows)</a><a class="docs-heading-anchor-permalink" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)-1" title="Permalink"></a></h3><p>To use  CUDA in ADCME, we need to install a GPU-enabled version of TensorFlow. In ADCME, this is achieved by simply rebuilding ADCME with <code>GPU</code> environment variabe. </p><pre><code class="language-julia">using Pkg
 ENV[&quot;GPU&quot;] = 1
-Pkg.build(&quot;ADCME&quot;)</code></pre><p>We can inspect the dependencies being installed:</p><pre><code class="language-none">    package                    |            build
-    ---------------------------|-----------------
-    _tflow_select-2.1.0        |              gpu           2 KB
-    cudatoolkit-10.0.130       |                0       261.2 MB
-    cudnn-7.6.5                |       cuda10.0_0       165.0 MB
-    cupti-10.0.130             |                0         1.5 MB
-    tensorflow-1.15.0          |gpu_py37h0f0df58_0           4 KB
-    tensorflow-base-1.15.0     |gpu_py37h9dcbed7_0       156.5 MB
-    tensorflow-gpu-1.15.0      |       h0d30ee6_0           3 KB
-    ------------------------------------------------------------
-                                           Total:       584.2 MB</code></pre><p>Note ADCME uses TensorFlow 1.15, and the official tensorflow.so is built with CUDA 10.0, and CUDNN 7.6.5. The corresponding libraries are in </p><pre><code class="language-julia">~/.julia/conda/3/pkgs/cudatoolkit*
-~/.julia/conda/3/pkgs/cudnn*
-~/.julia/conda/3/pkgs/cupti*</code></pre><h3 id="File-Organization-1"><a class="docs-heading-anchor" href="#File-Organization-1">File Organization</a><a class="docs-heading-anchor-permalink" href="#File-Organization-1" title="Permalink"></a></h3><p>There should be three files in your source directories</p><ul><li><code>MyOp.cpp</code>: driver file</li><li><code>MyOp.cu</code>: GPU implementation</li><li><code>MyOp.h</code>: CPU implementation</li></ul><p>The first two files have been generated for you by <code>customop()</code>. The following are two important notes on the implementation.</p><ul><li>In <code>MyOp.cu</code>, the implementation usually has the structure</li></ul><pre><code class="language-c">namespace tensorflow{
-  typedef Eigen::GpuDevice GPUDevice;
+Pkg.build(&quot;ADCME&quot;)</code></pre><p>This will install all GPU dependencies.</p><h3 id="Building-a-GPU-custom-operator-1"><a class="docs-heading-anchor" href="#Building-a-GPU-custom-operator-1">Building a GPU custom operator</a><a class="docs-heading-anchor-permalink" href="#Building-a-GPU-custom-operator-1" title="Permalink"></a></h3><p>We consider a toy example where the custom operator is a function <span>$f: x\rightarrow 2x$</span>. To begin with, we create a <code>custom_op.txt</code> via <a href="@ref"><code>customp()</code></a></p><pre><code class="language-text">GpuTest
+double a(?)
+double b(?) -&gt; output</code></pre><p>Next, by running <code>customp()</code> again several template files are generated. We can then do the implementation in those files</p><p><strong>GpuTest.cpp</strong></p><pre><code class="language-c">#include &quot;tensorflow/core/framework/op_kernel.h&quot;
+#include &quot;tensorflow/core/framework/tensor_shape.h&quot;
+#include &quot;tensorflow/core/platform/default/logging.h&quot;
+#include &quot;tensorflow/core/framework/shape_inference.h&quot;
+#include&lt;cmath&gt;
 
-    __global__ void forward_(const int nthreads, double *out, const double *y, const double *H0, int n){
-      for(int i : CudaGridRangeX(nthreads)) {
-          // do something here
-      }
-    }
+// Signatures for GPU kernels here 
+void return_double(int n, double *b, const double*a);
+using namespace tensorflow;
 
-    void forwardGPU(double *out, const double *y, const double *H0, int n, const GPUDevice&amp; d){
-      // forward_&lt;&lt;&lt;(n+255)/256, 256&gt;&gt;&gt;(out, y, H0, n);
-      GpuLaunchConfig config = GetGpuLaunchConfig(n, d);
-      TF_CHECK_OK(GpuLaunchKernel(
-          forward_, config.block_count, config.thread_per_block, 0,
-          d.stream(), config.virtual_thread_count, out, y, H0, n));
-      }
-}</code></pre><ul><li>In <code>MyOp.cpp</code>, the device information (<code>const GPUDevice&amp; d</code> above) is obtained with </li></ul><pre><code class="language-c">context-&gt;eigen_device&lt;GPUDevice&gt;()</code></pre><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p><code>for(int i : CudaGridRangeX(nthreads))</code> is interpreted as </p><pre><code class="language-c">for (int index = blockIdx.x * blockDim.x + threadIdx.x; index &lt; nthreads; index += blockDim.x * gridDim.x)</code></pre><p>and the kernel launch semantic is equivalent to </p><pre><code class="language-c">forward_&lt;&lt;&lt;config.block_count, config.thread_per_block, 0,
-                            d.stream()&gt;&gt;&gt;(config.virtual_thread_count,
-                                          			out, y, H0, n);</code></pre></div></div><h2 id="Miscellany-1"><a class="docs-heading-anchor" href="#Miscellany-1">Miscellany</a><a class="docs-heading-anchor-permalink" href="#Miscellany-1" title="Permalink"></a></h2><h3 id="Mutable-Inputs-1"><a class="docs-heading-anchor" href="#Mutable-Inputs-1">Mutable Inputs</a><a class="docs-heading-anchor-permalink" href="#Mutable-Inputs-1" title="Permalink"></a></h3><p>Sometimes we want to modify tensors in place. In this case we can use mutable inputs. Mutable inputs must be <a href="../api/#ADCME.Variable-Tuple{Any}"><code>Variable</code></a> and it must be forwarded to one of the output. We consider implement a <code>my_assign</code> operator, with signature</p><pre><code class="language-none">my_assign(u::PyObject, v::PyObject)::PyObject</code></pre><p>Here <code>u</code> is a <code>Variable</code> and we copy the data from <code>v</code> to <code>u</code>. In the <code>MyAssign.cpp</code> file, we modify the input and output specifications to </p><pre><code class="language-c">.Input(&quot;u : Ref(double)&quot;)
+
+REGISTER_OP(&quot;GpuTest&quot;)
+
+.Input(&quot;a : double&quot;)
+.Output(&quot;b : double&quot;)
+.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    
+        shape_inference::ShapeHandle a_shape;
+        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(0), 1, &amp;a_shape));
+
+        c-&gt;set_output(0, c-&gt;input(0));
+    return Status::OK();
+  });
+
+REGISTER_OP(&quot;GpuTestGrad&quot;)
+
+.Input(&quot;grad_b : double&quot;)
+.Input(&quot;b : double&quot;)
+.Input(&quot;a : double&quot;)
+.Output(&quot;grad_a : double&quot;);
+
+
+class GpuTestOpGPU : public OpKernel {
+private:
+  
+public:
+  explicit GpuTestOpGPU(OpKernelConstruction* context) : OpKernel(context) {
+
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(1, context-&gt;num_inputs());
+    
+    
+    const Tensor&amp; a = context-&gt;input(0);
+    
+    
+    const TensorShape&amp; a_shape = a.shape();
+    
+    
+    DCHECK_EQ(a_shape.dims(), 1);
+
+    // extra check
+        
+    // create output shape
+    int n = a_shape.dim_size(0);
+    TensorShape b_shape({n});
+            
+    // create output tensor
+    
+    Tensor* b = NULL;
+    OP_REQUIRES_OK(context, context-&gt;allocate_output(0, b_shape, &amp;b));
+    
+    // get the corresponding Eigen tensors for data access
+    
+    auto a_tensor = a.flat&lt;double&gt;().data();
+    auto b_tensor = b-&gt;flat&lt;double&gt;().data();   
+
+    // implement your forward function here 
+
+    // TODO:
+    return_double(n, b_tensor, a_tensor);
+
+  }
+};
+REGISTER_KERNEL_BUILDER(Name(&quot;GpuTest&quot;).Device(DEVICE_GPU), GpuTestOpGPU);
+</code></pre><p><strong>GpuTest.cu</strong></p><pre><code class="language-c">#define GOOGLE_CUDA 1
+#define EIGEN_USE_GPU
+
+#include &quot;tensorflow/core/framework/register_types.h&quot;
+#include &quot;tensorflow/core/framework/tensor_types.h&quot;
+#include &quot;tensorflow/core/util/gpu_kernel_helper.h&quot;
+
+__global__ void return_double_(int n, double *b, const double*a){
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i&lt;n) b[i] = 2*a[i];
+}
+
+void return_double(int n, double *b, const double*a){
+    return_double_&lt;&lt;&lt;(n+255)/256, 256&gt;&gt;&gt;(n, b, a);
+}</code></pre><p><strong>CMakeLists.txt</strong></p><pre><code class="language-cmake">cmake_minimum_required(VERSION 3.5)
+project(TF_CUSTOM_OP)
+set (CMAKE_CXX_STANDARD 11)
+
+execute_process(COMMAND julia -e &quot;import ADCME; print(ADCME.__STR__)&quot; OUTPUT_VARIABLE JL_OUT)
+execute_process(COMMAND which julia OUTPUT_VARIABLE JULIA_BIN)
+message(&quot;Julia=${JULIA_BIN}&quot;)
+
+list(GET JL_OUT 0 BINDIR)
+list(GET JL_OUT 1 LIBDIR)
+list(GET JL_OUT 2 TF_INC)
+list(GET JL_OUT 3 TF_ABI)
+list(GET JL_OUT 4 EIGEN_INC)
+list(GET JL_OUT 5 CC)
+list(GET JL_OUT 6 CXX)
+list(GET JL_OUT 7 CMAKE)
+list(GET JL_OUT 8 MAKE)
+list(GET JL_OUT 9 GIT)
+list(GET JL_OUT 10 PYTHON)
+list(GET JL_OUT 11 TF_LIB_FILE)
+list(GET JL_OUT 12 LIBCUDA)
+list(GET JL_OUT 13 CUDA_INC)
+
+message(&quot;Python path=${PYTHON}&quot;)
+message(&quot;EIGEN_INC=${EIGEN_INC}&quot;)
+message(&quot;TF_INC=${TF_INC}&quot;)
+message(&quot;TF_ABI=${TF_ABI}&quot;)
+message(&quot;TF_LIB_FILE=${TF_LIB_FILE}&quot;)
+
+
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
+  set(CMAKE_CXX_FLAGS &quot;-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}&quot;)
+endif()
+
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS_RELEASE &quot;-O3 -DNDEBUG&quot;)
+
+include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
+link_directories(${LIBDIR})
+
+find_package(CUDA QUIET REQUIRED)
+set(CMAKE_CXX_FLAGS &quot;-std=c++11 ${CMAKE_CXX_FLAGS}&quot;)
+set(CMAKE_CXX_FLAGS &quot;-O3 ${CMAKE_CXX_FLAGS}&quot;)
+set(CMAKE_CXX_FLAGS &quot;-shared ${CMAKE_CXX_FLAGS}&quot;)
+set(CMAKE_CXX_FLAGS &quot;-fPIC ${CMAKE_CXX_FLAGS}&quot;)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
+SET(CUDA_PROPAGATE_HOST_FLAGS ON)
+
+add_definitions(-DGOOGLE_CUDA)
+message(&quot;Compiling GPU-compatible custom operator!&quot;)
+cuda_add_library(GpuTest SHARED GpuTest.cpp GpuTest.cu)
+
+
+set_property(TARGET GpuTest PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(GpuTest ${TF_LIB_FILE})
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set_target_properties(GpuTest PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)</code></pre><p>We can then compile the operator on a system where <code>nvcc</code> is available:</p><pre><code class="language-julia">mkdir(&quot;build&quot;)
+cd(&quot;build&quot;)
+ADCME.cmake()
+ADCME.make()</code></pre><h3 id="Running-a-GPU-custom-operator-1"><a class="docs-heading-anchor" href="#Running-a-GPU-custom-operator-1">Running a GPU custom operator</a><a class="docs-heading-anchor-permalink" href="#Running-a-GPU-custom-operator-1" title="Permalink"></a></h3><p>We can now run a GPU operator by loading the shared library</p><pre><code class="language-julia">using ADCME
+
+function gpu_test(a)
+    gpu_test_ = load_op_and_grad(&quot;$(@__DIR__)/build/libGpuTest&quot;,&quot;gpu_test&quot;)
+    a = convert_to_tensor([a], [Float64]); a = a[1]
+    gpu_test_(a)
+end
+
+# TODO: specify your input parameters
+a = [1.0;3.0;-1.0]
+u = gpu_test(a)
+sess = Session(); init(sess)
+run(sess, u)</code></pre><p>If we run the file on a system without GPU resources, we will get the following error </p><pre><code class="language-text"> &lt;class &#39;tensorflow.python.framework.errors_impl.InvalidArgumentError&#39;&gt;</code></pre><p>If we have GPU resources, the kernel will run correctly with the output</p><pre><code class="language-julia">2.0
+6.0
+-2.0</code></pre><h2 id="Miscellany-1"><a class="docs-heading-anchor" href="#Miscellany-1">Miscellany</a><a class="docs-heading-anchor-permalink" href="#Miscellany-1" title="Permalink"></a></h2><h3 id="Mutable-Inputs-1"><a class="docs-heading-anchor" href="#Mutable-Inputs-1">Mutable Inputs</a><a class="docs-heading-anchor-permalink" href="#Mutable-Inputs-1" title="Permalink"></a></h3><p>Sometimes we want to modify tensors in place. In this case we can use mutable inputs. Mutable inputs must be <a href="../api/#ADCME.Variable-Tuple{Any}"><code>Variable</code></a> and it must be forwarded to one of the output. We consider implement a <code>my_assign</code> operator, with signature</p><pre><code class="language-none">my_assign(u::PyObject, v::PyObject)::PyObject</code></pre><p>Here <code>u</code> is a <code>Variable</code> and we copy the data from <code>v</code> to <code>u</code>. In the <code>MyAssign.cpp</code> file, we modify the input and output specifications to </p><pre><code class="language-c">.Input(&quot;u : Ref(double)&quot;)
 .Input(&quot;v : double&quot;)
 .Output(&quot;w : Ref(double)&quot;)</code></pre><p>In addition, the input tensor is obtained through</p><pre><code class="language-c">Tensor u = context-&gt;mutable_input(0, true);</code></pre><p>The second argument <code>lock_held</code> specifies whether the input mutex is acquired (false) before the operation. Note the output must be a <code>Tensor</code> instead of a reference. </p><p>To forward the input, use</p><pre><code class="language-c">context-&gt;forward_ref_input_to_ref_output(0,0);</code></pre><p>We use the following code snippet to test the program</p><pre><code class="language-julia">my_assign = load_op(&quot;./build/libMyAssign&quot;,&quot;my_assign&quot;)
 u = Variable([0.1,0.2,0.3])
@@ -127,4 +262,4 @@ EIGEN_INC=
 TF_INC=
 TF_ABI=
 TF_LIB_FILE=</code></pre><p><strong>A:</strong> Update ADCME to the latest version and check whether or not the ADCME compiler string is empty</p><pre><code class="language-julia">using ADCME
-ADCME.__STR__</code></pre><p><strong>Q: Julia package precompilation errors that seem not linked to ADCME.</strong></p><p><strong>A:</strong> Remove the corresponding packages using <code>using Pkg; Pkg.rm(XXX)</code> and reinstall those packages. </p><p><strong>Q: Precompilation error linked to ADCME</strong></p><pre><code class="language-text">ERROR: LoadError: ADCME is not properly built; run `Pkg.build(&quot;ADCME&quot;)` to fix the problem.</code></pre><p><strong>A:</strong> Build ADCME using <code>Pkg.build(&quot;ADCME&quot;)</code>. Exit Julia and open Julia again. Check whether <code>deps.jl</code> exists in the <code>deps</code> directory of your Julia package (optional).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tu_implicit/">« Advanced: Automatic Differentiation for Implicit Operators</a><a class="docs-footer-nextpage" href="../tu_debug/">Advanced: Debugging »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 27 April 2020 08:50">Monday 27 April 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ADCME.__STR__</code></pre><p><strong>Q: Julia package precompilation errors that seem not linked to ADCME.</strong></p><p><strong>A:</strong> Remove the corresponding packages using <code>using Pkg; Pkg.rm(XXX)</code> and reinstall those packages. </p><p><strong>Q: Precompilation error linked to ADCME</strong></p><pre><code class="language-text">ERROR: LoadError: ADCME is not properly built; run `Pkg.build(&quot;ADCME&quot;)` to fix the problem.</code></pre><p><strong>A:</strong> Build ADCME using <code>Pkg.build(&quot;ADCME&quot;)</code>. Exit Julia and open Julia again. Check whether <code>deps.jl</code> exists in the <code>deps</code> directory of your Julia package (optional).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tu_implicit/">« Advanced: Automatic Differentiation for Implicit Operators</a><a class="docs-footer-nextpage" href="../tu_debug/">Advanced: Debugging »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 28 April 2020 22:08">Tuesday 28 April 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
