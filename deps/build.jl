@@ -29,10 +29,18 @@ __STR__ = join([BINDIR,LIBDIR,TF_INC,TF_ABI,EIGEN_INC,CC,CXX,CMAKE,MAKE,GIT,PYTH
 """)
 end
 
+
+
+
 @info " ########### Install Tensorflow Dependencies  ########### "
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
+
+if haskey(ENV, "FORCE_INSTALL_TF") && ENV["FORCE_INSTALL_TF"]=="1" && "adcme" in Conda._installed_packages()
+    Conda.rm("adcme")
+end
+
 if !("adcme" in Conda._installed_packages())
     Conda.add("adcme", channel="kailaix")
 end
@@ -85,13 +93,13 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     try 
         run(`which nvcc`)
     catch
-        error("""You specified ENV["GPU"]=1 but nvcc cannot be found (`which nvcc` failed.
+        error("""You specified ENV["GPU"]=1 but nvcc cannot be found (`which nvcc`) failed.
 Make sure `nvcc` is available.""")
     end
     s = join(readlines(pipeline(`nvcc --version`)), " ")
-    ver = parse(Int64, match(r"V(\d+)\.\d", s)[1])
-    if ver!=10
-        error("TensorFlow backend of ADCME requires CUDA 10. But you have CUDA $ver")
+    ver = parse(Int64, match(r"V(\d+\.\d)", s)[1])
+    if ver!=10.0
+        error("TensorFlow backend of ADCME requires CUDA 10.0. But you have CUDA $ver")
     end
 
     if !("adcme-gpu" in Conda._installed_packages())

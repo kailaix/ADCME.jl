@@ -152,31 +152,7 @@ ENV["GPU"] = 1
 Pkg.build("ADCME")
 ```
 
-We can inspect the dependencies being installed:
-
-```
-    package                    |            build
-    ---------------------------|-----------------
-    _tflow_select-2.1.0        |              gpu           2 KB
-    cudatoolkit-10.0.130       |                0       261.2 MB
-    cudnn-7.6.5                |       cuda10.0_0       165.0 MB
-    cupti-10.0.130             |                0         1.5 MB
-    tensorflow-1.15.0          |gpu_py37h0f0df58_0           4 KB
-    tensorflow-base-1.15.0     |gpu_py37h9dcbed7_0       156.5 MB
-    tensorflow-gpu-1.15.0      |       h0d30ee6_0           3 KB
-    ------------------------------------------------------------
-                                           Total:       584.2 MB
-```
-
-Note ADCME uses TensorFlow 1.15, and the official tensorflow.so is built with CUDA 10.0, and CUDNN 7.6.5. The corresponding libraries are in 
-
-```julia
-~/.julia/conda/3/pkgs/cudatoolkit*
-~/.julia/conda/3/pkgs/cudnn*
-~/.julia/conda/3/pkgs/cupti*
-```
-
-
+This will install all GPU dependencies.
 
 ### File Organization
 
