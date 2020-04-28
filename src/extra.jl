@@ -705,6 +705,16 @@ and `nvcc` is in your path.""")
         c = isdir(ADCME.CUDA_INC) && "cuda.h" in readdir(ADCME.CUDA_INC)
         if c 
             yes("CUDA Include Library")
+
+            if !isfile(joinpath(ADCME.TF_INC, "third_party/gpus/cuda/include/cuda_fp16.h"))
+                println("Fixing third_party/gpus/cuda/include...")
+                if !ispath(joinpath(ADCME.TF_INC, "third_party/gpus/cuda/"))
+                    mkpath(joinpath(ADCME.TF_INC, "third_party/gpus/cuda/"))
+                end
+                rm(joinpath(ADCME.TF_INC, "third_party/gpus/cuda/include/"), force=true, recursive=true)
+                symlink(ADCME.CUDA_INC, joinpath(ADCME.TF_INC, "third_party/gpus/cuda/include"))
+            end
+
         else 
             no("CUDA Include Library",
             """Cuda include library does not exist or `cuda.h` is missing.""",

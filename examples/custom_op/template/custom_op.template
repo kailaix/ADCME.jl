@@ -4,15 +4,9 @@
 #include "tensorflow/core/framework/shape_inference.h"
 #include<cmath>
 
-${STRING}
-#ifdef USE_GPU
-#include "tensorflow/core/util/gpu_kernel_helper.h"
-namespace tensorflow{
-  typedef Eigen::GpuDevice GPUDevice;
-  void forwardGPU(const GPUDevice &d);
-  void backwardGPU(const GPUDevice &d);
-}
-#endif
+# Signatures for GPU kernels here 
+
+
 using namespace tensorflow;
 #include "${OperatorName}.h"
 
@@ -110,7 +104,7 @@ REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_CPU), ${Operat
 ***************************************************************************************/
 
 
-#ifdef USE_GPU
+#ifdef GOOGLE_CUDA
 class ${OperatorName}OpGPU : public OpKernel {
 private:
   ${AttributesDef}

@@ -48,7 +48,7 @@ ${USEGPU}SET(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 ${USEGPU}find_program(_nvidia_smi "nvidia-smi")
 ${USEGPU}if (_nvidia_smi)
-${USEGPU}  add_definitions(-DUSE_GPU)
+${USEGPU}  add_definitions(-DGOOGLE_CUDA)
 ${USEGPU}  message("Compiling GPU-compatible custom operator!")
 ${USEGPU}  cuda_add_library(${OperatorName} SHARED ${OperatorName}.cpp ${OperatorName}.cu)
 ${USEGPU}else()
