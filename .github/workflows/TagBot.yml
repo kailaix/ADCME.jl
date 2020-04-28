@@ -22,7 +22,7 @@ jobs:
           restore-keys: |
             conda3
       - name: Install dependencies
-        run: julia --project=docs/ --color=yes -e 'using Pkg;Pkg.add("Documenter");  Pkg.add("ADCME"); Pkg.add("PyCall"); Pkg.add("PyPlot"); Pkg.add("LinearAlgebra"); Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME")'
+        run: julia --project=docs/ --color=yes -e 'using Pkg;  Pkg.add("ADCME"); Pkg.add("Documenter");Pkg.add("PyCall"); Pkg.add("PyPlot"); Pkg.add("LinearAlgebra"); Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME")'
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
