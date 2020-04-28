@@ -10,5 +10,6 @@
 "sparse_scatter_update" => ("SparseScatterUpdate", "libSparseScatterUpdate", "sparse_scatter_update", true),
 "sparse_factorization" => ("SparseFactorizationSolve", "libfactorization", "sparse_factorization", false),
 "sparse_solve" => ("SparseFactorizationSolve", "libSolve", "solve", true),
-"tri_lu" => ("TriLu", "libTriLu", "tri_lu", true)
+"tri_lu" => ("TriLu", "libTriLu", "tri_lu", true),
+"solve_batched_rhs" => ("SolveBatchedRhs", "libSolveBatchedRhs", "solve_batched_rhs", true)
 

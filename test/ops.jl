@@ -458,3 +458,15 @@ end
     @test run(sess, reverse(A, dims=2)) == reverse(a, dims=2)
     @test run(sess, reverse(A, dims=-1)) == reverse(a, dims=2)
 end
+
+@testset "solve batch" begin 
+    a = rand(10,5)
+    b = rand(100, 10)
+    sol = solve_batch(a, b)
+    @test run(sess, sol) ≈ (a\b')'
+
+    a = rand(10,10)
+    b = rand(100, 10)
+    sol = solve_batch(a, b)
+    @test run(sess, sol) ≈ (a\b')'
+end

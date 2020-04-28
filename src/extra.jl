@@ -134,6 +134,18 @@ end
 end
 
 function refresh_cmake()
+    colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
+    for c in colibs
+        push!(COLIB, c)
+    end
+    
+    if isfile("$(@__DIR__)/../deps/CustomOps/formulas.jl")
+        colibs = include("$(@__DIR__)/../deps/CustomOps/formulas.jl")
+        for c in colibs
+            push!(COLIB, c)
+        end
+    end
+    
     NEWLIB = String[]
     for c in COLIB
         push!(NEWLIB, c.second[1])

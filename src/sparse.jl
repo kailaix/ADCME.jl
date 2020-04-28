@@ -359,39 +359,44 @@ For square matrices $A$, one of the following methods is available
 - `SparseQR`
 - `SimplicialLDLT`
 - `SimplicialLLT`
+
+!!! note 
+    In the case `o` is 2 dimensional, `\` is understood as "batched solve". `o` must have size $n_{b} \times m$, and 
+    $A$ has a size $m\times n$. It returns the solution matrix of size $n_b \times n$
+    
+    $$s_{i,:} = A^{-1} o_{i,:}$$
 """
 function PyCall.:\(s::SparseTensor, o::PyObject, method::String="auto")
     local u
     if method=="auto"
         method = options.sparse.solver
     end
-    if length(size(o))!=1
-        error("input b must be a vector")
-    end
-    if size(s,1)!=length(o)
-        error("nrows(A) and nrows(b) must match")
-    end
     if size(s,1)!=size(s,2)
-        # least squre 
-        ss = load_system_op(COLIB["sparse_least_square"]...)
-        ii = s.o.indices'[1,:]+1
-        jj = s.o.indices'[2,:]+1
-        ii = cast(ii, Int32)
-        jj = cast(jj, Int32)
-        vv = cast(s.o.values, Float64)
-        o = cast(o, Float64)
-        # @show ii, jj, vv, o, constant(size(s, 2), dtype=Int32)
-        u = ss(ii, jj, vv, o, constant(size(s, 2), dtype=Int32))
+        _cfun = load_system_op(COLIB["sparse_least_square"]...)
+        ii, jj, vv = find(s)
+        ii, jj, vv, o = convert_to_tensor([ii, jj, vv, o], [Int32, Int32, Float64, Float64])
+        if length(size(o))==1
+            @assert size(s,1)==length(o)
+            o = reshape(o, (1, -1))
+            u = _cfun(ii, jj, vv, o, constant(size(s, 2), dtype=Int32))
+            return u[1]
+        end
+        @assert size(o,2)==size(s,1)
+        u = _cfun(ii, jj, vv, o, constant(size(s, 2), dtype=Int32))
+        if size(s,2)!=nothing && size(o,1)!=nothing
+            u.set_shape((size(o,1), size(s,2)))
+        end
     else
         ss = load_system_op(COLIB["sparse_solver"]...)
         # in case `indices` has dynamical shape
         ii, jj, vv = find(s)
         ii,jj,vv,o = convert_to_tensor([ii,jj,vv,o], [Int64,Int64,Float64,Float64])
         u = ss(ii,jj,vv,o,method)
+        if size(s,2)!=nothing 
+            u.set_shape((size(s,2),))
+        end
     end
-    if size(s,2)!=nothing 
-        u.set_shape((size(s,2),))
-    end
+    
     u
 end
 

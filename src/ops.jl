@@ -68,7 +68,8 @@ selu,
 elu,
 tr,
 tril, 
-triu 
+triu,
+solve_batch
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -466,11 +467,41 @@ diag(o::PyObject; kwargs...) = tf.linalg.diag_part(o; kwargs...)
 det(o::PyObject; kwargs...) = tf.linalg.det(o; kwargs...)
 inv(o::PyObject; kwargs...) = tf.linalg.inv(o; kwargs...)
 
-function solve(matrix, rhs; kwargs...)
-    flag = false
-    if isa(rhs, Array)
-        rhs = constant(rhs)
+@doc raw"""
+    solve_batch(A::Union{PyObject, Array{<:Real, 2}}, rhs::Union{PyObject, Array{<:Real,2}})
+
+Solves $$Ax = b$$ for a batch of right hand sides. 
+
+- `A`: a $m\times n$ matrix, where $m\geq n$
+- `rhs`: a $n_b\times m$ matrix. Each row is a new right hand side to solve. 
+
+The returned value is a $n_b\times n$ matrix. 
+
+# Example
+```julia
+a = rand(10,5)
+b = rand(100, 10)
+sol = solve_batch(a, b)
+@assert run(sess, sol) ≈ (a\b')'
+```
+
+!!! note 
+    Internally, the matrix $A$ is factorized first and then the factorization is used to solve multiple right hand side.
+"""
+function solve_batch(A::Union{PyObject, Array{<:Real, 2}}, rhs::Union{PyObject, Array{<:Real,2}})
+    solve_batched_rhs_ = load_system_op(COLIB["solve_batched_rhs"]...; multiple=false)
+    a,rhs = convert_to_tensor([A,rhs], [Float64,Float64])
+    sol = solve_batched_rhs_(a,rhs)
+    if size(a, 2)!=nothing && size(rhs,1) != nothing
+        sol = set_shape(sol, (size(rhs,1), size(a,2)))
     end
+    return sol 
+end
+
+function solve(matrix, rhs; kwargs...)
+    rhs = constant(rhs)
+    matrix = constant(matrix)
+    flag = false
     if length(size(rhs))==1
         flag = true
         rhs = reshape(rhs, size(rhs, 1), 1)
