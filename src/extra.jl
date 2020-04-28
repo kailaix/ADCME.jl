@@ -31,11 +31,7 @@ function cmake(DIR::String="..")
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    if Sys.islinux()
-        run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
-    else
-        run(setenv(`$CMAKE $DIR`, ENV_))
-    end
+    run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
 end
 
 function make()
@@ -486,42 +482,6 @@ link_directories(\${LIBDIR}/Adept-2/adept/.libs)
     end
 end
 
-# function register(forward::Function, backward::Function, fd_args::Int64, bd_args::Int64; multiple::Bool=false)
-#     fn_name = "customgrad_"*randstring(8)
-
-# fd = join(["o$k" for k = 1:fd_args], ",")
-# bd = join(["o$k" for k = 1:bd_args], ",")
-
-# py"""
-# forward_$$fn_name = lambda $$fd: $forward($$fd)
-# backward_$$fn_name = lambda $$bd: $backward($$bd)
-# """
-#     if !multiple
-# py"""
-# import tensorflow as tf
-# @tf.custom_gradient
-# def $$fn_name(*args):
-#     u = forward_$$fn_name(*args)
-#     def grad(dy):
-#         return backward_$$fn_name(dy, u, *args)
-#     return u, grad
-# """
-#     else
-# py"""
-# import tensorflow as tf
-# @tf.custom_gradient
-# def $$fn_name(*args):
-#     u = forward_$$fn_name(*args)
-#     def grad(*dy):
-#         dy = [y for y in dy if y is not None and y.dtype in [tf.float64, tf.float32]] # only float64 and float32 can backpropagate gradients
-#         return backward_$$fn_name(*dy, *u, *args)
-#     return u, grad
-# """
-#     end
-#     return py"$$fn_name"
-# end
-
-
 @doc raw"""
     register(forward::Function, backward::Function; multiple::Bool=false)
 
@@ -734,5 +694,16 @@ and `nvcc` is in your path.""")
     """ADCME is not compiled against GPU.""",
     """If you intend to use GPU, set ENV["GPU"] = 1 and then rebuild ADCME.""")
     end
+
+    c = isdir(ADCME.CUDA_INC) && "cuda.h" in readdir(ADCME.CUDA_INC)
+    if c 
+        yes("CUDA Include Library")
+    else 
+        no("CUDA Include Library",
+        """Cuda include library does not exist or `cuda.h` is missing.""",
+    """It might be possible that your cuda include library is located somewhere else other than $(ADCME.CUDA_INC). Fix the dependency file.""")
+    end
+
+    println("Dependency file is located at: $(joinpath(@__DIR__, "../deps/deps.jl"))")
     
 end

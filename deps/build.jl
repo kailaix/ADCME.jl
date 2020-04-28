@@ -4,13 +4,83 @@ Currently, there is a compatibility issue for this combination.
 Please downgrade your Julia version.""")
 end
 
-begin 
-
-FORCE_INSTALL_TF = false
-if haskey(ENV, "FORCE_INSTALL_TF") && ENV["FORCE_INSTALL_TF"]=="1"
-    FORCE_INSTALL_TF = true 
+if haskey(ENV, "MANUAL") && ENV["MANUAL"]=="1" 
+    error("""****** You indicated you want to build ADCME package manually. 
+To this end, you need to create a dependency file 
+$(joinpath(@__DIR__, "deps.jl"))
+and populate it with appropriate binary locations. 
+--------------------------------------------------------------------------------------------
+BINDIR = ""
+LIBDIR = ""
+TF_INC = ""
+TF_ABI = ""
+EIGEN_INC = ""
+CC = ""
+CXX = ""
+CMAKE = ""
+MAKE = ""
+GIT = ""
+PYTHON = ""
+TF_LIB_FILE = ""
+LIBCUDA = ""
+CUDA_INC = ""
+__STR__ = join([BINDIR,LIBDIR,TF_INC,TF_ABI,EIGEN_INC,CC,CXX,CMAKE,MAKE,GIT,PYTHON,TF_LIB_FILE,LIBCUDA,CUDA_INC], ";")
+--------------------------------------------------------------------------------------------
+""")
 end
 
+@info " ########### Install Tensorflow Dependencies  ########### "
+push!(LOAD_PATH, "@stdlib")
+using Pkg
+using Conda
+if !("adcme" in Conda._installed_packages())
+    Conda.add("adcme", channel="kailaix")
+end
+
+ZIP = joinpath(Conda.BINDIR, "zip")
+UNZIP = joinpath(Conda.BINDIR, "unzip")
+GIT = "LibGit2"
+PYTHON = joinpath(Conda.BINDIR, "python")
+@info " ########### Check Python Version  ########### "
+
+!haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
+ENV["PYTHON"]=PYTHON
+Pkg.build("PyCall")
+using PyCall
+@info """
+PyCall Python version: $(PyCall.python)
+Conda Python version: $PYTHON
+"""
+
+@info " ########### Preparing environment for custom operators ########### "
+tf = pyimport("tensorflow")
+core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
+lib = readdir(core_path)
+TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
+TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
+TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
+
+@info " ########### Preparing Environment for Custom Operators ########### "
+LIBDIR = "$(Conda.LIBDIR)/Libraries"
+
+if !isdir(LIBDIR)
+    @info "Downloading dependencies to $LIBDIR..."
+    mkdir(LIBDIR)
+end
+
+if !isfile("$LIBDIR/eigen.zip")
+    download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$LIBDIR/eigen.zip")
+end
+
+if !isdir("$LIBDIR/eigen3")    
+    run(`$UNZIP -qq $LIBDIR/eigen.zip`)
+    mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
+end
+
+
+@info " ########### GPU Dependencies ########### "
+LIBCUDA = ""
+CUDA_INC = ""
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     try 
         run(`which nvcc`)
@@ -23,140 +93,11 @@ Make sure `nvcc` is available.""")
     if ver!=10
         error("TensorFlow backend of ADCME requires CUDA 10. But you have CUDA $ver")
     end
-end
 
-
-if haskey(ENV, "MANUAL") && ENV["MANUAL"] == "1"
-    include("build2.jl")
-    @goto writedeps
-end
-
-push!(LOAD_PATH, "@stdlib")
-using Pkg
-using Conda
-
-PYTHON = joinpath(Conda.BINDIR, "python")
-!haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
-ENV["PYTHON"]=PYTHON
-Pkg.build("PyCall")
-
-using PyCall
-@info """
-PyCall Python version: $(PyCall.python)
-Conda Python version: $PYTHON
-"""
-
-easy_get = pkg->begin
-    try
-        strip(read(pipeline(`which $pkg`), String))
-    catch
-        Conda.add(pkg)
-        joinpath(Conda.BINDIR, pkg)
+    if !("adcme-gpu" in Conda._installed_packages())
+        Conda.add("adcme-gpu", channel="kailaix")
     end
-end
-
-pkgs_dict = Conda._installed_packages_dict()
-pkgs = collect(keys(pkgs_dict))
-
-@info " ########### Install binaries ########### "
-ZIP = easy_get("zip")
-UNZIP = easy_get("unzip")
-GIT = "LibGit2"
-
-
-@info " ########### Install CONDA dependencies ########### "
-!("make" in pkgs) && Conda.add("make")
-!("cmake" in pkgs) && Conda.add("cmake")
-!("matplotlib" in pkgs) && Conda.add("matplotlib")
-
-if haskey(ENV, "GPU") && ENV["GPU"]=="1" && Sys.isapple()
-    @warn "MacOSX does not support Tensorflow GPU, ignoring GPU..."
-end
-
-if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
-    if FORCE_INSTALL_TF || (!("tensorflow-gpu" in pkgs))
-        Conda.add("tensorflow-gpu=1.15")
-    end
-else 
-    if FORCE_INSTALL_TF || (!("tensorflow" in pkgs || "tensorflow-gpu" in pkgs))
-        Conda.add("tensorflow=1.15")
-    end
-end
-if FORCE_INSTALL_TF || (!("tensorflow-probability" in pkgs))
-    Conda.add("tensorflow-probability=0.8")
-end
-!("hdf5" in pkgs) && Conda.add("hdf5", channel="anaconda")
-
-@info " ########### Preparing environment for custom operators ########### "
-tf = pyimport("tensorflow")
-core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
-lib = readdir(core_path)
-TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
-TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
-TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
-
-function install_custom_op_dependency()
-    LIBDIR = "$(Conda.LIBDIR)/Libraries"
-
-    # Install Eigen3 library
-    if !isdir(LIBDIR)
-        @info "Downloading dependencies to $LIBDIR..."
-        mkdir(LIBDIR)
-    end
-
-    if !isfile("$LIBDIR/eigen.zip")
-        download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$LIBDIR/eigen.zip")
-    end
-
-    if !isdir("$LIBDIR/eigen3")    
-        run(`$UNZIP -qq $LIBDIR/eigen.zip`)
-        mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
-    end
-end
-
-install_custom_op_dependency()
-
-# useful command for debug
-# readelf -p .comment libtensorflow_framework.so 
-# strings libstdc++.so.6 | grep GLIBCXX
-if Sys.islinux() 
-    verinfo = read(`readelf -p .comment $TF_LIB_FILE`, String)
-    if occursin("5.4", verinfo)
-        if !("gcc-5" in Conda._installed_packages())
-            try
-                # a workaround
-                Conda.add("mpfr", channel="anaconda")
-                if !isfile(joinpath(Conda.LIBDIR, "libmpfr.so.4")) && isfile(joinpath(Conda.LIBDIR, "libmpfr.so.6"))
-                    symlink(joinpath(Conda.LIBDIR, "libmpfr.so.6"), joinpath(Conda.LIBDIR, "libmpfr.so.4"))
-                end
-                Conda.add("gcc-5", channel="psi4")
-                Conda.add("libgcc")
-            catch
-                error("Installation of GCC failed. Follow the documentation for instructions.")
-            end
-        end
-    elseif occursin("4.8.", verinfo)
-        if !("gcc" in Conda._installed_packages())
-            Conda.add("gcc", channel="anaconda")
-            Conda.add("libgcc")
-        end
-    else
-        @info("The GCC version which TensorFlow was compiled is not officially supported by ADCME. You have the following choices
-1. Continue using ADCME. But you are responsible for the compatible issue of GCC versions for custom operators.
-2. Report to the author of ADCME by opening an issue in https://github.com/kailaix/ADCME.jl/
-Compiler information:
-$verinfo
-")
-    end
-    rm(joinpath(Conda.LIBDIR,"libstdc++.so.6"), force=true)
-    @info "Making a symbolic link for libgcc"
-    symlink(joinpath(Conda.LIBDIR,"libstdc++.so.6.0.26"), joinpath(Conda.LIBDIR,"libstdc++.so.6"))
-end
-
-LIBCUDA = ""
-CUDA_INC = ""
-if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
-    @info " ########### CUDA dynamic libraries  ########### "
+    
     pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
@@ -187,7 +128,10 @@ if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
 
     NVCC = readlines(pipeline(`which nvcc`))[1]
     CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
+
 end
+
+@info """ ########### Write Dependency Files  ########### """
 
 s = ""
 t = []
@@ -201,8 +145,16 @@ adding("LIBDIR", Conda.LIBDIR)
 adding("TF_INC", TF_INC)
 adding("TF_ABI", TF_ABI)
 adding("EIGEN_INC", joinpath(Conda.LIBDIR,"Libraries"))
-adding("CC", joinpath(Conda.BINDIR, "gcc"))
-adding("CXX", joinpath(Conda.BINDIR, "g++"))
+if Sys.isapple()
+    adding("CC", joinpath(Conda.BINDIR, "clang"))
+    adding("CXX", joinpath(Conda.BINDIR, "clang++"))
+elseif Sys.islinux()
+    adding("CC", joinpath(Conda.BINDIR, "x86_64-conda_cos6-linux-gnu-gcc"))
+    adding("CXX", joinpath(Conda.BINDIR, "x86_64-conda_cos6-linux-gnu-g++"))
+else
+    adding("CC", joinpath(Conda.BINDIR, ""))
+    adding("CXX", joinpath(Conda.BINDIR, ""))
+end
 adding("CMAKE", joinpath(Conda.BINDIR, "cmake"))
 adding("MAKE", joinpath(Conda.BINDIR, "make"))
 adding("GIT", GIT)
@@ -211,17 +163,11 @@ adding("TF_LIB_FILE", TF_LIB_FILE)
 adding("LIBCUDA", LIBCUDA)
 adding("CUDA_INC", CUDA_INC)
 
-
-
-
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"
 open("deps.jl", "w") do io 
     write(io, s)
 end
 
-@label writedeps  
+@info """ ########### Finished: $(abspath("deps.jl"))  ########### """
 
-@info " ########### Finished  ########### "
-
-end

@@ -36,7 +36,7 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 include_directories($${TF_INC} $${EIGEN_INC} $${CUDA_INC})
-link_directories($${LIBDIR} $${LIBCUDA})
+link_directories($${LIBDIR})
 
 ${USEGPU}find_package(CUDA QUIET REQUIRED)
 ${USEGPU}set(CMAKE_CXX_FLAGS "-std=c++11 $${CMAKE_CXX_FLAGS}")
