@@ -1,28 +1,6 @@
 export 
 dense,
-dropout,
 flatten,
-Dense,
-ELU,
-Flatten,
-LeakyReLU,
-MaxPooling1D,
-MaxPooling2D,
-MaxPooling3D,
-Reshape,
-UpSampling1D,
-UpSampling2D,
-UpSampling3D,
-ZeroPadding1D,
-ZeroPadding2D,
-ZeroPadding3D,
-Conv1D,
-Conv2D,
-Conv3D,
-Conv2DTranspose,
-Conv3DTranspose,
-BatchNormalization,
-Dropout,
 ae,
 ae_num,
 ae_init,
@@ -33,32 +11,6 @@ ae_to_code,
 fcx,
 bn,
 sparse_softmax_cross_entropy_with_logits
-
-
-# for a keras layer, `training` is a keyword
-# dropout = tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None)(dense, training=is_training)
-
-# Dense(args...;kwargs...) = tf.keras.layers.Dense(args...;kwargs...)
-ELU(args...;kwargs...) = tf.keras.layers.ELU(args...;kwargs...)
-Flatten(args...;kwargs...) = tf.keras.layers.Flatten(args...;kwargs...)
-LeakyReLU(args...;kwargs...) = tf.keras.layers.LeakyReLU(args...;kwargs...)
-MaxPooling1D(args...;kwargs...) = tf.keras.layers.MaxPooling1D(args...;kwargs...)
-MaxPooling2D(args...;kwargs...) = tf.keras.layers.MaxPooling2D(args...;kwargs...)
-MaxPooling3D(args...;kwargs...) = tf.keras.layers.MaxPooling3D(args...;kwargs...)
-Reshape(args...;kwargs...) = tf.keras.layers.Reshape(args...;kwargs...)
-UpSampling1D(args...;kwargs...) = tf.keras.layers.UpSampling1D(args...;kwargs...)
-UpSampling2D(args...;kwargs...) = tf.keras.layers.UpSampling2D(args...;kwargs...)
-UpSampling3D(args...;kwargs...) = tf.keras.layers.UpSampling3D(args...;kwargs...)
-ZeroPadding1D(args...;kwargs...) = tf.keras.layers.ZeroPadding1D(args...;kwargs...)
-ZeroPadding2D(args...;kwargs...) = tf.keras.layers.ZeroPadding2D(args...;kwargs...)
-ZeroPadding3D(args...;kwargs...) = tf.keras.layers.ZeroPadding3D(args...;kwargs...)
-Conv1D(args...;kwargs...) = tf.keras.layers.Conv1D(args...;kwargs...)
-Conv2D(args...;kwargs...) = tf.keras.layers.Conv2D(args...;kwargs...)
-Conv3D(args...;kwargs...) = tf.keras.layers.Conv3D(args...;kwargs...)
-Conv2DTranspose(args...;kwargs...) = tf.keras.layers.Conv2DTranspose(args...;kwargs...)
-Conv3DTranspose(args...;kwargs...) = tf.keras.layers.Conv3DTranspose(args...;kwargs...)
-BatchNormalization(args...;kwargs...) = tf.keras.layers.BatchNormalization(args...;kwargs...)
-Dropout(args...;kwargs...) = tf.keras.layers.Dropout(args...;kwargs...)
 
 
 @doc raw"""
@@ -354,7 +306,7 @@ end
 
 # tensorflow layers from contrib 
 for (op, tfop) in [(:avg_pool2d, :avg_pool2d), (:avg_pool3d, :avg_pool3d),
-        (:dropout, :dropout), (:flatten, :flatten), (:max_pool2d, :max_pool2d), (:max_pool3d, :max_pool3d)]
+        (:flatten, :flatten), (:max_pool2d, :max_pool2d), (:max_pool3d, :max_pool3d)]
     @eval begin 
         export $op 
         $op(args...; kwargs...) = tf.contrib.layers.$tfop(args...; kwargs...)
@@ -540,3 +492,199 @@ fc_num = ae_num
 $(@doc ae_init)
 """
 fc_init = ae_init
+
+
+#------------------------------------------------------------------------------------------
+export dropout
+
+"""
+    dropout(x::Union{PyObject, Real, Array{<:Real}}, 
+    rate::Union{Real, PyObject}, training::Union{PyObject,Bool} = true; kwargs...)
+
+Randomly drops out entries in `x` with a rate of `rate`. 
+"""
+function dropout(x::Union{PyObject, Real, Array{<:Real}}, 
+    rate::Union{Real, PyObject}, training::Union{PyObject,Bool} = true; kwargs...)
+    x = constant(x)
+    training = constant(training)
+    tf.keras.layers.Dropout(rate, kwargs...)(x, training)
+end
+
+
+export BN
+mutable struct BN
+    dims::Int64
+    o::PyObject
+end
+
+""" 
+    BN(dims::Int64=2; kwargs...)
+
+Creates a batch normalization layer. 
+# Example
+```julia
+b = BN(2)
+x = rand(10,2)
+training = placeholder(true)
+y = b(x, training)
+run(sess, y)
+```
+"""
+function BN(dims::Int64=2; kwargs...)
+    o = tf.keras.layers.BatchNormalization(dims-1, kwargs...)
+    BN(dims, o)
+end
+
+function Base.:show(io::IO, b::BN)
+    print("<BatchNormalization normalization_dim=$(b.dims)>")
+end
+
+(o::BN)(x, training=false) = o.o(x, training)
+
+export Dense, Conv1D, Conv2D, Conv3D
+
+function _get_activation(activation)
+    if isnothing(activation)
+        activation = "linear"
+    else
+        string2fn = Dict(
+            "relu" => relu,
+            "tanh" => tanh,
+            "sigmoid" => sigmoid,
+            "leakyrelu" => leaky_relu,
+            "leaky_relu" => leaky_relu,
+            "relu6" => relu6,
+            "softmax" => softmax,
+            "softplus" => softplus,
+            "selu" => selu,
+            "elu" => elu
+        )
+        if isa(activation, String)
+            if haskey(string2fn, lowercase(activation))
+                activation = string2fn[lowercase(activation)] 
+            else
+                error("Activation function $activation not understood")
+            end
+        end
+    end
+    return activation
+end
+
+mutable struct Dense 
+    hidden_dim::Int64
+    activation::Union{String, Function}
+    o::PyObject
+end
+
+"""
+    Dense(units::Int64, activation::Union{String, Function, Nothing} = nothing,
+        args...;kwargs...)
+
+Creates a callable dense neural network.
+"""
+function Dense(units::Int64, activation::Union{String, Function, Nothing} = nothing,
+    args...;kwargs...)
+    activation = _get_activation(activation)
+    o = tf.keras.layers.Dense(units, activation, args...;kwargs...)
+    Dense(units, activation, o)
+end
+
+function Base.:show(io::IO, o::Dense)
+    print("<Fully connected neural network with $(o.hidden_dim) hidden units and activation function \"$(o.activation)\">")
+end
+
+(o::Dense)(x) = o.o(x)
+
+mutable struct Conv1D 
+    filters
+    kernel_size
+    strides
+    activation
+    o::PyObject 
+end
+"""
+    Conv1D(filters, kernel_size, strides, activation, args...;kwargs...)
+
+```julia
+c = Conv1D(32, 3, 1, "relu")
+x = rand(100, 6, 128) # 128-length vectors with 6 timesteps ("channels")
+y = c(x) # shape=(100, 4, 32)
+```
+"""
+function Conv1D(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
+    activation = _get_activation(activation)
+    o = tf.keras.layers.Conv1D(filters, kernel_size, strides,args...; activation = activation, kwargs...)
+    Conv1D(filters, kernel_size, strides, activation, o)
+end
+function Base.:show(io::IO, o::Conv1D)
+    print("<Conv1D filters=$(o.filters) kernel_size=$(o.kernel_size) strides=$(o.strides) activation=$(o.activation)>")
+end
+function (o::Conv1D)(x::Union{PyObject, Array{<:Real,3}})
+    x = constant(x)
+    @assert length(size(x))==3
+    o.o(x)
+end
+
+
+mutable struct Conv2D 
+    filters
+    kernel_size
+    strides
+    activation
+    o::PyObject 
+end
+"""
+    Conv2D(filters, kernel_size, strides, activation, args...;kwargs...)
+
+The arrangement is (samples, rows, cols, channels) (data_format='channels_last')
+```julia
+Conv2D(32, 3, 1, "relu")
+```
+"""
+function Conv2D(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
+    activation = _get_activation(activation)
+    o = tf.keras.layers.Conv2D(filters, kernel_size, strides,args...; activation = activation, kwargs...)
+    Conv2D(filters, kernel_size, strides, activation, o)
+end
+function Base.:show(io::IO, o::Conv2D)
+    print("<Conv2D filters=$(o.filters) kernel_size=$(o.kernel_size) strides=$(o.strides) activation=$(o.activation)>")
+end
+function (o::Conv2D)(x::Union{PyObject, Array{<:Real,3}})
+    x = constant(x)
+    @assert length(size(x))==4
+    o.o(x)
+end
+
+mutable struct Conv3D 
+    filters
+    kernel_size
+    strides
+    activation
+    o::PyObject 
+end
+"""
+    Conv3D(filters, kernel_size, strides, activation, args...;kwargs...)
+
+The arrangement is (samples, rows, cols, channels) (data_format='channels_last')
+```julia
+c = Conv3D(32, 3, 1, "relu")
+x = constant(rand(100, 10, 10, 10, 16))
+y = c(x)
+# shape=(100, 8, 8, 8, 32)
+```
+"""
+function Conv3D(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
+    activation = _get_activation(activation)
+    o = tf.keras.layers.Conv3D(filters, kernel_size, strides,args...; activation = activation, kwargs...)
+    Conv3D(filters, kernel_size, strides, activation, o)
+end
+function Base.:show(io::IO, o::Conv3D)
+    print("<Conv3D filters=$(o.filters) kernel_size=$(o.kernel_size) strides=$(o.strides) activation=$(o.activation)>")
+end
+function (o::Conv3D)(x::Union{PyObject, Array{<:Real,3}})
+    x = constant(x)
+    @assert length(size(x))==5
+    o.o(x)
+end
+
+#------------------------------------------------------------------------------------------

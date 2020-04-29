@@ -12,3 +12,9 @@
     @test run(sess, tf.gradients(y[:,2], x)[1]) ≈ DU[:,2,:]
     @test run(sess, tf.gradients(y[:,3], x)[1]) ≈ DU[:,3,:]
 end
+
+@testset "dropout" begin 
+    a = rand(10,2)
+    @test sum(run(sess, dropout(a, 0.999, true)).==0)/20>0.9
+    @test sum(run(sess, dropout(a, 0.999, false)).==0)==0
+end

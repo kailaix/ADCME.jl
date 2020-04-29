@@ -441,7 +441,11 @@ Install adept-2 library: https://github.com/rjhogan/Adept-2
 function install_adept(force::Bool=false)
     PWD = pwd()
     cd(ADCME.LIBDIR)
-    if !isdir("Adept-2")
+    if force 
+        @info "Removing Adept-2 by force..."
+        rm("Adept-2", force=true, recursive=true)
+    end
+    if !isdir("Adept-2") 
         LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     end
     cd("Adept-2/adept")

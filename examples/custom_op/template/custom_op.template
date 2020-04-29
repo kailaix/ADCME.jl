@@ -12,7 +12,6 @@ using namespace tensorflow;
 
 
 REGISTER_OP("${OperatorName}")
-${AttributesReg}
 ${ForwardInputOutput}
 .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
     ${SetShapeFn}
@@ -20,9 +19,9 @@ ${ForwardInputOutput}
   });
 
 REGISTER_OP("${OperatorName}Grad")
-${AttributesReg}
 ${BackwardInputOutput}
 
+/*-------------------------------------------------------------------------------------*/
 
 class ${OperatorName}Op : public OpKernel {
 private:

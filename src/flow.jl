@@ -1,6 +1,7 @@
 export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel, NeuralCouplingFlow,
-       autoregressive_network, FlowOp, LinearFlow, TanhFlow, AffineScalarFlow, InvTanhFlow
+       autoregressive_network, FlowOp, LinearFlow, TanhFlow, AffineScalarFlow,
+       InvertFlow
 
 abstract type FlowOp end 
 
@@ -110,9 +111,9 @@ end
 
 function forward(fo::LinearFlow, x::Union{Array{<:Real}, PyObject})
     if fo.indim==fo.outdim
-        return solve_batch(fo.A, x - fo.b), -log(abs(det(fo.A)))
+        return solve_batch(fo.A, x - fo.b), -log(abs(det(fo.A))) * ones(size(x, 1))
     else
-        return solve_batch(fo.A, x - fo.b), -1/2*log(abs(det(fo.A'*fo.A)))
+        return solve_batch(fo.A, x - fo.b), -1/2*log(abs(det(fo.A'*fo.A))) * ones(size(x, 1))
     end
 end
 
@@ -162,6 +163,7 @@ end
 
 #------------------------------------------------------------------------------------------
 mutable struct ActNorm <: FlowOp
+    dim::Int64
     fo::AffineConstantFlow
     initialized::PyObject 
 end
@@ -171,7 +173,7 @@ function ActNorm(dim::Int64, name::Union{String, Missing}=missing)
         name = "ActNorm_"*randstring(10)
     end
     initialized = get_variable(1, name = name)
-    ActNorm(AffineConstantFlow(dim), initialized)
+    ActNorm(dim, AffineConstantFlow(dim), initialized)
 end
 
 function forward(actnorm::ActNorm, x::Union{Array{<:Real}, PyObject})    
@@ -398,7 +400,7 @@ Creates an `AffineHalfFlow` operator.
 """
 function AffineHalfFlow(dim::Int64, parity::Bool, s_cond::Union{Function, Missing} = missing, t_cond::Union{Function, Missing} = missing)
     if ismissing(s_cond)
-        s_cond = x->constant(zeros(size(x,1), dim÷2))
+        s_cond = x->constant(zeros(size(x,1), (dim+1)÷2))
     end
     if ismissing(t_cond)
         t_cond = x->constant(zeros(size(x,1), dim÷2))
@@ -539,29 +541,11 @@ function TanhFlow(dim::Int64)
 end
 
 function forward(fo::TanhFlow, x::Union{Array{<:Real}, PyObject})
-    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 2)
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, fo.dim)
 end
 
 function backward(fo::TanhFlow, z::Union{Array{<:Real}, PyObject})
-    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 2)
-end
-
-#------------------------------------------------------------------------------------------
-mutable struct InvTanhFlow <: FlowOp
-    dim::Int64
-    o::PyObject
-end
-
-function InvTanhFlow(dim::Int64)
-    InvTanhFlow(dim, tfp.bijectors.Tanh())
-end
-
-function backward(fo::InvTanhFlow, x::Union{Array{<:Real}, PyObject})
-    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 2)
-end
-
-function forward(fo::InvTanhFlow, z::Union{Array{<:Real}, PyObject})
-    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 2)
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, fo.dim)
 end
 
 #------------------------------------------------------------------------------------------
@@ -575,13 +559,34 @@ function AffineScalarFlow(dim::Int64, shift::Float64 = 0.0, scale::Float64 = 1.0
 end
 
 function forward(fo::AffineScalarFlow, x::Union{Array{<:Real}, PyObject})
-    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 2)
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, fo.dim)
 end
 
 function backward(fo::AffineScalarFlow, z::Union{Array{<:Real}, PyObject})
-    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 2)
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, fo.dim)
 end
 
+
+#------------------------------------------------------------------------------------------
+mutable struct InvertFlow <: FlowOp
+    dim::Int64
+    o::FlowOp
+end
+
+"""
+    InvertFlow(fo::FlowOp)
+
+Creates a flow operator that is the invert of `fo`.
+# Example 
+```julia
+inv_tanh_flow = InvertFlow(TanhFlow(2))
+```
+"""
+function InvertFlow(fo::FlowOp)
+    InvertFlow(fo.dim, fo)
+end
+forward(fo::InvertFlow, x::Union{Array{<:Real}, PyObject}) = backward(fo.o, x)
+backward(fo::InvertFlow, z::Union{Array{<:Real}, PyObject}) = forward(fo.o, z)
 
 
 #------------------------------------------------------------------------------------------
@@ -630,11 +635,11 @@ function Base.:show(io::IO, model::NormalizingFlowModel)
     typevec = typeof.(model.flow.flows)
     println("( $(string(typeof(model.prior))[7:end]) )")
     println("\t↓")
-    for i = 1:length(typevec)-1
+    for i = length(typevec):-1:1
         println("$(typevec[i]) (dim = $(model.flow.flows[i].dim))")
         println("\t↓")
     end
-    println("$(typevec[end]) (dim = $(model.flow.flows[end].dim))")
+    println("(    Data    )")
 end
 
 function NormalizingFlowModel(prior::T, flows::Array{<:FlowOp}) where T<:ADCMEDistribution
@@ -663,3 +668,25 @@ end
 #------------------------------------------------------------------------------------------
 (o::FlowOp)(x::Union{PyObject, Array{<:Real,2}}) = forward(o, x)
 (o::NormalizingFlowModel)(x::Union{PyObject, Array{<:Real,2}}) = forward(o, x)
+
+
+#------------------------------------------------------------------------------------------
+# From TensorFlow Probability
+for (op1, op2) in [(:Abs, :AbsoluteValue), (:Exp, :Exp), (:Log, :Log),
+        (:MaskedAutoregressiveFlow, :MaskedAutoregressiveFlow), (:Permute,:Permute),
+        (:PowerTransform, :PowerTransform), (:Sigmoid,:Sigmoid), (:Softplus,:Softplus),
+        (:Square, :Square)]
+    @eval begin 
+        export $op1
+        mutable struct $op1
+            dim::Int64
+            fo::PyObject
+        end
+        function $op1(dim::Int64, args...;kwargs...)
+            fo = tfp.bijectors.$op2(args...;kwargs...)
+            $op1(dim, fo)
+        end
+        forward(o::$op1, x::Union{PyObject, Array{<:Real,2}}) = forward(o.fo, x)
+        backward(o::$op1, z::Union{PyObject, Array{<:Real,2}}) = backward(o.fo, z)
+    end
+end
