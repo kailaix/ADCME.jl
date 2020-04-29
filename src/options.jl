@@ -45,6 +45,10 @@ mutable struct OptionsNewtonRaphson
     OptionsNewtonRaphson() = new(100, false, 1e-12, 1e-12, 0.0, false, OptionsNewtonRaphson_LineSearch())
 end
 
+mutable struct OptionsTraining
+    training::PyObject
+    OptionsTraining() = new(placeholder(false))
+end
 
 ######################################################
 """
@@ -55,9 +59,10 @@ The container of all options in ADCME.
 mutable struct Options 
     sparse::OptionsSparse
     newton_raphson::OptionsNewtonRaphson
-    Options() = new(OptionsSparse(), OptionsNewtonRaphson())
+    training::OptionsTraining
+    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining())
 end
-options = Options()
+
 
 """
     reset_default_options()

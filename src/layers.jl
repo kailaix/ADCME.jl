@@ -10,7 +10,8 @@ fc_init,
 ae_to_code,
 fcx,
 bn,
-sparse_softmax_cross_entropy_with_logits
+sparse_softmax_cross_entropy_with_logits,
+Resnet1D
 
 
 @doc raw"""
@@ -511,41 +512,41 @@ function dropout(x::Union{PyObject, Real, Array{<:Real}},
 end
 
 
-export BN
-mutable struct BN
+export BatchNormalization
+mutable struct BatchNormalization
     dims::Int64
     o::PyObject
 end
 
 """ 
-    BN(dims::Int64=2; kwargs...)
+    BatchNormalization(dims::Int64=2; kwargs...)
 
 Creates a batch normalization layer. 
 # Example
 ```julia
-b = BN(2)
+b = BatchNormalization(2)
 x = rand(10,2)
 training = placeholder(true)
 y = b(x, training)
 run(sess, y)
 ```
 """
-function BN(dims::Int64=2; kwargs...)
+function BatchNormalization(dims::Int64=2; kwargs...)
     o = tf.keras.layers.BatchNormalization(dims-1, kwargs...)
-    BN(dims, o)
+    BatchNormalization(dims, o)
 end
 
-function Base.:show(io::IO, b::BN)
+function Base.:show(io::IO, b::BatchNormalization)
     print("<BatchNormalization normalization_dim=$(b.dims)>")
 end
 
-(o::BN)(x, training=false) = o.o(x, training)
+(o::BatchNormalization)(x, training=false) = o.o(x, training)
 
 export Dense, Conv1D, Conv2D, Conv3D
 
 function _get_activation(activation)
     if isnothing(activation)
-        activation = "linear"
+        activation = x->x
     else
         string2fn = Dict(
             "relu" => relu,
@@ -688,3 +689,140 @@ function (o::Conv3D)(x::Union{PyObject, Array{<:Real,3}})
 end
 
 #------------------------------------------------------------------------------------------
+mutable struct ResnetBlock
+    use_batch_norm::Bool 
+    activation::Union{String,Function}
+    linear_layers::Array{Dense}
+    bn_layers::Array{BatchNormalization}
+    dropout_probability::Float64
+end
+
+function ResnetBlock(features::Int64; dropout_probability::Float64=0., use_batch_norm::Bool,
+     activation::String="relu")
+    activation = _get_activation(activation)
+    bn_layers = []
+    if use_batch_norm
+        bn_layers = [
+            BatchNormalization(),
+            BatchNormalization()
+        ]
+    end
+    linear_layers = [
+        Dense(features, nothing)
+        Dense(features, nothing)
+    ]
+    ResnetBlock(use_batch_norm, activation, linear_layers, bn_layers, dropout_probability)
+end
+
+function (res::ResnetBlock)(input)
+    x = input
+    if res.use_batch_norm
+        x = bn_layers[1](x)
+    end
+    x = res.activation(x)
+    x = res.linear_layers[1](x)
+    if res.use_batch_norm
+        x = bn_layers[2](x)
+    end
+    x = res.activation(x)
+    x = dropout(x, res.dropout_probability, options.training.training)
+    x = res.linear_layers[2](x)
+    return x + input
+end
+
+mutable struct Resnet1D
+    initial_layer::Dense
+    blocks::Array{ResnetBlock}
+    final_layer::Dense
+end
+
+"""
+    Resnet1D(out_features::Int64, hidden_features::Int64;
+        num_blocks::Int64=2, activation::Union{String, Function, Nothing} = "relu", 
+        dropout_probability::Float64 = 0.0, use_batch_norm::Bool = false)
+
+Creates a 1D residual network. 
+# Example 
+```julia
+resnet = Resnet1D(20)
+x = rand(1000,10)
+y = resnet(x)
+```
+
+# Example: Digit recognition
+```
+using MLDatasets
+using ADCME
+
+# load data 
+train_x, train_y = MNIST.traindata()
+train_x = reshape(Float64.(train_x), :, size(train_x,3))'|>Array
+test_x, test_y = MNIST.testdata()
+test_x = reshape(Float64.(test_x), :, size(test_x,3))'|>Array
+
+# construct loss function 
+ADCME.options.training.training = placeholder(true)
+x = placeholder(rand(64, 784))
+l = placeholder(rand(Int64, 64))
+resnet = Resnet1D(10, num_blocks=10)
+y = resnet(x)
+loss = mean(sparse_softmax_cross_entropy_with_logits(labels=l, logits=y))
+
+# train the neural network 
+opt = AdamOptimizer().minimize(loss)
+sess = Session(); init(sess)
+for i = 1:10000
+    idx = rand(1:60000, 64)
+    _, loss_ = run(sess, [opt, loss], feed_dict=Dict(l=>train_y[idx], x=>train_x[idx,:]))
+    @info i, loss_
+end
+
+# test 
+for i = 1:10
+    idx = rand(1:10000,100)
+    y0 = resnet(test_x[idx,:])
+    y0 = run(sess, y0, ADCME.options.training.training=>false)
+    pred = [x[2]-1 for x in argmax(y0, dims=2)]
+    @info "Accuracy = ", sum(pred .== test_y[idx])/100
+end
+```
+![](./assets/resnet.png)
+"""
+function Resnet1D(out_features::Int64, hidden_features::Int64 = 20;
+     num_blocks::Int64=2, activation::Union{String, Function, Nothing} = "relu", 
+     dropout_probability::Float64 = 0.0, use_batch_norm::Bool = false)
+     initial_layer = Dense(hidden_features)
+     blocks = ResnetBlock[]
+     for i = 1:num_blocks
+        push!(blocks, ResnetBlock(
+            hidden_features,
+            dropout_probability = dropout_probability, 
+            use_batch_norm = use_batch_norm
+        ))
+     end
+     final_layer = Dense(out_features)
+     Resnet1D(initial_layer, blocks, final_layer)
+end
+
+function (res::Resnet1D)(x)
+    x = res.initial_layer(x)
+    for b in res.blocks
+        x = b(x)
+    end
+    x = res.final_layer(x)
+    x
+end
+
+function Base.:show(io::IO, res::Resnet1D)
+    println("( Input )")
+    println("\t↓")
+    show(io, res.initial_layer)
+    println("\n")
+    for i = 1:length(res.blocks)
+        show(io, res.blocks[i])
+        println("\n")
+        println("\t↓")
+    end
+    show(io, res.final_layer)
+    println("\n( Output )")
+end

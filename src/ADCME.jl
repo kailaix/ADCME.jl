@@ -40,6 +40,7 @@ module ADCME
         
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB
+        
         copy!(tf, pyimport("tensorflow"))
         copy!(tfp, pyimport("tensorflow_probability"))
 
@@ -55,7 +56,7 @@ module ADCME
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
-
+        global options = Options()
         colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
         for c in colibs
             push!(COLIB, c)
@@ -69,7 +70,7 @@ module ADCME
         end
     end
 
-    include("options.jl")
+    
     include("core.jl")
     include("io.jl")
     include("optim.jl")
@@ -84,5 +85,6 @@ module ADCME
     include("ot.jl")
     include("ode.jl")
     include("flow.jl")
+    include("options.jl")
 end
 

@@ -85,6 +85,50 @@ run(sess, x)
 
 The above command will return a value close to  the optimal values $\mathbf{x} = [1\ 1\ \ldots\ 1]$. 
 
+**Do you know...**
+
+You can also use ADCME to do typical machine learning tasks and leverage the Julia machine learning ecosystem! Here is an example of training a ResNet for digital number recognition.
+
+```julia
+using MLDatasets
+using ADCME
+
+# load data 
+train_x, train_y = MNIST.traindata()
+train_x = reshape(Float64.(train_x), :, size(train_x,3))'|>Array
+test_x, test_y = MNIST.testdata()
+test_x = reshape(Float64.(test_x), :, size(test_x,3))'|>Array
+
+# construct loss function 
+ADCME.options.training.training = placeholder(true)
+x = placeholder(rand(64, 784))
+l = placeholder(rand(Int64, 64))
+resnet = Resnet1D(10, num_blocks=10)
+y = resnet(x)
+loss = mean(sparse_softmax_cross_entropy_with_logits(labels=l, logits=y))
+
+# train the neural network 
+opt = AdamOptimizer().minimize(loss)
+sess = Session(); init(sess)
+for i = 1:10000
+    idx = rand(1:60000, 64)
+    _, loss_ = run(sess, [opt, loss], feed_dict=Dict(l=>train_y[idx], x=>train_x[idx,:]))
+    @info i, loss_
+end
+
+# test 
+for i = 1:10
+    idx = rand(1:10000,100)
+    y0 = resnet(test_x[idx,:])
+    y0 = run(sess, y0, ADCME.options.training.training=>false)
+    pred = [x[2]-1 for x in argmax(y0, dims=2)]
+    @info "Accuracy = ", sum(pred .== test_y[idx])/100
+end
+```
+
+
+
+
 **Contributing**
 
 Contribution and suggestions are always welcome. In addition, we are also looking for research collaborations. You can submit issues for suggestions, questions, bugs, and feature requests, or submit pull requests to contribute directly. You can also contact the authors for research collaboration. 
