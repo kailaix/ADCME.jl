@@ -1,7 +1,7 @@
 export AffineConstantFlow, AffineHalfFlow, SlowMAF, MAF, IAF, ActNorm,
        Invertible1x1Conv, NormalizingFlow, NormalizingFlowModel, NeuralCouplingFlow,
        autoregressive_network, FlowOp, LinearFlow, TanhFlow, AffineScalarFlow,
-       InvertFlow
+       InvertFlow, AffineFlow
 
 abstract type FlowOp end 
 
@@ -12,6 +12,7 @@ backward(fo::T, z::Union{Array{<:Real}, PyObject}) where T<:FlowOp = Main.backwa
 
 #------------------------------------------------------------------------------------------
 mutable struct LinearFlow <: FlowOp
+    dim::Int64
     indim::Int64 
     outdim::Int64 
     A::PyObject
@@ -79,11 +80,16 @@ function LinearFlow(indim::Int64, outdim::Int64, A::Union{PyObject, Array{<:Real
         name = randstring(10)
     end
     if ismissing(A)
-        A = get_variable(Float64, shape=[outdim,indim], name=name*"_A")
+        if indim==outdim 
+            A = diagm(0=>ones(indim))
+            A = get_variable(A, name=name*"_A")
+        else
+            A = get_variable(Float64, shape=[outdim,indim], name=name*"_A")
+        end
     end
 
     if ismissing(b)
-        b = get_variable(Float64, shape=[1,outdim], name=name*"_b")
+        b = get_variable(zeros(1,outdim), name=name*"_b")
     end
 
     A = constant(A)
@@ -97,7 +103,11 @@ function LinearFlow(indim::Int64, outdim::Int64, A::Union{PyObject, Array{<:Real
         error("Expected b shape: $((1,outdim)), but got $(size(b))")
     end
 
-    LinearFlow(indim, outdim, A, b)
+    LinearFlow(outdim, indim, outdim, A, b)
+end
+
+function LinearFlow(dim::Int64)
+    LinearFlow(dim,dim)
 end
 
 function LinearFlow(A::Union{PyObject, Array{<:Real,2}},
@@ -106,7 +116,7 @@ function LinearFlow(A::Union{PyObject, Array{<:Real,2}},
     if ismissing(b)
         b = zeros(outdim)
     end
-    LinearFlow(indim, outdim, A, b)
+    LinearFlow(outdim, indim, outdim, A, b)
 end
 
 function forward(fo::LinearFlow, x::Union{Array{<:Real}, PyObject})
@@ -118,7 +128,11 @@ function forward(fo::LinearFlow, x::Union{Array{<:Real}, PyObject})
 end
 
 function backward(fo::LinearFlow, z::Union{Array{<:Real}, PyObject})
-    z * fo.A' + fo.b, nothing
+    d = nothing
+    if fo.indim==fo.outdim
+        d = log(abs(det(fo.A)))
+    end
+    z * fo.A' + fo.b, d
 end
 
 
@@ -351,7 +365,7 @@ mutable struct Invertible1x1Conv <: FlowOp
     U::PyObject
 end
 
-function Invertible1x1Conv(dim::Int64, name::String=missing)
+function Invertible1x1Conv(dim::Int64, name::Union{Missing,String}=missing)
     if ismissing(name)
         name = randstring(10)
     end
@@ -456,6 +470,7 @@ mutable struct NeuralCouplingFlow <: FlowOp
 end
 
 function NeuralCouplingFlow(dim::Int64, f1::Function, f2::Function, K::Int64=8, B::Int64=3)
+    @assert mod(dim,2)==0
     NeuralCouplingFlow(dim, K, B, f1, f2)
 end
 
@@ -468,8 +483,8 @@ function forward(fo::NeuralCouplingFlow, x::Union{Array{<:Real}, PyObject})
     lower, upper = x[:,1:dim÷2], x[:,dim÷2+1:end]
 
     f1_out = f1(lower)
-    @assert size(f1_out,2)==(3K-1)*(dim÷2)
-    out = reshape(f1_out, (-1, dim÷2, 3K-1))
+    @assert size(f1_out,2)==(3K-1)*size(lower,2)
+    out = reshape(f1_out, (-1, size(lower,2), 3K-1))
     W, H, D = split(out, [K, K, K-1], dims=3)
     
     W, H = softmax(W, dims=3), softmax(H, dims=3)
@@ -477,19 +492,19 @@ function forward(fo::NeuralCouplingFlow, x::Union{Array{<:Real}, PyObject})
     D = softplus(D)
    
     rqs = RQS(W, H, D, range_min=-B)
-    upper, ld = rqs.forward(upper), rqs.forward_log_det_jacobian(upper, dim÷2)
+    upper, ld = rqs.forward(upper), rqs.forward_log_det_jacobian(upper, 1)
     log_det += ld
 
     f2_out = f2(upper) 
-    @assert size(f2_out,2)==(3K-1)*(dim÷2)
-    out = reshape(f2_out, (-1, dim÷2, 3K -1))
+    @assert size(f2_out,2)==(3K-1)*size(upper,2)
+    out = reshape(f2_out, (-1, size(upper,2), 3K -1))
     W, H, D = split(out, [K, K, K-1], dims=3)
     W, H = softmax(W, dims=3), softmax(H, dims=3)
     W, H = 2B*W, 2B*H 
     D = softplus(D)
 
     rqs = RQS(W, H, D, range_min=-B)
-    lower, ld = rqs.forward(lower), rqs.forward_log_det_jacobian(lower, dim÷2)
+    lower, ld = rqs.forward(lower), rqs.forward_log_det_jacobian(lower, 1)
     log_det += ld
 
     return [lower upper], log_det
@@ -504,26 +519,26 @@ function backward(fo::NeuralCouplingFlow, x::Union{Array{<:Real}, PyObject})
     lower, upper = x[:,1:dim÷2], x[:,dim÷2+1:end]
 
     f2_out = f2(upper)
-    @assert size(f2_out,2)==(3K-1)*(dim÷2)
-    out = reshape(f2_out, (-1, dim÷2, 3K-1))
+    @assert size(f2_out,2)==(3K-1)*size(upper,2)
+    out = reshape(f2_out, (-1, size(upper,2), 3K-1))
     W, H, D = split(out, [K, K, K-1], dims=3)
     W, H = softmax(W, dims=3), softmax(H, dims=3)
     W, H = 2B*W, 2B*H 
     D = softplus(D)
     
     rqs = RQS(W, H, D, range_min=-B)
-    lower, ld = rqs.inverse(lower), rqs.inverse_log_det_jacobian(lower, dim÷2)
+    lower, ld = rqs.inverse(lower), rqs.inverse_log_det_jacobian(lower, 1)
     log_det += ld
 
     f1_out = f1(lower) 
-    @assert size(f1_out,2)==(3K-1)*(dim÷2)
-    out = reshape(f1_out, (-1, dim÷2, 3K -1))
+    @assert size(f1_out,2)==(3K-1)*size(lower,2)
+    out = reshape(f1_out, (-1, size(lower,2), 3K -1))
     W, H, D = split(out, [K, K, K-1], dims=3)
     W, H = softmax(W, dims=3), softmax(H, dims=3)
     W, H = 2B*W, 2B*H 
     D = softplus(D)
     rqs = RQS(W, H, D, range_min=-B)
-    upper, ld = rqs.inverse(upper), rqs.inverse_log_det_jacobian(upper, dim÷2)
+    upper, ld = rqs.inverse(upper), rqs.inverse_log_det_jacobian(upper, 1)
     log_det += ld
 
     return [lower upper], log_det
@@ -541,11 +556,11 @@ function TanhFlow(dim::Int64)
 end
 
 function forward(fo::TanhFlow, x::Union{Array{<:Real}, PyObject})
-    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, fo.dim)
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 1)
 end
 
 function backward(fo::TanhFlow, z::Union{Array{<:Real}, PyObject})
-    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, fo.dim)
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 1)
 end
 
 #------------------------------------------------------------------------------------------
@@ -559,11 +574,11 @@ function AffineScalarFlow(dim::Int64, shift::Float64 = 0.0, scale::Float64 = 1.0
 end
 
 function forward(fo::AffineScalarFlow, x::Union{Array{<:Real}, PyObject})
-    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, fo.dim)
+    fo.o.forward(x), fo.o.forward_log_det_jacobian(x, 1)
 end
 
 function backward(fo::AffineScalarFlow, z::Union{Array{<:Real}, PyObject})
-    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, fo.dim)
+    fo.o.inverse(z), fo.o.inverse_log_det_jacobian(z, 1)
 end
 
 
@@ -588,6 +603,18 @@ end
 forward(fo::InvertFlow, x::Union{Array{<:Real}, PyObject}) = backward(fo.o, x)
 backward(fo::InvertFlow, z::Union{Array{<:Real}, PyObject}) = forward(fo.o, z)
 
+#------------------------------------------------------------------------------------------
+@doc raw"""
+    AffineFlow(args...;kwargs...)
+
+
+Creates a linear flow operator, 
+
+$$z = Ax + b$$
+
+See [`LinearFlow`](@ref)
+"""
+AffineFlow(args...;kwargs...) = InvertFlow(LinearFlow(args...;kwargs...))
 
 #------------------------------------------------------------------------------------------
 mutable struct NormalizingFlow 
@@ -678,7 +705,7 @@ for (op1, op2) in [(:Abs, :AbsoluteValue), (:Exp, :Exp), (:Log, :Log),
         (:Square, :Square)]
     @eval begin 
         export $op1
-        mutable struct $op1
+        mutable struct $op1 <: FlowOp
             dim::Int64
             fo::PyObject
         end
@@ -686,7 +713,7 @@ for (op1, op2) in [(:Abs, :AbsoluteValue), (:Exp, :Exp), (:Log, :Log),
             fo = tfp.bijectors.$op2(args...;kwargs...)
             $op1(dim, fo)
         end
-        forward(o::$op1, x::Union{PyObject, Array{<:Real,2}}) = forward(o.fo, x)
-        backward(o::$op1, z::Union{PyObject, Array{<:Real,2}}) = backward(o.fo, z)
+        forward(o::$op1, x::Union{PyObject, Array{<:Real,2}}) = (o.fo.forward(x), o.fo.forward_log_det_jacobian(x, 1))
+        backward(o::$op1, z::Union{PyObject, Array{<:Real,2}}) = (o.fo.inverse(z), o.fo.inverse_log_det_jacobian(z, 1))
     end
 end

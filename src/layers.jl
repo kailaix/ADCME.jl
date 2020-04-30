@@ -505,9 +505,13 @@ export dropout
 Randomly drops out entries in `x` with a rate of `rate`. 
 """
 function dropout(x::Union{PyObject, Real, Array{<:Real}}, 
-    rate::Union{Real, PyObject}, training::Union{PyObject,Bool} = true; kwargs...)
+    rate::Union{Real, PyObject}, training::Union{PyObject,Bool, Nothing} = nothing ; kwargs...)
     x = constant(x)
-    training = constant(training)
+    if isnothing(training)
+        training = options.training.training 
+    else
+        training = constant(training)
+    end
     tf.keras.layers.Dropout(rate, kwargs...)(x, training)
 end
 
@@ -689,6 +693,7 @@ function (o::Conv3D)(x::Union{PyObject, Array{<:Real,3}})
 end
 
 #------------------------------------------------------------------------------------------
+# resnet, adapted from https://github.com/bayesiains/nsf/blob/master/nn/resnet.py
 mutable struct ResnetBlock
     use_batch_norm::Bool 
     activation::Union{String,Function}
@@ -717,12 +722,12 @@ end
 function (res::ResnetBlock)(input)
     x = input
     if res.use_batch_norm
-        x = bn_layers[1](x)
+        x = res.bn_layers[1](x)
     end
     x = res.activation(x)
     x = res.linear_layers[1](x)
     if res.use_batch_norm
-        x = bn_layers[2](x)
+        x = res.bn_layers[2](x)
     end
     x = res.activation(x)
     x = dropout(x, res.dropout_probability, options.training.training)
