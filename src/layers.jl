@@ -744,9 +744,9 @@ end
 """
     Resnet1D(out_features::Int64, hidden_features::Int64;
         num_blocks::Int64=2, activation::Union{String, Function, Nothing} = "relu", 
-        dropout_probability::Float64 = 0.0, use_batch_norm::Bool = false)
+        dropout_probability::Float64 = 0.0, use_batch_norm::Bool = false, name::Union{String, Missing} = missing)
 
-Creates a 1D residual network. 
+Creates a 1D residual network. If `name` is not missing, `Resnet1D` does not create a new entity. 
 # Example 
 ```julia
 resnet = Resnet1D(20)
@@ -795,7 +795,12 @@ end
 """
 function Resnet1D(out_features::Int64, hidden_features::Int64 = 20;
      num_blocks::Int64=2, activation::Union{String, Function, Nothing} = "relu", 
-     dropout_probability::Float64 = 0.0, use_batch_norm::Bool = false)
+     dropout_probability::Float64 = 0.0, use_batch_norm::Bool = false,
+     name::Union{String, Missing} = missing)
+     if haskey(ADCME.STORAGE, name)
+        @info "Reusing $name..."
+        return ADCME.STORAGE[name]
+     end
      initial_layer = Dense(hidden_features)
      blocks = ResnetBlock[]
      for i = 1:num_blocks
@@ -806,7 +811,12 @@ function Resnet1D(out_features::Int64, hidden_features::Int64 = 20;
         ))
      end
      final_layer = Dense(out_features)
-     Resnet1D(initial_layer, blocks, final_layer)
+     if ismissing(name)
+        name = "Resnet1D_"*randstring(10)
+     end
+     res = Resnet1D(initial_layer, blocks, final_layer)
+     ADCME.STORAGE[name] = res 
+     return res 
 end
 
 function (res::Resnet1D)(x)

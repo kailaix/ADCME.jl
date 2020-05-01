@@ -116,6 +116,8 @@ function LinearFlow(A::Union{PyObject, Array{<:Real,2}},
     if ismissing(b)
         b = zeros(outdim)
     end
+    A = constant(A)
+    b = constant(b)
     LinearFlow(outdim, indim, outdim, A, b)
 end
 

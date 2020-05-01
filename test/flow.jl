@@ -39,7 +39,7 @@ end
 
 @testset "SlowMAF" begin 
     dim = 3
-    flows = [SlowMAF(dim, false, [x->fc(x, [20,20,2]); x->fc(x,[20,20,2],"fc2")])]
+    flows = [SlowMAF(dim, false, [x->fc(x, [20,20,2], "fc1"); x->fc(x,[20,20,2],"fc2")])]
     x1, x2, j1, j2 = test_flow(sess, flows, dim)
     @test x1≈x2
     @test j1≈-j2
@@ -85,6 +85,41 @@ end
     K = 8
     n = dim÷2
     flows = [NeuralCouplingFlow(dim, x->fc(x, [20,20,n*(3K-1)], "ncf1"), x->fc(x,[20,20,n*(3K-1)],"ncf2"), K)]
+    x1, x2, j1, j2 = test_flow(sess, flows, dim)
+    @test x1≈x2
+    @test j1≈-j2
+end
+
+@testset "Permute" begin 
+    dim = 6
+    flows = [Permute(dim, randperm(6) .- 1)]
+    x1, x2, j1, j2 = test_flow(sess, flows, dim)
+    @test x1≈x2
+    @test j1≈-j2
+end
+
+@testset "composite" begin 
+    function create_linear_transform(dim)
+        permutation = randperm(dim) .- 1
+        flow = [Permute(dim, permutation);LinearFlow(dim)]
+    end
+    dim = 5
+    flows = create_linear_transform(dim)
+    x1, x2, j1, j2 = test_flow(sess, flows, dim)
+    @test x1≈x2
+    @test j1≈-j2
+end
+
+@testset "composite 2" begin 
+    function create_base_transform(dim, K=8)
+        n1 = dim÷2
+        n2 = dim - n1
+        r1 = x->Resnet1D(n1 * (3K-1), 256, dropout_probability=0.0, use_batch_norm=false)(x)
+        r2 = x->Resnet1D(n2 * (3K-1), 256, dropout_probability=0.0, use_batch_norm=false)(x)
+        NeuralCouplingFlow(dim, r1, r2)
+    end
+    dim = 6
+    flows = [create_base_transform(dim)]
     x1, x2, j1, j2 = test_flow(sess, flows, dim)
     @test x1≈x2
     @test j1≈-j2
