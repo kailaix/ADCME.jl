@@ -1,4 +1,4 @@
-# Uncertainty Quantification using Normalizing Flows
+# Uncertainty Quantification for Bayesian Inverse Problems using Variational Autoencoder
 
 The forward problem represents a mapping from model parameters to observations. The mapping might result from a discretized system of partial differentiatial equations. The model is written as 
 
@@ -41,30 +41,24 @@ where $y(\theta)$ is the solution to the system Equation (1) for a given paramet
 
 [^1]: Methods such as kernel density estimation (KDE) can reconstruct density functions out of samples. However, those methods face challenges in high dimensions or require voluminous samples, which can be expensive to generate. 
 
+We address this issue by modeling the posterior $p(\theta|y)$ using a variational autoencoder (VAE). We have already introduced VAE in [this article](./vae.md). In the following, we use the same notation as that article. In that example, we construct a latent space which is essentially Gaussian. A direct generalization of VAE to this physical problem is that we treat $\theta$ as latent variables. However, this imposes the Gaussian-like distribution constraint on $\theta$ conditioned on $y$. This is not desirable because the uncertainty of physical parameters in many problems is non-Gaussian. 
 
-We address this issue by modeling the posterior distribution $p(\tilde y|\theta)$ directly using normalizing flows. This approach models the likelihood function directly and enables cheap sampling. 
+To model the non-Gaussian uncertainty, we use a generative deep neural network $g_\eta$ that maps latent variables $z$ to $\theta$, where $\eta$ is the weights and biases of the neural network
+$$\theta = g_\eta(z)$$
 
-First, instead of modeling $\theta$ directly, we consider transforming latent variables $z$ to $\theta$ using deep latent Gaussian models, where latent variables $z_1$, $z_2$, $\ldots$, $z_L$, $z_{L+1} = z$, and $\theta$ have a joint distribution
+The parameter $\theta$ is mapped to the observation $y$ via solving a PDE system and projecting the state variables onto observable degrees of freedom. Therefore, we have 
 
-$$p(\theta, z_1, z_2, \ldots, z_L| z_{L+1})  = p(\theta|f_0(z_1))\Pi_{l=1}^L p(z_l | f_l(z_{l+1}))$$
+$$p_{\eta}(y|z) = \frac{1}{(\sqrt{2\pi \sigma^2})^q}\exp\left[ -\frac{1}{2\sigma^2} \| y-y(g_\eta(z))\|^2 \right]$$
 
-Here, each latent variable $z_l$ (including $z_{L+1}=z$) has a unit Gaussian prior $p(z_l) = \mathcal{N}(0, I)$, and functions $f_i$ are all parametrized by a deep neural network. We denote the set of weights and biases of all neural networks by $\psi$, and the statistical model for $\theta$ is written as $p_\psi(\theta|z)$. Therefore, we have
+Therefore, the discrete marginal likelihood function is given by 
 
-$$\begin{aligned}
-p_\psi( y|z) &= p( y|\theta, z)p_\psi(\theta|z)\\ 
-&= p( y|\theta)p_\psi(\theta|z)\\ 
-&\propto  \exp\left[ -\frac{1}{2\sigma^2} ( y-y(\theta))^T( y-y(\theta)) \right] p_\psi(\theta|z)
-\end{aligned}$$
+$$\mathbb{E}_{p_w(z|x)}[\log p_\eta(y|z)] \approx \frac{1}{n}\sum_{i=1}^n \left[-\frac{1}{2\sigma^2}\|y-y(g_\eta(z))\|^2 - \frac{q}{2}\log(2\pi \sigma^2) \right]$$
 
-Next, we approximate the posterior distribution by $p_\phi(z|\tilde y) \approx p(z|\tilde y)$, where $p_\phi$ is a normalizing flow-based generative model, whose explaination is delayed to a later text. The negative standard evidence lower bound (ELBO) is derived as 
-$$L(y) = KL(p_\phi(z|y)|| p(z)) - \mathbb{E}_{p_\psi(y|z)} \log p(y|z) \geq -\log p_{\phi, \psi}(y)$$
-To find a good local minima for $\phi$ and $\psi$, we minimize the ELBO using stochastic gradient descent method. The biggest challengee is how to compute $\nabla_\psi \mathbb{E}_{p_\psi(y|z)} \log p(y|z)$. We apply the stochastic backpropagation method, which relies on a Monte Carlo approximation of the gradient using 
-$$XXX$$ 
+The KL divergence term in VAE has the same form as the VAE article
 
-Once $\phi$ and $\psi$ are estimated, we can reconstruct the posterior distribution of $p(\theta|y)$ using 
+$$\mathrm{KL}(p_w(z|y) || p(z)) = -d - d\log(\sigma_y) +\frac{1}{2} \|\mu_y\|^2 + \frac{d}{2}$$
 
-$$p(\theta|y) = \int p(\theta|z, y)p(z) dz \approx \int p_{\phi}(\theta|z) p(z) dz$$
+Compared to the typical use case of VAE, for uncertainty quantification of scientific problems, there are some unique characteristics: 
 
-Because we can sample from the posterior distribution $p_\psi(\theta|y)$ cheaply, we can generate samples from the data distribution relatively faster than MCMC. 
-
-
+1. Small data problem. Typically we have only a few or even a single measurement $y$. Therefore, in each iteration of an optimization procedure, all the measurement constitutes the whole batch. 
+2. Automatic differentiation through numerical solvers. Instead of differentiating through neural networks for calculating gradients, we need to differentiate through numerical solvers. This may be nontrivial in certain scenarios. For example, we may need to differentiate through implicit solvers, where we can apply the physics constrained learning technique. 
