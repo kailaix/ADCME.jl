@@ -12,7 +12,7 @@ pages = Any[
     "Resources" => ["newton_raphson.md", "parallel.md", "ode.md", "global.md", 
             "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md", "customopt.md",
             "options.md"],
-    "Deep Learning Schemes" => ["vae.md"],
+    "Deep Learning Schemes" => ["vae.md", "flow.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
             "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md", "apps_nnfem.md"],
     "api.md"

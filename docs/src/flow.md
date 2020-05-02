@@ -1,4 +1,4 @@
-# Flow-based Generative Model
+# Normalizing Flows
 
 In this article we introduce the ADCME module for flow-based generative models. The flow-based generative models can be used to model the joint distribution of high-dimensional random variables. It constructs a sequence of invertible transformation of distributions
 
@@ -7,6 +7,24 @@ $$x = f(u) \quad u \sim \pi(u)$$
 based on the change of variable equation
 
 $$p(x) = \pi(f^{-1}(x)) \left|\det\left(\frac{\partial f^{-1}(x)}{\partial x}\right)\right|$$
+
+!!! example
+    Consider the transformation $f: \mathbb{R}\rightarrow [0,1]$, s.t. $f(x) = \mathrm{sigmoid}(x) = \frac{1}{1+e^{-x}}$. Consider the random variable 
+
+    $$u \sim \mathcal{N}(0,1)$$
+
+    We want to find out the probability density function of $p(x)$, where $x=f(u)$. To this end, we have 
+
+    $$f^{-1}(x)=\log(x) - \log(1-x) \Rightarrow \frac{\partial f^{-1}(x)}{\partial x} = \frac{1}{x} + \frac{1}{1-x}$$
+
+    Therefore, we have
+
+    $$\begin{aligned}
+    p(x) &= \pi(f^{-1}(x))\left( \frac{1}{x} + \frac{1}{1-x}\right) \\ 
+    &= \frac{1}{\sqrt{2\pi}}\exp\left(-\frac{(\log(x)-\log(1-x))^2}{2}\right)\left( \frac{1}{x} + \frac{1}{1-x}\right)
+    \end{aligned}$$
+
+
 
 Compared to other generative models such as variational autoencoder (VAE) and generative neural networks (GAN), the flow-based generative models give us explicit formuas of density functions. For model training, we can directly minimizes the posterier log likelihood in the flow-based generative models, while use approximate likelihood functions in VAE and adversarial training in GAN. In general, the flow-based generative model is easier to train than VAE and GAN. In the following, we give some examples of using flow-based generatives models in ADCME. 
 
@@ -203,6 +221,21 @@ flows = [AffineHalfFlow(2, mod(i,2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i 
 
 
 #------------------------------------------------------------------------------------------
+# RealNVP
+function mlp(x, k, id)
+    x = constant(x)
+    variable_scope("layer$k$id") do
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 24, activation="leaky_relu")
+        x = dense(x, 1)
+    end
+    return x
+end
+flows = [AffineHalfFlow(2, mod(i,2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i = 0:8]
+
+
+#------------------------------------------------------------------------------------------
 # NICE
 # function mlp(x, k, id)
 #     x = constant(x)
@@ -293,6 +326,7 @@ flows = [AffineHalfFlow(2, mod(i,2)==1, x->mlp(x, i, 0), x->mlp(x, i, 1)) for i 
 # flows = permutedims(hcat(norms, convs, flows))[:]
 
 #------------------------------------------------------------------------------------------ 
+
 
 prior = ADCME.MultivariateNormalDiag(loc=zeros(2))
 model = NormalizingFlowModel(prior, flows)
