@@ -535,8 +535,13 @@ y = b(x, training)
 run(sess, y)
 ```
 """
-function BatchNormalization(dims::Int64=2; kwargs...)
-    o = tf.keras.layers.BatchNormalization(dims-1, kwargs...)
+function BatchNormalization(dims::Int64=-1; kwargs...)
+    local o
+    if dims>=1
+        o = tf.keras.layers.BatchNormalization(dims-1, kwargs...)
+    else
+        o = tf.keras.layers.BatchNormalization(dims, kwargs...)
+    end
     BatchNormalization(dims, o)
 end
 
@@ -544,9 +549,20 @@ function Base.:show(io::IO, b::BatchNormalization)
     print("<BatchNormalization normalization_dim=$(b.dims)>")
 end
 
-(o::BatchNormalization)(x, training=false) = o.o(x, training)
+function (o::BatchNormalization)(x, training=ADCME.options.training.training) 
+    flag = false 
+    if get_dtype(x)==Float64
+        x = cast(x, Float32)
+        flag = true 
+    end
+    out = o.o(x, training)
+    if flag 
+        out = cast(Float64, out)
+    end
+    return out 
+end
 
-export Dense, Conv1D, Conv2D, Conv3D
+export Dense, Conv1D, Conv2D, Conv3D, Conv2DTranspose
 
 function _get_activation(activation)
     if isnothing(activation)
@@ -654,7 +670,29 @@ end
 function Base.:show(io::IO, o::Conv2D)
     print("<Conv2D filters=$(o.filters) kernel_size=$(o.kernel_size) strides=$(o.strides) activation=$(o.activation)>")
 end
-function (o::Conv2D)(x::Union{PyObject, Array{<:Real,3}})
+function (o::Conv2D)(x::Union{PyObject, Array{<:Real,4}})
+    x = constant(x)
+    @assert length(size(x))==4
+    o.o(x)
+end
+
+mutable struct Conv2DTranspose
+    filters
+    kernel_size
+    strides
+    activation
+    o::PyObject 
+end
+
+function Conv2DTranspose(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
+    activation = _get_activation(activation)
+    o = tf.keras.layers.Conv2DTranspose(
+        filters, kernel_size, strides=strides; activation = activation, kwargs...
+    )
+    Conv2DTranspose(filters, kernel_size, strides, activation, o)
+end
+
+function (o::Conv2DTranspose)(x::Union{PyObject, Array{<:Real,4}})
     x = constant(x)
     @assert length(size(x))==4
     o.o(x)
@@ -686,7 +724,7 @@ end
 function Base.:show(io::IO, o::Conv3D)
     print("<Conv3D filters=$(o.filters) kernel_size=$(o.kernel_size) strides=$(o.strides) activation=$(o.activation)>")
 end
-function (o::Conv3D)(x::Union{PyObject, Array{<:Real,3}})
+function (o::Conv3D)(x::Union{PyObject, Array{<:Real,5}})
     x = constant(x)
     @assert length(size(x))==5
     o.o(x)
