@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Uncertainty Quantification · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Uncertainty Quantification</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Uncertainty Quantification</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/uq.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Uncertainty-Quantification-1"><a class="docs-heading-anchor" href="#Uncertainty-Quantification-1">Uncertainty Quantification</a><a class="docs-heading-anchor-permalink" href="#Uncertainty-Quantification-1" title="Permalink"></a></h1><h2 id="Theory-1"><a class="docs-heading-anchor" href="#Theory-1">Theory</a><a class="docs-heading-anchor-permalink" href="#Theory-1" title="Permalink"></a></h2><h3 id="Basic-Model-1"><a class="docs-heading-anchor" href="#Basic-Model-1">Basic Model</a><a class="docs-heading-anchor-permalink" href="#Basic-Model-1" title="Permalink"></a></h3><p>We consider a physical model</p><div>\[\begin{aligned}
+y &amp;= h(s) + \delta \\ 
+s &amp;= g(z) + \epsilon
+\end{aligned}\tag{1}\]</div><p>Here <span>$\delta$</span> and <span>$\epsilon$</span> are independent Gaussian noises. <span>$s\in \mathbb{R}^m$</span> is the physical quantities we are interested, and <span>$y\in \mathbb{R}^n$</span> is the measurement. <span>$z$</span> is a hidden factor that <span>$s$</span> depends on.  <span>$\delta$</span> can be interpreted as the measurement error</p><div>\[\mathbb{E}(\delta\delta^T) = R\]</div><div>\[\epsilon\]</div><p>is interpreted as our prior for <span>$s$</span></p>$<p>\mathbb{E}(\epsilon\epsilon^T) = Q$</p><h3 id="Linear-Gaussian-Model-1"><a class="docs-heading-anchor" href="#Linear-Gaussian-Model-1">Linear Gaussian Model</a><a class="docs-heading-anchor-permalink" href="#Linear-Gaussian-Model-1" title="Permalink"></a></h3><p>When the standard deviation of <span>$\epsilon$</span> is small, we can safely approximate <span>$h(s)$</span> using its linearized form </p><div>\[h(s)\approx \nabla h(s_0) (s-s_0) + h(s_0) := \mu + H s\]</div><p>Here <span>$\mu = h(s_0) - \nabla h(s_0) s_0\quad H = \nabla h(x_0)$</span></p><p>Therefore, we have an approximate governing equation for Equation 1:</p><div>\[\begin{aligned}
+y &amp;= H s + \mu + \delta\\
+s &amp;= g(z) + \epsilon
+\end{aligned}\tag{2}\]</div><p>Using Equation 2, we have</p><div>\[\begin{aligned}
+\mathbb{E}(y) &amp; = H g(z) + \mu \\ 
+\Psi = \text{cov}(y) &amp; = \mathbb{E}\left[(H (x-g(z)) + \delta )(H (x-g(z)) + \delta )^T \right] = H QH^T + R
+\end{aligned}\]</div><h3 id="Bayesian-Inversion-1"><a class="docs-heading-anchor" href="#Bayesian-Inversion-1">Bayesian Inversion</a><a class="docs-heading-anchor-permalink" href="#Bayesian-Inversion-1" title="Permalink"></a></h3><p>The posterior of <span>$s$</span> given the observation is also Gaussian, with a mean vector <span>$\hat s$</span> and a covariance matrix <span>$\Sigma$</span></p><div>\[s \sim \mathcal{N}(\hat s, \Sigma)\]</div><p>The quantity <span>$s$</span> and <span>$\Sigma$</span> can be computed by first solving a <span>$(m+n)\times (m+n)$</span> matrix</p><div>\[\boxed{
+    \begin{bmatrix}
+    \Psi &amp; H \\ 
+    H^T &amp; 0 
+    \end{bmatrix}\begin{bmatrix}
+    \Lambda^T \\ 
+    M 
+    \end{bmatrix} = \begin{bmatrix}
+    HQ\\ 
+    I 
+    \end{bmatrix}
+}\]</div><div>\[\hat s\]</div><p>and <span>$\Sigma$</span> are computed using </p><div>\[\begin{aligned}
+\hat s &amp;= \Lambda y \\ 
+\Sigma &amp;= Q - M - C^T \Lambda^T
+\end{aligned}\]</div><p>In ADCME, we provide the implementation <a href="@ref"><code>uq</code></a></p><pre><code class="language-julia">s, Σ = uq(y, H, R, Q)</code></pre><h2 id="Example-1:-UQ-for-Parameter-Inverse-Problems-1"><a class="docs-heading-anchor" href="#Example-1:-UQ-for-Parameter-Inverse-Problems-1">Example 1: UQ for Parameter Inverse Problems</a><a class="docs-heading-anchor-permalink" href="#Example-1:-UQ-for-Parameter-Inverse-Problems-1" title="Permalink"></a></h2><p>We consider a simple example for 2D Poisson problem.</p><div>\[\begin{aligned}
+\nabla (K(x, y) \nabla u(x, y)) &amp;= 1 &amp; \text{ in } \Omega\\ 
+u(x,y) &amp;= 0  &amp; \text{ on } \partial \Omega
+\end{aligned}\]</div><p>where <span>$K(x,y) = e^{c_1 + c_2 x + c_3 y}$</span>. </p><p>Here <span>$c_1$</span>, <span>$c_2$</span>, <span>$c_3$</span> are parameter to be estimated. We first generate data using <span>$c_1=1,c_2=2,c_3=3$</span> and add Gaussian noise <span>$\mathcal{N}(0, 10^{-3})$</span> to 64 observation in the center of the domain <span>$[0,1]^2$</span>. We run the inverse modeling and obtain an estimation of <span>$c_i$</span>&#39;s. Finally, we use <a href="@ref"><code>uq</code></a> to conduct the uncertainty quantification. We assume <span>$\text{error}_{\text{model}}=0$</span>. </p><p>The following plot shows the estimated mean together with 2 standard deviations. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/uq_poisson.png?raw=true" alt/></p><pre><code class="language-julia">using ADCME
+using PyPlot
+using PoreFlow
+
+
+Random.seed!(233)
+idx = fem_randidx(100, m, n, h)
+
+function poisson1d(c)
+    m = 40
+    n = 40
+    h = 0.1
+    bdnode = bcnode(&quot;all&quot;, m, n, h)
+    c = constant(c)
+    xy = gauss_nodes(m, n, h)
+    κ = exp(c[1] + c[2] * xy[:,1] + c[3]*xy[:,2])
+    κ = compute_space_varying_tangent_elasticity_matrix(κ, m, n, h)
+    K = compute_fem_stiffness_matrix1(κ, m, n, h)
+    K, _ = fem_impose_Dirichlet_boundary_condition1(K, bdnode, m, n, h)
+    rhs = compute_fem_source_term1(ones(4m*n), m, n, h)
+    rhs[bdnode] .= 0.0
+    sol = K\rhs
+    sol[idx]
+end
+
+c = Variable(rand(3))
+y = poisson1d(c)
+Γ = gradients(y, c) 
+Γ = reshape(Γ, (100, 3))
+
+# generate data 
+sess = Session(); init(sess)
+run(sess, assign(c, [1.0;2.0;3.0]))
+obs = run(sess, y) + 1e-3 * randn(100)
+
+# Inverse modeling 
+loss = sum((y - obs)^2)
+init(sess)
+BFGS!(sess, loss)
+
+y = obs 
+H = run(sess, Γ)
+R = (2e-3)^2 * diagm(0=&gt;ones(100))
+X = run(sess, c)
+Q = diagm(0=&gt;ones(3))
+m, V = uqlin(y, H, R, X, Q)
+plot([1;2;3], [1.;2.;3.], &quot;o&quot;, label=&quot;Reference&quot;)
+errorbar([1;2;3],m + run(sess, c), yerr=2diag(V), label=&quot;Estimated&quot;)
+legend()</code></pre><div class="admonition is-info"><header class="admonition-header">The choice of $R$</header><div class="admonition-body"><p>The standard deviation <span>$2\times 10^{-3}$</span> consists of the model error (<span>$10^{-3}$</span>) and the measurement error <span>$10^{-3}$</span>. </p></div></div><h2 id="Example-2:-UQ-for-Function-Inverse-Problems-1"><a class="docs-heading-anchor" href="#Example-2:-UQ-for-Function-Inverse-Problems-1">Example 2: UQ for Function Inverse Problems</a><a class="docs-heading-anchor-permalink" href="#Example-2:-UQ-for-Function-Inverse-Problems-1" title="Permalink"></a></h2><p>In this example, let us consider uncertainty quantification for function inverse problems. We consider the same problem as Example 1, except that <span>$K(x,y)$</span> is represented by a neural network (the weights and biases are represented by <span>$\theta$</span>)</p><div>\[\mathcal{NN}_\theta:\mathbb{R}^2 \rightarrow \mathbb{R}\]</div><p>We consider a highly nonlinear <span>$K(x,y)$</span></p><div>\[K(x,y) = 0.1 + \sin x+ x(y-1)^2  + \log (1+y)\]</div><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/uq_poisson2-0.png?raw=true" alt/></p><p>The left panel above shows the exact <span>$K(x,y)$</span> and the learned <span>$K(x,y)$</span>. We see we have a good approximation but with some error. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/uq_poisson2.png?raw=true" alt/></p><p>The left panel above shows the exact solution while the right panel shows the reconstructed solution after learning. </p><p>We apply the UQ method and obtain the standard deviation plot on the left, together with absolute error on the right. We see that our UQ estimation predicts that the right side has larger uncertainty, which is true in consideration of the absolute error. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/uq_poisson2-1.png?raw=true" alt/></p><pre><code class="language-julia">using Revise
+using ADCME
+using PyPlot
+using PoreFlow
+
+
+m = 40
+n = 40
+h = 1/n
+bdnode = bcnode(&quot;all&quot;, m, n, h)
+xy = gauss_nodes(m, n, h)
+xy_fem = fem_nodes(m, n, h)
+
+function poisson1d(κ)
+    κ = compute_space_varying_tangent_elasticity_matrix(κ, m, n, h)
+    K = compute_fem_stiffness_matrix1(κ, m, n, h)
+    K, _ = fem_impose_Dirichlet_boundary_condition1(K, bdnode, m, n, h)
+    rhs = compute_fem_source_term1(ones(4m*n), m, n, h)
+    rhs[bdnode] .= 0.0
+    sol = K\rhs
+end
+
+κ = @. 0.1 + sin(xy[:,1]) + (xy[:,2]-1)^2 * xy[:,1] + log(1+xy[:,2])
+y = poisson1d(κ)
+
+sess = Session(); init(sess)
+SOL = run(sess, y)
+
+
+# inverse modeling 
+κnn = squeeze(abs(ae(xy, [20,20,20,1])))
+y = poisson1d(κnn)
+
+using Random; Random.seed!(233)
+idx = fem_randidx(100, m, n, h)
+obs = y[idx]
+OBS = SOL[idx]
+loss = sum((obs-OBS)^2)
+
+init(sess)
+BFGS!(sess, loss, 200)
+
+figure(figsize=(10,4))
+subplot(121)
+visualize_scalar_on_fem_points(SOL, m, n, h)
+subplot(122)
+visualize_scalar_on_fem_points(run(sess, y), m, n, h)
+plot(xy_fem[idx,1], xy_fem[idx,2], &quot;o&quot;, c=&quot;red&quot;, label=&quot;Observation&quot;)
+legend()
+
+
+figure(figsize=(10,4))
+subplot(121)
+visualize_scalar_on_gauss_points(κ, m, n, h)
+title(&quot;Exact \$K(x, y)\$&quot;)
+subplot(122)
+visualize_scalar_on_gauss_points(run(sess, κnn), m, n, h)
+title(&quot;Estimated \$K(x, y)\$&quot;)
+
+
+H = gradients(obs, κnn) 
+H = run(sess, H)
+y = OBS 
+hs = run(sess, obs)
+R = (1e-1)^2*diagm(0=&gt;ones(length(obs)))
+s = run(sess, κnn)
+Q = (1e-2)^2*diagm(0=&gt;ones(length(κnn)))
+μ, Σ = uqnlin(y, hs, H, R, s, Q)
+
+σ = diag(Σ)
+figure(figsize=(10,4))
+subplot(121)
+visualize_scalar_on_gauss_points(σ, m, n, h)
+title(&quot;Standard Deviation&quot;)
+subplot(122)
+visualize_scalar_on_gauss_points(abs.(run(sess, κnn)-κ), m, n, h)
+title(&quot;Absolute Error&quot;)</code></pre><h2 id="Example-3:-UQ-for-Function-Inverse-Problem-1"><a class="docs-heading-anchor" href="#Example-3:-UQ-for-Function-Inverse-Problem-1">Example 3: UQ for Function Inverse Problem</a><a class="docs-heading-anchor-permalink" href="#Example-3:-UQ-for-Function-Inverse-Problem-1" title="Permalink"></a></h2><p>In this case, we consider a more challenging case, where <span>$K$</span> is a function of the state variable, i.e., <span>$K(u)$</span>. <span>$K$</span> is approximated by a neural network, but we need an iterative solver that involves the neural network to solve the problem </p><div>\[\begin{aligned}
+\nabla (K(u) \nabla u(x, y)) &amp;= 1 &amp; \text{ in } \Omega\\ 
+u(x,y) &amp;= 0  &amp; \text{ on } \partial \Omega
+\end{aligned}\]</div><pre><code class="language-none"></code></pre></article></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 6 May 2020 04:40">Wednesday 6 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
