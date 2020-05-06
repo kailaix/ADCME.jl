@@ -354,7 +354,7 @@ def Convert_ARGS():
     s = ""
     if len(s1)>0:
         s1 = ",".join(s1)
-        s1_ = "[" + s1 + "]"
+        s1_ = "Any[" + s1 + "]"
         s2 = "["+",".join(s2)+"]"
         s = "{} = convert_to_tensor({}, {})".format(s1, s1_, s2)
         if ',' not in s1:

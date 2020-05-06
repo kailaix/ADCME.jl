@@ -55,3 +55,23 @@ end
 
     @test run(sess, gradients(sum(y), θ))≈0.08333333333333333*ones(5)
 end
+
+
+@testset "uqlin" begin 
+    Random.seed!(233)
+    m = 100
+    n = 3
+    p = 1
+    y = rand(m)
+    H = rand(m, n)
+    R = rand(m, m)
+    X = rand(n, 1)
+    Q = rand(n, n)
+    μ, Σ = uqlin(y, H, R, X, Q)
+    @test maximum(abs.(Σ-[ -0.17191    0.403774   -0.0961366
+    0.351092  -0.0873631   0.300055 
+    0.259905   0.216204   -0.231099]))<1e-5
+    @test μ≈[ 1.1845031796187488 
+    -0.34218452451267933
+     0.2739539039023572 ]
+end

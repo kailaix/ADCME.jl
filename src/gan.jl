@@ -148,7 +148,7 @@ function GAN(dat::Union{Array,PyObject}, generator::Function, discriminator::Fun
         end
     end
     gan = GAN(latent_dim, batch_size, dim, dat, generator, discriminator, loss, missing, missing, missing, 
-        missing, placeholder(true), missing, missing, missing, randstring(), missing, missing, Dict())
+        missing, ADCME.options.training.training, missing, missing, missing, randstring(), missing, missing, Dict())
     build!(gan)
     gan
 end
@@ -175,7 +175,7 @@ g_loss     ... $(yes_or_no(gan.g_loss))
 update     ... $(yes_or_no(gan.update))
 true_data  ... $(size(gan.true_data))
 fake_data  ... $(size(gan.fake_data))
-is_training... Placeholder (Bool), default = true
+is_training... Placeholder (Bool), $(gan.is_training)
 noise      ... Placeholder (Float64) of size $(size(gan.noise))
 ids        ... Placeholder (Int32) of size $(size(gan.ids))
 """
@@ -301,11 +301,9 @@ function sample(gan::GAN, n::Int64)
     local out
     @info "Using a normal latent vector"
     noise = constant(randn(n, gan.latent_dim))
-    gan.is_training = false
     variable_scope("generator_$(gan.ganid)") do
         out = gan.generator(noise, gan)
     end
-    gan.is_training = placeholder(true)
     out
 end
 

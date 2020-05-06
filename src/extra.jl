@@ -10,7 +10,9 @@ load_system_op,
 install_adept,
 register,
 debug,
-doctor
+doctor,
+uqlin, 
+uqnlin
 
 """
     xavier_init(size, dtype=Float64)
@@ -753,4 +755,93 @@ function test_gpu()
     cd("..")
     include("gputest.jl")
     cd(PWD)
+end
+
+
+@doc raw"""
+    uqlin(y::Array{Float64,1}, 
+    H::Array{Float64,2},
+    R::Array{Float64,2},
+    X::Array{Float64},
+    Q::Array{Float64,2})
+
+Geeneral linear estimation. 
+
+Inputs:
+
+- `y`: measurement vector 
+- `H`: observation matrix 
+- `R`: measurement covariance 
+- `X`: drift matrix for `s`
+- `Q`: hidden parameter covariance 
+
+Outputs:
+
+- `s`: Posterial mean 
+- `Σ`: covariance 
+"""
+function uqlin(y::Array{Float64,1}, 
+    H::Array{Float64,2},
+    R::Array{Float64,2},
+    X::Array{Float64},
+    Q::Array{Float64,2})
+    n, m = size(H)
+    if length(size(X))==1
+        X = reshape(X, :, 1)
+    end
+    if length(y)!=n || 
+        size(R)!=(n,n) || 
+        size(Q)!=(m,m) ||
+        size(X,1)!=m 
+        error("Check dimension")
+    end
+    p = size(X,2)
+
+    PHI = H*X; QHT = Q*H'; HQHT = H*QHT;
+    PSI = HQHT+R;
+
+    AA = [PSI PHI
+         PHI' zeros(p,p)]
+    AA=(AA+AA')/2;
+    bb = [QHT';X'];
+
+    SOL = AA\bb; 
+    LAMBDA = (SOL[1:n,:])'; 
+    MU = SOL[n+1:n+p,:];
+
+    s = LAMBDA*y; 
+    V = -X*MU+Q-QHT*LAMBDA';
+    return s, V
+end
+
+@doc raw"""
+    uqnlin(
+        y::Array{Float64,1}, 
+        hs::Array{Float64},
+        H::Array{Float64,2},
+        R::Array{Float64,2},
+        s::Array{Float64},
+        Q::Array{Float64,2}
+    )
+
+Uncertainty quantification for linearized Gaussian model. Similar to [`uqlin`](@ref) except that 
+we solve a nonlinear system 
+```math
+$$\begin{aligned}
+y &= h(s) + \delta \\ 
+s &= g(z) + \epsilon
+\end{aligned}\tag{1}$$
+```
+"""
+function uqnlin(
+    y::Array{Float64,1}, 
+    hs::Array{Float64},
+    H::Array{Float64,2},
+    R::Array{Float64,2},
+    s::Array{Float64},
+    Q::Array{Float64,2}
+)
+    y = y - (hs-H*s)
+    X = s
+    μ, Σ = uqlin(y, H, R, X, Q)
 end
