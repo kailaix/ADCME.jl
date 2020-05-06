@@ -765,20 +765,32 @@ end
     X::Array{Float64},
     Q::Array{Float64,2})
 
-Geeneral linear estimation. 
+Geeneral linear estimation. The model is 
+
+$$\begin{aligned}
+y &= H s + \delta\\
+s &= X\beta + \epsilon
+\end{aligned}$$
+
+where 
+
+$$\delta \sim \mathcal{N}(0, R)\quad \epsilon \sim \mathcal{N}(0, Q)$$
 
 Inputs:
 
-- `y`: measurement vector 
-- `H`: observation matrix 
-- `R`: measurement covariance 
-- `X`: drift matrix for `s`
-- `Q`: hidden parameter covariance 
+- `y`: length $n$ measurement vector 
+- `H`: $n\times m$ observation matrix 
+- `R`: $n\times n$ measurement covariance 
+- `X`: $m\times p$ drift matrix for `s`
+- `Q`: $m\times m$ hidden parameter covariance 
 
 Outputs:
 
-- `s`: Posterial mean 
-- `Σ`: covariance 
+- `s`: length $m$ posterial mean 
+- `Σ`: $m\times m$ posterial covariance 
+
+!!! info 
+    
 """
 function uqlin(y::Array{Float64,1}, 
     H::Array{Float64,2},
@@ -824,7 +836,8 @@ end
         Q::Array{Float64,2}
     )
 
-Uncertainty quantification for linearized Gaussian model. Similar to [`uqlin`](@ref) except that 
+Uncertainty quantification for linearized Gaussian model. 
+Similar to [`uqlin`](@ref) except that 
 we solve a nonlinear system 
 ```math
 $$\begin{aligned}

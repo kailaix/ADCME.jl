@@ -1,6 +1,6 @@
 # Uncertainty Quantification
 
-
+<!-- qunatifying uncertainty of neural networks in inverse problems using linearized Gaussian modeels -->
 ## Theory
 
 ### Basic Model 
@@ -77,6 +77,52 @@ In ADCME, we provide the implementation [`uq`](@ref)
 ```julia
 s, Σ = uq(y, H, R, Q)
 ```
+
+## Benchmark 
+
+To show how the proposed method work compared to MCMC, we consider a model problem: estimating Young's modulus and Poisson's ratio from sparse observations. 
+
+$$\begin{aligned}
+\mathrm{div}\; \sigma &= f & \text{ in } \Omega \\ 
+\sigma n &= 0 & \text{ on }\Gamma_N \\ 
+u &= 0 & \text{ on }\Gamma_D \\ 
+\sigma & = H\epsilon
+\end{aligned}$$
+
+Here the computational domain $\Omega=[0,1]\times [0,1.5]$. We fixed the left side ($\Gamma_D$) and impose an upward pressure on the right side. The other side is considered fixed. We consider the plane stress linear elasticity, where the constitutive relation determined by 
+
+$$H = \frac{E}{(1+\nu)(1-2\nu)}\begin{bmatrix}
+1-\nu & \nu & 0 \\ 
+\nu & 1-\nu & 0 \\ 
+0 & 0 & \frac{1-2\nu}{2}
+\end{bmatrix}$$
+
+Here the true parameters 
+
+$$E = 200\;\text{GPa} \quad \nu = 0.35$$
+
+They are the parameters to be calibrated in the inverse modeling. The observation is given by the displacement vectors of 20 random points on the plate. 
+
+We consider a uniform prior for the random walk MCMC simuation, so the log likelihood up to a constant is  given by 
+
+$$l(y') = -\frac{(y-y')^2}{2\sigma_0^2}$$
+
+where $y'$ is the current proposal, $y$ is the measurement, and $\sigma_0$ is the standard deviation. We simulate 100000 times, and the first 20% samples are used as "burn-in" and thus discarded.
+
+For the linearized Gaussian model, we use $Q=I$ and $R=\sigma_0^2I$ to account for a unit Gaussian prior and measurement error, respectively. 
+
+The following plots show the results
+
+
+
+| $\sigma_0=0.01$                                              | $\sigma_0=0.05$                                              | $\sigma_0=0.1$                                               |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/sigma0.01.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/sigma0.05.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/sigma0.1.png?raw=true) |
+| $\sigma_0=0.2$                                               | $\sigma_0=0.5$                                               |                                                              |
+| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/sigma0.2.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/sigma0.5.png?raw=true) |                                                              |
+
+
+We see that when $\sigma_0$ is small, the approximation is quite consistent with MCMC results. When $\sigma_0$ is large, due to the assumption that the uncertainty is Gaussian, the linearized Gaussian model does not fit well with the uncertainty shape obtained with MCMC; however, the result is still consistent since the linearized Gaussian model yields a larger standard deviation. 
 
 ## Example 1: UQ for Parameter Inverse Problems
 
@@ -264,4 +310,10 @@ $$\begin{aligned}
 u(x,y) &= 0  & \text{ on } \partial \Omega
 \end{aligned}$$
 
- 
+Here we show the result for using $Q = 10^{-4}I$, $R = 10^{-4}I$. The uncertainty bound is given in terms of two standard deviation. 
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-errorbar.png?raw=true)
+
+## Example 4: UQ for Dynamical Problems 
+
+Finally, we consider a highly nonlinear dynamical fluid equation. The numerical scheme for this equation is also nonlinear and implicit, and requires a Newton-raphson solve per time step. Therefore, the MCMC simulation is quite expensive. 
