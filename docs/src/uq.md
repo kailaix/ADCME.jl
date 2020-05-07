@@ -11,13 +11,14 @@ y &= h(s) + \delta \\
 s &= g(z) + \epsilon
 \end{aligned}\tag{1}$$
 
-Here $\delta$ and $\epsilon$ are independent Gaussian noises. $s\in \mathbb{R}^m$ is the physical quantities we are interested, and $y\in \mathbb{R}^n$ is the measurement. $z$ is a hidden factor that $s$ depends on.  $\delta$ can be interpreted as the measurement error
+Here $\delta$ and $\epsilon$ are independent Gaussian noises. $s\in \mathbb{R}^m$ is the physical quantities we are interested in predicting, and $y\in \mathbb{R}^n$ is the measurement. $g$ is a function approximator, which we learn from observations in our inverse problem. $z$ is considered fixed for quantifying the uncertainty for a specific observation under small perturbation, although $z$ and $s$ may have complex dependency. 
+$\delta$ can be interpreted as the measurement error
 
 $$\mathbb{E}(\delta\delta^T) = R$$
 
 $\epsilon$ is interpreted as our prior for $s$
 
-$$ \mathbb{E}(\epsilon\epsilon^T) = Q$$
+$$\mathbb{E}(\epsilon\epsilon^T) = Q$$
 
 
 ### Linear Gaussian Model 
@@ -39,43 +40,111 @@ Using Equation 2, we have
 
 $$\begin{aligned}
 \mathbb{E}(y) & = H g(z) + \mu \\ 
-\Psi = \text{cov}(y) & = \mathbb{E}\left[(H (x-g(z)) + \delta )(H (x-g(z)) + \delta )^T \right] = H QH^T + R
+\text{cov}(y) & = \mathbb{E}\left[(H (x-g(z)) + \delta )(H (x-g(z)) + \delta )^T \right] = H QH^T + R
 \end{aligned}$$
 
 ### Bayesian Inversion 
 
-The posterior of $s$ given the observation is also Gaussian, with a mean vector $\hat s$ and a covariance matrix $\Sigma$
 
-$$s \sim \mathcal{N}(\hat s, \Sigma)$$
+#### Derivation 
 
-The quantity $s$ and $\Sigma$ can be computed by first solving a $(m+n)\times (m+n)$ matrix
+From the model Equation 2 we can derive the joint distribution of $s$ and $y$, which is a multivariate Gaussian distribution
 
-$$\boxed{
+$$\begin{bmatrix}
+x_1\\ 
+x_2
+\end{bmatrix}\sim \mathcal{N}\left( 
     \begin{bmatrix}
-    \Psi & H \\ 
-    H^T & 0 
-    \end{bmatrix}\begin{bmatrix}
-    \Lambda^T \\ 
-    M 
-    \end{bmatrix} = \begin{bmatrix}
-    HQ\\ 
-    I 
+        g(z)\\ 
+        Hg(z) + \mu 
+    \end{bmatrix} \Bigg| \begin{bmatrix}
+    Q & QH^T \\ 
+    HQ & HQH^T + R
     \end{bmatrix}
-}$$
+     \right)$$
+Here the covariance matrix $\text{cov}(s, y)$ is obtained via 
 
+$$\text{cov}(s, y) = \mathbb{E}(s, Hs + \mu+\delta) = \mathbb{E}(s-g(z), H(s-g(z))) = \mathbb{E}((s-g(z))(s-g(z))^T) H^T = QH^T$$
 
-$\hat s$ and $\Sigma$ are computed using 
+Recall the formulas for conditional Gaussian distributions:
+
+Given 
+
+$$
+\begin{bmatrix}
+s\\ 
+y
+\end{bmatrix}\sim \mathcal{N}\left( 
+    \begin{bmatrix}
+        \mu_1\\ 
+        \mu_2
+    \end{bmatrix} \Bigg| \begin{bmatrix}
+    \Sigma_{11} & \Sigma_{12} \\ 
+    \Sigma_{21} & \Sigma_{22}
+    \end{bmatrix}
+     \right)
+    $$
+
+We have 
+
+$$x_1 | x_2 \sim \mathcal{N}(\mu_{1|2}, V_{1|2})$$
+
+where 
 
 $$\begin{aligned}
-\hat s &= \Lambda y \\ 
-\Sigma &= Q - M - C^T \Lambda^T
-\end{aligned}$$
+\mu_{1|2} &= \mu_1 + \Sigma_{12}\Sigma_{22}^{-1} (x_2-\mu_2)\\ 
+V_{1|2} &= \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{21}
+\end{aligned}
+$$
+
+Let $x_1 = s$, $x_2 = y$, we have the following formula for Baysian inversion:
+
+$$\begin{aligned}
+\mu_{s|y} &= g(z) + QH^{T}(HQH^T + R)^{-1} (y - Hg(z) - \mu)\\ 
+V_{s|y} &= Q - QH^T(HQH^T + R)^{-1} HQ 
+\end{aligned}\tag{3}$$
+
+
+
+#### Analysis 
+
+Now we consider how to compute Equation 3. In practice, we should avoid direct inverting the matrix $HQH^T + R$ since the cost is cubic in the size of dimensions of the matrix. Instead, the following theorem gives us a convenient way to solve the problem 
+
+!!! info "Theorem"
+    Let $\begin{bmatrix}L \\ x^T\end{bmatrix}$ be the solution to 
+
+    $$\begin{bmatrix}
+    HQH^T + R & H g(z) \\ 
+    g(z)^T H^T & 0 
+    \end{bmatrix}\begin{bmatrix}
+    L \\ 
+    x^T
+    \end{bmatrix} = \begin{bmatrix}
+    HQ \\ 
+    g(z)^T
+    \end{bmatrix}\tag{4}$$
+
+    Then we have 
+
+    $$\begin{aligned}
+    \mu_{s|y} = g(z) + L^T (y-\mu) \\ 
+    V_{s|y} = Q - gx^T - QH^TL
+    \end{aligned}\tag{5}$$
+
+
+The linear system in Equation 5 is symmetric but may not be SPD and therefore we may encounter numerical difficulty when solving the linear system Equation 4. In this case, we can add perturbation $\varepsilon g^T g$ to the zero entry. 
+
+!!! info "Theorem"
+    If $\varepsilon> \frac{1}{4\lambda_{\min}}$, where $\lambda_{\min}$ is the minimum eigenvalue of $Q$, then the linear system in Equation 4 is SPD. 
+
+The above theorem has a nice interpretation: typically we can choosee our prior for the physical quantity $s$ to be a scalar matrix $Q = \sigma_{{s}}^2 I$, where $\sigma_{s}$ is the standard deviation, then $\lambda_{\min} = \sigma_s^2$. This indicates that if we use a very concentrated prior, the linear system can be far away from SPD and requires us to use a large perturbation for numerical stability. Therefore, in the numerical example below, we choose a moderate $\sigma_s$. The alternative approach is to add the perturbation. 
+
 
 
 In ADCME, we provide the implementation [`uq`](@ref)
 
 ```julia
-s, Σ = uq(y, H, R, Q)
+s, Σ = uqlin(y-μ, H, R, gz, Q)
 ```
 
 ## Benchmark 
@@ -306,7 +375,7 @@ title("Absolute Error")
 In this case, we consider a more challenging case, where $K$ is a function of the state variable, i.e., $K(u)$. $K$ is approximated by a neural network, but we need an iterative solver that involves the neural network to solve the problem 
 
 $$\begin{aligned}
-\nabla (K(u) \nabla u(x, y)) &= 1 & \text{ in } \Omega\\ 
+\nabla\cdot (K(u) \nabla u(x, y)) &= 1 & \text{ in } \Omega\\ 
 u(x,y) &= 0  & \text{ on } \partial \Omega
 \end{aligned}$$
 
@@ -328,7 +397,3 @@ The total error is modeled by $\sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2
 | $\sigma_{\text{noise}}=0.01$ | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-1.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-2.png?raw=true) |
 
 We see that in general when $u$ is larger, the uncertainty bound is larger. For small $u$, we can estimate the map $K(u)$ quite accurately using a neural network. 
-
-## Example 4: UQ for Dynamical Problems 
-
-Finally, we consider a highly nonlinear dynamical fluid equation. The numerical scheme for this equation is also nonlinear and implicit, and requires a Newton-raphson solve per time step. Therefore, the MCMC simulation is quite expensive. 
