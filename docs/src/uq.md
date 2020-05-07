@@ -310,9 +310,24 @@ $$\begin{aligned}
 u(x,y) &= 0  & \text{ on } \partial \Omega
 \end{aligned}$$
 
-Here we show the result for using $Q = 10^{-4}I$, $R = 10^{-4}I$. The uncertainty bound is given in terms of two standard deviation. 
+We tested two cases: in the first case, we use the synthetic observation $u_{\text{obs}}\in\mathbb{R}$ without adding any noise, while in the second case, we add 1% Gaussian noise to the observation data
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-errorbar.png?raw=true)
+$$u'_{\text{obs}} = u_{\text{obs}} (1+0.01 z)\quad z\sim \mathcal{N}(0, I_n) $$
+
+The prior for $K(u)$ is $\mathcal{N}(0, 10^{-2})$, where one standard deviation is around 10%~20% of the actual $K(u)$ value.  The measurement prior is given by 
+
+$$\mathcal{N}(0, \sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2)$$
+
+The total error is modeled by $\sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2\approx 10^{-4}$.
+
+
+
+| Description                 | Uncertainty Bound (two standard deviation) | Standard Deviation at Grid Points |
+| --------------------------- | ---- | ---- |
+| $\sigma_{\text{noise}}=0$   | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.0-1.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.0-2.png?raw=true) |
+| $\sigma_{\text{noise}}=0.01$ | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-1.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-2.png?raw=true) |
+
+We see that in general when $u$ is larger, the uncertainty bound is larger. For small $u$, we can estimate the map $K(u)$ quite accurately using a neural network. 
 
 ## Example 4: UQ for Dynamical Problems 
 
