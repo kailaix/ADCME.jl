@@ -19,8 +19,7 @@ x_2
     Q &amp; QH^T \\ 
     HQ &amp; HQH^T + R
     \end{bmatrix}
-     \right)\]</div><p>Here the covariance matrix <span>$\text{cov}(s, y)$</span> is obtained via </p><div>\[\text{cov}(s, y) = \mathbb{E}(s, Hs + \mu+\delta) = \mathbb{E}(s-g(z), H(s-g(z))) = \mathbb{E}((s-g(z))(s-g(z))^T) H^T = QH^T\]</div><p>Recall the formulas for conditional Gaussian distributions:</p><p>Given </p><div>\[
-\begin{bmatrix}
+     \right)\]</div><p>Here the covariance matrix <span>$\text{cov}(s, y)$</span> is obtained via </p><div>\[\text{cov}(s, y) = \mathbb{E}(s, Hs + \mu+\delta) = \mathbb{E}(s-g(z), H(s-g(z))) = \mathbb{E}((s-g(z))(s-g(z))^T) H^T = QH^T\]</div><p>Recall the formulas for conditional Gaussian distributions:</p><p>Given </p><div>\[\begin{bmatrix}
 s\\ 
 y
 \end{bmatrix}\sim \mathcal{N}\left( 
@@ -31,20 +30,10 @@ y
     \Sigma_{11} &amp; \Sigma_{12} \\ 
     \Sigma_{21} &amp; \Sigma_{22}
     \end{bmatrix}
-     \right)
-    $$
-
-We have 
-
-$$x_1 | x_2 \sim \mathcal{N}(\mu_{1|2}, V_{1|2})\]</div><p>where </p><div>\[\begin{aligned}
+     \right)\]</div><p>We have </p><div>\[x_1 | x_2 \sim \mathcal{N}(\mu_{1|2}, V_{1|2})\]</div><p>where </p><div>\[\begin{aligned}
 \mu_{1|2} &amp;= \mu_1 + \Sigma_{12}\Sigma_{22}^{-1} (x_2-\mu_2)\\ 
 V_{1|2} &amp;= \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{21}
-\end{aligned}
-$$
-
-Let $x_1 = s$, $x_2 = y$, we have the following formula for Baysian inversion:
-
-$$\begin{aligned}
+\end{aligned}\]</div><p>Let <span>$x_1 = s$</span>, <span>$x_2 = y$</span>, we have the following formula for Baysian inversion:</p><div>\[\begin{aligned}
 \mu_{s|y} &amp;= g(z) + QH^{T}(HQH^T + R)^{-1} (y - Hg(z) - \mu)\\ 
 V_{s|y} &amp;= Q - QH^T(HQH^T + R)^{-1} HQ 
 \end{aligned}\tag{3}\]</div><h4 id="Analysis-1"><a class="docs-heading-anchor" href="#Analysis-1">Analysis</a><a class="docs-heading-anchor-permalink" href="#Analysis-1" title="Permalink"></a></h4><p>Now we consider how to compute Equation 3. In practice, we should avoid direct inverting the matrix <span>$HQH^T + R$</span> since the cost is cubic in the size of dimensions of the matrix. Instead, the following theorem gives us a convenient way to solve the problem </p><div class="admonition is-info"><header class="admonition-header">Theorem</header><div class="admonition-body"><p>Let <span>$\begin{bmatrix}L \\ x^T\end{bmatrix}$</span> be the solution to </p><div>\[\begin{bmatrix}
@@ -198,8 +187,4 @@ visualize_scalar_on_gauss_points(abs.(run(sess, κnn)-κ), m, n, h)
 title(&quot;Absolute Error&quot;)</code></pre><h2 id="Example-3:-UQ-for-Function-Inverse-Problem-1"><a class="docs-heading-anchor" href="#Example-3:-UQ-for-Function-Inverse-Problem-1">Example 3: UQ for Function Inverse Problem</a><a class="docs-heading-anchor-permalink" href="#Example-3:-UQ-for-Function-Inverse-Problem-1" title="Permalink"></a></h2><p>In this case, we consider a more challenging case, where <span>$K$</span> is a function of the state variable, i.e., <span>$K(u)$</span>. <span>$K$</span> is approximated by a neural network, but we need an iterative solver that involves the neural network to solve the problem </p><div>\[\begin{aligned}
 \nabla\cdot (K(u) \nabla u(x, y)) &amp;= 1 &amp; \text{ in } \Omega\\ 
 u(x,y) &amp;= 0  &amp; \text{ on } \partial \Omega
-\end{aligned}\]</div><p>We tested two cases: in the first case, we use the synthetic observation <span>$u_{\text{obs}}\in\mathbb{R}$</span> without adding any noise, while in the second case, we add 1% Gaussian noise to the observation data</p><div>\[u&#39;_{\text{obs}} = u_{\text{obs}} (1+0.01 z)\quad z\sim \mathcal{N}(0, I_n) $$
-
-The prior for $K(u)$ is $\mathcal{N}(0, 10^{-2})$, where one standard deviation is around 10%~20% of the actual $K(u)$ value.  The measurement prior is given by 
-
-$$\mathcal{N}(0, \sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2)\]</div><p>The total error is modeled by <span>$\sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2\approx 10^{-4}$</span>.</p><table><tr><th style="text-align: right">Description</th><th style="text-align: right">Uncertainty Bound (two standard deviation)</th><th style="text-align: right">Standard Deviation at Grid Points</th></tr><tr><td style="text-align: right"><span>$\sigma_{\text{noise}}=0$</span></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.0-1.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.0-2.png?raw=true" alt/></td></tr><tr><td style="text-align: right"><span>$\sigma_{\text{noise}}=0.01$</span></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-1.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-2.png?raw=true" alt/></td></tr></table><p>We see that in general when <span>$u$</span> is larger, the uncertainty bound is larger. For small <span>$u$</span>, we can estimate the map <span>$K(u)$</span> quite accurately using a neural network. </p></article></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 8 May 2020 03:56">Friday 8 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+\end{aligned}\]</div><p>We tested two cases: in the first case, we use the synthetic observation <span>$u_{\text{obs}}\in\mathbb{R}$</span> without adding any noise, while in the second case, we add 1% Gaussian noise to the observation data</p><div>\[u&#39;_{\text{obs}} = u_{\text{obs}} (1+0.01 z)\quad z\sim \mathcal{N}(0, I_n)\]</div><p>The prior for <span>$K(u)$</span> is <span>$\mathcal{N}(0, 10^{-2})$</span>, where one standard deviation is around 10%~20% of the actual <span>$K(u)$</span> value.  The measurement prior is given by </p><div>\[\mathcal{N}(0, \sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2)\]</div><p>The total error is modeled by <span>$\sigma_{\text{model}}^2 + \sigma_{\text{noise}}^2\approx 10^{-4}$</span>.</p><table><tr><th style="text-align: right">Description</th><th style="text-align: right">Uncertainty Bound (two standard deviation)</th><th style="text-align: right">Standard Deviation at Grid Points</th></tr><tr><td style="text-align: right"><span>$\sigma_{\text{noise}}=0$</span></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.0-1.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.0-2.png?raw=true" alt/></td></tr><tr><td style="text-align: right"><span>$\sigma_{\text{noise}}=0.01$</span></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-1.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/nn2-uq0.01-2.png?raw=true" alt/></td></tr></table><p>We see that in general when <span>$u$</span> is larger, the uncertainty bound is larger. For small <span>$u$</span>, we can estimate the map <span>$K(u)$</span> quite accurately using a neural network. </p></article></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 8 May 2020 04:29">Friday 8 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
