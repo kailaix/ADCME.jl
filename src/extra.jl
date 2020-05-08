@@ -12,7 +12,8 @@ register,
 debug,
 doctor,
 uqlin, 
-uqnlin
+uqnlin,
+clean
 
 """
     xavier_init(size, dtype=Float64)
@@ -33,7 +34,11 @@ function cmake(DIR::String="..")
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
+    if Sys.iswindows()
+        run(setenv(`cmd /c $CMAKE $DIR -G "NMake Makefiles"`, ENV_))
+    else 
+        run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
+    end
 end
 
 function make()
@@ -43,7 +48,11 @@ function make()
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`$MAKE -j`, ENV_))
+    if Sys.iswindows()
+        run(setenv(`cmd /c $CMAKE --build .`, ENV_))
+    else 
+        run(setenv(`$MAKE -j`, ENV_))
+    end
 end
 
 function clean()
@@ -133,6 +142,30 @@ end
         load_op_grad_dict[(oplibpath,opname)] = s
         printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
         return s
+end
+
+"""
+    clean()
+
+Clean up CustomOps directory. 
+"""
+function clean()
+    colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
+    CO = String[]
+    for c in colibs
+        push!(CO, c.second[1])
+    end
+    for c in CO 
+        rm(joinpath("$(@__DIR__)/../deps/CustomOps/"*c, "build"), force=true, recursive=true)
+    end
+    for file in readdir("$(@__DIR__)/../deps/CustomOps/")
+        if isdir(file) && !(file in CO)
+            rm(file, recursive=true, force=true)
+        end
+    end
+    rm("$(@__DIR__)/../deps/CustomOps/formulas.txt", force=true)
+    rm("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt", force=true)
+    rm("$(@__DIR__)/../deps/CustomOps/build", recursive=true, force=true)
 end
 
 function refresh_cmake()
@@ -257,25 +290,30 @@ Compiles all the operators in `formulas.txt`.
 """
 function Base.:precompile(force::Bool=true)
     try
-        run(`which julia`)
+        if Sys.iswindows()
+            run(`cmd /c where.exe julia`)
+        else 
+            run(`which julia`)
+        end
     catch
         printstyled(
 """Julia cannot be found using `which julia`. This will break custom operator.
-To fix the error, add the julia binary path to your PATH environment variable:
-
-export PATH=$(Sys.BINDIR):\$PATH
-
+To fix the error, add the julia binary path to your PATH environment variable.  
 """,
         color=:red)
         error("Waiting for fixing the Julia binary path.")
     end 
 
-    if !(ADCME.LIBDIR in split(ENV["LD_LIBRARY_PATH"], ':'))
-        @warn "$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH; this may break the custom operator utilties.
-You could add the path to LD_LIBRARY_PATH:
+    LD_LIBRARY_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
+    if !haskey(ENV, LD_LIBRARY_PATH) || !(ADCME.LIBDIR in split(ENV[LD_LIBRARY_PATH], ':'))
+        @warn "$(ADCME.LIBDIR) is not in $LD_LIBRARY_PATH; this may break the custom operator utilties.
+You could add the path to $LD_LIBRARY_PATH:
 
+- Linux and MACOSX
 export LD_LIBRARY_PATH = $(ADCME.LIBDIR):\$LD_LIBRARY_PATH
 
+- Windows 
+add $(ADCME.LIBDIR) to Path environment variable
 "
     end
     PWD = pwd()

@@ -35,9 +35,10 @@ end
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
+using CMake
 
 
-ENVDIR = "$(Conda.ROOTENV)/envs/ADCME"
+ENVDIR = abspath("$(Conda.ROOTENV)/envs/ADCME")
 
 @info """Your Julia version is $VERSION, ADCME version is $(Pkg.installed()["ADCME"]), ADCME env: $ENVDIR"""
 
@@ -54,10 +55,12 @@ end
 
 BINDIR = Sys.iswindows() ? abspath("$ENVDIR/Scripts") : abspath("$ENVDIR/bin")  
 
-ZIP = joinpath(BINDIR, "zip")
-UNZIP = joinpath(BINDIR, "unzip")
 GIT = "LibGit2"
 PYTHON = joinpath(BINDIR, "python")
+
+if Sys.iswindows()
+    PYTHON = abspath(joinpath(ENVDIR, "python.exe"))
+end
 @info " --------------- Check Python Version  --------------- "
 
 !haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
@@ -73,7 +76,11 @@ Conda Python version: $PYTHON
 tf = pyimport("tensorflow")
 core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
 lib = readdir(core_path)
-TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
+if Sys.iswindows()
+    global TF_LIB_FILE = abspath(joinpath(core_path, "python/_pywrap_tensorflow_internal.lib"))
+else 
+    global TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
+end
 TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
 TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
@@ -90,8 +97,15 @@ if !isfile("$LIBDIR/eigen.zip")
 end
 
 if !isdir("$LIBDIR/eigen3")    
-    run(`$UNZIP -qq $LIBDIR/eigen.zip`)
-    mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
+    UNZIP =  joinpath(BINDIR, "unzip")
+    if Sys.iswindows()
+        if !isfile("$LIBDIR/unzip.exe")
+            download("http://stahlworks.com/dev/unzip.exe", joinpath(LIBDIR, "unzip.exe"))
+        end
+        UNZIP =  joinpath(LIBDIR, "unzip.exe")
+    end 
+    run(`$UNZIP -qq $LIBDIR/eigen.zip -d $LIBDIR`)
+    mv("$LIBDIR/eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
 end
 
 
@@ -128,7 +142,7 @@ Make sure `nvcc` is available.""")
     end
 
     if length(libpath)>=1
-        LIBCUDA = joinpath(pkg_dir, libpath[1], "lib")
+        LIBCUDA = abspath(joinpath(pkg_dir, libpath[1], "lib"))
     end
     
 
@@ -140,7 +154,7 @@ Make sure `nvcc` is available.""")
     end
 
     if length(libpath)>=1
-        LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
+        LIBCUDA = LIBCUDA*":"*abspath(joinpath(pkg_dir, libpath[1], "lib"))
         @info " --------------- CUDA include headers  --------------- "
         cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
         cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
@@ -159,11 +173,14 @@ s = ""
 t = []
 function adding(k, v)
     global s 
+    if Sys.iswindows()
+        v = replace(v, "\\"=>"\\\\")
+    end
     s *= "$k = \"$v\"\n"
     push!(t, "$k")
 end
 adding("BINDIR", BINDIR)
-adding("LIBDIR", joinpath(ENVDIR, "lib"))
+adding("LIBDIR", abspath(joinpath(ENVDIR, "lib")))
 adding("TF_INC", TF_INC)
 adding("TF_ABI", TF_ABI)
 adding("EIGEN_INC", LIBDIR)
@@ -177,7 +194,7 @@ else
     adding("CC", joinpath(BINDIR, ""))
     adding("CXX", joinpath(BINDIR, ""))
 end
-adding("CMAKE", joinpath(BINDIR, "cmake"))
+adding("CMAKE", cmake)
 adding("MAKE", joinpath(BINDIR, "make"))
 adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
