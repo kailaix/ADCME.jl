@@ -39,7 +39,7 @@ using Conda
 
 ENVDIR = "$(Conda.ROOTENV)/envs/ADCME"
 
-VER = "ADCME" in Pkg.installed() ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
+VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME env: $ENVDIR"""
 
 @info " --------------- Install Tensorflow Dependencies  --------------- "
