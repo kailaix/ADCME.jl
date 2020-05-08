@@ -11,7 +11,7 @@ requirements:
     - tensorflow-gpu 1.15.* 
     - cudatoolkit 10.0.130 0
     - cudnn 7.6.4 cuda10.0_0
-    - cupti 10.0.130 0          
+    - cupti 10.0.130 0     [not win]
 
 about:
     description: 'ADCME-GPU provides GPU dependencies for GPU acceleration: cudatoolkit, cudnn and cupti'

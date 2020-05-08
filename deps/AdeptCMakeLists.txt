@@ -37,6 +37,4 @@ add_definitions(-DHAVE_BLAS)
 
 set_property(TARGET adept PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(adept openblas)
-set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR}/Adept-2/adept/.libs)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(SaturationNn PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR})

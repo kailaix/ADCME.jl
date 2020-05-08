@@ -9,6 +9,12 @@ version = "0.5.0"
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[BinDeps]]
+deps = ["Libdl", "Pkg", "SHA", "URIParser", "Unicode"]
+git-tree-sha1 = "46cf2c1668ad07aba5a9d331bdeea994a1f13856"
+uuid = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
+version = "1.0.1"
+
 [[Blosc]]
 deps = ["Blosc_jll"]
 git-tree-sha1 = "84cf7d0f8fd46ca6f1b3e0305b4b4a37afe50fd6"
@@ -26,6 +32,12 @@ deps = ["Compat", "Test"]
 git-tree-sha1 = "5d55b9486590fdda5905c275bb21ce1f0754020f"
 uuid = "e1450e63-4bb3-523b-b2a4-4ffa8c0fd77d"
 version = "1.0.0"
+
+[[CMake]]
+deps = ["BinDeps"]
+git-tree-sha1 = "50a8b41d2c562fccd9ab841085fc7d1e2706da82"
+uuid = "631607c0-34d2-5d66-819e-eb0f9aa2061a"
+version = "1.2.0"
 
 [[CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -104,6 +116,7 @@ uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.0"
 
 [[LibGit2]]
+deps = ["Printf"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
 [[Libdl]]
@@ -155,12 +168,12 @@ version = "0.5.3+3"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "f8f5d2d4b4b07342e5811d2b6428e45524e241df"
+git-tree-sha1 = "72c3451932513427caffbd8bab15643ad693804b"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.0.2"
+version = "1.0.3"
 
 [[Pkg]]
-deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Test", "UUIDs"]
+deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [[Printf]]
@@ -223,6 +236,12 @@ deps = ["Random", "Test"]
 git-tree-sha1 = "7c53c35547de1c5b9d46a4797cf6d8253807108c"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.9.5"
+
+[[URIParser]]
+deps = ["Unicode"]
+git-tree-sha1 = "53a9f49546b8d2dd2e688d216421d050c9a31d0d"
+uuid = "30578b45-9adc-5946-b283-645ec420af67"
+version = "0.4.1"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]

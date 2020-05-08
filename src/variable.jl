@@ -620,7 +620,7 @@ Uses checkpointing scheme for gradients.
 - 'collection': look for a tensorflow collection named 'checkpoints', which holds the tensors to checkpoint
 """
 function gradient_checkpointing(type::String="speed")
-    pyfile = "$(Conda.LIBDIR)/Libraries/memory_saving_gradients.py"
+    pyfile = "$(ADCME.LIBDIR)/memory_saving_gradients.py"
     if !isfile(pyfile)
         @info "Downloading memory_saving_gradients.py..."
         download("https://raw.githubusercontent.com/cybertronai/gradient-checkpointing/master/memory_saving_gradients.py",

@@ -12,7 +12,8 @@ register,
 debug,
 doctor,
 uqlin, 
-uqnlin
+uqnlin,
+clean
 
 """
     xavier_init(size, dtype=Float64)
@@ -33,7 +34,11 @@ function cmake(DIR::String="..")
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
+    if Sys.iswindows()
+        run(setenv(`cmd /c $CMAKE $DIR -G "NMake Makefiles"`, ENV_))
+    else 
+        run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
+    end
 end
 
 function make()
@@ -43,11 +48,11 @@ function make()
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`$MAKE -j`, ENV_))
-end
-
-function clean()
-    run(`$MAKE clean`)
+    if Sys.iswindows()
+        run(setenv(`cmd /c $CMAKE --build .`, ENV_))
+    else 
+        run(setenv(`$MAKE -j`, ENV_))
+    end
 end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
@@ -133,6 +138,30 @@ end
         load_op_grad_dict[(oplibpath,opname)] = s
         printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
         return s
+end
+
+"""
+    clean()
+
+Clean up CustomOps directory. 
+"""
+function clean()
+    colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
+    CO = String[]
+    for c in colibs
+        push!(CO, c.second[1])
+    end
+    for c in CO 
+        rm(joinpath("$(@__DIR__)/../deps/CustomOps/"*c, "build"), force=true, recursive=true)
+    end
+    for file in readdir("$(@__DIR__)/../deps/CustomOps/")
+        if isdir(file) && !(file in CO)
+            rm(file, recursive=true, force=true)
+        end
+    end
+    rm("$(@__DIR__)/../deps/CustomOps/formulas.txt", force=true)
+    rm("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt", force=true)
+    rm("$(@__DIR__)/../deps/CustomOps/build", recursive=true, force=true)
 end
 
 function refresh_cmake()
@@ -257,25 +286,30 @@ Compiles all the operators in `formulas.txt`.
 """
 function Base.:precompile(force::Bool=true)
     try
-        run(`which julia`)
+        if Sys.iswindows()
+            run(`cmd /c where.exe julia`)
+        else 
+            run(`which julia`)
+        end
     catch
         printstyled(
 """Julia cannot be found using `which julia`. This will break custom operator.
-To fix the error, add the julia binary path to your PATH environment variable:
-
-export PATH=$(Sys.BINDIR):\$PATH
-
+To fix the error, add the julia binary path to your PATH environment variable.  
 """,
         color=:red)
         error("Waiting for fixing the Julia binary path.")
     end 
 
-    if !(ADCME.LIBDIR in split(ENV["LD_LIBRARY_PATH"], ':'))
-        @warn "$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH; this may break the custom operator utilties.
-You could add the path to LD_LIBRARY_PATH:
+    LD_LIBRARY_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
+    if !haskey(ENV, LD_LIBRARY_PATH) || !(ADCME.LIBDIR in split(ENV[LD_LIBRARY_PATH], ':'))
+        @warn "$(ADCME.LIBDIR) is not in $LD_LIBRARY_PATH; this may break the custom operator utilties.
+You could add the path to $LD_LIBRARY_PATH:
 
+- Linux and MACOSX
 export LD_LIBRARY_PATH = $(ADCME.LIBDIR):\$LD_LIBRARY_PATH
 
+- Windows 
+add $(ADCME.LIBDIR) to Path environment variable
 "
     end
     PWD = pwd()
@@ -297,6 +331,7 @@ export LD_LIBRARY_PATH = $(ADCME.LIBDIR):\$LD_LIBRARY_PATH
     ADCME.make()
     cd(PWD)
 end
+
 
 """
     customop(simple::Bool=false)
@@ -451,10 +486,8 @@ function install_adept(force::Bool=false)
         LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     end
     cd("Adept-2/adept")
-    if !("openblas" in Conda._installed_packages())
-        Conda.add("openblas", channel="anaconda")
-
-        required_file = Sys.isapple() ? ".dylib" : (Sys.islinux() ? ".so" : ".dll")
+    if !Sys.iswindows()
+        required_file = Sys.isapple() ? ".dylib" : ".so"
         required_file = joinpath(ADCME.LIBDIR, "libopenblas")*required_file
         if !isfile(required_file)
             files = readdir(ADCME.LIBDIR)
@@ -487,11 +520,12 @@ function install_adept(force::Bool=false)
 ∘ Add the following lines to CMakeLists.txt 
 
 include_directories(\${LIBDIR}/Adept-2/include)
-link_directories(\${LIBDIR}/Adept-2/adept/.libs)
+find_library(ADEPT_LIB_FILE adept HINTS \${LIBDIR})
+message("ADEPT_LIB_FILE=\${ADEPT_LIB_FILE}")
 
-∘ Add `adept` to `target_link_libraries`
+∘ Add `\${ADEPT_LIB_FILE}` to `target_link_libraries`
 
-∘ Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
+∘ (Optional) Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
 """, color=:green)
     catch
         printstyled("Compliation failed\n", color=:red)
@@ -595,8 +629,8 @@ function doctor()
     else
         no("TensorFlow version", 
 """Your TensorFlow version is $(tf.__version__). ADCME is only tested against 1.15.0.""",
-"""Set ENV["FORCE_INSTALL_TF"] = 1 and rebuild ADCME
-julia> ENV["FORCE_INSTALL_TF"] = 1
+"""Set ENV["FORCE_REINSTALL_ADCME"] = 1 and rebuild ADCME
+julia> ENV["FORCE_REINSTALL_ADCME"] = 1
 julia> ]
 pkg> build ADCME""")
     end 
@@ -607,24 +641,24 @@ pkg> build ADCME""")
     else
         no("TensorFlow-Probability version", 
 """Your TensorFlow-Probability version is $(tfp.__version__). ADCME is only tested against 0.8.0.""",
-"""Set ENV["FORCE_INSTALL_TF"] = 1 and rebuild ADCME
-julia> ENV["FORCE_INSTALL_TF"] = 1
+"""Set ENV["FORCE_REINSTALL_ADCME"] = 1 and rebuild ADCME
+julia> ENV["FORCE_REINSTALL_ADCME"] = 1
 julia> ]
 pkg> build ADCME""")
     end 
 
 
 
-    c = splitdir(PyCall.python)[1]==Conda.PYTHONDIR
+    c = (PyCall.python==ADCME.PYTHON)
     if c 
         yes("Python executable file")
     else
         no("Python executable file", 
-"""PyCall Python path $(splitdir(PyCall.python)) and Conda Python path $(Conda.PYTHONDIR) does not match.""",
-"""Rebuild PyCall with Conda Python:
+"""PyCall Python path $(PyCall.python) does not match the ADCME-compatible Python $(ADCME.PYTHON)""",
+"""Rebuild PyCall with a compatible Python version:
 
 using Pkg
-ENV["PYTHON"] = ""
+ENV["PYTHON"] = "$(ADCME.PYTHON)"
 Pkg.build("PyCall")
 """)
     end 
