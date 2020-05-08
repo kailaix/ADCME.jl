@@ -35,4 +35,4 @@ jobs:
         with:
           version: 1.4
       - name: Build-Windows
-        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME;'
+        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate();  Pkg.build(\"ADCME\"); using ADCME'
