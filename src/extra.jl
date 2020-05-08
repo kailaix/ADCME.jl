@@ -613,12 +613,12 @@ pkg> build ADCME""")
 
 
 
-    c = splitdir(PyCall.python)[1]==ADCME.PYTHON
+    c = splitdir(PyCall.python)==ADCME.PYTHON
     if c 
         yes("Python executable file")
     else
         no("Python executable file", 
-"""PyCall Python path $(splitdir(PyCall.python)) does not match the ADCME-compatible Python""",
+"""PyCall Python path $(PyCall.python) does not match the ADCME-compatible Python $(ADCME.PYTHON)""",
 """Rebuild PyCall with a compatible Python version:
 
 using Pkg

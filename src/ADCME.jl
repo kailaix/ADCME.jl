@@ -12,7 +12,6 @@ module ADCME
     using PyCall
     using Random
     using LinearAlgebra
-    import Conda
     using SparseArrays
     using LibGit2
     using Libdl
