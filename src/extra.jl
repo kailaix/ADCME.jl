@@ -451,10 +451,8 @@ function install_adept(force::Bool=false)
         LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     end
     cd("Adept-2/adept")
-    if !("openblas" in Conda._installed_packages())
-        Conda.add("openblas", channel="anaconda")
-
-        required_file = Sys.isapple() ? ".dylib" : (Sys.islinux() ? ".so" : ".dll")
+    if !Sys.iswindows()
+        required_file = Sys.isapple() ? ".dylib" : ".so"
         required_file = joinpath(ADCME.LIBDIR, "libopenblas")*required_file
         if !isfile(required_file)
             files = readdir(ADCME.LIBDIR)
@@ -595,8 +593,8 @@ function doctor()
     else
         no("TensorFlow version", 
 """Your TensorFlow version is $(tf.__version__). ADCME is only tested against 1.15.0.""",
-"""Set ENV["FORCE_INSTALL_TF"] = 1 and rebuild ADCME
-julia> ENV["FORCE_INSTALL_TF"] = 1
+"""Set ENV["FORCE_REINSTALL_ADCME"] = 1 and rebuild ADCME
+julia> ENV["FORCE_REINSTALL_ADCME"] = 1
 julia> ]
 pkg> build ADCME""")
     end 
@@ -607,24 +605,24 @@ pkg> build ADCME""")
     else
         no("TensorFlow-Probability version", 
 """Your TensorFlow-Probability version is $(tfp.__version__). ADCME is only tested against 0.8.0.""",
-"""Set ENV["FORCE_INSTALL_TF"] = 1 and rebuild ADCME
-julia> ENV["FORCE_INSTALL_TF"] = 1
+"""Set ENV["FORCE_REINSTALL_ADCME"] = 1 and rebuild ADCME
+julia> ENV["FORCE_REINSTALL_ADCME"] = 1
 julia> ]
 pkg> build ADCME""")
     end 
 
 
 
-    c = splitdir(PyCall.python)[1]==Conda.PYTHONDIR
+    c = splitdir(PyCall.python)[1]==ADCME.PYTHON
     if c 
         yes("Python executable file")
     else
         no("Python executable file", 
-"""PyCall Python path $(splitdir(PyCall.python)) and Conda Python path $(Conda.PYTHONDIR) does not match.""",
-"""Rebuild PyCall with Conda Python:
+"""PyCall Python path $(splitdir(PyCall.python)) does not match the ADCME-compatible Python""",
+"""Rebuild PyCall with a compatible Python version:
 
 using Pkg
-ENV["PYTHON"] = ""
+ENV["PYTHON"] = "$(ADCME.PYTHON)"
 Pkg.build("PyCall")
 """)
     end 
