@@ -35,23 +35,33 @@ end
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
+using CMake
 
-@info """Your Julia version is $VERSION, ADCME version is $(Pkg.installed()["ADCME"])"""
 
+ENVDIR = abspath("$(Conda.ROOTENV)/envs/ADCME")
+
+VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
+@info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME env: $ENVDIR"""
 
 @info " --------------- Install Tensorflow Dependencies  --------------- "
-if haskey(ENV, "FORCE_INSTALL_TF") && ENV["FORCE_INSTALL_TF"]=="1" && "adcme" in Conda._installed_packages()
-    Conda.rm("adcme")
+
+if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages(:ADCME)
+    @info " --------------- Remove Existing ADCME Environment  --------------- "
+    rm(ENVDIR, force=true, recursive = true)
 end
 
-if !("adcme" in Conda._installed_packages())
-    Conda.add("adcme", channel="kailaix")
+if !("adcme" in Conda._installed_packages(:ADCME))
+    Conda.add("adcme", :ADCME, channel="kailaix")
 end
 
-ZIP = joinpath(Conda.BINDIR, "zip")
-UNZIP = joinpath(Conda.BINDIR, "unzip")
+BINDIR = Sys.iswindows() ? abspath("$ENVDIR/Scripts") : abspath("$ENVDIR/bin")  
+
 GIT = "LibGit2"
-PYTHON = joinpath(Conda.BINDIR, "python")
+PYTHON = joinpath(BINDIR, "python")
+
+if Sys.iswindows()
+    PYTHON = abspath(joinpath(ENVDIR, "python.exe"))
+end
 @info " --------------- Check Python Version  --------------- "
 
 !haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
@@ -67,12 +77,16 @@ Conda Python version: $PYTHON
 tf = pyimport("tensorflow")
 core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
 lib = readdir(core_path)
-TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
+if Sys.iswindows()
+    global TF_LIB_FILE = abspath(joinpath(core_path, "python/_pywrap_tensorflow_internal.lib"))
+else 
+    global TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework", lib))[end]])
+end
 TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
 TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
 @info " --------------- Preparing Custom Operator Environment --------------- "
-LIBDIR = "$(Conda.LIBDIR)/Libraries"
+LIBDIR = abspath("$ENVDIR/lib/Libraries")
 
 if !isdir(LIBDIR)
     @info "Downloading dependencies to $LIBDIR..."
@@ -84,8 +98,15 @@ if !isfile("$LIBDIR/eigen.zip")
 end
 
 if !isdir("$LIBDIR/eigen3")    
-    run(`$UNZIP -qq $LIBDIR/eigen.zip`)
-    mv("eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
+    UNZIP =  joinpath(BINDIR, "unzip")
+    if Sys.iswindows()
+        if !isfile("$LIBDIR/unzip.exe")
+            download("http://stahlworks.com/dev/unzip.exe", joinpath(LIBDIR, "unzip.exe"))
+        end
+        UNZIP =  joinpath(LIBDIR, "unzip.exe")
+    end 
+    run(`$UNZIP -qq $LIBDIR/eigen.zip -d $LIBDIR`)
+    mv("$LIBDIR/eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
 end
 
 
@@ -108,11 +129,11 @@ Make sure `nvcc` is available.""")
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
 
-    if !("adcme-gpu" in Conda._installed_packages())
-        Conda.add("adcme-gpu", channel="kailaix")
+    if !("adcme-gpu" in Conda._installed_packages(:ADCME))
+        Conda.add("adcme-gpu", :ADCME, channel="kailaix")
     end
     
-    pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")
+    pkg_dir = joinpath(ENVDIR, "pkgs/")
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
@@ -122,7 +143,7 @@ Make sure `nvcc` is available.""")
     end
 
     if length(libpath)>=1
-        LIBCUDA = joinpath(pkg_dir, libpath[1], "lib")
+        LIBCUDA = abspath(joinpath(pkg_dir, libpath[1], "lib"))
     end
     
 
@@ -134,7 +155,7 @@ Make sure `nvcc` is available.""")
     end
 
     if length(libpath)>=1
-        LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
+        LIBCUDA = LIBCUDA*":"*abspath(joinpath(pkg_dir, libpath[1], "lib"))
         @info " --------------- CUDA include headers  --------------- "
         cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
         cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
@@ -153,26 +174,29 @@ s = ""
 t = []
 function adding(k, v)
     global s 
+    if Sys.iswindows()
+        v = replace(v, "\\"=>"\\\\")
+    end
     s *= "$k = \"$v\"\n"
     push!(t, "$k")
 end
-adding("BINDIR", Conda.BINDIR)
-adding("LIBDIR", Conda.LIBDIR)
+adding("BINDIR", BINDIR)
+adding("LIBDIR", abspath(joinpath(ENVDIR, "lib")))
 adding("TF_INC", TF_INC)
 adding("TF_ABI", TF_ABI)
-adding("EIGEN_INC", joinpath(Conda.LIBDIR,"Libraries"))
+adding("EIGEN_INC", LIBDIR)
 if Sys.isapple()
-    adding("CC", joinpath(Conda.BINDIR, "clang"))
-    adding("CXX", joinpath(Conda.BINDIR, "clang++"))
+    adding("CC", joinpath(BINDIR, "clang"))
+    adding("CXX", joinpath(BINDIR, "clang++"))
 elseif Sys.islinux()
-    adding("CC", joinpath(Conda.BINDIR, "x86_64-conda_cos6-linux-gnu-gcc"))
-    adding("CXX", joinpath(Conda.BINDIR, "x86_64-conda_cos6-linux-gnu-g++"))
+    adding("CC", joinpath(BINDIR, "x86_64-conda_cos6-linux-gnu-gcc"))
+    adding("CXX", joinpath(BINDIR, "x86_64-conda_cos6-linux-gnu-g++"))
 else
-    adding("CC", joinpath(Conda.BINDIR, ""))
-    adding("CXX", joinpath(Conda.BINDIR, ""))
+    adding("CC", joinpath(BINDIR, ""))
+    adding("CXX", joinpath(BINDIR, ""))
 end
-adding("CMAKE", joinpath(Conda.BINDIR, "cmake"))
-adding("MAKE", joinpath(Conda.BINDIR, "make"))
+adding("CMAKE", cmake)
+adding("MAKE", joinpath(BINDIR, "make"))
 adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
 adding("TF_LIB_FILE", TF_LIB_FILE)

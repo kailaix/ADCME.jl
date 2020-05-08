@@ -9,7 +9,7 @@ using Test
 using Random
 
 doctor()
-
+clean()
 sess = Session()
 
 include("layers.jl")

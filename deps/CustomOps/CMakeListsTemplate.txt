@@ -16,10 +16,13 @@ list(GET JL_OUT 9 GIT)
 list(GET JL_OUT 10 PYTHON)
 list(GET JL_OUT 11 TF_LIB_FILE)
 
-message("Python path=${PYTHON}")
-message("EIGEN_INC=${EIGEN_INC}")
+
+message("BINDIR=${BINDIR}")
+message("LIBDIR=${LIBDIR}")
 message("TF_INC=${TF_INC}")
 message("TF_ABI=${TF_ABI}")
+message("EIGEN_INC=${EIGEN_INC}")
+message("Python path=${PYTHON}")
 message("TF_LIB_FILE=${TF_LIB_FILE}")
 
 
@@ -35,9 +38,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 include_directories(${TF_INC} ${EIGEN_INC})
 
 include_directories(${LIBDIR}/Adept-2/include)
-IF(EXISTS ${LIBDIR}/Adept-2/adept/.libs)
-  link_directories(${LIBDIR}/Adept-2/adept/.libs)
-ENDIF()
+find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
+message("ADEPT_LIB_FILE=${ADEPT_LIB_FILE}")
 
 set(LIBDIR_NAME )
 
