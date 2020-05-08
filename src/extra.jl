@@ -55,10 +55,6 @@ function make()
     end
 end
 
-function clean()
-    run(`$MAKE clean`)
-end
-
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
