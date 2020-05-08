@@ -270,7 +270,7 @@ export PATH=$(Sys.BINDIR):\$PATH
         error("Waiting for fixing the Julia binary path.")
     end 
 
-    if !(ADCME.LIBDIR in split(ENV["LD_LIBRARY_PATH"], ':'))
+    if !haskey(ENV, "LD_LIBRARY_PATH") || !(ADCME.LIBDIR in split(ENV["LD_LIBRARY_PATH"], ':'))
         @warn "$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH; this may break the custom operator utilties.
 You could add the path to LD_LIBRARY_PATH:
 
