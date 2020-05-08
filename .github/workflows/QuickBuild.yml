@@ -17,16 +17,16 @@ jobs:
         with:
           version: 1.4
       - name: Build-Linux
-        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME'
+        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME; install_adept(); ADCME.precompile()'
   MaxOX:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@latest
         with:
-          version: 1.4
+          version: 1.3
       - name: Build-Macos
-        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME'
+        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME; install_adept(); ADCME.precompile()'
   Windows:
     runs-on: windows-latest
     steps:
@@ -35,4 +35,4 @@ jobs:
         with:
           version: 1.4
       - name: Build-Windows
-        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME'
+        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME; install_adept(); ADCME.precompile()'
