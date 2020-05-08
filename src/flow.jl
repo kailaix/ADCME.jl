@@ -695,7 +695,6 @@ function Base.:rand(nf::NormalizingFlowModel, num_samples::Int64)
 end
 
 #------------------------------------------------------------------------------------------
-(o::FlowOp)(x::Union{PyObject, Array{<:Real,2}}) = forward(o, x)
 (o::NormalizingFlowModel)(x::Union{PyObject, Array{<:Real,2}}) = forward(o, x)
 
 
