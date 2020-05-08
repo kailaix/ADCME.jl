@@ -40,7 +40,8 @@ using CMake
 
 ENVDIR = abspath("$(Conda.ROOTENV)/envs/ADCME")
 
-@info """Your Julia version is $VERSION, ADCME version is $(Pkg.installed()["ADCME"]), ADCME env: $ENVDIR"""
+VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
+@info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME env: $ENVDIR"""
 
 @info " --------------- Install Tensorflow Dependencies  --------------- "
 
