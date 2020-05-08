@@ -491,7 +491,7 @@ message("ADEPT_LIB_FILE=\${ADEPT_LIB_FILE}")
 
 ∘ Add `\${ADEPT_LIB_FILE}` to `target_link_libraries`
 
-∘ Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
+∘ (Optional) Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
 """, color=:green)
     catch
         printstyled("Compliation failed\n", color=:red)
