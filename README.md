@@ -43,11 +43,11 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 
 ⚠️Tested Configuration
 
-|         | Julia | GPU | Custom Operator |
-|---------|-------|-----|-----------------|
-| Linux   | ≥1.3  | ✔   | ✔               |
-| MacOS   | 1.3   | 🗙   | ✔               |
-| Windows | ≥1.3  | 🗙   | 🗙               |
+|         |  Julia 1.3 | Julia 1.4 | GPU | Custom Operator |
+|---------| ----- |-------|-----|-----------------|
+| Linux   |✔ | ✔  | ✔   | ✔               |
+| MacOS   |✔ |  🗙  | 🗙   | ✔               |
+| Windows | ✔ | ✔  | 🗙   | 🗙               |
 
 
 2. Install `ADCME`
