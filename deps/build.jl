@@ -44,6 +44,7 @@ ENVDIR = "$(Conda.ROOTENV)/envs/ADCME"
 @info " --------------- Install Tensorflow Dependencies  --------------- "
 
 if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages(:ADCME)
+    @info " --------------- Remove Existing ADCME Environment  --------------- "
     rm(ENVDIR, force=true, recursive = true)
 end
 
