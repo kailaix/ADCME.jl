@@ -298,6 +298,7 @@ export LD_LIBRARY_PATH = $(ADCME.LIBDIR):\$LD_LIBRARY_PATH
     cd(PWD)
 end
 
+
 """
     customop(simple::Bool=false)
 
@@ -485,9 +486,10 @@ function install_adept(force::Bool=false)
 ∘ Add the following lines to CMakeLists.txt 
 
 include_directories(\${LIBDIR}/Adept-2/include)
-link_directories(\${LIBDIR}/Adept-2/adept/.libs)
+find_library(ADEPT_LIB_FILE adept HINTS \${LIBDIR})
+message("ADEPT_LIB_FILE=\${ADEPT_LIB_FILE}")
 
-∘ Add `adept` to `target_link_libraries`
+∘ Add `\${ADEPT_LIB_FILE}` to `target_link_libraries`
 
 ∘ Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
 """, color=:green)
