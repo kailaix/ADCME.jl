@@ -6,7 +6,6 @@ build:
     number: '0'
     string: py37cpu
     
-
 requirements:
   run:
     - m2-gcc-libs 5.3.0 4                [win]
