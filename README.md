@@ -39,9 +39,17 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 
 # Installation
 
-⚠️ Currently, there is an [incompatible issue](https://github.com/JuliaPy/PyCall.jl/issues/762) with Julia 1.4 on some MacOS systems and tensorflow 1.x. We suggest you use [Julia 1.3](https://julialang.org/downloads/oldreleases/#v131_dec_30_2019) before the problem is fixed. 
+1. Install [Julia](https://julialang.org/). The following configuration has been tested:
 
-1. Install [Julia](https://julialang.org/)
+⚠️Tested Configuration
+
+|         | Julia | GPU | Custom Operator |
+|---------|-------|-----|-----------------|
+| Linux   | ≥1.3  | ✔   | ✔               |
+| MacOS   | 1.3   | 🗙   | ✔               |
+| Windows | ≥1.3  | 🗙   | 🗙               |
+
+
 2. Install `ADCME`
 ```
 using Pkg
@@ -69,6 +77,9 @@ Pkg.build("ADCME")
 ```
 
 For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
+
+
+
 
 # Tutorial
 
