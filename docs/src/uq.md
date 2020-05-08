@@ -70,8 +70,7 @@ Recall the formulas for conditional Gaussian distributions:
 
 Given 
 
-$$
-\begin{bmatrix}
+$$\begin{bmatrix}
 s\\ 
 y
 \end{bmatrix}\sim \mathcal{N}\left( 
@@ -82,8 +81,7 @@ y
     \Sigma_{11} & \Sigma_{12} \\ 
     \Sigma_{21} & \Sigma_{22}
     \end{bmatrix}
-     \right)
-    $$
+     \right)$$
 
 We have 
 
@@ -94,8 +92,7 @@ where
 $$\begin{aligned}
 \mu_{1|2} &= \mu_1 + \Sigma_{12}\Sigma_{22}^{-1} (x_2-\mu_2)\\ 
 V_{1|2} &= \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{21}
-\end{aligned}
-$$
+\end{aligned}$$
 
 Let $x_1 = s$, $x_2 = y$, we have the following formula for Baysian inversion:
 
@@ -381,7 +378,7 @@ u(x,y) &= 0  & \text{ on } \partial \Omega
 
 We tested two cases: in the first case, we use the synthetic observation $u_{\text{obs}}\in\mathbb{R}$ without adding any noise, while in the second case, we add 1% Gaussian noise to the observation data
 
-$$u'_{\text{obs}} = u_{\text{obs}} (1+0.01 z)\quad z\sim \mathcal{N}(0, I_n) $$
+$$u'_{\text{obs}} = u_{\text{obs}} (1+0.01 z)\quad z\sim \mathcal{N}(0, I_n)$$
 
 The prior for $K(u)$ is $\mathcal{N}(0, 10^{-2})$, where one standard deviation is around 10%~20% of the actual $K(u)$ value.  The measurement prior is given by 
 

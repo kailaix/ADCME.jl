@@ -15,18 +15,22 @@ build:
 
 requirements:
   run:
-    - cmake 
-    - make 
-    - zip 
-    - unzip 
-    - hdf5                               [osx]
-    - python 3.7.5 h359304d_0            [osx]
-    - python 3.7.5 h8c8aaf0_0            [win]
-    - python 3.7.5 h0371630_0            [linux]
+    - m2-gcc-libs 5.3.0 4                [win]
+    - m2-make 4.1 5                      [win]
+    - m2-unzip 6.0 3                     [win]
+    - m2-zip 3.0 2                       [win]
+    - vc 14.1 h0510ff6_4                 [win]
+    - vs2015_runtime 14.16.27012 hf0eaf9b_0 [win]
+    - cmake                               
+    - make                               [not win]
+    - zip                                [not win]
+    - unzip                              [not win]
+    - hdf5                               [not linux]
     - tensorflow 1.15.* *py37*
     - tensorflow-probability 0.8
     - matplotlib 
-    - openblas
+    - openblas                           [not win]
+    - blas                               [win]
     - _libgcc_mutex 0.1 main             [linux]
     - gcc_linux-64 5.4.0 h98af8de_24     [linux]
     - gcc_impl_linux-64 5.4.0 habb00fd_3 [linux]

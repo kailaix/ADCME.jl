@@ -32,11 +32,14 @@ end
 
 
 
-@info " ########### Install Tensorflow Dependencies  ########### "
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
 
+@info """Your Julia version is $VERSION, ADCME version is $(Pkg.installed()["ADCME"])"""
+
+
+@info " --------------- Install Tensorflow Dependencies  --------------- "
 if haskey(ENV, "FORCE_INSTALL_TF") && ENV["FORCE_INSTALL_TF"]=="1" && "adcme" in Conda._installed_packages()
     Conda.rm("adcme")
 end
@@ -49,7 +52,7 @@ ZIP = joinpath(Conda.BINDIR, "zip")
 UNZIP = joinpath(Conda.BINDIR, "unzip")
 GIT = "LibGit2"
 PYTHON = joinpath(Conda.BINDIR, "python")
-@info " ########### Check Python Version  ########### "
+@info " --------------- Check Python Version  --------------- "
 
 !haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
 ENV["PYTHON"]=PYTHON
@@ -60,7 +63,7 @@ PyCall Python version: $(PyCall.python)
 Conda Python version: $PYTHON
 """
 
-@info " ########### Preparing environment for custom operators ########### "
+@info " --------------- Looking for TensorFlow Dynamic Libraries --------------- "
 tf = pyimport("tensorflow")
 core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
 lib = readdir(core_path)
@@ -68,7 +71,7 @@ TF_LIB_FILE = joinpath(core_path,lib[findall(occursin.("libtensorflow_framework"
 TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
 TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
-@info " ########### Preparing Environment for Custom Operators ########### "
+@info " --------------- Preparing Custom Operator Environment --------------- "
 LIBDIR = "$(Conda.LIBDIR)/Libraries"
 
 if !isdir(LIBDIR)
@@ -86,10 +89,10 @@ if !isdir("$LIBDIR/eigen3")
 end
 
 
-@info " ########### GPU Dependencies ########### "
 LIBCUDA = ""
 CUDA_INC = ""
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
+    @info " --------------- Installing GPU Dependencies --------------- "
     try 
         run(`which nvcc`)
     catch
@@ -132,7 +135,7 @@ Make sure `nvcc` is available.""")
 
     if length(libpath)>=1
         LIBCUDA = LIBCUDA*":"*joinpath(pkg_dir, libpath[1], "lib")
-        @info " ########### CUDA include headers  ########### "
+        @info " --------------- CUDA include headers  --------------- "
         cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
         cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
     end
@@ -140,9 +143,11 @@ Make sure `nvcc` is available.""")
     NVCC = readlines(pipeline(`which nvcc`))[1]
     CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
 
+else
+    @info " --------------- Skipped: Installing GPU Dependencies  --------------- "
 end
 
-@info """ ########### Write Dependency Files  ########### """
+@info """ --------------- Write Dependency Files  --------------- """
 
 s = ""
 t = []
@@ -180,5 +185,5 @@ open("deps.jl", "w") do io
     write(io, s)
 end
 
-@info """ ########### Finished: $(abspath("deps.jl"))  ########### """
+@info """ --------------- Finished: $(abspath("deps.jl"))  --------------- """
 
