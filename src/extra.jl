@@ -613,7 +613,7 @@ pkg> build ADCME""")
 
 
 
-    c = splitdir(PyCall.python)==ADCME.PYTHON
+    c = (PyCall.python==ADCME.PYTHON)
     if c 
         yes("Python executable file")
     else
