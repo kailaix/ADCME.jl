@@ -1,0 +1,56 @@
+name: QuickBuild
+
+on:
+  schedule:
+    - cron: '00 00 * * *'
+  push:
+    branches:
+      - '*'
+    tags: '*'
+
+jobs:
+  Linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: 1.4
+      - uses: actions/cache@v1
+        with:
+          path: ~/.julia/conda/3/envs/ADCME
+          key: conda3
+          restore-keys: |
+            conda3
+      - name: Build-Linux
+        run: julia --project=. --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME'
+  MaxOX:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: 1.4
+      - uses: actions/cache@v1
+        with:
+          path: ~/.julia/conda/3/envs/ADCME
+          key: conda3
+          restore-keys: |
+            conda3
+      - name: Build-Macos
+        run: julia --project=. --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME'
+  Windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: 1.4
+      - uses: actions/cache@v1
+        with:
+          path: ~/.julia/conda/3/envs/ADCME
+          key: conda3
+          restore-keys: |
+            conda3
+      - name: Build-Windows
+        run: julia --project=. --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME'
