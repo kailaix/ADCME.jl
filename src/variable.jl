@@ -217,7 +217,8 @@ function PyCall.:size(o::PyObject, i::Union{Int64, Nothing}=nothing)
             return ()
         end
     else
-        s = [o.shape[i].value for i=1:length(d)]
+        s = o.get_shape().as_list()
+        s = [isnothing(x) ? x : Int64(x) for x in s]
         if i==nothing
             return Tuple(s)
         elseif 0<i<=length(s)
