@@ -132,12 +132,3 @@ end
 **Contributing**
 
 Contribution and suggestions are always welcome. In addition, we are also looking for research collaborations. You can submit issues for suggestions, questions, bugs, and feature requests, or submit pull requests to contribute directly. You can also contact the authors for research collaboration. 
-
-## Video Lectures and Slides
-
-Here is a collection of video lectures and slides related to ADCME.
-1. Inverse Modeling with ADCME. [slides](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/ADCME.pdf)
-2. Automatic Differentiation. [slides](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/AD.pdf)
-3. Inverse Modeing. [slides](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Inverse.pdf)
-4. Physics Constrained Learning. [video](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
-
