@@ -24,4 +24,4 @@ We train the neural network by solving the optimization problem
 \min_{\theta}\|\mathcal{P}(\mathbf{u}, \mathcal{M}_{\theta}(\mathbf{u})) - \mathcal{F}(\mathbf{u}, \mathbf{x}, p) \|^2_2
 ```
 
-![image-20191031200808697](assets/law.png)
+![image-20191031200808697](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/law.png?raw=true)

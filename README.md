@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/src/assets/ADCME.gif" alt="ADCME"/>
+  <img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ADCME.gif?raw=true" alt="ADCME"/>
 </p>
 
 
@@ -9,7 +9,7 @@
 ![Coverage Status](https://coveralls.io/repos/github/kailaix/ADCME.jl/badge.svg?branch=master)
 
 
-![](docs/src/assets/demo.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/demo.png?raw=true)
 
 The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at general and scalable inverse modeling in scientific computing with gradient-based optimization techniques. It is built on the deep learning framework, **graph-mode [TensorFlow](https://www.tensorflow.org/)**, which provides the automatic differentiation and parallel computing backend. The dataflow model adopted by the framework makes it suitable for high performance computing and inverse modeling in scientific computing. The design principles and methodologies are summarized in the [slides](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/ADCME.pdf).
 
@@ -91,11 +91,11 @@ Here we present two inverse problem examples. The first one is a parameter estim
 
 Consider solving the following problem
 
-![](./docs/src/assets/readme-eq1.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq1.svg?raw=true)
 
 where 
 
-![](./docs/src/assets/readme-eq2.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq2.svg?raw=true)
 
 Assume that we have observed `u(0.5)=1`, we want to estimate `b`.  In this case, he true value should be `b=1`.
 
@@ -137,19 +137,19 @@ PyObject <tf.Tensor 'gradients_1/Mul_grad/Reshape:0' shape=() dtype=float64>
 
 Consider a nonlinear PDE, 
 
-![](./docs/src/assets/readme-eq3.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq3.svg?raw=true)
 
 where 
 
-![](./docs/src/assets/readme-eq4.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq4.svg?raw=true)
 
 Here `f(x)` can be computed from an analytical solution 
 
-![](./docs/src/assets/readme-eq5.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq5.svg?raw=true)
 
 In this problem, we are given the full field data of `u(x)` (the discrete value of `u(x)` is given on a very fine grid) and want to estimate the nonparametric function `b(u)`. We approximate `b(u)` using a neural network and use the [residual minimization method](https://kailaix.github.io/ADCME.jl/dev/tu_nn/) to find the optimal weights and biases of the neural network. The minimization problem is given by 
 
-![](./docs/src/assets/readme-eq6.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq6.svg?raw=true)
 
 ```julia
 using LinearAlgebra
@@ -181,18 +181,18 @@ legend(); xlabel("\$u\$"); ylabel("\$b(u)\$"); grid("on")
 Here we show the estimated coefficient function and the reference one:
 
 <p align="center">
-  <img src="./docs/src/assets/readmenn.png" style="zoom:50%;" />
+  <img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readmenn.png?raw=true" style="zoom:50%;" />
 </p>
 
 ### Function Inverse Problem: Sparse Data
 
 Now we consider the same problem as above, but only consider we have access to sparse observations. We assume that on the grid only the values of `u(x)` on every other 5th grid point are observable. We use the [physics constrained learning](https://arxiv.org/pdf/2002.10521.pdf) technique and train a neural network surrogate for `b(u)` by minimizing 
 
-![](./docs/src/assets/readme-eq7.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq7.svg?raw=true)
 
 Here `uᶿ` is the solution to the PDE with
 
-![](./docs/src/assets/readme-eq8.svg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/readme-eq8.svg?raw=true)
 
 We add 1 to the neural network to ensure the initial guess does not result in a singular Jacobian matrix in the Newton Raphson solver.
 
@@ -242,7 +242,7 @@ legend(); xlabel("\$x\$"); ylabel("\$u\$"); grid("on")
 
 We show the reconstructed `b(u)` and the solution `u` computed from `b(u)`. We see that even though the neural network model fits the data very well, `b(u)` is not the same as the true one. This problem is ubiquitous in inverse modeling, where the unknown may not be unique. 
 
-![](./docs/src/assets/buu.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/buu.png?raw=true)
 
 See [Applications](https://kailaix.github.io/ADCME.jl/dev/tutorial/) for more inverse modeling techniques and examples.
 
@@ -250,7 +250,7 @@ See [Applications](https://kailaix.github.io/ADCME.jl/dev/tutorial/) for more in
 
 Under the hood, a static computational graph is automatic constructed. The computational graph guides the runtime execution and provides dependencies of  data flows for automatic differentiation. Here we show the computational graph in the parameter inverse problem:
 
-![](docs/src/assets/code.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/code.png?raw=true)
 
 See a detailed [tutorial](https://kailaix.github.io/ADCME.jl/dev/tutorial/), or a full [documentation](https://kailaix.github.io/ADCME.jl/dev). 
 
@@ -258,7 +258,7 @@ See a detailed [tutorial](https://kailaix.github.io/ADCME.jl/dev/tutorial/), or 
 
 | [Constitutive Modeling](https://kailaix.github.io/ADCME.jl/dev/apps_constitutive_law/) | [Seismic Inversion](https://kailaix.github.io/ADCME.jl/dev/apps_adseismic) | [Coupled Two-Phase Flow and Time-lapse FWI](https://kailaix.github.io/ADCME.jl/dev/apps_ad/) | [Calibrating Jump Diffusion](https://kailaix.github.io/ADCME.jl/dev/apps_levy/) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![law](docs/src/assets/law.png)                              | ![law](docs/src/assets/earthquake.png)                       | ![law](docs/src/assets/geo.png)                              | ![law](docs/src/assets/algo.png)                             |
+| ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/law.png?raw=true)                              | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/earthquake.png?raw=true)                       | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/geo.png?raw=true)                              | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/algo.png?raw=true)                             |
 
 **Domain specific software based on ADCME**
 

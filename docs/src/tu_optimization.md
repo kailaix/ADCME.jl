@@ -192,7 +192,7 @@ The gradient of the objective function in the constrained optimization problem i
 
 $$\frac{\partial \mathcal{L}}{\partial {\theta}} = {\lambda}_2^T\frac{\partial f_1}{\partial {\theta}} + {\lambda}_3^T\frac{\partial f_2}{\partial {\theta}} + {\lambda}_4^T\frac{\partial f_3}{\partial {\theta}}$$
 
-![](./assets/adjoint2.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/adjoint2.png?raw=true)
 
 #### Automatic Differentiation
 

@@ -19,7 +19,7 @@ To do automatic differentiation in ADCME, direct implemnetation in the above way
 
 Instead of relying on programming languages for the dynamic control flow, `TensorFlow` embeds control-flow as operations *inside* the dataflow graph. This is done via `while_loop`, which ADCME inherents from `TensorFlow`. `while_loop` allows for easier graph-based optimization, and reduces time and memory for the computational graph.
 
-![](./assets/while_loop_graph.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/while_loop_graph.png?raw=true)
 
 Using `while_loop`, the same function can be implemented as follows,
 
@@ -54,7 +54,7 @@ for e = 1:ne
 end
 ```
 
-![](assets/externalforce.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/externalforce.png?raw=true)
 
 However, if `ne` is very large, writing explicit loops is unwise since it will create `ne` subgraphs. `while_loop` can be very helpful in this case
 
@@ -201,7 +201,7 @@ legend()
 
 The implementation in the `while_loop` part is a standard routine in FEM. Other detailed explaination: (1) We use [`SparseTensor`](@ref) to create a sparse matrix out of the row indices, column indices and values. (2) [`scatter_update`](@ref) sets part of the sparse matrix to a given one. [`spzero`](@ref) and [`spdiag`](@ref) are convenient ways to specify zero and identity sparse matrices. (3) The backslash operator will invoke a sparse solver (the default is SparseLU). 
 
-![](./assets/while_loop.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/while_loop.png?raw=true)
 
 ## Sensitivity 
 
@@ -237,7 +237,7 @@ $$D = \begin{bmatrix}1.0028 & 0.0\\ 0.0 & 1.0028\end{bmatrix}$$
 
 Usually the motivation for implementing custom operators is to enable gradient backpropagation for some performance critical operators. However, not all performance critical operators participate the automatic differentiation. Therefore, before we devote ourselves to implementating custom operators, we need to identify which operators need to be implemented as custom operators. 
 
-![forwardbackward](./assets/forwardbackward.png)
+![forwardbackward](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/forwardbackward.png?raw=true)
 
 This identification task can be done by sketching out the computational graph of your program. Assume your optimization outer loops update $x$ repeatly, then we can trace all downstream the operators that depend on this parameter $x$. We call the dependent operators "tensor operations", because they are essentially TensorFlow operators that consume and output tensors. The dependent variables are called "tensors". The other side of tensors or tensor operations is "numerical arrays" and "numerical operations". The names seem a bit vague here but the essence is that numerical operations/arrays do no participate automatic differentiation during the optimization. They are essentially computed once. 
 

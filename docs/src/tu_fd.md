@@ -93,21 +93,21 @@ The idea is to substitute the unknowns such as the $c$ and $f$ using mutable ten
 
 
 
-![adg](./assets/adg.png)
+![adg](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/adg.png?raw=true)
 
 The unknown $\theta$ is sought by solving a minimization problem using L-BFGS-B, using gradients computed in AD. Besides the simplification of implementation, a direct benefit of implementing the numerical in ADCME is that we can leverage multi-GPU computing resources. We distribute the loss function for each scenario (in practice, we can collect many $\{U_i^{\mathbf{obs}}\}$ corresponding to different source functions $f$) onto different GPUs and compute the gradients separately. Using this strategy, we can achieve more than 20 times and 60 times acceleration for acoustic and elastic wave equations respectively.
 
-![](./assets/gpu.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/gpu.png?raw=true)
 
 Here we show a case in locating the centroid of an earthquake. The red star denotes the location where the earthquake happens and the triangles denote the seismic stations. The subsurface constitutes layers of different properties (the values of $c$ are different), affecting the propagation of the seismic waves. 
 
 | Source/Receiver Location                                     | Forward Simulation                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-|![](./assets/source-vp.png) | ![](./assets/forward_source.gif) |
+|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/source-vp.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/forward_source.gif?raw=true) |
 
 By running the optimization problem by specifying the earthquake location as `Variable` [^delta], we can locate the centroid of an earthquake. The result is amazingly good. It is worth noting that it requires substantial effort to implement the traditional adjoint-state solver for this problem (e.g., it takes time to manually deriving and implementing the gradients). However, in view of ADCME, the inversion functionality is merely a by-product of the forward simulation codes, which can be reused in many other inversion problems.
 
-![fwi_source](./assets/fwi_source.gif)
+![fwi_source](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/fwi_source.gif?raw=true)
 
 [^delta]: Mathematically, $f(t, \mathbf{x})$ is a Delta function in $\mathbf{x}$; to make the inversion problem continuous, we use $f_{\theta}(t, \mathbf{x}) = g(t) \frac{1}{2\pi\sigma^2}\exp(-\frac{\|\mathbf{x}-\theta\|^2}{2\sigma^2})$ to approximate $f(t, \mathbf{x})$; here $\theta\in\mathbb{R}^2$ and $g(t)$ are unknown.
 

@@ -28,7 +28,7 @@ To make use of the heat equation, we need additional information.
 
 Assume that we want to experiment with a piece of new material. The thermal diffusivity coefficient of the material is an unknown function of the space. Our goal of the experiment is to find out the thermal diffusivity coefficient. To this end, we place some sensors in the domain or on the boundary. The measurements are sparse in the sense that only the temperature from those sensors---but nowhere else---are collected. Namely, let the sensors be located at $\{\mathbf{x}_i\}_{i=1}^M$, then we can observe $\{\hat u(\mathbf{x}_i, t)\}_{i=1}^M$, i.e., the measurements of $\{ u(\mathbf{x}_i, t)\}_{i=1}^M$. We also assume that the boundary conditions, initial conditions and the source terms are known. 
 
-![](./assets/ex_figure.png) 
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ex_figure.png?raw=true) 
 
 ## Problem 1: Parameter Inverse Problem in 1D
 
@@ -72,7 +72,7 @@ $$A_{11} = 201, A_{12} = -200, A_{21} = -101.5, A_{33} = 207, A_{10, 10} = 228$$
 
 
 
-![ex1_reference](./assets/ex1_reference.png)
+![ex1_reference](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ex1_reference.png?raw=true)
 
 **(e)** Now we are ready to perform inverse modeling. Read  the starter code `starter2.jl `carefully and complete the missing implementations. What is your estimate `a` and `b`?
 
@@ -96,7 +96,7 @@ Here $\texttt{x}$ is a $n\times 1$ input, $\texttt{y}$ is a $n\times 1$ output, 
 
 Hint: Your curve should look like the following
 
-![](./assets/kappa.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/kappa.png?raw=true)
 
 **(c)** Add 1% and 10% Gaussian noises to the dataset and redo (b), what do you find? Plot the estimated  $\kappa_\theta$ curve. 
 
@@ -136,7 +136,7 @@ The following question reminds you of extending an AD framework using custom ope
 
 **(b)** Similar to Problem 1, implement forward computation using `while_loop`. Plot the curve of the temperature at $(0.5,0.5)$. For debugging, you should obtain something as follows
 
-![ex2_reference](./assets/ex2_reference.png)
+![ex2_reference](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ex2_reference.png?raw=true)
 
 The parameters used in this problem: $m=50$, $n=50$, $T=1$, $N_T=50$, $f(\mathbf{x},t) = e^{-t}\exp(-50((x-0.5)^2+(y-0.5)^2))$, $a = 1.5$, $b=1.0$, $c=2.0$. 
 

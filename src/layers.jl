@@ -829,7 +829,7 @@ for i = 1:10
     @info "Accuracy = ", sum(pred .== test_y[idx])/100
 end
 ```
-![](./assets/resnet.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/tree/master/ADCME/assets/resnet.png?raw=true)
 """
 function Resnet1D(out_features::Int64, hidden_features::Int64 = 20;
      num_blocks::Int64=2, activation::Union{String, Function, Nothing} = "relu", 

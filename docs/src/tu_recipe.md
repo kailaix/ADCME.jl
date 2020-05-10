@@ -69,7 +69,7 @@ sess = Session(); init(sess)
 lineview(sess, θ, loss, [1.;2.;3.;4.], zeros(4)) # or meshview(sess, θ, loss, [1.;2.;3.;4.])
 ```
 
-![image-20200227233902747](./assets/landscape.png)
+![image-20200227233902747](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/landscape.png?raw=true)
 
 The landscape is very nice (convex and smooth)! That means the optimization should be very easy. 
 
@@ -90,7 +90,7 @@ gradview(sess, θ, loss, zeros(4))
 
 ​		You should get something like this:
 
-![](./assets/custom_op.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom_op.png?raw=true)
 
 
 

@@ -70,7 +70,7 @@ run_profile(sess, g+c)
 save_profile("false.json")
 ```
 
-![](./assets/colocate.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/colocate.png?raw=true)
 
 !!! note
     If you use `bn` (batch normalization) on multi-GPUs, you must be careful to update the parameters in batch normalization on CPUs. This can be done by explicitly specify 

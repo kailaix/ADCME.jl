@@ -44,7 +44,7 @@ Using Equation 4 and 5 we can formulate a loss function, which we can use a stoc
 
 The following code is an example of applying the autoencoder to learn a data distribution from MNIST dataset. Here is the result using this script:
 
-![](./assets/vae.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/vae.png?raw=true)
 
 ```julia
 using ADCME

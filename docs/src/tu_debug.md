@@ -58,7 +58,7 @@ save_profile("test.json")
 
 Below shows an example of profiling results.
 
-![](./assets/profile.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/profile.png?raw=true)
 
 
 ## Save and Load Diary

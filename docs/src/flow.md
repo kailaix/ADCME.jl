@@ -91,7 +91,7 @@ function sample_moons(n)
 end
 ```
 
-![](./assets/moons.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/moons.png?raw=true)
 
 Next we construct a flow-based generative model, as follows:
 

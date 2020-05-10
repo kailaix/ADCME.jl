@@ -6,7 +6,7 @@ Dynamical shared libraries have the following property: in Unix-like environment
 
 Therefore, when we design custom operators and want to have global variables that will be reused by multiple custom kernels (each constitutes a separate dynamical shared library), we can link each of them to a "data storage" shared library. The "data storage" shared library should contain the definition of the global variable to be shared among those kernels. 
 
-![](./assets/disk.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/disk.png?raw=true)
 
 As an example, consider we want to share `Float64` vectors (with `String` keys). The data structure of the storage is given in `Saver.h`
 ```c++

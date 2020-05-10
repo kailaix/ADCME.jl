@@ -13,11 +13,11 @@ A tensor is a collection of $n$-dimensional arrays. ADCME represents tensors usi
 - `shape`: For scalars, the shape is always an empty tuple `()`; for $n$-dimensional vectors, the shape is `(n,)`; for matrices or higher order tensors, the shape has the form `(n1, n2, ...)`
 - `dtype`: The type of the tensors. There is a one-to-one correspondence between most TensorFlow types and Julia types (e.g., `Int64`, `Int32`, `Float64`, `Float32`, `String`, and `Bool`). Therefore, we have overloaded the type name so users have a unified interface. 
 
-![](./assets/tensorspec.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/tensorspec.png?raw=true)
 
 An important difference is that `tensor` object stores data in the row-major while Julia's default for `Array` is column major. The difference may affect performance if not carefully dealt with, but more often than not, the difference is not relevant if you do not convert data between Julia and Python often. Here is a representation of ADCME `tensor`
 
-![](./assets/tensors.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/tensors.png?raw=true)
 
 There are 4 ways to create tensors. 
 
@@ -74,7 +74,7 @@ With the aforementioned syntax to create and transform tensors, we have created 
 
 To trigger the actual computing, the TensorFlow mechanism is to create a session, which drives the graph based optimization (like detecting dependencies) and executes all the operations.  
 
-![](./assets/session.gif)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/session.gif?raw=true)
 
 ```julia
 a = constant(rand(10,10))
@@ -96,7 +96,7 @@ The kernels provide the low level C++ implementation for the operators. ADCME au
 
 All the intensive computations are  done either in Julia or C++, and therefore we can achieve very high performance if the logic is done appropriately. For performance critical part, users may resort to custom kernels using [`customop`](@ref), which allows you to incooperate custom designed C++ codes. 
 
-![](./assets/kernel.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/kernel.png?raw=true)
 
 
 

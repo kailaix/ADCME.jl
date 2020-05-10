@@ -116,7 +116,7 @@ We show the exact $X(x)$ and the pointwise error in the following plots
 
 
 
-| ![errorX](assets/errorX.png) | ![exactX](assets/exactX.png) |
+| ![errorX](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/errorX.png?raw=true) | ![exactX](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/exactX.png?raw=true) |
 | ---------------------------- | ---------------------------- |
 | Pointwise Absolute Error     | Exact $X(u)$                 |
 
@@ -216,7 +216,7 @@ savefig("nn.png")
 
 Detailed explaination: (1) This is the neural network we constructed. Note that with default initialization, the neural network output values are close to 0, and thus poses numerical stability issue for the solver. We can shift the neural network value by $+1$ (equivalently, we use 1 for the initial guess of the last bias term); (2) The jacobian matrix is sparse, and thus we use [`spdiag`](@ref) to create a sparse matrix; (3) A loss function is formulated and minimized in the physics constrained learning. 
 
-![nn](assets/nn.png)
+![nn](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/nn.png?raw=true)
 
 ## Stochastic Inverse Problem 
 
@@ -278,4 +278,4 @@ end
 
 | Loss Function            | Iteration 5000                   | Iteration 15000                    | Iteration 25000                    |
 | ------------------------ | -------------------------------- | ---------------------------------- | ---------------------------------- |
-| ![loss](assets/loss.png) | ![test5000](assets/test5000.png) | ![test15000](assets/test15000.png) | ![test25000](assets/test25000.png) |
+| ![loss](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/loss.png?raw=true) | ![test5000](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/test5000.png?raw=true) | ![test15000](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/test15000.png?raw=true) | ![test25000](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/test25000.png?raw=true) |

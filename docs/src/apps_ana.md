@@ -39,5 +39,5 @@ Here ($\mu$, $\sigma$) is subject to unknown distribution ($\theta$ in the forwa
 
 The distribution of ($\mu$, $\sigma$) is given by $G_{\eta}$. The following plots show the workflow of adversarial numerical analysis and a sample result for the Dirichlet distribution. 
 
-![](./assets/ana.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ana.png?raw=true)
 

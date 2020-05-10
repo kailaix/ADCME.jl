@@ -37,7 +37,7 @@ x0 = [1.;0.;0.]
 rk4(f, 30.0, 10000, x0)
 ```
 
-![](./assets/lorentz.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/lorentz.png?raw=true)
 
 We can also solve three body problem with the Runge-Kutta method. The full script is 
 ```julia
@@ -139,4 +139,4 @@ subplot(132); plot_trajectory(10.0,20.0)
 subplot(133); plot_trajectory(20.0,30.0)
 ```
 
-![](./assets/threebody.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/threebody.png?raw=true)

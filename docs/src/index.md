@@ -14,9 +14,9 @@ ADCME is suitable for conducting inverse modeling in scientific computing. The p
 
 The package inherents the scalability and efficiency from the well-optimized backend TensorFlow. Meanwhile, it provides access to incooperate existing C/C++ codes via the custom operators. For example, some functionalities for sparse matrices are implemented in this way and serve as extendable "plugins" for ADCME. 
 
-![](./assets/summary.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/summary.png?raw=true)
 
-Read more about the methodology, the philosophy, the insights and the perspective about ADCME: [slides](./assets/Slide/ADCME.pdf). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems.
+Read more about the methodology, the philosophy, the insights and the perspective about ADCME: [slides](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Slide/ADCME.pdf?raw=true). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems.
 
 **Installation**
 

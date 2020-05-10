@@ -4,7 +4,7 @@ An explicit operator is an operator directly supplied by the AD library while an
 
 Implicit operators are everywhere in scientific computing, from implicit numerical schemes to iterative algorithms. How to incooperate implicit operators into a differentiable programming framework is the true challenge in AD. AD is not the panacea to all inverse modeling problems; it must be augmented with abilities to tackle implicit operators to be real useful for a large variety of real-world applications. 
 
-![Operators](assets/sim.png) 
+![Operators](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/sim.png?raw=true) 
 
 Roughly speaking, there are four types of operators in the computational graph, depending on whether it is linear or nonlinear and whether it is explicit or implicit. Let $A$ be a matrix, $f$ be a nonlinear function, $F$ be a bivariate nonlinear function, and it is hard to express $y$ analytically as a function of $x$ in $F(x,y)=0$. 
 
@@ -90,4 +90,4 @@ Let's see in action how to implement an implicit operator in ADCME. First of all
 
 This approach is named **physics constrained learning** and has been used to develop [`FwiFlow.jl`](https://github.com/lidongzh/FwiFlow.jl), a package for elastic full waveform inversion for subsurface flow problems. The physical equation is nonlinear, the discretization is implicit, and thus it must be solved using the Newton-Raphson method.
 
-![diagram](./assets/diagram.png)
+![diagram](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/diagram.png?raw=true)

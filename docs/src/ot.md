@@ -47,7 +47,7 @@ xlabel("x")
 ylabel("f(x)")
 legend()
 ```
-![](./assets/g1.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/g1.png?raw=true)
 
 **Example 2**
 In the first example, we assume the desired distribution is the positive part of the the standard Gaussian. 
@@ -59,12 +59,12 @@ for i = 1:10000
     @show i, l
 end
 ```
-![](./assets/g2.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/g2.png?raw=true)
 
 ## Dynamic Time Wrapping
 
 Dynamic time wrapping is suitable for computing the distance of two time series. The idea is that we can shift the time series to obtain the "best" match while retaining the causality in time. This is best illustrated in the following figure 
-![](./assets/dtw.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/dtw.png?raw=true)
 
 In ADCME, the distance is computed using [`dtw`](@ref). As an example, given two time series
 ```julia

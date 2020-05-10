@@ -74,4 +74,4 @@ gradview(sess, pl, res, rand(10))
 
 We have the following convergence plot
 
-![Screen Shot 2020-04-04 at 11.15.19 PM](./assets/factorization.png)
+![Screen Shot 2020-04-04 at 11.15.19 PM](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/factorization.png?raw=true)

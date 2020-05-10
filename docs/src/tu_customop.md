@@ -10,7 +10,7 @@ Custom operators are ways to add missing features or improve performance critica
 - There are legacy codes users want to reuse, such as Fortran libraries.  
 - Special acceleration techniques, such as checkpointing scheme, MPI-enabled linear solvers, and FPGA/GPU-accelerated codes. 
 
-![](./assets/custom.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom.png?raw=true)
 
 ## Build Custom Operators 
 
@@ -134,7 +134,7 @@ Based on your operation system, you will create `libMySparseSolver.{so,dylib,dll
 
 Finally, you could use `gradtest.jl` to test the operator and its gradients (specify appropriate data in `gradtest.jl` first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. Note you need to modify this file first, e.g., creating data and modifying the function `scalar_function`. 
 
-![custom_op](assets/custom_op.png)
+![custom_op](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom_op.png?raw=true)
 
 !!! info 
     If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.

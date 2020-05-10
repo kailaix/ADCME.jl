@@ -10,7 +10,7 @@ Computational graphs are directed and acyclic. The acyclicity implies the forwar
 
 $$z = \sin(x_1+x_2) + x_2^2 x_3$$
 
-![](./assets/fd.jpeg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/fd.jpeg?raw=true)
 
 
 
@@ -37,7 +37,7 @@ is computed.
 
 | Forward-mode AD in the Computational Graph | Example                       |
 | ------------------------------------------ | ----------------------------- |
-| ![](./assets/fad.png)                      | ![](./assets/forwardmode.png) |
+| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/fad.png?raw=true)                      | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/forwardmode.png?raw=true) |
 
 
 
@@ -51,7 +51,7 @@ We show how the gradients of $z = \sin(x_1+x_2) + x_2^2 x_3$ is evaluated.
 
 | Reverse-mode AD in the Computational Graph | Step 1                 | Step 2                 | Step 3                 | Step 4                 |
 | ------------------------------------------ | ---------------------- | ---------------------- | ---------------------- | ---------------------- |
-| ![](./assets/rad.png)                      | ![](./assets/bd1.jpeg) | ![](./assets/bd2.jpeg) | ![](./assets/bd3.jpeg) | ![](./assets/bd4.jpeg) |
+| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/rad.png?raw=true)                      | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd1.jpeg?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd2.jpeg?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd3.jpeg?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd4.jpeg?raw=true) |
 
 
 
@@ -92,7 +92,7 @@ where $\mathbf{x} = \{x_i\}_{i=1}^N$ and $\pi(i)$ are the parents of $x_i$, s.t.
 
 
 
-![](./assets/cg.jpeg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/cg.jpeg?raw=true)
 
 The idea to compute $\partial x_N / \partial x_i$ is to start from $i = N$, and establish recurrences to calculate derivatives with respect to $x_i$ in terms of derivatives with respect to $x_j$, $j >i$. To define these recurrences rigorously, we need to define different functions that differ by the choice of independent variables.
 
@@ -128,7 +128,7 @@ is readily available since:
 
 $$x_j(x_1, x_2, \ldots, x_{j-1}) = f_j(\mathbf{x}_{\pi(j)})$$
 
-![](./assets/cg2.jpeg)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/cg2.jpeg?raw=true)
 
 The computational cost of this recurrence is proportional to the number of edges in the computational graph (excluding the nodes $1$ through $n$), assuming that the cost of differentiating $f_k$ is $O(1)$. The last step is defining
 
@@ -148,7 +148,7 @@ As a concrete example, we consider the example of evaluating $\frac{dz(x_1,x_2,x
 
 | Step 1                 | Step 2                 | Step 3                 | Step 4                 |
 | ---------------------- | ---------------------- | ---------------------- | ---------------------- |
-| ![](./assets/bd1.jpeg) | ![](./assets/bd2.jpeg) | ![](./assets/bd3.jpeg) | ![](./assets/bd4.jpeg) |
+| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd1.jpeg?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd2.jpeg?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd3.jpeg?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bd4.jpeg?raw=true) |
 
 
 

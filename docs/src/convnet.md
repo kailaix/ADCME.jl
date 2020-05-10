@@ -8,7 +8,7 @@ In the practical use of CNNs, we can stick to images, which have four dimensions
 
 You are also encouraged to run the same script on CPUs and GPUs. You might get surprised at the huge performance gap for training CNNs on these two different computing environment. We also observe some CNN artifacts (the dots in the images).
 
-![](./assets/cnn.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/cnn.png?raw=true)
 
 
 ```julia

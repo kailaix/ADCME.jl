@@ -42,5 +42,5 @@ where $\{(\mathbf{x}_i, w_i)\}_{i=1}^{n_q}$ are quadrature nodes and weights.
 
 We show the schematic description of the method and some results on calibrating a discontinuous Lévy density function $\nu$. 
 
-![image-20191031200808697](assets/levy.png)
+![image-20191031200808697](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/levy.png?raw=true)
 

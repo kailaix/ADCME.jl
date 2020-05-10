@@ -201,7 +201,7 @@ plot_traj(idx2)
 
 Using the above code, we plot the trajectories of $\mathbf{a}$, $\mathbf{v}$, and $\mathbf{d}$ at $(0.64,0.32)$, and obtain the following plot 
 
-![alpha_elasticity](./assets/alpha_elasticity.png)
+![alpha_elasticity](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/alpha_elasticity.png?raw=true)
 
 !!! info 
     When we have (time-dependent) Dirichlet boundary conditions, we need to impose the boundary acceleration in each time step. This can be achieved using `extsolve` in [`αscheme`](@ref). 
@@ -443,4 +443,4 @@ plot_traj(idx2)
 
 Using the above code, we plot the trajectories of $\mathbf{a}$, $\mathbf{v}$, and $\mathbf{d}$ at $(0.64,0.32)$, and obtain the following plot 
 
-![](./assets/alpha_visco.png)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/alpha_visco.png?raw=true)
