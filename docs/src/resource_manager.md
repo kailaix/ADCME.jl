@@ -36,5 +36,5 @@ When using the `ResourceMgr`, keep in mind that whenever you execute a new path 
 
 See the following scripts for an example
 
-[CMakeLists.txt](https://kailaix.github.io/ADCME.jl/dev/codes/resourcemgr/CMakeLists.txt), [TestResourceManager.cpp](https://kailaix.github.io/ADCME.jl/dev/codes/resourcemgr/TestResourceManager.cpp), [gradtest.jl](https://kailaix.github.io/ADCME.jl/dev/codes/resourcemgr/gradtest.jl)
+[CMakeLists.txt](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/resourcemgr/CMakeLists.txt), [TestResourceManager.cpp](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/resourcemgr/TestResourceManager.cpp), [gradtest.jl](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/resourcemgr/gradtest.jl)
 

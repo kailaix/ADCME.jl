@@ -245,7 +245,7 @@ public:
 REGISTER_KERNEL_BUILDER(Name("DeleteTensor").Device(DEVICE_CPU), DeleteTensorOp);
 ```
 
-Here is part of the [`CMakeLists.txt`](./codes/share_memory/CMakeLists.txt) used for compilation, where we link `XXTensor.cpp` with `Saver`
+Here is part of the [`CMakeLists.txt`](./assets/Codes/share_memory/CMakeLists.txt) used for compilation, where we link `XXTensor.cpp` with `Saver`
 ```CMake
 add_library(Saver SHARED Saver.cpp)
 set_property(TARGET Saver PROPERTY POSITION_INDEPENDENT_CODE ON)
