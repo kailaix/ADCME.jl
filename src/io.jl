@@ -66,6 +66,7 @@ function save(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array
         d[name] = vals[i]
     end
     matwrite(file, d)
+    d
 end
 
 function save(sess::PyObject, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
