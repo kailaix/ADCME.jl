@@ -857,6 +857,7 @@ function uqlin(y::Array{Float64,1},
 
     s = LAMBDA*y; 
     V = -X*MU+Q-QHT*LAMBDA';
+    V = (V+V')/2
     return s, V
 end
 
