@@ -406,8 +406,7 @@ function newton_raphson(func::Function,
                 tol = read(ta_r, i-1)
                 rel_tol = read(ta_r, i-2)
                 if verbose
-                    op = tf.print("Iteration =",i-1, "| Tol =", tol, "( $(optol) )", "| Rel_Tol =", rel_tol, 
-                        "( $(oprtol) )", summarize=-1)
+                    op = tf.print("ITER ", i-1, ">>> Error =", tol, "| Relative Error =", rel_tol, summarize=-1)
                     tol = bind(tol, op)
                 end
                 return tf.math.logical_and(
@@ -453,8 +452,8 @@ function newton_raphson(func::Function,
         δ = step_size * δ
         new_u = u_ - δ
 
-        if verbose
-            op = tf.print(i," step size = ", step_size)
+        if verbose && linesearch
+            op = tf.print("Current Step Size = ", step_size)
             new_u = bind(new_u, op)
         end
         ta_u = write(ta_u, i, new_u)     
@@ -467,8 +466,7 @@ function newton_raphson(func::Function,
     r0 = length(out)==2 ? out[1] : out[2]
     tol0 = norm(r0)
     if verbose
-        op = tf.print("Iteration = 1", "| Tol =", tol0, "( $(optol) )", "| Rel_Tol = ---", 
-        "( $(oprtol) )", summarize=-1)
+        op = tf.print("Newton-Raphson with absolute tolerance = $optol and relative tolerance = $oprtol")
         tol0 = bind(tol0, op)
     end
 

@@ -337,7 +337,7 @@ function gradients11(ys::PyObject, xs::PyObject; kwargs...)
         i <= n 
     end
     function body(i, ta)
-        ta = write(ta, i, gradients(ys[i], xs; unconnected_gradients="zero"))
+        ta = write(ta, i, tf.convert_to_tensor(gradients(ys[i], xs; unconnected_gradients="zero")))
         i+1, ta
     end
     ta = TensorArray(n)
