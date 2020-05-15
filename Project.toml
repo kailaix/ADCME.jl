@@ -30,8 +30,7 @@ CMake = "1"
 [extras]
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
-PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "NLopt", "PyPlot", "Optim"]
+test = ["Test", "NLopt", "Optim"]

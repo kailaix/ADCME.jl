@@ -498,11 +498,11 @@ function install_adept(force::Bool=false)
         end
     end
     try
-        if force==true 
+        if force
             @info "remove .libs ..."
             rm(".libs", force=true, recursive=true)
         end
-        if !isdir(".libs") 
+        if !isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib") 
             @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
             cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
             @info """Remove $(joinpath(pwd(), "build")) ... """

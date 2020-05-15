@@ -1,1 +1,1 @@
-conda-build cpu 
+~/.julia/conda/3/bin/conda-build cpu 
