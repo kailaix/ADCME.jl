@@ -133,7 +133,7 @@ Make sure `nvcc` is available.""")
         Conda.add("adcme-gpu", :ADCME, channel="kailaix")
     end
     
-    pkg_dir = joinpath(ENVDIR, "pkgs/")
+    pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
