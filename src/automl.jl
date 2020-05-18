@@ -42,7 +42,7 @@ function AutoML(generate_subnetwork::Function, execute_subnetwork::Function)
 end
 
 
-function execute_subnetwork(automl::AutoML)
+function execute_subnetwork(automl::AutoML, rep::Int64)
     candidates = Channel{Tuple}(length(automl.candidates))
     losses = zeros(length(automl.candidates))
     for k = 1:length(automl.candidates)
@@ -54,8 +54,8 @@ function execute_subnetwork(automl::AutoML)
     end
     function exec(n)
         k, c = take!(candidates)
-        options.automl.verbose && @info "[AutoML] Preparing candidates $k ($(c)), replacing? $(automl.status==0)"
-        l, el = automl.execute_subnetwork(c, automl.status==0)
+        options.automl.verbose && @info "[AutoML] Preparing candidates $k ($(c)), replacing? $(rep>0)"
+        l, el = automl.execute_subnetwork(c, rep)
         return (k, l, el)
     end
     results = asyncmap(exec, 1:length(candidates.data))
@@ -85,15 +85,26 @@ function Base.:run(automl::AutoML)
         automl.candidates = automl.generate_subnetwork(automl)
         automl.most_recent_subnetworks = copy(automl.candidates)
         options.automl.verbose && @info "[AutoML] Generating new neural networks: $([s for s in automl.candidates])"
-        t = @elapsed subnetwork, score = execute_subnetwork(automl)
+        if automl.status == 0 
+            rep = rand(1:length(automl.subnetworks))
+            options.automl.verbose && @info "[AutoML] Replacing subnetwork $(rep) (name = $(automl.subnetworks[rep]))"
+        else 
+            rep = 0
+        end
+        t = @elapsed subnetwork, score = execute_subnetwork(automl, rep)
         if length(automl.losses)==0 || score < minimum(automl.losses)
             options.automl.verbose && printstyled("[AutoML] Updating automl.losses ($score) and subnetwork (name = $(subnetwork)); time elapsed $t sec\n", color=:green)
             push!(automl.losses, score)
             if automl.status == 0
-                automl.subnetworks[end] = subnetwork
+                if rep>0
+                    automl.subnetworks[rep] = subnetwork
+                else 
+                    automl.subnetworks[end] = subnetwork
+                end
             else
                 push!(automl.subnetworks, subnetwork)
             end
+            automl.most_recent_subnetworks = [subnetwork]
             open(joinpath(automl.WORKSPACE, "ensembles.txt"), "w") do io 
                 write(io, join(automl.subnetworks, "\n"))
             end
@@ -133,4 +144,27 @@ function average_ensemble(sess::PyObject, ensemble_names::Array{String}, create_
         ADCME.load(sess, "$(WORKSPACE)/$s/data.mat", nowarn=true)
     end
     loss
+end
+
+
+function generate_subnetwork(automl::AutoML)
+    if length(automl.subnetworks)==0
+        return ["5_3";"5_4";"5_5"]
+    end
+    c = split(rand(automl.most_recent_subnetworks), '_')
+    hidden_size = parse(Int64, c[1])
+    num_layers = parse(Int64, c[2])
+    return [
+        string(hidden_size+1)*"_"*string(num_layers+1);
+        string(hidden_size+1)*"_"*string(num_layers);
+        string(hidden_size)*"_"*string(num_layers+1)
+    ]
+end
+
+function create_neural_network(name::String, output_dim::Int64)
+    c = split(name, '_')
+    hidden_size = parse(Int64, c[1])
+    num_layers = parse(Int64, c[2])
+    nn = x->fc(x, [hidden_size*ones(Int64, num_layers)...,output_dim], "nn$name")
+    return nn 
 end
