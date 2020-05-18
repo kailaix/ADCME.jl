@@ -12,6 +12,18 @@ mutable struct OptionsSparse
     OptionsSparse() = new(true, "SparseLU")
 end
 
+########################### OptionsSparse ###########################
+"""
+    OptionsAutoML
+
+Options for autoML.
+"""
+mutable struct OptionsAutoML 
+    max_iter::Int64 
+    verbose::Bool
+    OptionsAutoML() = new(5, true)
+end
+
 
 ########################### OptionsNewtonRaphson ###########################
 """
@@ -60,7 +72,8 @@ mutable struct Options
     sparse::OptionsSparse
     newton_raphson::OptionsNewtonRaphson
     training::OptionsTraining
-    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining())
+    automl::OptionsAutoML
+    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining(), OptionsAutoML())
 end
 
 

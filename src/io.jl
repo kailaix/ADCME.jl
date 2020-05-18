@@ -91,7 +91,7 @@ end
 Loads the values of variables to the session `sess` from the file `file`. If `vars` is nothing, it loads values to all the trainable variables.
 See also [`save`](@ref), [`load`](@ref)
 """
-function load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
+function load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; nowarn::Bool = false, kwargs...)
     if vars==nothing
         vars = get_collection(TRAINABLE_VARIABLES)
     elseif isa(vars, PyObject)
@@ -103,7 +103,7 @@ function load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array
         name = replace(vars[i].name, ":"=>"colon")
         name = replace(name,  "/"=>"backslash")
         if !(name in keys(d))
-            @warn "$(vars[i].name) not found in the file, skipped"
+            !(nowarn) && @warn "$(vars[i].name) not found in the file, skipped"
         else
             if occursin("bias", name) && isa(d[name], Number)
                 d[name] = [d[name]]
@@ -114,7 +114,9 @@ function load(sess::PyObject, file::String, vars::Union{PyObject, Nothing, Array
     run(sess, ops, args...; kwargs...)
 end
 
-function load(sess::PyObject, d::Dict, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; kwargs...)
+function load(sess::PyObject, d::Dict, vars::Union{PyObject, Nothing, Array{PyObject}}=nothing, args...; 
+    nowarn::Bool = false, 
+    kwargs...)
     if vars==nothing
         vars = get_collection(TRAINABLE_VARIABLES)
     elseif isa(vars, PyObject)
@@ -125,7 +127,7 @@ function load(sess::PyObject, d::Dict, vars::Union{PyObject, Nothing, Array{PyOb
         name = replace(vars[i].name, ":"=>"colon")
         name = replace(name,  "/"=>"backslash")
         if !(name in keys(d))
-            @warn "$(vars[i].name) not found in the file, skipped"
+            !(nowarn) && (@warn "$(vars[i].name) not found in the file, skipped")
         else
             push!(ops, assign(vars[i], d[name]))
         end

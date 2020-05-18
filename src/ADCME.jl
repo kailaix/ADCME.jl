@@ -85,5 +85,6 @@ module ADCME
     include("ode.jl")
     include("flow.jl")
     include("options.jl")
+    include("automl.jl")
 end
 
