@@ -540,6 +540,8 @@ ERROR: LoadError: ADCME is not properly built; run `Pkg.build("ADCME")` to fix t
 **A:** 
 ```julia
 using Conda
-Conda.add("pyqt", :ADCME)
+Conda.add("pyqt")
+using Pkg
+Pkg.build("PyPlot")
 ```
 This will install a working backend for PyPlot. 

@@ -38,20 +38,20 @@ using Conda
 using CMake
 
 
-ENVDIR = abspath("$(Conda.ROOTENV)/envs/ADCME")
+ENVDIR = abspath("$(Conda.ROOTENV)")
 
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME env: $ENVDIR"""
 
 @info " --------------- Install Tensorflow Dependencies  --------------- "
 
-if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages(:ADCME)
+if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages()
     @info " --------------- Remove Existing ADCME Environment  --------------- "
     rm(ENVDIR, force=true, recursive = true)
 end
 
-if !("adcme" in Conda._installed_packages(:ADCME))
-    Conda.add("adcme", :ADCME, channel="kailaix")
+if !("adcme" in Conda._installed_packages())
+    Conda.add("adcme", channel="kailaix")
 end
 
 BINDIR = Sys.iswindows() ? abspath("$ENVDIR/Scripts") : abspath("$ENVDIR/bin")  
@@ -129,8 +129,8 @@ Make sure `nvcc` is available.""")
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
 
-    if !("adcme-gpu" in Conda._installed_packages(:ADCME))
-        Conda.add("adcme-gpu", :ADCME, channel="kailaix")
+    if !("adcme-gpu" in Conda._installed_packages())
+        Conda.add("adcme-gpu", channel="kailaix")
     end
     
     pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")

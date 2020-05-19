@@ -430,8 +430,8 @@ Pads `o` with values on the boundary.
 # Example 
 ```julia 
 o = rand(3,3)
-o = pad(o, [[1 4      # first dimension
-             2 3]])   # second dimension
+o = pad(o, [1 4      # first dimension
+             2 3])   # second dimension
 run(sess, o)
 ```
 Expected:

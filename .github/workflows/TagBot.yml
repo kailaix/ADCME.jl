@@ -17,7 +17,7 @@ jobs:
           version: 1.4
       - uses: actions/cache@v1
         with:
-          path: ~/.julia/conda/3/envs/ADCME
+          path: ~/.julia/conda/3
           key: conda3
           restore-keys: |
             conda3
