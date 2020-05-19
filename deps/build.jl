@@ -56,7 +56,7 @@ VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALL
 
 if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages()
     @info " --------------- Remove Existing ADCME Environment  --------------- "
-    rm(ENVDIR, force=true, recursive = true)
+    mv(ENVDIR, ENVDIR*"../trash")
 end
 
 if !("adcme" in Conda._installed_packages())
