@@ -29,6 +29,15 @@ __STR__ = join([BINDIR,LIBDIR,TF_INC,TF_ABI,EIGEN_INC,CC,CXX,CMAKE,MAKE,GIT,PYTH
 """)
 end
 
+LIBCUDA = ""
+CUDA_INC = ""
+if isfile(joinpath(@__DIR__, "deps.jl"))
+    include(joinpath(@__DIR__, "deps.jl"))
+end
+
+if length(LIBCUDA)>0 
+    @warn("We detect once you have installed ADCME-GPU, we will keep using the corresponding CUDA and CUDA library path as default.")
+end 
 
 
 
@@ -110,8 +119,7 @@ if !isdir("$LIBDIR/eigen3")
 end
 
 
-LIBCUDA = ""
-CUDA_INC = ""
+
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     @info " --------------- Installing GPU Dependencies --------------- "
     try 
