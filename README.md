@@ -63,6 +63,8 @@ using Pkg
 Pkg.add("ADCME")
 ```
 
+Note: if you are using Windows OS, please first install the [Microsoft Visual Studio 15 (2017)](https://visualstudio.microsoft.com/vs/older-downloads/) compiler. See [the instruction](https://kailaix.github.io/ADCME.jl/dev/) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for details. 
+
 3. (Optional) Test `ADCME.jl`
 ```
 using Pkg

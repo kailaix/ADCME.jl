@@ -20,16 +20,12 @@ Read more about the methodology, the philosophy, the insights and the perspectiv
 
 **Installation**
 
+If you use Windows OS, you need to install Microsoft Visual Studio 15 (2017) first. If you do not have the compiler yet, you can download and install the compiler from [here](https://visualstudio.microsoft.com/vs/older-downloads/). A free community version is available. 
+
 It is recommended to install ADCME via
 ```julia
-using Pkg; Pkg.add("ADCME")
-```
-
-Make sure to run the ADCME doctor to check the health of your ADCME installation.
-
-```
-using ADCME
-doctor()
+using Pkg
+Pkg.add("ADCME")
 ```
 
 However, in some cases, you may want to install the package and configure the environment manually. 
