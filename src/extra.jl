@@ -648,8 +648,8 @@ For Windows, you need to add it to system environment.""")
         yes("Dynamic library path")
     else
         no("Dynamic library path", 
-"""$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH. This will break custom operator compilation.""",
-"""Add your dynamic library path path to your environment path, e.g. (Unix systems) 
+"""$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH. This MAY break custom operator compilation. However, in most cases, ADCME automatic fixes this problem for you.""",
+"""(Optional) Add your dynamic library path path to your environment path, e.g. (Unix systems) 
 
 export LD_LIBRARY_PATH=$(ADCME.LIBDIR):\$LD_LIBRARY_PATH
 
@@ -663,9 +663,9 @@ For Windows, you need to add it to system environment.""")
         yes("Binaries path")
     else
         no("Binaries path", 
-"""$(ADCME.BINDIR) is not in PATH. This path contains compatible tools such as a GCC compiler, `cmake`, `make`, etc.""",
-"""The fix is OPTIONAL.
-Add your binary path to your environment path, e.g. (Unix systems) 
+"""$(ADCME.BINDIR) is not in PATH. This path contains compatible tools such as a GCC compiler, `cmake`, `make`, or any other tools you want to use directly from terminal.
+However, setting the path is NOT a requirement, and ADCME works totally fine without any action.""",
+"""(Optional) Add your binary path to your environment path, e.g. (Unix systems) 
 
 export PATH=$(ADCME.BINDIR):\$PATH
 
