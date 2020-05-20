@@ -626,7 +626,11 @@ run(sess, Afac\rand(10)) # no factorization, solving the equation
 ```
 """
 function factorize(A::Union{SparseTensor, SparseMatrixCSC}, max_cache_size::Int64 = 999999)
-    sparse_factorization_ = load_system_op(COLIB["sparse_factorization"]...; multiple=false)
+    c = COLIB["sparse_factorization"]
+    if Sys.iswindows()
+        c = (c[1], "libwinlru", c[3], c[4])
+    end
+    sparse_factorization_ = load_system_op(c...; multiple=false)
     A = constant(A)
     ii, jj, vv = find(A)
     d = size(A, 1)
@@ -642,7 +646,11 @@ Solves the equation `A_factorized * x = rhs` using the factorized sparse matrix.
 """
 function solve(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject})
     A, o = A_factorized
-    solve_ = load_system_op(COLIB["sparse_solve"]...; multiple=false)
+    c = COLIB["sparse_solve"]
+    if Sys.iswindows()
+        c = (c[1], "libwinlru", c[3], c[4])
+    end
+    solve_ = load_system_op(c...; multiple=false)
     ii, jj, vv = find(constant(A))
     rhs,ii, jj, vv,o = convert_to_tensor([rhs,ii, jj, vv,o], [Float64,Int64, Int64, Float64,Int64])
     out = solve_(rhs,ii, jj, vv,o)

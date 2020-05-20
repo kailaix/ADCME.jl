@@ -35,6 +35,10 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
+IF(WIN32)
+add_definitions(-DNOMINMAX)
+ENDIF()
+
 include_directories($${TF_INC} $${EIGEN_INC} $${CUDA_INC})
 link_directories($${LIBDIR})
 

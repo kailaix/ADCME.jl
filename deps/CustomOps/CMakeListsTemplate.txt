@@ -42,6 +42,10 @@ include_directories(${LIBDIR}/Adept-2/include)
 find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
 message("ADEPT_LIB_FILE=${ADEPT_LIB_FILE}")
 
+IF(WIN32)
+add_definitions(-DNOMINMAX)
+ENDIF()
+
 set(LIBDIR_NAME )
 
 # Copy and paste the following lines (no modification is required)

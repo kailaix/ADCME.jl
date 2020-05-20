@@ -29,13 +29,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 include_directories(../include ../include/adept)
 find_library(LIBOPENBLAS openblas HINTS ${LIBDIR})
 
+message("Use openblas library ${LIBOPENBLAS}")
 file(GLOB ALLSRC
     "${CMAKE_SOURCE_DIR}/*.cpp"
 )
 
+IF(WIN32)
+add_library(adept STATIC ${ALLSRC})
+ELSE()
 add_library(adept SHARED ${ALLSRC})
+ENDIF()
 add_definitions(-DHAVE_BLAS)
 
 set_property(TARGET adept PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 target_link_libraries(adept ${LIBOPENBLAS})
-set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR} RUNTIME_OUTPUT_DIRECTORY_RELEASE ${LIBDIR})
+set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR} RUNTIME_OUTPUT_DIRECTORY_RELEASE ${LIBDIR} ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${LIBDIR})

@@ -75,7 +75,7 @@ Loads the operator `opname` from library `oplibpath`.
 function load_op(oplibpath::String, opname::String)
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
-        if b[1:3]=="lib"
+        if length(b)>=3 && b[1:3]=="lib"
             b = b[4:end]
         end
         oplibpath = joinpath(a, b)
@@ -113,7 +113,7 @@ If `multiple` is true, the operator is assumed to have multiple outputs.
 function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false)
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
-        if b[1:3]=="lib"
+        if length(b) >=3 && b[1:3]=="lib"
             b = b[4:end]
         end
         oplibpath = joinpath(a, b)
@@ -231,7 +231,7 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
         error("Folder for the operator $s does not exist: $dir")
     end
     if Sys.iswindows()
-        if oplib[1:3]=="lib"
+        if length(oplib)>=3 && oplib[1:3]=="lib"
             oplib = oplib[4:end]
         end
     end
@@ -531,7 +531,7 @@ function install_adept(force::Bool=false; blas_binary::Bool = true)
     cd("Adept-2/adept")
     _make_blas(blas_binary)
     try
-        if (!isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib")) && !isfile("$(LIBDIR)/libadept.lib") || force
+        if (!isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib") && !isfile("$(LIBDIR)/adept.lib")) || force
             @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
             cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
             @info """Remove $(joinpath(pwd(), "build")) ... """
