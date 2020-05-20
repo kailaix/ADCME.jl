@@ -37,7 +37,7 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
     if Sys.iswindows()
         run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
     else
-        run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR $CMAKE_ARGS`, ENV_))
+        run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
     end
 end
 
@@ -231,7 +231,7 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
         error("Folder for the operator $s does not exist: $dir")
     end
     if Sys.iswindows()
-        if oblib[1:3]=="lib"
+        if oplib[1:3]=="lib"
             oplib = oplib[4:end]
         end
     end

@@ -4,7 +4,7 @@ using LinearAlgebra
 using PyPlot
 using Random
 using SparseArrays
-using ADCMEKit
+# using ADCMEKit
 Random.seed!(233)
 
 function sparse_factorization(A, s=99)
