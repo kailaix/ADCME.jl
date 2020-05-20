@@ -140,7 +140,11 @@ end
 # ENV["GPU"] = 1
 if !haskey(ENV, "GPU")
     try 
-        run(`which nvcc`)
+        if Sys.iswindows()
+            run(`cmd /c nvcc --version`)
+        else
+            run(`which nvcc`)
+        end
         @warn("""We detected that you have `nvcc` installed but ENV[\"GPU\"] is not set. 
 >>> If you want to install ADCME with GPU capabiity enabled, please set `ENV[\"GPU\"]=1`.""")
     catch
@@ -150,12 +154,16 @@ end
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     @info " --------------- (5/6) Installing GPU Dependencies --------------- "
     try 
-        run(`which nvcc`)
+        if Sys.iswindows()
+            run(`cmd /c nvcc --version`)
+        else
+            run(`which nvcc`)
+        end
     catch
-        error("""You specified ENV["GPU"]=1 but nvcc cannot be found (`which nvcc`) failed.
+        error("""You specified ENV["GPU"]=1 but nvcc cannot be found.
 Make sure `nvcc` is available.""")
     end
-    s = join(readlines(pipeline(`nvcc --version`)), " ")
+    s = Sys.iswindows() ? join(readlines(pipeline(`cmd /c nvcc --version`)), " ") : join(readlines(pipeline(`nvcc --version`)), " ")
     ver = match(r"V(\d+\.\d)", s)[1]
     if ver[1:2]!="10"
         error("TensorFlow backend of ADCME requires CUDA 10.0. But you have CUDA $ver")
@@ -190,13 +198,17 @@ Make sure `nvcc` is available.""")
     end
 
     if length(libpath)>=1
-        LIBCUDA = LIBCUDA*":"*abspath(joinpath(pkg_dir, libpath[1], "lib"))
+        LIBCUDA = LIBCUDA* (Sys.iswindows() ? ";" : ":") *abspath(joinpath(pkg_dir, libpath[1], "lib"))
         @info " --------------- CUDA include headers  --------------- "
-        cudnn = joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
+        cudnn = Sys.iswindows() ?
+            joinpath(pkg_dir, libpath[1], "Library/include", "cudnn.h") :
+            joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
         cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
     end
 
-    NVCC = readlines(pipeline(`which nvcc`))[1]
+    NVCC = Sys.iswindows() ?
+            strip(String(read(`cmd /c where nvcc`))) :
+             readlines(pipeline(`which nvcc`))[1]
     CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
 
 else

@@ -237,9 +237,10 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
     end
     oplibpath = joinpath(joinpath(dir, "build"), oplib)
     # check if the library exists 
-    libfile = oplibpath * (Sys.islinux() ? 
-                        ".so" : Sys.isapple() ? ".dylib" : ".dll")
-    # @show libfile
+    libfile = abspath(oplibpath * (Sys.islinux() ? 
+                        ".so" : Sys.isapple() ? ".dylib" : ".dll"))
+    @show libfile
+    # error()
     if !isfile(libfile)
         @info "Lib $s exists in registery but was not initialized. Compiling..."
         ADCME.precompile()

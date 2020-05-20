@@ -8,6 +8,7 @@ using SparseArrays
 using Test
 using Random
 
+use_gpu(0)
 doctor()
 clean()
 sess = Session()

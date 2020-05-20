@@ -628,7 +628,7 @@ run(sess, Afac\rand(10)) # no factorization, solving the equation
 function factorize(A::Union{SparseTensor, SparseMatrixCSC}, max_cache_size::Int64 = 999999)
     c = COLIB["sparse_factorization"]
     if Sys.iswindows()
-        c = (c[1], "libwinlru", c[3], c[4])
+        c = (c[1], "libwinlu", c[3], c[4])
     end
     sparse_factorization_ = load_system_op(c...; multiple=false)
     A = constant(A)
@@ -648,7 +648,7 @@ function solve(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Flo
     A, o = A_factorized
     c = COLIB["sparse_solve"]
     if Sys.iswindows()
-        c = (c[1], "libwinlru", c[3], c[4])
+        c = (c[1], "libwinlu", c[3], c[4])
     end
     solve_ = load_system_op(c...; multiple=false)
     ii, jj, vv = find(constant(A))
