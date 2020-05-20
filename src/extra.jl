@@ -231,7 +231,9 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
         error("Folder for the operator $s does not exist: $dir")
     end
     if Sys.iswindows()
-        oplib = oplib[4:end]
+        if oblib[1:3]=="lib"
+            oplib = oplib[4:end]
+        end
     end
     oplibpath = joinpath(joinpath(dir, "build"), oplib)
     # check if the library exists 
@@ -476,7 +478,7 @@ function _make_blas()
         if isfile(joinpath(ADCME.LIBDIR, "openblas.lib"))
             return 
         end 
-        @info "You are building openblas on Windows, and this process may take a long time.
+        @info "You are building openblas from source on Windows, and this process may take a long time.
 Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR, "openblas.lib"))"
         PWD = pwd()
         download("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.zip", joinpath(ADCME.LIBDIR, "OpenBlas.zip"))
@@ -716,6 +718,15 @@ For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.b
 For Windows, you need to add it to system environment.""")
     end
 
+    c  = Sys.WORD_SIZE==64
+    if c 
+        yes("Memory Address Length")
+    else 
+        no("Memory Address Length",
+"""Your memory address length is $(Sys.WORD_SIZE). ADCME is only tested against 64-bit machine.""",
+"""If you do not need custom operators, then it's fine. Otherwise you need to switch to a 64-bit machine""")
+    end
+
     if Sys.iswindows()
         c = isfile(ADCME.MAKE*".exe") && occursin("15", (ADCME.MAKE)) && occursin("2017", ADCME.MAKE)
         if c 
@@ -725,8 +736,10 @@ For Windows, you need to add it to system environment.""")
 """You specified that the C compiler for custom operators is 
 $(ADCME.MAKE)
 However, one of the following requirements is not met: 
-1. The file you specified $(ADCME.MAKE*".exe") does not exist.
-2*. (Optional) For compatibility, we suggest you use Microsoft Visual Studio 2017 (Version number: 15).
+1*. The file you specified $(ADCME.MAKE*".exe") does not exist.
+2**. (Optional) For compatibility, we suggest you use Microsoft Visual Studio 2017 (Version number: 15).
+
+* The path is actually not needed in compilation, but we raise such an issue here in case you obtain some compilation errors in the future.
 
 * We check the version by looking for "15" and "2017" in the path specification. If you are sure your compiler is correct, you can ignore this message. """,
 """Manually edit $(abspath(joinpath(splitdir(pathof(ADCME))[1], "../deps/deps.jl"))) and modify `MAKE` to be the correct compiler.""")
