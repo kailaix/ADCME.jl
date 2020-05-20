@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Shared Memory Across Kernels · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../resources/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li class="is-active"><a class="tocitem" href>Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Resources</a></li><li class="is-active"><a href>Shared Memory Across Kernels</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Shared Memory Across Kernels</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/global.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Shared-Memory-Across-Kernels-1"><a class="docs-heading-anchor" href="#Shared-Memory-Across-Kernels-1">Shared Memory Across Kernels</a><a class="docs-heading-anchor-permalink" href="#Shared-Memory-Across-Kernels-1" title="Permalink"></a></h1><p>In many use cases, we want to share data across multiple kernels. For example, if we want to design several custom operators for finite element analysis (e.g., one for assembling, one for solving the linear system and one for performing Newton&#39;s iteration), we might want to share the geometric data such as nodes and element connectivity matrices. This can be done by the share memory mechanism of dynamical shared libraries. </p><p>Dynamical shared libraries have the following property: in Unix-like environments, shared libries export all <code>extern</code> global variables. That is, multiple shared libraries can change the same variable as long as the variable is marked as <code>extern</code>. However, <code>extern</code> variable itself is not a definition but only a declaration. The variable should be defined in one and only one shared library. </p><p>Therefore, when we design custom operators and want to have global variables that will be reused by multiple custom kernels (each constitutes a separate dynamical shared library), we can link each of them to a &quot;data storage&quot; shared library. The &quot;data storage&quot; shared library should contain the definition of the global variable to be shared among those kernels. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/disk.png?raw=true" alt/></p><p>As an example, consider we want to share <code>Float64</code> vectors (with <code>String</code> keys). The data structure of the storage is given in <code>Saver.h</code></p><pre><code class="language-c">#include &lt;map&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+struct DataStore
+{        
+    std::map&lt;std::string, std::vector&lt;double&gt;&gt; vdata;
+};
+extern DataStore ds;</code></pre><p>Note we include <code>extern DataStore ds;</code> for convenience: we can include <code>Saver.h</code> for our custom operator kernels so that we have access to <code>ds</code>. </p><p>Additionally, in <code>Saver.cpp</code>, we define <code>ds</code></p><pre><code class="language-c">#include &quot;Saver.h&quot;
+DataStore ds;</code></pre><p>Now we can compile a dynamical shared library <code>Saver.so</code> (or <code>Saver.dylib</code>) with <code>Saver.h</code> and <code>Saver.cpp</code>. For all the other kernel implementation, we can include the header file <code>Saver.h</code> and link to <code>Saver.so</code> (or <code>Saver.dylib</code>) during compilation. </p><p>We show an example for storing, querying and deleting <span>$10\times 1$</span> <code>Float64</code> vectors with this technique. The main files are </p><ul><li><code>SaverTensor.cpp</code></li></ul><pre><code class="language-c">#include &quot;Saver.h&quot;
+#include &quot;tensorflow/core/framework/op_kernel.h&quot;
+#include &quot;tensorflow/core/framework/tensor_shape.h&quot;
+#include &quot;tensorflow/core/platform/default/logging.h&quot;
+#include &quot;tensorflow/core/framework/shape_inference.h&quot;
+#include&lt;cmath&gt;
+#include&lt;string&gt; 
+#include&lt;eigen3/Eigen/Core&gt;
+using std::string;
+using namespace tensorflow;
+
+REGISTER_OP(&quot;SaveTensor&quot;)
+
+.Input(&quot;handle : string&quot;)
+  .Input(&quot;val : double&quot;)
+  .Output(&quot;out : string&quot;)
+.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    
+        shape_inference::ShapeHandle handle_shape;
+        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(0), 0, &amp;handle_shape));
+        shape_inference::ShapeHandle val_shape;
+        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(1), 1, &amp;val_shape));
+
+        c-&gt;set_output(0, c-&gt;Scalar());
+    return Status::OK();
+  });
+
+class SaveTensorOp : public OpKernel {
+private:
+  
+public:
+  explicit SaveTensorOp(OpKernelConstruction* context) : OpKernel(context) {
+
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(2, context-&gt;num_inputs());
+    
+    
+    const Tensor&amp; handle = context-&gt;input(0);
+    const Tensor&amp; val = context-&gt;input(1);
+    
+    
+    const TensorShape&amp; val_shape = val.shape();
+    
+    
+    DCHECK_EQ(val_shape.dims(), 1);
+
+    // extra check
+        
+    // create output shape
+    
+    TensorShape out_shape({});
+            
+    // create output tensor
+    
+    Tensor* out = NULL;
+    OP_REQUIRES_OK(context, context-&gt;allocate_output(0, out_shape, &amp;out));
+    
+    // get the corresponding Eigen tensors for data access
+    auto handle_tensor = handle.flat&lt;string&gt;().data();
+    auto val_tensor = val.flat&lt;double&gt;().data();
+    auto out_tensor = out-&gt;flat&lt;string&gt;().data();   
+
+    // implement your forward function here 
+    // context-&gt;tensors_[string(*handle_tensor)] = val;
+    ds.vdata[string(*handle_tensor)] = std::vector&lt;double&gt;(val_tensor, val_tensor+10);
+    *out_tensor = *handle_tensor;    
+    printf(&quot;Adding %s to collections.\n&quot;, string(*handle_tensor).c_str());
+    printf(&quot;\n========Existing Keys========\n&quot;);
+    for(auto &amp; kv: ds.vdata){
+      printf(&quot;Key %s\n&quot;, kv.first.c_str());
+    }
+  }
+};
+REGISTER_KERNEL_BUILDER(Name(&quot;SaveTensor&quot;).Device(DEVICE_CPU), SaveTensorOp);</code></pre><ul><li><code>GetTensor.cpp</code></li></ul><pre><code class="language-c">#include &quot;Saver.h&quot;
+
+#include &quot;tensorflow/core/framework/op_kernel.h&quot;
+#include &quot;tensorflow/core/framework/tensor_shape.h&quot;
+#include &quot;tensorflow/core/platform/default/logging.h&quot;
+#include &quot;tensorflow/core/framework/shape_inference.h&quot;
+#include&lt;cmath&gt;
+#include&lt;string&gt; 
+#include&lt;map&gt;
+#include&lt;eigen3/Eigen/Core&gt;
+using std::string;
+
+using namespace tensorflow;
+
+REGISTER_OP(&quot;GetTensor&quot;)
+.Input(&quot;handle : string&quot;)
+  .Output(&quot;val : double&quot;)
+.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    
+        shape_inference::ShapeHandle handle_shape;
+        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(0), 0, &amp;handle_shape));
+
+        c-&gt;set_output(0, c-&gt;Vector(-1));
+    return Status::OK();
+  });
+
+class GetTensorOp : public OpKernel {
+private:
+  
+public:
+  explicit GetTensorOp(OpKernelConstruction* context) : OpKernel(context) {
+
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(1, context-&gt;num_inputs());
+    
+    const Tensor&amp; handle = context-&gt;input(0);    
+    auto handle_tensor = handle.flat&lt;string&gt;().data();
+
+    auto val_shape = TensorShape({10});   
+    Tensor *val = nullptr;
+    OP_REQUIRES_OK(context, context-&gt;allocate_output(0, val_shape, &amp;val));
+
+    if (!ds.vdata.count(string(*handle_tensor))){
+        printf(&quot;[Get] Key %s does not exist.\n&quot;, string(*handle_tensor).c_str());
+    }
+    else{
+      printf(&quot;[Get] Key %s exists.\n&quot;, string(*handle_tensor).c_str());
+      auto v = ds.vdata[string(*handle_tensor)];
+      for(int i=0;i&lt;10;i++){
+        val-&gt;flat&lt;double&gt;().data()[i] = v[i];
+      }
+    }
+    printf(&quot;\n========Existing Keys========\n&quot;);
+    for(auto &amp; kv: ds.vdata){
+      printf(&quot;Key %s\n&quot;, kv.first.c_str());
+    }
+    
+
+  }
+};
+REGISTER_KERNEL_BUILDER(Name(&quot;GetTensor&quot;).Device(DEVICE_CPU), GetTensorOp);</code></pre><ul><li><code>DeleteTensor.cpp</code></li></ul><pre><code class="language-c">#include &quot;Saver.h&quot;
+
+#include &quot;tensorflow/core/framework/op_kernel.h&quot;
+#include &quot;tensorflow/core/framework/tensor_shape.h&quot;
+#include &quot;tensorflow/core/platform/default/logging.h&quot;
+#include &quot;tensorflow/core/framework/shape_inference.h&quot;
+#include&lt;cmath&gt;
+#include&lt;string&gt; 
+#include&lt;map&gt;
+#include&lt;eigen3/Eigen/Core&gt;
+using std::string;
+
+using namespace tensorflow;
+
+REGISTER_OP(&quot;DeleteTensor&quot;)
+.Input(&quot;handle : string&quot;)
+  .Output(&quot;val : bool&quot;)
+.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    
+        shape_inference::ShapeHandle handle_shape;
+        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(0), 0, &amp;handle_shape));
+
+        c-&gt;set_output(0, c-&gt;Scalar());
+    return Status::OK();
+  });
+
+class DeleteTensorOp : public OpKernel {
+private:
+  
+public:
+  explicit DeleteTensorOp(OpKernelConstruction* context) : OpKernel(context) {
+
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(1, context-&gt;num_inputs());
+    
+    const Tensor&amp; handle = context-&gt;input(0);    
+    auto handle_tensor = handle.flat&lt;string&gt;().data();
+
+    auto val_shape = TensorShape({});   
+    Tensor *val = nullptr;
+    OP_REQUIRES_OK(context, context-&gt;allocate_output(0, val_shape, &amp;val));
+
+    if (ds.vdata.count(string(*handle_tensor))){
+      ds.vdata.erase(string(*handle_tensor));
+      printf(&quot;[Delete] Erase key %s.\n&quot;, string(*handle_tensor).c_str());
+      *(val-&gt;flat&lt;bool&gt;().data()) = true;
+    }
+    else{
+      printf(&quot;[Delete] Key %s does not exist.\n&quot;, string(*handle_tensor).c_str());
+      *(val-&gt;flat&lt;bool&gt;().data()) = false;
+    }
+    printf(&quot;\n========Existing Keys========\n&quot;);
+    for(auto &amp; kv: ds.vdata){
+      printf(&quot;Key %s\n&quot;, kv.first.c_str());
+    }
+  }
+};
+REGISTER_KERNEL_BUILDER(Name(&quot;DeleteTensor&quot;).Device(DEVICE_CPU), DeleteTensorOp);</code></pre><p>Here is part of the <a href="../assets/Codes/share_memory/CMakeLists.txt"><code>CMakeLists.txt</code></a> used for compilation, where we link <code>XXTensor.cpp</code> with <code>Saver</code></p><pre><code class="language-CMake">add_library(Saver SHARED Saver.cpp)
+set_property(TARGET Saver PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+add_library(SaveTensor SHARED SaveTensor.cpp)
+set_property(TARGET SaveTensor PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(SaveTensor ${TF_LIB_FILE} Saver)
+
+add_library(GetTensor SHARED GetTensor.cpp)
+set_property(TARGET GetTensor PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(GetTensor ${TF_LIB_FILE} Saver)
+
+add_library(DeleteTensor SHARED DeleteTensor.cpp)
+set_property(TARGET DeleteTensor PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(DeleteTensor ${TF_LIB_FILE} Saver)</code></pre><p>We can test our implementation with </p><pre><code class="language-julia">using ADCME
+
+save_tensor = load_op_and_grad(&quot;./build/libSaveTensor&quot;,&quot;save_tensor&quot;)
+get_tensor = load_op_and_grad(&quot;./build/libGetTensor&quot;,&quot;get_tensor&quot;)
+delete_tensor = load_op_and_grad(&quot;./build/libDeleteTensor&quot;,&quot;delete_tensor&quot;)
+
+val = constant(rand(10))
+t1 = tf.constant(&quot;tensor1&quot;)
+t2 = tf.constant(&quot;tensor2&quot;)
+t3 = tf.constant(&quot;tensor3&quot;)
+u1 = save_tensor(t1,val)
+u2 = save_tensor(t2,2*val)
+u3 = save_tensor(t3,3*val)
+
+z1 = get_tensor(t1);
+z2 = get_tensor(t2);
+z3 = get_tensor(t3);
+
+d1 = delete_tensor(t1);
+d2 = delete_tensor(t2);
+d3 = delete_tensor(t3);
+sess = Session(); 
+run(sess, [u1,u2,u3])
+
+
+run(sess, z1)
+run(sess, z2)
+run(sess, z3)
+run(sess, d2)</code></pre><p>The expected output is </p><pre><code class="language-txt">Adding tensor3 to collections.
+
+========Existing Keys========
+Key tensor1
+Key tensor3
+Adding tensor2 to collections.
+
+========Existing Keys========
+Key tensor1
+Key tensor2
+Key tensor3
+Adding tensor1 to collections.
+
+========Existing Keys========
+Key tensor1
+Key tensor2
+Key tensor3
+[Get] Key tensor1 exists.
+
+========Existing Keys========
+Key tensor1
+Key tensor2
+Key tensor3
+[Get] Key tensor2 exists.
+
+========Existing Keys========
+Key tensor1
+Key tensor2
+Key tensor3
+[Get] Key tensor3 exists.
+
+========Existing Keys========
+Key tensor1
+Key tensor2
+Key tensor3
+[Delete] Erase key tensor2.
+
+========Existing Keys========
+Key tensor1
+Key tensor3</code></pre><p>For example, in <a href="../factorization/">this article</a> we use the technique introduced here to design a custom operator for direct methods for sparse matrix solutions. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ode/">« PDE/ODE Solvers</a><a class="docs-footer-nextpage" href="../julia_customop/">Julia Custom Operators »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 20 May 2020 23:13">Wednesday 20 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
