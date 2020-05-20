@@ -34,7 +34,7 @@ function cmake(DIR::String="..")
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`JULIA=$(joinpath(Sys.BINDIR, "julia")) $CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
+    run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
 end
 
 function make()
@@ -277,33 +277,6 @@ end
 Compiles all the operators in `formulas.txt`. 
 """
 function Base.:precompile(force::Bool=true)
-    try
-        if Sys.iswindows()
-            run(`cmd /c where.exe julia`)
-        else 
-            run(`which julia`)
-        end
-    catch
-        printstyled(
-"""Julia cannot be found using `which julia`. This will break custom operator.
-To fix the error, add the julia binary path to your PATH environment variable.  
-""",
-        color=:red)
-        error("Waiting for fixing the Julia binary path.")
-    end 
-
-    LD_LIBRARY_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
-    if !haskey(ENV, LD_LIBRARY_PATH) || !(ADCME.LIBDIR in split(ENV[LD_LIBRARY_PATH], ':'))
-        @warn "$(ADCME.LIBDIR) is not in $LD_LIBRARY_PATH; this may break the custom operator utilties.
-You could add the path to $LD_LIBRARY_PATH:
-
-- Linux and MACOSX
-export LD_LIBRARY_PATH = $(ADCME.LIBDIR):\$LD_LIBRARY_PATH
-
-- Windows 
-add $(ADCME.LIBDIR) to Path environment variable
-"
-    end
     PWD = pwd()
     if (!force) && isfile("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt") && 
             isdir("$(@__DIR__)/../deps/CustomOps/build")
@@ -317,7 +290,8 @@ add $(ADCME.LIBDIR) to Path environment variable
     end
     refresh_cmake()
     cd("$(@__DIR__)/../deps/CustomOps")
-    !isdir("build") && mkdir("build")
+    rm("build", force=true, recursive=true)
+    mkdir("build")
     cd("build")
     ADCME.cmake()
     ADCME.make()
@@ -490,11 +464,7 @@ function install_adept(force::Bool=false)
         end
     end
     try
-        if force
-            @info "remove .libs ..."
-            rm(".libs", force=true, recursive=true)
-        end
-        if !isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib") 
+        if (!isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib")) || force
             @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
             cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
             @info """Remove $(joinpath(pwd(), "build")) ... """
@@ -516,8 +486,6 @@ find_library(ADEPT_LIB_FILE adept HINTS \${LIBDIR})
 message("ADEPT_LIB_FILE=\${ADEPT_LIB_FILE}")
 
 ∘ Add `\${ADEPT_LIB_FILE}` to `target_link_libraries`
-
-∘ (Optional) Add `$LIBDIR` to `LD_LIBRARY_PATH` environment variable
 """, color=:green)
     catch
         printstyled("Compliation failed\n", color=:red)

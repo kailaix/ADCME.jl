@@ -2,19 +2,19 @@ cmake_minimum_required(VERSION 3.5)
 project(TFApp)
 
 ##  For PyTorch
-# execute_process(COMMAND $ENV{JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch\"))|>print" OUTPUT_VARIABLE PREFIX)
-# execute_process(COMMAND $ENV{JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../examples/custom_op/headers\"))|>print" OUTPUT_VARIABLE HEADERS)
-# execute_process(COMMAND $ENV{JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
-# execute_process(COMMAND $ENV{JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch/include\"))|>print" OUTPUT_VARIABLE TORCH_INC)
+# execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch\"))|>print" OUTPUT_VARIABLE PREFIX)
+# execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../examples/custom_op/headers\"))|>print" OUTPUT_VARIABLE HEADERS)
+# execute_process(COMMAND ${JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
+# execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch/include\"))|>print" OUTPUT_VARIABLE TORCH_INC)
 # set(CMAKE_PREFIX_PATH ${PREFIX})
 # find_package(Torch REQUIRED)
 
 set (CMAKE_CXX_STANDARD 11)
 # C++11 required for tensorflow
 execute_process(COMMAND python -c "from sysconfig import get_paths as gp; import sys; sys.stdout.write(gp()['include'])" OUTPUT_VARIABLE PYTHON_INC)
-execute_process(COMMAND $ENV{JULIA} -e "using PyCall; print(PyCall.libpython)" OUTPUT_VARIABLE PYTHON_LIB)
-execute_process(COMMAND $ENV{JULIA} -e "abspath(joinpath(Sys.BINDIR, \"../lib\"))|>print" OUTPUT_VARIABLE JULIA_LIB)
-execute_process(COMMAND $ENV{JULIA} -e "abspath(joinpath(Sys.BINDIR, \"../include/julia\"))|>print" OUTPUT_VARIABLE JULIA_INC)
+execute_process(COMMAND ${JULIA} -e "using PyCall; print(PyCall.libpython)" OUTPUT_VARIABLE PYTHON_LIB)
+execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Sys.BINDIR, \"../lib\"))|>print" OUTPUT_VARIABLE JULIA_LIB)
+execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Sys.BINDIR, \"../include/julia\"))|>print" OUTPUT_VARIABLE JULIA_INC)
 add_definitions( -DJULIA_ENABLE_THREADING=1 )
 
 

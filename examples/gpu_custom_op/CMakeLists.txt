@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
-message("JULIA=$ENV{JULIA}")
-execute_process(COMMAND $ENV{JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
+message("JULIA=${JULIA}")
+execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
 
 
 
@@ -37,7 +37,7 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
-link_directories(${LIBDIR})
+
 
 find_package(CUDA QUIET REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")

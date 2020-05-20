@@ -2,8 +2,8 @@
 # project(TF_CUSTOM_OP)
 # set (CMAKE_CXX_STANDARD 11)
 
-# message("JULIA=$ENV{JULIA}")
-execute_process(COMMAND $ENV{JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
+# message("JULIA=${JULIA}")
+execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
 # 
 # 
 
