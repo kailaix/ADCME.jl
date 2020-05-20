@@ -8,7 +8,9 @@ using SparseArrays
 using Test
 using Random
 
-use_gpu(0)
+if has_gpu()
+    use_gpu(0)
+end
 doctor()
 clean()
 sess = Session()
