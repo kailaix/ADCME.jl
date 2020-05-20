@@ -15,6 +15,7 @@ requirements:
     - tensorflow 1.15.* *py37*
     - tensorflow-probability 0.8
     - openblas                           [not win]
+    - blas                               [win]               
     - _libgcc_mutex 0.1 main             [linux]
     - gcc_linux-64 5.4.0 h98af8de_24     [linux]
     - gcc_impl_linux-64 5.4.0 habb00fd_3 [linux]

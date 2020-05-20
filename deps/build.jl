@@ -45,6 +45,7 @@ push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
 using CMake
+using LibGit2
 
 
 ENVDIR = abspath(Conda.ROOTENV)
@@ -52,11 +53,15 @@ ENVDIR = abspath(Conda.ROOTENV)
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
 
-@info " --------------- Install Tensorflow Dependencies  --------------- "
+@info " --------------- (1/6) Install Tensorflow Dependencies  --------------- "
 
-if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages()
+if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" 
     @info " --------------- Remove Existing ADCME Environment  --------------- "
-    mv(ENVDIR, joinpath(ENVDIR,"../trash"))
+    if Sys.iswindows()
+        isdir(ENVDIR) && run(`cmd /c rd /s /q $ENVDIR`)
+    else
+        mv(ENVDIR, joinpath(ENVDIR,"../trash"), force=true)
+    end
 end
 
 if !("adcme" in Conda._installed_packages())
@@ -76,7 +81,7 @@ PYTHON = joinpath(BINDIR, "python")
 if Sys.iswindows()
     PYTHON = abspath(joinpath(ENVDIR, "python.exe"))
 end
-@info " --------------- Check Python Version  --------------- "
+@info " --------------- (2/6) Check Python Version  --------------- "
 
 !haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
 ENV["PYTHON"]=PYTHON
@@ -87,7 +92,7 @@ PyCall Python version: $(PyCall.python)
 Conda Python version: $PYTHON
 """
 
-@info " --------------- Looking for TensorFlow Dynamic Libraries --------------- "
+@info " --------------- (3/6) Looking for TensorFlow Dynamic Libraries --------------- "
 tf = pyimport("tensorflow")
 core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
 lib = readdir(core_path)
@@ -99,7 +104,15 @@ end
 TF_INC = tf.sysconfig.get_compile_flags()[1][3:end]
 TF_ABI = tf.sysconfig.get_compile_flags()[2][end:end]
 
-@info " --------------- Preparing Custom Operator Environment --------------- "
+if Sys.iswindows()
+    if !isdir(joinpath(TF_INC, "tensorflow"))
+        @info " --------------- (Windows) Downloading Include Files for Custom Operators --------------- "
+        run(`cmd /c rmdir /s /q $TF_INC`)
+        LibGit2.clone("https://github.com/kailaix/tensorflow-1.15-include", TF_INC)
+    end
+end
+
+@info " --------------- (4/6) Preparing Custom Operator Environment --------------- "
 LIBDIR = abspath("$ENVDIR/lib/Libraries")
 
 if !isdir(LIBDIR)
@@ -135,7 +148,7 @@ if !haskey(ENV, "GPU")
 end 
 
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
-    @info " --------------- Installing GPU Dependencies --------------- "
+    @info " --------------- (5/6) Installing GPU Dependencies --------------- "
     try 
         run(`which nvcc`)
     catch
@@ -187,10 +200,10 @@ Make sure `nvcc` is available.""")
     CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
 
 else
-    @info " --------------- Skipped: Installing GPU Dependencies  --------------- "
+    @info " --------------- (5/6) Skipped: Installing GPU Dependencies  --------------- "
 end
 
-@info """ --------------- Write Dependency Files  --------------- """
+@info """ -------------- (6/6) Write Dependency Files  --------------- """
 
 s = ""
 t = []
@@ -203,7 +216,13 @@ function adding(k, v)
     push!(t, "$k")
 end
 adding("BINDIR", BINDIR)
-adding("LIBDIR", abspath(joinpath(ENVDIR, "lib")))
+if Sys.iswindows()
+    D = abspath(joinpath(LIBDIR, "lib"))
+    !isdir(D) && mkdir(D)
+    adding("LIBDIR", D)
+else
+    adding("LIBDIR", abspath(joinpath(ENVDIR, "lib")))
+end
 adding("TF_INC", TF_INC)
 adding("TF_ABI", TF_ABI)
 adding("EIGEN_INC", LIBDIR)
@@ -214,11 +233,11 @@ elseif Sys.islinux()
     adding("CC", joinpath(BINDIR, "x86_64-conda_cos6-linux-gnu-gcc"))
     adding("CXX", joinpath(BINDIR, "x86_64-conda_cos6-linux-gnu-g++"))
 else
-    adding("CC", joinpath(BINDIR, ""))
-    adding("CXX", joinpath(BINDIR, ""))
+    adding("CC", "")
+    adding("CXX", "")
 end
 adding("CMAKE", cmake)
-adding("MAKE", joinpath(BINDIR, "make"))
+adding("MAKE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild")
 adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
 adding("TF_LIB_FILE", TF_LIB_FILE)
