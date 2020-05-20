@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
-execute_process(COMMAND julia -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"python\"))" OUTPUT_VARIABLE PYTHON)
+execute_process(COMMAND $ENV{JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
+execute_process(COMMAND $ENV{JULIA} -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"python\"))" OUTPUT_VARIABLE PYTHON)
 execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; \
                                        TF_INC = tf.sysconfig.get_compile_flags()[0][2:];\
                                        TF_LIB = tf.sysconfig.get_link_flags()[0][2:];\
