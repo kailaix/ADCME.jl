@@ -27,14 +27,18 @@ function xavier_init(size, dtype=Float64)
 end
 
 ############### custom operators ##################
-function cmake(DIR::String="..")
+function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
     ENV_ = copy(ENV)
     if haskey(ENV_, "LD_LIBRARY_PATH")
         ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
+    if Sys.iswindows()
+        run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
+    else
+        run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR $CMAKE_ARGS`, ENV_))
+    end
 end
 
 function make()
@@ -44,7 +48,19 @@ function make()
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    run(setenv(`$MAKE -j`, ENV_))
+    if Sys.iswindows()
+        sln_file = filter(x->endswith(x, ".sln"), readdir())
+        if length(sln_file)==0
+            error("No .sln file found. Did you run `ADCME.cmake()`?")
+        elseif length(sln_file)>1
+            error("More than 1 .sln file found. Check your program.")
+        else
+            sln_file = sln_file[1]
+        end 
+        run(`cmd /c $CMAKE --build . --target ALL_BUILD --config Release`)
+    else
+        run(setenv(`$MAKE -j`, ENV_))
+    end
 end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
@@ -290,8 +306,8 @@ function Base.:precompile(force::Bool=true)
     end
     refresh_cmake()
     cd("$(@__DIR__)/../deps/CustomOps")
-    rm("build", force=true, recursive=true)
-    mkdir("build")
+    # rm("build", force=true, recursive=true)
+    # mkdir("build")
     cd("build")
     ADCME.cmake()
     ADCME.make()
@@ -436,6 +452,42 @@ function install(s::String; force::Bool = false)
     end
 end
 
+
+
+function _make_blas()
+    if Sys.iswindows()
+        if isfile(joinpath(ADCME.LIBDIR, "openblas.lib"))
+            return 
+        end 
+        @info "You are building openblas on Windows, and this process may take a long time.
+Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR, "openblas.lib"))"
+        PWD = pwd()
+        download("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.zip", joinpath(ADCME.LIBDIR, "OpenBlas.zip"))
+        cd(ADCME.LIBDIR)
+        run(`cmd /c unzip OpenBLAS.zip`)
+        run(`cmd /c ren OpenBlas-0.3.9 OpenBlas`)
+        rm("OpenBlas.zip")
+        cd("OpenBlas")
+        mkdir("build")
+        cd("build")
+        ADCME.cmake(CMAKE_ARGS="-DCMAKE_Fortran_COMPILER=flang -DBUILD_WITHOUT_LAPACK=no -DNOFORTRAN=0 -DDYNAMIC_ARCH=ON")
+        ADCME.make()
+        cd("../lib/Release")
+        mv("openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
+        cd(PWD)
+    else 
+        required_file = Sys.isapple() ? ".dylib" : ".so"
+        required_file = joinpath(ADCME.LIBDIR, "libopenblas")*required_file
+        if !isfile(required_file)
+            files = readdir(ADCME.LIBDIR)
+            files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
+            target = joinpath(ADCME.LIBDIR, files[1])
+            symlink(target, required_file)
+            @info "Symlink $(required_file) --> $(files[1])"
+        end
+    end 
+end
+
 """
     install_adept(force::Bool=false)
 
@@ -452,17 +504,7 @@ function install_adept(force::Bool=false)
         LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     end
     cd("Adept-2/adept")
-    if !Sys.iswindows()
-        required_file = Sys.isapple() ? ".dylib" : ".so"
-        required_file = joinpath(ADCME.LIBDIR, "libopenblas")*required_file
-        if !isfile(required_file)
-            files = readdir(ADCME.LIBDIR)
-            files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
-            target = joinpath(ADCME.LIBDIR, files[1])
-            symlink(target, required_file)
-            @info "Symlink $(required_file) --> $(files[1])"
-        end
-    end
+    _make_blas()
     try
         if (!isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib")) || force
             @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
@@ -656,6 +698,25 @@ export LD_LIBRARY_PATH=$(ADCME.LIBDIR):\$LD_LIBRARY_PATH
 For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
 For Windows, you need to add it to system environment.""")
     end
+
+    if Sys.iswindows()
+        c = isfile(ADCME.MAKE*".exe") && occursin("15", (ADCME.MAKE)) && occursin("2017", ADCME.MAKE)
+        if c 
+            yes("C Compiler")
+        else
+            no("C Compiler", 
+"""You specified that the C compiler for custom operators is 
+$(ADCME.MAKE)
+However, one of the following requirements is not met: 
+1. The file you specified $(ADCME.MAKE*".exe") does not exist.
+2*. (Optional) For compatibility, we suggest you use Microsoft Visual Studio 2017 (Version number: 15).
+
+* We check the version by looking for "15" and "2017" in the path specification. If you are sure your compiler is correct, you can ignore this message. """,
+"""Manually edit $(abspath(joinpath(splitdir(pathof(ADCME))[1], "../deps/deps.jl"))) and modify `MAKE` to be the correct compiler.""")
+        end 
+
+    end
+    
     
 
     c = haskey(ENV, "PATH") && occursin(ADCME.BINDIR, ENV["PATH"])
