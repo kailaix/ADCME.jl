@@ -47,20 +47,25 @@ using Conda
 using CMake
 
 
-ENVDIR = abspath("$(Conda.ROOTENV)")
+ENVDIR = abspath(Conda.ROOTENV)
 
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
-@info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME env: $ENVDIR"""
+@info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
 
 @info " --------------- Install Tensorflow Dependencies  --------------- "
 
 if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" && "adcme" in Conda._installed_packages()
     @info " --------------- Remove Existing ADCME Environment  --------------- "
-    mv(ENVDIR, ENVDIR*"../trash")
+    mv(ENVDIR, joinpath(ENVDIR,"../trash"))
 end
 
 if !("adcme" in Conda._installed_packages())
-    Conda.add("adcme", channel="kailaix")
+    try
+        Conda.add("adcme", channel="kailaix")
+    catch 
+        error("""Error encountered when trying `Conda.add("adcme", channel="kailaix")`.
+>>> Set `ENV["FORCE_REINSTALL_ADCME"]=1` and rebuild ADCME.""")
+    end
 end
 
 BINDIR = Sys.iswindows() ? abspath("$ENVDIR/Scripts") : abspath("$ENVDIR/bin")  
@@ -124,7 +129,7 @@ if !haskey(ENV, "GPU")
     try 
         run(`which nvcc`)
         @warn("""We detected that you have `nvcc` installed but ENV[\"GPU\"] is not set. 
-If you want to install ADCME with GPU capabiity enabled, please set `ENV[\"GPU\"]=1`.""")
+>>> If you want to install ADCME with GPU capabiity enabled, please set `ENV[\"GPU\"]=1`.""")
     catch
     end
 end 
