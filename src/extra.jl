@@ -73,6 +73,13 @@ load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 Loads the operator `opname` from library `oplibpath`.
 """
 function load_op(oplibpath::String, opname::String)
+    if Sys.iswindows()
+        a, b = splitdir(oplibpath)
+        if b[1:3]=="lib"
+            b = b[4:end]
+        end
+        oplibpath = joinpath(a, b)
+    end
     if splitext(oplibpath)[2]==""
         oplibpath = abspath(oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll"))
@@ -104,6 +111,13 @@ Loads the operator `opname` from library `oplibpath`; gradients are also importe
 If `multiple` is true, the operator is assumed to have multiple outputs. 
 """
 function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false)
+    if Sys.iswindows()
+        a, b = splitdir(oplibpath)
+        if b[1:3]=="lib"
+            b = b[4:end]
+        end
+        oplibpath = joinpath(a, b)
+    end
     if splitext(oplibpath)[2]==""
         oplibpath = oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll")
@@ -216,6 +230,9 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
     if !isdir(dir)
         error("Folder for the operator $s does not exist: $dir")
     end
+    if Sys.iswindows()
+        oplib = oplib[4:end]
+    end
     oplibpath = joinpath(joinpath(dir, "build"), oplib)
     # check if the library exists 
     libfile = oplibpath * (Sys.islinux() ? 
@@ -306,8 +323,8 @@ function Base.:precompile(force::Bool=true)
     end
     refresh_cmake()
     cd("$(@__DIR__)/../deps/CustomOps")
-    # rm("build", force=true, recursive=true)
-    # mkdir("build")
+    rm("build", force=true, recursive=true)
+    mkdir("build")
     cd("build")
     ADCME.cmake()
     ADCME.make()
