@@ -38,4 +38,4 @@ add_definitions(-DHAVE_BLAS)
 
 set_property(TARGET adept PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(adept ${LIBOPENBLAS})
-set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR})
+set_target_properties(adept PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIBDIR} RUNTIME_OUTPUT_DIRECTORY_RELEASE ${LIBDIR})

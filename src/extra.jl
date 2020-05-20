@@ -481,6 +481,7 @@ function _make_blas(blas_binary)
         if blas_binary
             @info "Downloading prebuilt blas from Github. If you encounter any problem with openblas when using adept, run `install_adept(blas_binary=false)` to compile from source"
             download("https://github.com/kailaix/tensorflow-1.15-include/releases/download/v0.1.0/openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
+            return 
         end
         @info "You are building openblas from source on Windows, and this process may take a long time.
 Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR, "openblas.lib"))"
