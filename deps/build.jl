@@ -118,7 +118,16 @@ if !isdir("$LIBDIR/eigen3")
     mv("$LIBDIR/eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
 end
 
-
+# If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
+# ENV["GPU"] = 1
+if !haskey(ENV, "GPU")
+    try 
+        run(`which nvcc`)
+        @warn("""We detected that you have `nvcc` installed but ENV[\"GPU\"] is not set. 
+If you want to install ADCME with GPU capabiity enabled, please set `ENV[\"GPU\"]=1`.""")
+    catch
+    end
+end 
 
 if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
     @info " --------------- Installing GPU Dependencies --------------- "

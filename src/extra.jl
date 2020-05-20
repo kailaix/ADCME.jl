@@ -34,11 +34,7 @@ function cmake(DIR::String="..")
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    if Sys.iswindows()
-        run(setenv(`cmd /c $CMAKE $DIR -G "NMake Makefiles"`, ENV_))
-    else 
-        run(setenv(`$CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
-    end
+    run(setenv(`JULIA=$(joinpath(Sys.BINDIR, "julia")) $CMAKE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $DIR`, ENV_))
 end
 
 function make()
@@ -48,11 +44,7 @@ function make()
     else
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
-    if Sys.iswindows()
-        run(setenv(`cmd /c $CMAKE --build .`, ENV_))
-    else 
-        run(setenv(`$MAKE -j`, ENV_))
-    end
+    run(setenv(`$MAKE -j`, ENV_))
 end
 
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
