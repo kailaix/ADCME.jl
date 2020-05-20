@@ -34,7 +34,6 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: 1.4
-      - name: Add msbuild to PATH
       - uses: microsoft/setup-msbuild@v1.0.0
         with:
           vs-version: 15.0
