@@ -249,7 +249,11 @@ else
     adding("CXX", "")
 end
 adding("CMAKE", cmake)
-adding("MAKE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild")
+if Sys.iswindows()
+    adding("MAKE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild")
+else 
+    adding("MAKE", joinpath(BINDIR, "make"))
+end 
 adding("GIT", GIT)
 adding("PYTHON", PyCall.python)
 adding("TF_LIB_FILE", TF_LIB_FILE)

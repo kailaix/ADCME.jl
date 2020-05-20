@@ -1,3 +1,4 @@
+if !Sys.iswindows()
 @testset "sinkhorn" begin
     a = Float64.(1:5)/sum(1:5)
     b = Float64.(1:10)/sum(1:10)
@@ -13,6 +14,7 @@
     loss = sinkhorn(a, b, m)
     @test run(sess, loss) ≈ 0.10269121
 end
+end 
 
 @testset "dist" begin
     a = rand(10,3)
@@ -29,9 +31,11 @@ end
     end
 end
 
+if !Sys.iswindows()
 @testset "fastdtw" begin 
     Sample = Float64[1,2,3,5,5,5,6]
     Test = Float64[1,1,2,2,3,5]
     u, p = dtw(Sample, Test, true)
     @test run(sess, u)≈1.0
+end
 end

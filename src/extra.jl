@@ -239,7 +239,7 @@ function load_system_op(s::String, oplib::String, opname::String, grad::Bool=tru
     # check if the library exists 
     libfile = abspath(oplibpath * (Sys.islinux() ? 
                         ".so" : Sys.isapple() ? ".dylib" : ".dll"))
-    @show libfile
+    # @show libfile
     # error()
     if !isfile(libfile)
         @info "Lib $s exists in registery but was not initialized. Compiling..."

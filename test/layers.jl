@@ -1,3 +1,4 @@
+if !Sys.iswindows()
 @testset "fcx" begin 
     config = [2, 20,20,20,3]
     x = constant(rand(10,2))
@@ -11,6 +12,7 @@
     @test run(sess, tf.gradients(y[:,1], x)[1]) ≈ DU[:,1,:]
     @test run(sess, tf.gradients(y[:,2], x)[1]) ≈ DU[:,2,:]
     @test run(sess, tf.gradients(y[:,3], x)[1]) ≈ DU[:,3,:]
+end
 end
 
 @testset "dropout" begin 
