@@ -35,7 +35,8 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
         ENV_["LD_LIBRARY_PATH"] = LIBDIR
     end
     if Sys.iswindows()
-        run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
+        @warn "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
+        run(setenv(`$CMAKE -G"Visual Studio 15" -DNOMINMAX=ON -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
     else
         run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
     end
@@ -693,7 +694,11 @@ Pkg.build("PyCall")
 
     c = true 
     try 
-        run(`which julia`)
+        if Sys.iswindows()
+            run(`cmd /c where julia`)
+        else 
+            run(`which julia`)
+        end
     catch
         c = false
     end
@@ -702,8 +707,8 @@ Pkg.build("PyCall")
         yes("Julia path")
     else
         no("Julia path", 
-"""`which julia` outputs nothing. This will break custom operator compilation.""",
-"""Add your julia binary path to your environment path, e.g. (Unix systems) 
+"""`julia` outputs nothing. This will break custom operator compilation.""",
+"""(Optional) Add your julia binary path to your environment path, e.g. (Unix systems) 
 
 export PATH=$(Sys.BINDIR):\$PATH
 
@@ -711,7 +716,9 @@ For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.b
 For Windows, you need to add it to system environment.""")
     end
 
-    c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBDIR, ENV["LD_LIBRARY_PATH"])
+    c = Sys.iswindows() ?
+        haskey(ENV, "PATH") && occursin(ADCME.LIBDIR, ENV["PATH"]) :
+        haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBDIR, ENV["LD_LIBRARY_PATH"])
     if c 
         yes("Dynamic library path")
     else
@@ -721,8 +728,8 @@ For Windows, you need to add it to system environment.""")
 
 export LD_LIBRARY_PATH=$(ADCME.LIBDIR):\$LD_LIBRARY_PATH
 
-For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
-For Windows, you need to add it to system environment.""")
+For convenience, you can add the above line to your `~/.bashrc` (Linux or Apple).
+For Windows, you need to add it to PATH instead of LD_LIBRARY_PATH.""")
     end
 
     c  = Sys.WORD_SIZE==64
@@ -772,7 +779,9 @@ For Windows, you need to add it to system environment.""")
     end
 
     if length(ADCME.CUDA_INC)>0
-        c = haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBCUDA, ENV["LD_LIBRARY_PATH"])
+        c = Sys.iswindows() ?
+                haskey(ENV, "PATH") && occursin(ADCME.LIBCUDA, ENV["PATH"]) :
+                haskey(ENV, "LD_LIBRARY_PATH") && occursin(ADCME.LIBCUDA, ENV["LD_LIBRARY_PATH"])
         if c 
             yes("CUDA LD_LIBRARY_PATH")
         else
@@ -783,17 +792,23 @@ For Windows, you need to add it to system environment.""")
     
     export LD_LIBRARY_PATH=$(ADCME.LIBCUDA):\$LD_LIBRARY_PATH
     
-    For convenience, you can add the above line to your `~/.bashrc` (Linux) or `~/.bash_profile` (Apple).
-    For Windows, you need to add it to system environment.""")
+    For convenience, you can add the above line to your `~/.bashrc` (Linux or Apple).
+    For Windows, you need to add it to PATH instead of LD_LIBRARY_PATH.""")
         end
 
         try 
-            Libdl.dlpath("libcuda")
-            Libdl.dlpath("libcudnn")
-            Libdl.dlpath("libcublas")
-            yes("CUDA Library")
+            if !Sys.iswindows()
+                Libdl.dlpath("libcuda")
+                Libdl.dlpath("libcudnn")
+                Libdl.dlpath("libcublas")
+            else
+                Libdl.dlpath("cudart64_100")
+                Libdl.dlpath("cudnn64_7")
+                Libdl.dlpath("cublas64_100")
+            end
+            yes("CUDA Shared Library")
         catch
-            no("CUDA Library", 
+            no("CUDA Shared Library", 
     """libcuda, libcudnn, and (or) libcublas can not be loaded.""",
     """If you intend to use GPU, this fix is mandatory. Make sure cudatoolkit and cudnn libraries can be found in
 $(ADCME.LIBCUDA)
@@ -802,7 +817,7 @@ and `nvcc` is in your path.""")
 
         c = isdir(ADCME.CUDA_INC) && "cuda.h" in readdir(ADCME.CUDA_INC)
         if c 
-            yes("CUDA Include Library")
+            yes("CUDA Header Files")
 
             if !isfile(joinpath(ADCME.TF_INC, "third_party/gpus/cuda/include/cuda_fp16.h"))
                 println("Fixing third_party/gpus/cuda/include...")
@@ -814,7 +829,7 @@ and `nvcc` is in your path.""")
             end
 
         else 
-            no("CUDA Include Library",
+            no("CUDA Header Files",
             """Cuda include library does not exist or `cuda.h` is missing.""",
         """It might be possible that your cuda include library is located somewhere else other than $(ADCME.CUDA_INC). Fix the dependency file.""")
         end
