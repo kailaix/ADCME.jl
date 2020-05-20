@@ -46,27 +46,21 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 
 # Installation
 
-1. Install [Julia](https://julialang.org/). The following configuration has been tested:
+1. Install [Julia](https://julialang.org/). 
 
-⚠️Tested Configuration
+🎉 Support Matrix
 
 |         |  Julia 1.3 | Julia 1.4 | GPU | Custom Operator |
 |---------| ----- |-------|-----|-----------------|
 | Linux   |✔ | ✔  | ✔   | ✔               |
 | MacOS   |✔ |  ✕  | ✕   | ✔               |
-| Windows | ✔ | ✔  | ✕   | ✕               |
+| Windows | ✔ | ✔  | ✔   | ✔               |
 
 
 2. Install `ADCME`
 ```
 using Pkg
 Pkg.add("ADCME")
-```
-
-3. Run the ADCME built-in `doctor` and follow instructions to fix computing environment problems
-```julia
-using ADCME
-doctor()
 ```
 
 3. (Optional) Test `ADCME.jl`
@@ -85,7 +79,11 @@ Pkg.build("ADCME")
 
 For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
 
-
+5. (Optional) Check the health of your installed ADCME and install missing dependencies or fixing incorrect paths. 
+```julia
+using ADCME 
+doctor()
+``` 
 
 
 # Tutorial

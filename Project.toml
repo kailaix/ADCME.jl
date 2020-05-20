@@ -1,7 +1,7 @@
 name = "ADCME"
 uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
 authors = ["Kailai Xu <kailaix@hotmail.com>"]
-version = "0.5.2"
+version = "0.5.3"
 
 [deps]
 CMake = "631607c0-34d2-5d66-819e-eb0f9aa2061a"
@@ -19,13 +19,13 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+CMake = "1"
 Conda = "1"
 FFTW = "1"
 MAT = "0"
 PyCall = "1.91"
 SpecialFunctions = "0"
 julia = "1"
-CMake = "1"
 
 [extras]
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
