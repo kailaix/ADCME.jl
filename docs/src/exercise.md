@@ -77,10 +77,7 @@ Hint: Can you eliminate $u_0^k$ and $u_{n+1}^k$ in Eq. (4) using Eq. (5) and $u_
 
 The starter code `Case1D/starter1.jl` precomputes the force vector $F^k$ and packs it into a matrix $F\in \mathbb{R}^{(m+1)\times n}$. 
 
-{:start="2"}
-1. Use `spdiag`[^spdiag]  to construct `A` as a `SparseTensor` (see the starter code for details). `spdiag` is an ADCME function. See the documentation[^spdiag] for the syntax. Turn in your code.
-
-$\kappa$ is given by
+1. Use `spdiag`[^spdiag]  to construct `A` as a `SparseTensor` (see the starter code for details). `spdiag` is an ADCME function. See the documentation[^spdiag] for the syntax. Here $\kappa$ is given by
 
 $$\kappa(x) = 2+1.5x$$
 
@@ -88,11 +85,18 @@ $$\kappa(x) = 2+1.5x$$
 
 For debugging, check that your $A_{ij}$ is tridiagonal. You can use `run(sess, A)` to evaluate the `SparseTensor` `A`. You should get the following values:
 
-$A_{11}$ | $201$
-$A_{12}$ | $-200$
-$A_{21}$ | $-101.5$
-$A_{33}$ | $207$
-$A_{10,10}$ | $228$
+
+
+|   Entry   |  Value    |
+| ---- | ---- |
+|  $A_{11}$    |    $201$   |
+|   $A_{12}$   |    $-200$   |
+|   $A_{21}$   |  $-101.5$    |
+|  $A_{33}$    |  $207$    |
+| $A_{10,10}$ | $228$ |
+
+
+
 
 The computational graph of the dynamical system can be efficiently constructed using `while_loop`. 
 
