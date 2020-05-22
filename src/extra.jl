@@ -113,10 +113,15 @@ function load_op(oplibpath::String, opname::String)
         error("File $oplibpath does not exist. Instruction:\nRunning `compile(oplibpath)` to compile the library first.")
     end
     fn_name = opname*randstring(8)
+try 
 py"""
 import tensorflow as tf
 lib$$fn_name = tf.load_op_library($oplibpath)
 """
+catch(e)
+    printstyled("Failed to open $oplibpath. Error Message from the TensorFlow backend\n$(string(e))\n", color=:red)
+    Libdl.dlopen(oplibpath)
+end
     lib = py"lib$$fn_name"
     s = getproperty(lib, opname)
     load_op_dict[(oplibpath,opname)] = s
@@ -152,6 +157,7 @@ function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=fals
     
     opname_grad = opname*"_grad"
     fn_name = opname*randstring(8)
+    try
 if !multiple
 py"""
 import tensorflow as tf
@@ -175,6 +181,10 @@ def $$fn_name(*args):
         return lib$$fn_name.$$opname_grad(*dy, *u, *args)
     return u, grad
 """
+end
+catch(e)
+    printstyled("Failed to open $oplibpath. Error Message from the TensorFlow backend\n$(string(e))\n", color=:red)
+    Libdl.dlopen(oplibpath)
 end
         s = py"$$fn_name"
         load_op_grad_dict[(oplibpath,opname)] = s
