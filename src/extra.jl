@@ -37,8 +37,8 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
     end
     if Sys.iswindows()
         if !haskey(ENV_, "VS150COMNTOOLS")
-            @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools" maxlog=1
-            ENV_["VS150COMNTOOLS"] = "/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools"
+            @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools" maxlog=1
+            ENV_["VS150COMNTOOLS"] = "/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools"
         end
         @warn "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
         run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
