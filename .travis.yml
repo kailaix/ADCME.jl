@@ -22,3 +22,5 @@ after_success:
 cache:
   directories:
   - /home/travis/.julia/conda/3/
+  - C:\Users\travis\.julia\conda\3
+  - C:\Program Files (x86)\Microsoft Visual Studio
