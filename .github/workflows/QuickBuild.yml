@@ -43,6 +43,7 @@ jobs:
         with:
           args: install visualstudio2017-workload-nativedesktop
       - name: Build-Macos
-        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME"); using ADCME; install_adept(); ADCME.precompile()'
+        run: julia --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build("ADCME")'
+      - run: julia --color=yes -e 'using ADCME; install_adept(); ADCME.precompile()'
 
 
