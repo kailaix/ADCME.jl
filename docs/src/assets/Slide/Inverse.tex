@@ -198,7 +198,7 @@
 %\usebackgroundtemplate{%
 %\begin{picture}(0,250)
 %\centering
-%	{{\includegraphics[width=1.0\paperwidth]{../background}}}
+%	{{\includegraphics[width=1.0\paperwidth]{figures/background}}}
 %\end{picture}
 %  } 
 %\usebackgroundtemplate{%
@@ -250,7 +250,7 @@ $$\kappa(x) = a + bx$$
 	\frametitle{Inverse Modeling}
 	\begin{figure}
 	\centering
-  \includegraphics[width=1.0\textwidth]{../inverse3}
+  \includegraphics[width=1.0\textwidth]{figures/inverse3}
 \end{figure}
 \end{frame}
 
@@ -261,7 +261,7 @@ $$\kappa(x) = a + bx$$
 	\end{itemize}
 	\begin{figure}[hbt]
 	\centering
-  \includegraphics[width=0.8\textwidth]{../inverse2}
+  \includegraphics[width=0.8\textwidth]{figures/inverse2}
 \end{figure}
 \end{frame}
 
@@ -718,13 +718,13 @@ However, wse cannot express $u_\theta$ analytically in terms of $\theta$.
 	\item Let's consider a simple example
 	\begin{align*}
 		\min_\theta & \ \|u-u_0\|^2\\
-		\mathrm{s.t.} & \ (A+\theta B) u = y 
+		\mathrm{s.t.} & \ B(\theta) u = y 
 	\end{align*}
 	
 	By definition:
 	$$\tilde L_h(\theta) := \|u_\theta-u_0\|^2$$
 	where $u_\theta$ is the solution to 
-	$$ (A+\theta B) u = y $$
+	$$ B(\theta) u = y $$
 \end{itemize}	
 
 \end{frame}
@@ -750,12 +750,12 @@ $$y'(x) = \frac{3x^2-1}{3y(x)^2}$$
 	\begin{enumerate}
 		\item 
 		$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = 2(u_\theta-u_0)^T \frac{\partial u_\theta}{\partial \theta}$$
-\item To compute $\frac{\partial u_\theta}{\partial \theta}$, consider the PDE constraint 
-$$(A+\theta B) u_\theta = y$$
-Take derivative with respect to $\theta$ on both sides 
-$$Bu_\theta + (A+\theta B) \frac{\partial u_\theta}{\partial \theta} = 0\Rightarrow \frac{\partial u_\theta}{\partial \theta} = (A+\theta B)^{-1} Bu_\theta$$
+\item To compute $\frac{\partial u_\theta}{\partial \theta}$, consider the PDE constraint ($\theta$ is a scalar)
+$$B(\theta) u_\theta = y$$
+Take the derivative with respect to $\theta$ on both sides 
+$$\frac{\partial B(\theta)}{\partial \theta}u_\theta + B(\theta) \frac{\partial u_\theta}{\partial \theta} = 0\Rightarrow \frac{\partial u_\theta}{\partial \theta} = -B(\theta)^{-1} \frac{\partial B(\theta)}{\partial \theta}u_\theta$$
 \item Finally, 
-$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = 2(u_\theta-u_0)^T(A+\theta B)^{-1} Bu_\theta$$
+$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = -2(u_\theta-u_0)^TB(\theta)^{-1} \frac{\partial B(\theta)}{\partial \theta}u_\theta$$
 	\end{enumerate}
 \end{frame}
 
@@ -765,12 +765,12 @@ $$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = 2(u_\theta-u_0)^T(A+\the
 	\begin{enumerate}
 		\item Remember: in reverse-mode AD, gradients are always back-propagated from downstream (objective function) to upstream (unknowns). 
 		\item The following quantity is computed first:
-		$$g^T = 2(u_\theta-u_0)^T(A+\theta B)^{-1}$$
+		$$g^T = 2(u_\theta-u_0)^TB(\theta)^{-1}$$
 		which is equivalent to solve a linear system 
-		$$(A+\theta B)^T g = 2(u_\theta-u_0)$$
+		$$B(\theta)^T g = 2(u_\theta-u_0)$$
 		\item \textcolor{red}{In the gradient back-propagation step, a linear system with an adjoint matrix (compared to the forward computation) is solved.} 
 		\item Finally, 
-		$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = 2(u_\theta-u_0)^T(A+\theta B)^{-1} Bu_\theta = g^T Bu_\theta$$
+		$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = -2(u_\theta-u_0)^TB(\theta)^{-1} \frac{\partial B(\theta)}{\partial \theta}u_\theta = -g^T \frac{\partial B(\theta)}{\partial \theta}u_\theta$$
 	\end{enumerate}
 \end{frame}
 
@@ -780,8 +780,8 @@ $$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = 2(u_\theta-u_0)^T(A+\the
 	
 	\begin{itemize}
 		\item A trick for evaluating $g^T Bu_\theta$: consider $g$ as independent of $\theta$ in the computational graph, then 
-		$$g^T Bu_\theta = \frac{\partial (g^T Bu)}{\partial \theta}$$
-		\item $g^T Bu$ is a scalar, thus we can apply reverse-mode AD to compute $g^T Bu_\theta$.
+		$$g^T \frac{\partial B(\theta)}{\partial \theta}u_\theta = \frac{\partial (g^T B(\theta) u_\theta)}{\partial \theta}$$
+		\item $g^T B(\theta) u_\theta$ is a scalar, thus we can apply reverse-mode AD to compute $g^T B(\theta) u_\theta$.
 		\item Declaring independence of variables can be done with \texttt{tf.stop\_gradient} in TensorFlow or \texttt{independent} in ADCME. 
 	\end{itemize}
 \end{frame}
@@ -876,7 +876,7 @@ $${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
 		\item Solve seismic inversion problems within a unified framework. 
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../adseimic.jpeg}
+  \includegraphics[width=1.0\textwidth]{figures/adseimic.jpeg}
 \end{figure}
 	
 \end{frame}
@@ -887,7 +887,7 @@ $${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
 		\item Estimating hydrological properties from high resolution geological data (e.g., seismic data). 
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.6\textwidth]{../geo.png}
+  \includegraphics[width=0.6\textwidth]{figures/geo.png}
 \end{figure}
 \end{frame}
 

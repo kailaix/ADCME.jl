@@ -36,7 +36,26 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
     end
     if Sys.iswindows()
         @warn "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
-        run(setenv(`$CMAKE -G"Visual Studio 15" -DNOMINMAX=ON -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
+        try 
+            run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
+        catch(e)
+            printstyled(e, color=:red)
+            println("")
+            printstyled("""
+Cmake with Visual Studio 15 throws an error. 
+Please check:
+1. Have you installed Visual Studio 15 (2017)?
+   If not, install the compiler here: https://visualstudio.microsoft.com/vs/older-downloads/.
+2. Have you checked [Desktop development with C++] and [MS Build] when installing Visual Studio 15 (2017)?
+   If not, follow these steps:
+      * Open Visual Studio
+      * Go to Tools -> Get Tools and Features
+      * In the "Workloads" tab enable "Desktop development with C++"
+      * Click Modify at the bottom right
+Restart Julia after you finished the steps. 
+""",
+                color=:blue)
+        end
     else
         run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
     end
