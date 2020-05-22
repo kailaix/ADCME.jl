@@ -11,8 +11,12 @@ julia:
 os:
   - osx
   - linux
+  - windows
 notifications:
   email: false
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install visualstudio2017community; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install visualstudio2017-workload-nativedesktop; fi
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
 cache:

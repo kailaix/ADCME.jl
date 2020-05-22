@@ -29,33 +29,19 @@ end
 ############### custom operators ##################
 function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
     ENV_ = copy(ENV)
-    if haskey(ENV_, "LD_LIBRARY_PATH")
-        ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    LD_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
+    if haskey(ENV_, LD_PATH)
+        ENV_[LD_PATH] = ENV[LD_PATH]*":$LIBDIR"
     else
-        ENV_["LD_LIBRARY_PATH"] = LIBDIR
+        ENV_[LD_PATH] = LIBDIR
     end
     if Sys.iswindows()
-        @warn "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
-        try 
-            run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
-        catch(e)
-            printstyled(e, color=:red)
-            println("")
-            printstyled("""
-Cmake with Visual Studio 15 throws an error. 
-Please check:
-1. Have you installed Visual Studio 15 (2017)?
-   If not, install the compiler here: https://visualstudio.microsoft.com/vs/older-downloads/.
-2. Have you checked [Desktop development with C++] and [MS Build] when installing Visual Studio 15 (2017)?
-   If not, follow these steps:
-      * Open Visual Studio
-      * Go to Tools -> Get Tools and Features
-      * In the "Workloads" tab enable "Desktop development with C++"
-      * Click Modify at the bottom right
-Restart Julia after you finished the steps. 
-""",
-                color=:blue)
+        if !haskey(ENV_, "VS150COMNTOOLS")
+            @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools" maxlog=1
+            ENV_["VS150COMNTOOLS"] = "/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools"
         end
+        @warn "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
+        run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
     else
         run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
     end
@@ -63,10 +49,11 @@ end
 
 function make()
     ENV_ = copy(ENV)
-    if haskey(ENV_, "LD_LIBRARY_PATH")
-        ENV_["LD_LIBRARY_PATH"] = ENV["LD_LIBRARY_PATH"]*":$LIBDIR"
+    LD_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
+    if haskey(ENV_, LD_PATH)
+        ENV_[LD_PATH] = ENV[LD_PATH]*":$LIBDIR"
     else
-        ENV_["LD_LIBRARY_PATH"] = LIBDIR
+        ENV_[LD_PATH] = LIBDIR
     end
     if Sys.iswindows()
         sln_file = filter(x->endswith(x, ".sln"), readdir())
