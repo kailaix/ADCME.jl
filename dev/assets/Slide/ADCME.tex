@@ -192,7 +192,7 @@
 \usebackgroundtemplate{%
 \begin{picture}(0,250)
 \centering
-	{{\includegraphics[width=1.0\paperwidth]{../background}}}
+	{{\includegraphics[width=1.0\paperwidth]{figures/background}}}
 \end{picture}
   } 
 %\usebackgroundtemplate{%
@@ -217,7 +217,7 @@
 	\end{itemize}
 	\begin{figure}[hbt]
 	\centering
-  \includegraphics[width=0.8\textwidth]{../inverse2}
+  \includegraphics[width=0.8\textwidth]{figures/inverse2}
 \end{figure}
 \end{frame}
 
@@ -225,7 +225,7 @@
 	\frametitle{Inverse Modeling}
 	\begin{figure}
 	\centering
-  \includegraphics[width=1.0\textwidth]{../inverse3}
+  \includegraphics[width=1.0\textwidth]{figures/inverse3}
 \end{figure}
 \end{frame}
 
@@ -271,7 +271,7 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 		\item \textcolor{red}{Satisfy the physics to the largest extent}.
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.75\textwidth]{../physics_based_machine_learning.png}
+  \includegraphics[width=0.75\textwidth]{figures/physics_based_machine_learning.png}
 \end{figure}
 \end{frame}
 
@@ -291,7 +291,7 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 	
 	\begin{figure}[hbt]
 	\centering
-  \includegraphics[width=0.6\textwidth]{../im.pdf}
+  \includegraphics[width=0.6\textwidth]{figures/im.pdf}
 \end{figure}
 
 \end{frame}
@@ -336,7 +336,7 @@ $||$
 \end{minipage}~
 \begin{minipage}[t]{0.6\textwidth}
 \begin{figure}[hbt]
-  \includegraphics[width=0.8\textwidth]{../compare-NN-PDE.png}
+  \includegraphics[width=0.8\textwidth]{figures/compare-NN-PDE.png}
 \end{figure}
 \end{minipage}
 
@@ -352,7 +352,7 @@ $||$
 	\end{itemize}
 	
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../fd}
+  \includegraphics[width=1.0\textwidth]{figures/fd}
 \end{figure}
 \end{frame}
 
@@ -367,7 +367,7 @@ $||$
 		\item \red{Back-propagates} the gradient to upstream nodes.  
 		\end{itemize}
 		\begin{figure}[hbt]
-  \includegraphics[width=0.4\textwidth]{../rad}
+  \includegraphics[width=0.4\textwidth]{figures/rad}
 \end{figure}
 
 	\end{itemize}
@@ -428,7 +428,7 @@ $$z=\sin(x_1+x_2) + x_2^2x_3$$
 	\end{itemize}
 	
 	\begin{figure}[hbt]
-  \includegraphics[width=0.4\textwidth]{../fad}
+  \includegraphics[width=0.4\textwidth]{figures/fad}
 \end{figure}
 	
 	
@@ -450,7 +450,7 @@ $$z=\sin(x_1+x_2) + x_2^2x_3$$
 	
 	
 	\begin{minipage}[b]{0.45\textwidth}
-	\includegraphics[width=1.0\textwidth]{../forwardmode}
+	\includegraphics[width=1.0\textwidth]{figures/forwardmode}
 \end{minipage}~
 \begin{minipage}[b]{0.45\textwidth}
   \begin{align*}
@@ -502,7 +502,7 @@ Reverse & $m\ll n$ & $\leq 4\;\mathrm{OPS}(f(x))$ & Inverse Modeling \\ \bottomr
 	\end{itemize}
 	
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../cgnum}
+  \includegraphics[width=1.0\textwidth]{figures/cgnum}
 \end{figure}
 
 	
@@ -529,7 +529,7 @@ Reverse & $m\ll n$ & $\leq 4\;\mathrm{OPS}(f(x))$ & Inverse Modeling \\ \bottomr
 -- $\bt$ is the model parameter
 	\end{minipage}~
 	\begin{minipage}[b]{0.45\textwidth}
-		\includegraphics[width=1.0\textwidth]{../adjoint}
+		\includegraphics[width=1.0\textwidth]{figures/adjoint}
 	\end{minipage}
 	 
 	
@@ -601,7 +601,7 @@ $$\bm{\lambda}_2^T = \frac{\partial f_4}{\partial  \mathbf{u}_2} + \bm{\lambda}_
 \end{minipage}~
 \begin{minipage}[b]{0.48\textwidth}
 \centering
-	\includegraphics[width=0.8\textwidth]{../adjoint2.pdf}
+	\includegraphics[width=0.8\textwidth]{figures/adjoint2.pdf}
 \end{minipage}
 
 
@@ -636,7 +636,7 @@ In general, \textcolor{red}{the reverse-mode AD is back-propagating the Lagrange
 %		$$-bu''(x)+u(x) = 8 + 4x - 4x^2, x\in[0,1], u(0)=u(1)=0$$
 %	\end{itemize}
 %	\begin{figure}[hbt]
-%  \includegraphics[width=0.8\textwidth]{../code.png}
+%  \includegraphics[width=0.8\textwidth]{figures/code.png}
 %\end{figure}
 %\end{frame}
 
@@ -656,7 +656,7 @@ In general, \textcolor{red}{the reverse-mode AD is back-propagating the Lagrange
 \end{itemize}
 \end{minipage}~
 \begin{minipage}[t]{0.49\textwidth}
-  \includegraphics[width=1.0\textwidth]{../sim.png}
+  \includegraphics[width=1.0\textwidth]{figures/sim.png}
 \end{minipage}
 
 	% Please add the following required packages to your document preamble:
@@ -677,7 +677,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 	\frametitle{Example}
 
 	\begin{itemize}
-		%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyr�, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+		%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyrï¿½, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
 		%		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
 		\item An efficient way to do automatic differentiation is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$; treat $y$ as a function of $x$ and take the derivative on both sides
 		      $$3x^2 - 3y(x)^2y'(x)-y'(x)=0\Rightarrow y'(x) = \frac{3x^2}{3y^2+1}$$
@@ -693,7 +693,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 	\frametitle{Example}
 	
 	\begin{itemize}
-%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel Peyré, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel PeyrÃ©, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
 %		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
 		\item An efficient way is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$, treat $y$ as a function of $x$ and take the derivative on both sides
 		$$3x^2 - 3y(x)^2y'(x)-1=0\Rightarrow y'(x) = \frac{3x^2-1}{3y(x)^2}$$
@@ -755,14 +755,75 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 
 \end{frame}
 
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	Let us consider an example:
+\begin{equation}
+  \begin{aligned}
+	\min_\theta & \; L(\theta) = \|u_\theta - u_0\|^2 \\ 
+	\mbox{s.t.} & \; B(\theta)u = y
+\end{aligned}	
+\end{equation}
+Let $u_\theta$ denotes the solution to the PDE constraint (assume boundary conditions have been considered in the linear system, e.g., via static condensation). 
+
+$$\tilde L(\theta) = \|u_\theta - u_0\|^2$$
+\end{frame}
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	\begin{enumerate}
+		\item 
+		$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = 2(u_\theta-u_0)^T \frac{\partial u_\theta}{\partial \theta}$$
+\item To compute $\frac{\partial u_\theta}{\partial \theta}$, consider the PDE constraint ($\theta$ is a scalar)
+$$B(\theta) u_\theta = y$$
+Take the derivative with respect to $\theta$ on both sides 
+$$\frac{\partial B(\theta)}{\partial \theta}u_\theta + B(\theta) \frac{\partial u_\theta}{\partial \theta} = 0\Rightarrow \frac{\partial u_\theta}{\partial \theta} = -B(\theta)^{-1} \frac{\partial B(\theta)}{\partial \theta}u_\theta$$
+\item Finally, 
+$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = -2(u_\theta-u_0)^TB(\theta)^{-1} \frac{\partial B(\theta)}{\partial \theta}u_\theta$$
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	
+	\begin{enumerate}
+		\item Remember: in reverse-mode AD, gradients are always back-propagated from downstream (objective function) to upstream (unknowns). 
+		\item The following quantity is computed first:
+		$$g^T = 2(u_\theta-u_0)^TB(\theta)^{-1}$$
+		which is equivalent to solve a linear system 
+		$$B(\theta)^T g = 2(u_\theta-u_0)$$
+		\item \textcolor{red}{In the gradient back-propagation step, a linear system with an adjoint matrix (compared to the forward computation) is solved.} 
+		\item Finally, 
+		$$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = -2(u_\theta-u_0)^TB(\theta)^{-1} \frac{\partial B(\theta)}{\partial \theta}u_\theta = -g^T \frac{\partial B(\theta)}{\partial \theta}u_\theta$$
+	\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	
+	\begin{itemize}
+		\item A trick for evaluating $g^T Bu_\theta$: consider $g$ as independent of $\theta$ in the computational graph, then 
+		$$g^T \frac{\partial B(\theta)}{\partial \theta}u_\theta = \frac{\partial (g^T B(\theta) u_\theta)}{\partial \theta}$$
+		\item $g^T B(\theta) u_\theta$ is a scalar, thus we can apply reverse-mode AD to compute $g^T B(\theta) u_\theta$.
+		\item Declaring independence of variables can be done with \texttt{tf.stop\_gradient} in TensorFlow or \texttt{independent} in ADCME. 
+	\end{itemize}
+\end{frame}
+
+
+
+
 \begin{frame}
 	\frametitle{Methodology Summary}
 	\begin{figure}[hbt]
 		\centering
-		\includegraphics[width=0.8\textwidth]{../routine}
+		\includegraphics[width=0.8\textwidth]{figures/routine}
 	\end{figure}
 
 \end{frame}
+
+
 
 
 
@@ -791,7 +852,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 	\frametitle{Methodology Summary}
 \begin{figure}[hbt]
 \centering
-  \includegraphics[width=0.8\textwidth]{../routine}
+  \includegraphics[width=0.8\textwidth]{figures/routine}
 \end{figure}
 
 \end{frame}
@@ -806,7 +867,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 		\item Many seismic inversion problems can be solved within a unified framework. 
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../adseimic.jpeg}
+  \includegraphics[width=1.0\textwidth]{figures/adseimic.jpeg}
 \end{figure}
 	
 \end{frame}
@@ -818,7 +879,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 		$$f(x, t) =  \frac{g(t)}{2\pi \sigma^2} \exp \left( -\frac{||x - x_0||^2}{2 \sigma^2} \right)$$
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../source_time}
+  \includegraphics[width=1.0\textwidth]{figures/source_time}
 \end{figure}
 \end{frame}
 
@@ -829,7 +890,7 @@ Nonlinear        & Explicit          & $y = F(x)$   \\
 		\item ADCME makes the heterogeneous computation capability of TensorFlow available for scientific computing. 
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.7\textwidth]{../benchmark}
+  \includegraphics[width=0.7\textwidth]{figures/benchmark}
 \end{figure}
 \end{frame}
 
@@ -896,7 +957,7 @@ L_{2211}  & L_{2222} & &   & &\\
 	The gradient $\nabla L(\theta)$ is computed via automatic differentiation.
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.75\textwidth]{../rnn}
+  \includegraphics[width=0.75\textwidth]{figures/rnn}
 \end{figure}
 
 \end{frame}
@@ -904,7 +965,7 @@ L_{2211}  & L_{2222} & &   & &\\
 \begin{frame}
 	\frametitle{NNFEM.jl: Robustic Constitutive Modeling}
 \begin{figure}[hbt]
-  \includegraphics[width=0.8\textwidth]{../vs}
+  \includegraphics[width=0.8\textwidth]{figures/vs}
 \end{figure}
 \end{frame}
 
@@ -920,7 +981,7 @@ L_{2211}  & L_{2222} & &   & &\\
 		\end{align*}
 	\end{itemize}
 \begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../nncons}
+  \includegraphics[width=1.0\textwidth]{figures/nncons}
 \end{figure}
 \end{frame}
 
@@ -930,7 +991,7 @@ L_{2211}  & L_{2222} & &   & &\\
 \begin{frame}
 	\frametitle{FwiFlow.jl: Elastic Full Waveform Inversion for subsurface flow problems}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.8\textwidth]{../geo.png}
+  \includegraphics[width=0.8\textwidth]{figures/geo.png}
 \end{figure}
 \end{frame}
 
@@ -968,15 +1029,15 @@ $$}
 	\end{center}
 		\begin{figure}[hbt]
 		\centering
-  \includegraphics[width=0.6\textwidth]{../coupled}
+  \includegraphics[width=0.6\textwidth]{figures/coupled}
 \end{figure}
 \item Task 2: Learning the rock physics model from sparse saturation data. The rock physics model is approximated by neural networks  
 {\scriptsize$$f_1(S_1; \theta_1) \approx k_{r1}(S_1)\qquad f_2(S_1; \theta_2) \approx k_{r2}(S_1)$$}
 \vspace{-0.4cm}
 \begin{figure}
 	\centering
-	\includegraphics[width=0.3\textwidth]{../sat}~
-  \includegraphics[width=0.25\textwidth]{../rock}
+	\includegraphics[width=0.3\textwidth]{figures/sat}~
+  \includegraphics[width=0.25\textwidth]{figures/rock}
 \end{figure}
 	\end{itemize}
 \end{frame}
@@ -1026,8 +1087,8 @@ $\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.8}} m$ & \makecell{$a/a
 	\end{itemize}		
 	\begin{figure}[hbt]	
 	\centering
-  \includegraphics[width=0.5\textwidth]{../ip}~
-  \includegraphics[width=0.3\textwidth]{../cell}
+  \includegraphics[width=0.5\textwidth]{figures/ip}~
+  \includegraphics[width=0.3\textwidth]{figures/cell}
 \end{figure}
 
 \end{frame}
@@ -1043,7 +1104,7 @@ $\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.8}} m$ & \makecell{$a/a
 		\end{equation}
 	\end{itemize}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../visco1}
+  \includegraphics[width=1.0\textwidth]{figures/visco1}
 \end{figure}
 
 \end{frame}
@@ -1051,7 +1112,7 @@ $\frac{\partial m}{\partial t} = -10(-\Delta)^{\textbf{0.8}} m$ & \makecell{$a/a
 \begin{frame}
 	\frametitle{PoreFlow.jl: Inverse Modeling of Viscoelasticity}
 	\begin{figure}[hbt]
-  \includegraphics[width=0.7\textwidth]{../visco2}
+  \includegraphics[width=0.7\textwidth]{figures/visco2}
 \end{figure}
 
 \end{frame}
@@ -1119,14 +1180,14 @@ $\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Pr
 	\end{center}
 	\vspace{-0.3cm}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../Julia.png}
+  \includegraphics[width=1.0\textwidth]{figures/Julia.png}
 \end{figure}
 \end{frame}
 
 \begin{frame}
 	\frametitle{A General Approach to Inverse Modeling}
 	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{../summary.png}
+  \includegraphics[width=1.0\textwidth]{figures/summary.png}
 \end{figure}
 
 \end{frame}
