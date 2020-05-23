@@ -34,7 +34,7 @@ file(GLOB ALLSRC
     "${CMAKE_SOURCE_DIR}/*.cpp"
 )
 
-IF(WIN32)
+IF(MSVC)
 add_library(adept STATIC ${ALLSRC})
 ELSE()
 add_library(adept SHARED ${ALLSRC})

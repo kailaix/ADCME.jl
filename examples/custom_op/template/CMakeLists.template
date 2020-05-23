@@ -41,8 +41,13 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-IF(WIN32)
+IF(MSVC)
 add_definitions(-DNOMINMAX)
+if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+    string(REGEX REPLACE "/W[0-4]" "/W0" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+endif()
 ENDIF()
 
 include_directories($${TF_INC} $${EIGEN_INC} $${CUDA_INC})
@@ -68,4 +73,7 @@ ${USEGPU}endif()
 set_property(TARGET ${OperatorName} PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(${OperatorName} $${TF_LIB_FILE})
 file(MAKE_DIRECTORY $${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(${OperatorName} PROPERTIES LIBRARY_OUTPUT_DIRECTORY $${CMAKE_CURRENT_SOURCE_DIR}/build RUNTIME_OUTPUT_DIRECTORY_RELEASE $${CMAKE_CURRENT_SOURCE_DIR}/build)
+set_target_properties(${OperatorName} PROPERTIES 
+                LIBRARY_OUTPUT_DIRECTORY $${CMAKE_CURRENT_SOURCE_DIR}/build 
+                RUNTIME_OUTPUT_DIRECTORY_RELEASE $${CMAKE_CURRENT_SOURCE_DIR}/build
+                ARCHIVE_OUTPUT_DIRECTORY_RELEASE $${CMAKE_CURRENT_SOURCE_DIR}/build)

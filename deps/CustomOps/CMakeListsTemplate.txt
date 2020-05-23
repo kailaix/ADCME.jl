@@ -50,7 +50,7 @@ include_directories(${LIBDIR}/Adept-2/include)
 find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
 message("ADEPT_LIB_FILE=${ADEPT_LIB_FILE}")
 
-IF(WIN32)
+IF(MSVC)
 add_definitions(-DNOMINMAX)
 ENDIF()
 
