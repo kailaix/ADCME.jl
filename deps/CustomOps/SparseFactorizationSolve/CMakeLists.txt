@@ -1,5 +1,4 @@
 if (WIN32)
-message("WIN32")
 add_library(winlu SHARED lru_cache.cpp Factorization/SparseFactorization.cpp Solve/Solve.cpp)
 set_property(TARGET winlu PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(winlu ${TF_LIB_FILE})

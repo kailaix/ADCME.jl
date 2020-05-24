@@ -34,7 +34,7 @@ execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_
 # endif()
 
 # set(CMAKE_BUILD_TYPE Release)
-# set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+# if(MSVC) set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG") else() set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG") endif()
 
 # include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
 # link_directories(${LIBDIR} ${LIBCUDA})

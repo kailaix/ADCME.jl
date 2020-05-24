@@ -29,8 +29,11 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION
 endif()
 
 set(CMAKE_BUILD_TYPE Release)
+if(MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
+else()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
+endif()
 include_directories(${TF_INC} ${EIGEN_INC}/../../include ${EIGEN_INC} ${TORCH_INC})
 link_directories(${TF_LIB})
 

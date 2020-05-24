@@ -24,7 +24,11 @@ message("TF_ABI=${TF_ABI}")
 message("TF_LIB_FILE=${TF_LIB_FILE}")
 
 set(CMAKE_BUILD_TYPE Release)
+if(MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
+else()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+endif()
 
 include_directories(../include ../include/adept)
 find_library(LIBOPENBLAS openblas HINTS ${LIBDIR})
