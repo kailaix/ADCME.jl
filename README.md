@@ -63,34 +63,33 @@ using Pkg
 Pkg.add("ADCME")
 ```
 
-Note: if you are using Windows OS, please first install the [Microsoft Visual Studio 15 (2017)](https://visualstudio.microsoft.com/vs/older-downloads/) compiler. See [the instruction](https://kailaix.github.io/ADCME.jl/dev/) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for details. 
+Note: if you are using Windows OS, please first install the [Microsoft Visual Studio 15 (2017)](https://visualstudio.microsoft.com/vs/older-downloads/) compiler and select **Desktop Development with C++**. See [the instruction](https://kailaix.github.io/ADCME.jl/dev/) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for details. 
 
 3. (Optional) Test `ADCME.jl`
-```
+```julia
 using Pkg
 Pkg.test("ADCME")
 ```
 See [Troubleshooting](https://kailaix.github.io/ADCME.jl/dev/tu_customop/#Troubleshooting-1) if you encounter any compilation problems.
 
-4. (Optional) Enable GPU Support
-To enable GPU support, first, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file).
+4. (Optional) To enable GPU support, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file), and then type 
 ```julia
 ENV["GPU"] = 1
 Pkg.build("ADCME")
 ```
 
-For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
 
 5. (Optional) Check the health of your installed ADCME and install missing dependencies or fixing incorrect paths. 
 ```julia
 using ADCME 
 doctor()
 ``` 
+For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
 
 
 # Tutorial
 
-Here we present two inverse problem examples. The first one is a parameter estimation problem, and the second one is a function inverse problem. 
+Here we present three inverse problem examples. The first one is a parameter estimation problem, the second one is a function inverse problem where the unknown function does not depend on the state variables, and the third one is also a function inverse problem, but the unknown function depends on the state variables. 
 
 ### Parameter Inverse Problem 
 
@@ -253,7 +252,7 @@ See [Applications](https://kailaix.github.io/ADCME.jl/dev/tutorial/) for more in
 
 ### Under the Hood: Computational Graph
 
-Under the hood, a static computational graph is automatic constructed. The computational graph guides the runtime execution and provides dependencies of  data flows for automatic differentiation. Here we show the computational graph in the parameter inverse problem:
+A static computational graph is automatic constructed for your implementation. The computational graph guides the runtime execution, saves intermediate results, and records data flows dependencies for automatic differentiation. Here we show the computational graph in the parameter inverse problem:
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/code.png?raw=true)
 
