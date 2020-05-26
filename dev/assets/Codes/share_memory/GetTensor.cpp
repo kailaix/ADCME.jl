@@ -52,10 +52,11 @@ public:
         val->flat<double>().data()[i] = v[i];
       }
     }
-    printf("\n========Existing Keys========\n");
+    printf("========Existing Keys========\n");
     for(auto & kv: ds.vdata){
       printf("Key %s\n", kv.first.c_str());
     }
+    printf("\n");
     
 
   }
