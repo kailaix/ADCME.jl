@@ -41,27 +41,6 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
             ENV_["VS150COMNTOOLS"] = "/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools"
         end
         @info "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
-        @info """If you intend to build a separate dynamic library to which your custom operator links, make sure
-- Add the following instruction in your CMakeLists.txt (replace YOUR_LIBRARY_NAME with an appropriate library name)
-
-target_compile_definitions(YOUR_LIBRARY_NAME PRIVATE WIN_EXPORT) 
-
-- Add the following code snippet to your header file 
-
-#ifdef _MSC_VER
-# ifdef WIN_EXPORT
-#   define EXPORTED  __declspec( dllexport )
-# else
-#   define EXPORTED  __declspec( dllimport )
-# endif
-#else
-# define EXPORTED
-#endif
-
-- All exported functions/variables must have the quantifier
-
-extern "C" EXPORTED
-""" maxlog=1
         run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
     else
         run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
@@ -85,7 +64,7 @@ function make()
         else
             sln_file = sln_file[1]
         end 
-        run(`cmd /c $CMAKE --build . --target ALL_BUILD --config Release`)
+        run(`cmd /c $CMAKE  --build . -j --target ALL_BUILD --config Release`)
     else
         run(setenv(`$MAKE -j`, ENV_))
     end

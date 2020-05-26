@@ -44,7 +44,9 @@ include_directories(${TF_INC} ${EIGEN_INC})
 
 include_directories(${LIBDIR}/Adept-2/include)
 find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
+find_library(LIBOPENBLAS openblas HINTS ${LIBDIR})
 message("ADEPT_LIB_FILE=${ADEPT_LIB_FILE}")
+message("LIBOPENBLAS=${LIBOPENBLAS}")
 
 if(MSVC)
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -52,7 +54,6 @@ if(MSVC)
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
   endif()
-  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
   add_definitions(-DNOMINMAX)
 endif()
 

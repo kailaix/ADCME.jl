@@ -128,6 +128,7 @@ end
 
 constant(o::SparseMatrixCSC) = SparseTensor(o)
 constant(o::SparseTensor) = o
+SparseTensor(o::SparseTensor) = o 
 
 
 function SparseTensor(A::Array{Float64, 2})
