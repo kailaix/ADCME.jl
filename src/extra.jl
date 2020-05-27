@@ -11,8 +11,7 @@ install_adept,
 register,
 debug,
 doctor,
-uqlin, 
-uqnlin,
+nnuq,
 clean
 
 """
@@ -884,103 +883,28 @@ end
 
 
 @doc raw"""
-    uqlin(y::Array{Float64,1}, 
-    H::Array{Float64,2},
-    R::Array{Float64,2},
-    X::Array{Float64},
-    Q::Array{Float64,2})
+    nnuq(H::Array{Float64,2}, invR::Union{Float64, Array{Float64,2}}, invQ::Union{Float64, Array{Float64,2}})
 
-Geeneral linear estimation. The model is 
+Returns the variance matrix for the Baysian inversion. 
 
-$$\begin{aligned}
-y &= H s + \delta\\
-s &= X\beta + \epsilon
-\end{aligned}$$
+The negative log likelihood function is
 
-where 
+$$l(s) =\frac{1}{2} (y-h(s))^T R^{-1} (y-h(s)) + \frac{1}{2} s^T Q^{-1} s$$
 
-$$\delta \sim \mathcal{N}(0, R)\quad \epsilon \sim \mathcal{N}(0, Q)$$
+The covariance matrix is computed by first linearizing $h(s)$
 
-Inputs:
+$$h(s)\approx h(s_0) + \nabla h(s_0) (s-s_0)$$
 
-- `y`: length $n$ measurement vector 
-- `H`: $n\times m$ observation matrix 
-- `R`: $n\times n$ measurement covariance 
-- `X`: $m\times p$ drift matrix for `s`
-- `Q`: $m\times m$ hidden parameter covariance 
+and then computing the second order derivative
 
-Outputs:
+$$V = \left(\frac{\partial^2 l}{\partial s^T\partial s}\right)^{-1} = (H^T R^{-1} H + Q^{-1})^{-1}$$
 
-- `s`: length $m$ posterial mean 
-- `Σ`: $m\times m$ posterial covariance 
-
-!!! info 
-    
+Note the result is independent of $s_0$, $y_0$, and only depends on $\nabla h(s_0)$
 """
-function uqlin(y::Array{Float64,1}, 
-    H::Array{Float64,2},
-    R::Array{Float64,2},
-    X::Array{Float64},
-    Q::Array{Float64,2})
-    n, m = size(H)
-    if length(size(X))==1
-        X = reshape(X, :, 1)
+function nnuq(H::Array{Float64,2}, invR::Union{Float64, Array{Float64,2}}, invQ::Union{Float64, Array{Float64,2}})
+    if isa(invQ, Float64)
+        invQ = invQ * I 
     end
-    if length(y)!=n || 
-        size(R)!=(n,n) || 
-        size(Q)!=(m,m) ||
-        size(X,1)!=m 
-        error("Check dimension")
-    end
-    p = size(X,2)
-
-    PHI = H*X; QHT = Q*H'; HQHT = H*QHT;
-    PSI = HQHT+R;
-
-    AA = [PSI PHI
-         PHI' zeros(p,p)]
-    AA=(AA+AA')/2;
-    bb = [QHT';X'];
-
-    SOL = AA\bb; 
-    LAMBDA = (SOL[1:n,:])'; 
-    MU = SOL[n+1:n+p,:];
-
-    s = LAMBDA*y; 
-    V = -X*MU+Q-QHT*LAMBDA';
-    V = (V+V')/2
-    return s, V
-end
-
-@doc raw"""
-    uqnlin(
-        y::Array{Float64,1}, 
-        hs::Array{Float64},
-        H::Array{Float64,2},
-        R::Array{Float64,2},
-        s::Array{Float64},
-        Q::Array{Float64,2}
-    )
-
-Uncertainty quantification for linearized Gaussian model. 
-Similar to [`uqlin`](@ref) except that 
-we solve a nonlinear system 
-```math
-$$\begin{aligned}
-y &= h(s) + \delta \\ 
-s &= g(z) + \epsilon
-\end{aligned}\tag{1}$$
-```
-"""
-function uqnlin(
-    y::Array{Float64,1}, 
-    hs::Array{Float64},
-    H::Array{Float64,2},
-    R::Array{Float64,2},
-    s::Array{Float64},
-    Q::Array{Float64,2}
-)
-    y = y - (hs-H*s)
-    X = s
-    μ, Σ = uqlin(y, H, R, X, Q)
+    Σ = inv(H' * invR * H + invQ)
+    (Σ + Σ')/2
 end
