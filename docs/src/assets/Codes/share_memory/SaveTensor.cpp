@@ -66,11 +66,12 @@ public:
     // context->tensors_[string(*handle_tensor)] = val;
     ds.vdata[string(*handle_tensor)] = std::vector<double>(val_tensor, val_tensor+10);
     *out_tensor = *handle_tensor;    
-    printf("Adding %s to collections.\n", string(*handle_tensor).c_str());
-    printf("\n========Existing Keys========\n");
+    printf("[Add] %s to collections.\n", string(*handle_tensor).c_str());
+    printf("========Existing Keys========\n");
     for(auto & kv: ds.vdata){
       printf("Key %s\n", kv.first.c_str());
     }
+    printf("\n");
   }
 };
 REGISTER_KERNEL_BUILDER(Name("SaveTensor").Device(DEVICE_CPU), SaveTensorOp);

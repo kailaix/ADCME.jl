@@ -51,10 +51,11 @@ public:
       printf("[Delete] Key %s does not exist.\n", string(*handle_tensor).c_str());
       *(val->flat<bool>().data()) = false;
     }
-    printf("\n========Existing Keys========\n");
+    printf("========Existing Keys========\n");
     for(auto & kv: ds.vdata){
       printf("Key %s\n", kv.first.c_str());
     }
+    printf("\n");
   }
 };
 REGISTER_KERNEL_BUILDER(Name("DeleteTensor").Device(DEVICE_CPU), DeleteTensorOp);

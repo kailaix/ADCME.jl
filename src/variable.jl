@@ -37,6 +37,9 @@ function constant(value; kwargs...)
     if isa(value, PyObject)
         return value
     end
+    if isa(value, Char)
+        value = string(value)
+    end
     kwargs = jlargs(kwargs)
     if !(:dtype in keys(kwargs))
         kwargs[:dtype] = DTYPE[eltype(value)]
@@ -47,7 +50,7 @@ end
 """
     Variable(initial_value;kwargs...)
 
-Constructs a ref tensor from `value`. 
+Constructs a trainable tensor from `value`. 
 """
 function Variable(initial_value;kwargs...)
     kwargs = jlargs(kwargs)

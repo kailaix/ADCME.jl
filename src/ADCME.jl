@@ -50,7 +50,8 @@ module ADCME
             Bool=>tf.bool,
             ComplexF64=>tf.complex128,
             ComplexF32=>tf.complex64,
-            String=>tf.string)
+            String=>tf.string,
+            Char=>tf.string)
         AUTO_REUSE = tf.compat.v1.AUTO_REUSE
         GLOBAL_VARIABLES = tf.compat.v1.GraphKeys.GLOBAL_VARIABLES
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
