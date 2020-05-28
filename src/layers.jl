@@ -13,6 +13,45 @@ bn,
 sparse_softmax_cross_entropy_with_logits,
 Resnet1D
 
+#----------------------------------------------------
+# activation functions
+
+_string2fn = Dict(
+    "relu" => relu,
+    "tanh" => tanh,
+    "sigmoid" => sigmoid,
+    "leakyrelu" => leaky_relu,
+    "leaky_relu" => leaky_relu,
+    "relu6" => relu6,
+    "softmax" => softmax,
+    "softplus" => softplus,
+    "selu" => selu,
+    "elu" => elu,
+    "concat_elu"=>concat_elu,
+    "concat_relu"=>concat_relu, 
+    "hard_sigmoid"=>hard_sigmoid,
+    "swish"=>swish, 
+    "hard_swish"=>hard_swish, 
+    "concat_hard_swish"=>concat_hard_swish,
+    "sin"=>sin,
+    "fourier"=>fourier
+)
+
+function get_activation_function(a::Union{Function, String, Nothing})
+    if isnothing(a)
+        return x->x 
+    end
+    if isa(a, String)
+        if haskey(_string2fn, lowercase(a))
+            return _string2fn[lowercase(a)]
+        else
+            error("Activation function $a is not supported, available activation functions:\n$(collect(keys(_string2fn))).")
+        end
+    else
+        return a 
+    end
+end
+
 
 @doc raw"""
     fcx(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
@@ -80,7 +119,7 @@ end
 
 """
     ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject};
-    activation::Union{Function,String} = "tanh")
+    activation::Union{Function,String, Nothing} = "tanh")
 
 Alias: `fc`
 
@@ -104,13 +143,8 @@ y = ae(x, [20,20,20,2], θ)
 See also [`ae_num`](@ref), [`ae_init`](@ref).
 """
 function ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject};
-    activation::Union{Function,String} = "tanh")
-    activation=="tanh" && (activation = tanh)
-    activation=="sigmoid" && (activation = sigmoid)
-    activation=="selu" && (activation = selu)
-    activation=="elu" && (activation = elu)
-    activation=="relu" && (activation = relu)
-    activation=="leaky_relu" && (activation = leaky_relu)
+    activation::Union{Function,String, Nothing} = "tanh")
+    activation = get_activation_function(activation)
     x = convert_to_tensor(x)
     θ = convert_to_tensor(θ)
     flag = false
@@ -319,17 +353,7 @@ for (op, tfop) in [(:conv1d, :conv1d), (:conv2d, :conv2d), (:conv2d_in_plane, :c
     @eval begin 
         export $op 
         function $op(args...;activation = nothing, bias=false,  kwargs...)
-            if isa(activation, String)
-                if lowercase(activation)=="relu"
-                    activation = relu 
-                elseif lowercase(activation)=="sigmoid"
-                    activation = sigmoid
-                elseif lowercase(activation) in ["leakyrelu" , "leaky_relu"]
-                    activation = leaky_relu
-                else
-                    error("Activation function $activation not understood")
-                end
-            end
+            activation = get_activation_function(activation)
             if bias
                 biases_initializer = tf.zeros_initializer()
             else
@@ -348,25 +372,7 @@ Creates a fully connected layer with the activation function specified by `activ
 """
 function dense(inputs::Union{PyObject, Array{<:Real}}, units::Int64, args...; activation::Union{String, Function, Nothing} = nothing, kwargs...) 
     inputs = constant(inputs)
-    string2fn = Dict(
-        "relu" => relu,
-        "tanh" => tanh,
-        "sigmoid" => sigmoid,
-        "leakyrelu" => leaky_relu,
-        "leaky_relu" => leaky_relu,
-        "relu6" => relu6,
-        "softmax" => softmax,
-        "softplus" => softplus,
-        "selu" => selu,
-        "elu" => elu
-    )
-    if isa(activation, String)
-        if haskey(string2fn, lowercase(activation))
-            activation = string2fn[lowercase(activation)] 
-        else
-            error("Activation function $activation not understood")
-        end
-    end
+    activation = get_activation_function(activation)
     tf.contrib.layers.fully_connected(inputs, units,  args...; activation_fn=activation, kwargs...)
 end
 
@@ -436,20 +442,8 @@ temp = $inputs[:,:,:,$((i-1)*n):$(i*n)]
 end
 
 export separable_conv2d
-function separable_conv2d(inputs, num_outputs, args...; activation=false, bias=false, kwargs...)
-    if isa(activation, String)
-        if lowercase(activation)=="relu"
-            activation = relu 
-        elseif lowercase(activation)=="tanh"
-            activation = tanh
-        elseif lowercase(activation)=="sigmoid"
-            activation = sigmoid
-        elseif lowercase(activation) in ["leakyrelu" , "leaky_relu"]
-            activation = leaky_relu
-        else
-            error("Activation function $activation not understood")
-        end
-    end
+function separable_conv2d(inputs, num_outputs, args...; activation=nothing, bias=false, kwargs...)
+    activation = get_activation_function(activation)
     if bias
         biases_initializer = tf.zeros_initializer()
     else
@@ -564,33 +558,6 @@ end
 
 export Dense, Conv1D, Conv2D, Conv3D, Conv2DTranspose
 
-function _get_activation(activation)
-    if isnothing(activation)
-        activation = x->x
-    else
-        string2fn = Dict(
-            "relu" => relu,
-            "tanh" => tanh,
-            "sigmoid" => sigmoid,
-            "leakyrelu" => leaky_relu,
-            "leaky_relu" => leaky_relu,
-            "relu6" => relu6,
-            "softmax" => softmax,
-            "softplus" => softplus,
-            "selu" => selu,
-            "elu" => elu
-        )
-        if isa(activation, String)
-            if haskey(string2fn, lowercase(activation))
-                activation = string2fn[lowercase(activation)] 
-            else
-                error("Activation function $activation not understood")
-            end
-        end
-    end
-    return activation
-end
-
 mutable struct Dense 
     hidden_dim::Int64
     activation::Union{String, Function}
@@ -605,7 +572,7 @@ Creates a callable dense neural network.
 """
 function Dense(units::Int64, activation::Union{String, Function, Nothing} = nothing,
     args...;kwargs...)
-    activation = _get_activation(activation)
+    activation = get_activation_function(activation)
     o = tf.keras.layers.Dense(units, activation, args...;kwargs...)
     Dense(units, activation, o)
 end
@@ -633,7 +600,7 @@ y = c(x) # shape=(100, 4, 32)
 ```
 """
 function Conv1D(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
-    activation = _get_activation(activation)
+    activation = get_activation_function(activation)
     o = tf.keras.layers.Conv1D(filters, kernel_size, strides,args...; activation = activation, kwargs...)
     Conv1D(filters, kernel_size, strides, activation, o)
 end
@@ -663,7 +630,7 @@ Conv2D(32, 3, 1, "relu")
 ```
 """
 function Conv2D(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
-    activation = _get_activation(activation)
+    activation = get_activation_function(activation)
     o = tf.keras.layers.Conv2D(filters, kernel_size, strides,args...; activation = activation, kwargs...)
     Conv2D(filters, kernel_size, strides, activation, o)
 end
@@ -685,7 +652,7 @@ mutable struct Conv2DTranspose
 end
 
 function Conv2DTranspose(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
-    activation = _get_activation(activation)
+    activation = get_activation_function(activation)
     o = tf.keras.layers.Conv2DTranspose(
         filters, kernel_size, strides=strides; activation = activation, kwargs...
     )
@@ -717,7 +684,7 @@ y = c(x)
 ```
 """
 function Conv3D(filters, kernel_size, strides=1, activation=nothing, args...;kwargs...)
-    activation = _get_activation(activation)
+    activation = get_activation_function(activation)
     o = tf.keras.layers.Conv3D(filters, kernel_size, strides,args...; activation = activation, kwargs...)
     Conv3D(filters, kernel_size, strides, activation, o)
 end
@@ -742,7 +709,7 @@ end
 
 function ResnetBlock(features::Int64; dropout_probability::Float64=0., use_batch_norm::Bool,
      activation::String="relu")
-    activation = _get_activation(activation)
+    activation = get_activation_function(activation)
     bn_layers = []
     if use_batch_norm
         bn_layers = [
