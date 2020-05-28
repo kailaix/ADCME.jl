@@ -18,7 +18,6 @@ The package inherents the scalability and efficiency from the well-optimized bac
 
 
 ADCME is open-sourced with an MIT license. You can find the source codes at 
-
 ```@raw html
 <center><a href="https://github.com/kailaix/ADCME.jl">https://github.com/kailaix/ADCME.jl</a></center>
 ```

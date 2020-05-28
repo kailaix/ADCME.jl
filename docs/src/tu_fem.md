@@ -39,6 +39,23 @@ sess = Session()
 run(sess,result)
 ```
 
+Here `TensorArray(10001)` can be viewed as a container, which holds 10001 elements. These elements are tensors and can have sequential dependencies. One restriction on `TensorArray` is that all its elements must have the same type and size. This restriction requires us to "initialize" the `TensorArray` outside `while_loop`. The initialization is done by writting the first entry of `TensorArray` with a tensor (or a Julia numerical value/array), i.e., `ta=write(ta, 1, constant(0.0))`. A second important note is that if we want to have an loop index, `i`, the type of the loop index must be `Int32`. 
+
+The syntax for `while_loop` is 
+
+```julia
+i, ta1, ta2, ... = while_loop(condition, body, [i, ta1, ta2, ...])
+```
+
+where `ta1`, `ta1`, ..., are different `TensorArrays`.
+
+Inside a `body` function, we can use `read(ta, i)` to read the `i`-th value of the `TensorArray`. Note that the value must exist (written at an earlier time). After performing necessary computation, the result `v` is written the `i+1`-th index of `TensorArray` via `ta = write(ta, i+1, v)`. Note `write` is **not** an in-place function, so you need to update `ta` with its return value. Finally, the input and output of the `body` function must be consistent. 
+
+The `condition` function is a way to specify the stop criterion. It takes inputs `[i, ta1, ta2, ...]` and outputs a **tensor boolean**. For example, `i<10000` is valid because `i` is a tensor, and `i<10000` is interpreted as a tensor operation. 
+
+Finally, to convert `TensorArray` to normal tensors, we can use the function `stack`, which converts a `TensorArray` to a tensor. The first dimension of the converted tensor will be `?`. This is because without actually executing the computational graph, we never know the true size of `TensorArray`. For example, the stop criterio may be reached before the preassigned size. If you need to have a concrete shape of the tensor, you can use [`set_shape`](@ref) or [`reshape`](@ref) to reshape the converted tensor. 
+
+
 
 
 ## 1D Example
@@ -232,16 +249,6 @@ BFGS!(sess, loss)
 The estimated result is 
 
 $$D = \begin{bmatrix}1.0028 & 0.0\\ 0.0 & 1.0028\end{bmatrix}$$
-
-## The Philosophy of Implementing Custom Operators
-
-Usually the motivation for implementing custom operators is to enable gradient backpropagation for some performance critical operators. However, not all performance critical operators participate the automatic differentiation. Therefore, before we devote ourselves to implementating custom operators, we need to identify which operators need to be implemented as custom operators. 
-
-![forwardbackward](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/forwardbackward.png?raw=true)
-
-This identification task can be done by sketching out the computational graph of your program. Assume your optimization outer loops update $x$ repeatly, then we can trace all downstream the operators that depend on this parameter $x$. We call the dependent operators "tensor operations", because they are essentially TensorFlow operators that consume and output tensors. The dependent variables are called "tensors". The other side of tensors or tensor operations is "numerical arrays" and "numerical operations". The names seem a bit vague here but the essence is that numerical operations/arrays do no participate automatic differentiation during the optimization. They are essentially computed once. 
-
-In ADCME, we can precompute all numerical quantities of numerical arrays using Julia. No TensorFlow operators or custom operators are needed. This procedure combines the best of the two worlds: the simple syntax and high performance computing environment provided by Julia, and the efficient AD capability provided by TensorFlow. The high performance computing for precomputing cannot be provided by Python, the official language that TensorFlow or PyTorch supports. Readers migh suspect that such precomputing may not be significant in many tasks. Actually, the precomputing constitutes a large portion in scientific computing. For example, researchers assemble matrices, prepare geometries and construct preconditioners in a finite element program. These tasks are by no means trivial and cheap. The consideration for  performance in scientific computing actually forms the major motivation behind adopting Julia for the major language for ADCME. 
 
 
 
