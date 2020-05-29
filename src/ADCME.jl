@@ -16,18 +16,13 @@ module ADCME
     using LibGit2
     using Libdl
 
-    ENV["KMP_DUPLICATE_LIB_OK"]="TRUE"
-
     tf = PyNULL()
     tfp = PyNULL()
-
 
     #------------------------------------------------------------------------------------------
     # Global Storage 
     DTYPE = Dict{Type, PyObject}()
     COLIB = Dict{String, Tuple{String, String, String, Bool}}() # custom operators
-
-    libSuffix = Sys.isapple() ? "dylib" : (Sys.islinux() ? "so" : "dll")
     
     if isfile("$(@__DIR__)/../deps/deps.jl")
         include("$(@__DIR__)/../deps/deps.jl")

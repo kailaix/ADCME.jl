@@ -12,6 +12,7 @@ requirements:
     - make                               [not win]
     - unzip                              [not win]
     - hdf5                               [not linux]
+    - nomkl                              [osx]
     - tensorflow 1.15.* *py37*
     - tensorflow-probability 0.8
     - openblas                           [not win]
