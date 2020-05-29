@@ -69,7 +69,9 @@ elu,
 tr,
 tril, 
 triu,
-solve_batch
+solve_batch,
+swish, hard_sigmoid, hard_swish, concat_elu, concat_hard_swish, concat_relu, fourier
+
 
 @doc raw"""
     batch_matmul(o1::PyObject, o2::PyObject)
@@ -1187,4 +1189,37 @@ function reverse(o::PyObject; dims::Integer = -1)
     end
     dims = convert_to_tensor([dims-1], dtype=Int32)
     tf.reverse(o, dims)
+end
+
+function swish(x)
+    return x*sigmoid(x)
+end
+
+function hard_swish(x)
+    return x*sigmoid(100*x)
+end 
+
+function hard_sigmoid(x)
+    return min(1.0, maximum(0, x+0.5))
+end
+
+function concat_relu(x)
+    relu([x -x])
+end
+
+function concat_elu(x)
+    elu([x -x])
+end
+
+function concat_hard_swish(x)
+    hard_swish([x -x])
+end
+
+function fourier(x, terms::Int64=10)
+    list = []
+    for i = 1:terms 
+        push!(list, sin(x))
+        push!(list, cos(x))
+    end
+    hcat(list...)
 end
