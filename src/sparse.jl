@@ -152,11 +152,11 @@ function Base.:Array(S::SparseTensor, args...;kwargs...)
 end
 
 function Base.:size(s::SparseTensor)
-    (s.o.shape[1].value,s.o.shape[2].value)
+    (get(s.o.shape,0).value,get(s.o.shape,1).value)
 end
 
 function Base.:size(s::SparseTensor, i::T) where T<:Integer
-    s.o.shape[i].value
+    get(s.o.shape, i-1).value
 end
 
 function PyCall.:+(s::SparseTensor, o::PyObject)
