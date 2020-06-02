@@ -11,7 +11,7 @@ typedef Eigen::Triplet<double> T;
 
 // Eigen::SparseLU<SpMat>
 template<typename SOLVER>
-void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, 
+bool forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, 
                    const double *f,  int64 d){
     // std::cout << "*************" << std::endl;
     // auto start0 = high_resolution_clock::now();
@@ -33,8 +33,11 @@ void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int6
     // auto duration1 = duration_cast<microseconds>(start2 - start1); 
     // std::cout << duration1.count() << std::endl;
 
-
     solver.analyzePattern(A);
+    auto info = solver.info();
+    if (!info){
+      return false;
+    }
     solver.factorize(A);
     Eigen::VectorXd x = solver.solve(rhs);
 
@@ -48,6 +51,7 @@ void forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int6
     // auto start4 = high_resolution_clock::now();
     // auto duration3 = duration_cast<microseconds>(start4 - start3); 
     // std::cout << duration3.count() << std::endl;
+    return true;
 }
 
 template<typename SOLVER>

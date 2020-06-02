@@ -331,3 +331,9 @@ end
     @test norm(run(sess, v1) - A\rhs1)<1e-10
     @test norm(run(sess, v2) - A\rhs2)<1e-10
 end
+
+@testset "sparse solver warning" begin 
+    A = SparseTensor(zeros(10,10))
+    b = A\rand(10)
+    @test_throws PyCall.PyError run(sess, b)
+end

@@ -510,6 +510,55 @@ foreach(IDX RANGE 0 ${LIBLENGTH})
 endforeach(IDX)
 ```
 
+
+## Error Handling
+
+Sometimes we might encounter error in C++ kernels and we want to propagate the error to the Julia interface. This is done by `OP_REQUIRES_OK`. Its syntax is
+
+```c++
+OP_REQUIRES_OK(context, status)
+```
+
+where `context` is either a `OpKernelConstruction` or a `OpKernelContext`, and `status` can be created using 
+
+```c++
+Status(error::Code::ERROR_CODE, message)
+```
+
+Here `ERROR_CODE` is one of the following:
+
+```c++
+OK = 0,
+CANCELLED = 1,
+UNKNOWN = 2,
+INVALID_ARGUMENT = 3,
+DEADLINE_EXCEEDED = 4,
+NOT_FOUND = 5,
+ALREADY_EXISTS = 6,
+PERMISSION_DENIED = 7,
+UNAUTHENTICATED = 16,
+RESOURCE_EXHAUSTED = 8,
+FAILED_PRECONDITION = 9,
+ABORTED = 10,
+OUT_OF_RANGE = 11,
+UNIMPLEMENTED = 12,
+INTERNAL = 13,
+UNAVAILABLE = 14,
+DATA_LOSS = 15,
+DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_ = 20,
+Code_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+Code_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+```
+
+`message` is a string. 
+
+For example, 
+
+```c++
+OP_REQUIRES_OK(context, 
+        Status(error::Code::UNAVAILABLE, "Sparse solver type not supported."));
+```
+
 ## Troubleshooting
 
 Here are some common errors you might encounter during custom operator compilation:

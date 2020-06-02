@@ -1,6 +1,8 @@
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/platform/default/logging.h"
+#include "tensorflow/core/lib/core/status.h"
+#include "tensorflow/core/lib/core/error_codes.pb.h"
 #include "tensorflow/core/framework/shape_inference.h"
 #include<cmath>
 
@@ -115,21 +117,26 @@ public:
     // implement your forward function here 
 
     // TODO:
+    bool flag;
     if (method_tensor.compare("SparseLU")==0){
-      forward<Eigen::SparseLU<SpMat>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
+      flag = forward<Eigen::SparseLU<SpMat>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
     }
     else if (method_tensor.compare("SparseQR")==0){
-      forward<Eigen::SparseQR<SpMat,Eigen::COLAMDOrdering<int>>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
+      flag = forward<Eigen::SparseQR<SpMat,Eigen::COLAMDOrdering<int>>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
     }
     else if (method_tensor.compare("SimplicialLDLT")==0){
-      forward<Eigen::SimplicialLDLT<SpMat>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
+      flag = forward<Eigen::SimplicialLDLT<SpMat>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
     }
     else if (method_tensor.compare("SimplicialLLT")==0){
-      forward<Eigen::SimplicialLLT<SpMat>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
+      flag = forward<Eigen::SimplicialLLT<SpMat>>(u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
     }
     else{
-      std::cout << "Solver type " << method_tensor << " not valid." << std::endl;
-      DCHECK(false);
+      OP_REQUIRES_OK(context, 
+        Status(error::Code::UNAVAILABLE, "Sparse solver type not supported."));
+    }
+    if (!flag){
+      OP_REQUIRES_OK(context, 
+        Status(error::Code::INTERNAL, "Sparse solver factorization failed."));
     }
 
   }
@@ -231,10 +238,6 @@ public:
     else if (method_tensor.compare("SimplicialLLT")==0){
       backward<Eigen::SimplicialLLT<SpMat>>(grad_f_tensor, grad_vv_tensor, grad_u_tensor, 
                               u_tensor, ii_tensor, jj_tensor, vv_tensor, nv, f_tensor, d);
-    }
-    else{
-      std::cout << "Solver type " << method_tensor << " not valid." << std::endl;
-      DCHECK(false);
     }
 
   }
