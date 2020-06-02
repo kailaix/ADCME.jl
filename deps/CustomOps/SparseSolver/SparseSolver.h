@@ -24,23 +24,12 @@ bool forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int6
     SOLVER solver;
 
     solver.analyzePattern(A);
-#ifdef _WIN32
-if (solver.info()) return false;
-#else
-if (!solver.info()) return false;
-#endif 
     solver.factorize(A);
-#ifdef _WIN32
-if (solver.info()) return false;
-#else
-if (!solver.info()) return false;
-#endif 
+    // std::cout << "b" << solver.info() << std::endl;
+if (solver.info()!=Eigen::Success) return false;
     Eigen::VectorXd x = solver.solve(rhs);
-#ifdef _WIN32
-if (solver.info()) return false;
-#else
-if (!solver.info()) return false;
-#endif 
+    // std::cout <<"c" <<  solver.info() << std::endl;
+if (solver.info()!=Eigen::Success) return false;
     // auto start3 = high_resolution_clock::now();
     // auto duration2 = duration_cast<microseconds>(start3 - start2); 
     // std::cout << duration2.count() << std::endl;
