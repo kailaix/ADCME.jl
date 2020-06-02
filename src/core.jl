@@ -180,7 +180,7 @@ summation = stack(out)[10]
 """
 function while_loop(condition::Union{PyObject,Function}, body::Function, loop_vars::Union{PyObject, Array{Any}, Array{PyObject}};
         parallel_iterations::Int64=10, kwargs...)
-    @warn "TensorArray must be initialized (writedown at index 1) outside" maxlog=1
+    # @warn "TensorArray must be initialized (writedown at index 1) outside" maxlog=1
     if isa(loop_vars, PyObject)
         lv = [loop_vars]
     else

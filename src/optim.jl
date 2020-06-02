@@ -226,7 +226,7 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
     __iter = 0
     function step_callback(rk)
         if mod(__iter,1)==0
-            println("================ ITER $__iter ===============")
+            println("================ STEP $__iter ===============")
         end
         if !isnothing(callback)
             callback(__var, __iter, __loss)

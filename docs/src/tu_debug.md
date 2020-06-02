@@ -20,6 +20,14 @@ b = bind(b, op)
 
 If the error comes from Python (through PyCall), we can print out the Python trace with the following commands
 
+```julia
+debug(sess, o)
+```
+
+where `o` is a tensor. 
+
+The [`debug`](@ref) function traces back the Python function call. The above code is equivalent to 
+
 ```python
 import traceback
 try:
@@ -30,7 +38,7 @@ except Exception:
 
 This Python script can be inserted to Julia and use interpolation to invoke Julia functions (in the comment line).
 
-As an application, we can use this trick to debug "NotFoundError" for custom operators
+This technique can also be applied to other TensorFlow codes. For example, we can use this trick to debug "NotFoundError" for custom operators
 ```julia
 using ADCME, PyCall
 py"""
@@ -59,6 +67,34 @@ save_profile("test.json")
 Below shows an example of profiling results.
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/profile.png?raw=true)
+
+
+## Suppress Debugging Messages
+
+If you want to suppress annoying debugging messages, you can suppress them using the following command
+
+- Messages originated from Python 
+
+By default, ADCME sets the warning level to ERROR only. To set other evels of messages, choose one from the following:
+
+```julia
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.DEBUG)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.WARNING)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.FATAL)
+```
+
+- Messages originated from C++
+
+In this case, we can set `TF_CPP_MIN_LOG_LEVEL` in the environment variable. Set `TF_CPP_MIN_LOG_LEVEL` to 1 to filter out INFO logs, 2 to additionally filter out WARNING, 3 to additionally filter out ERROR (all messages).
+
+For example,
+
+```julia
+ENV["TF_CPP_MIN_LOG_LEVEL"] = "3"
+using ADCME # must be called after the above line
+```
 
 
 ## Save and Load Diary
