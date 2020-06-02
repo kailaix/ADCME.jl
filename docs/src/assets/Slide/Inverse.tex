@@ -779,16 +779,16 @@ $$\frac{\partial \tilde L_h(\theta)}{\partial \theta} = -2(u_\theta-u_0)^TB(\the
 	\frametitle{Physics Constrained Learning}
 	
 	\begin{itemize}
-		\item A trick for evaluating $g^T Bu_\theta$: consider $g$ as independent of $\theta$ in the computational graph, then 
+		\item A trick for evaluating $g^T Bu_\theta$: consider $g$ and $u_\theta$ as independent of $\theta$ in the computational graph, then 
 		$$g^T \frac{\partial B(\theta)}{\partial \theta}u_\theta = \frac{\partial (g^T B(\theta) u_\theta)}{\partial \theta}$$
-		\item $g^T B(\theta) u_\theta$ is a scalar, thus we can apply reverse-mode AD to compute $g^T B(\theta) u_\theta$.
+		\item $g^T B(\theta) u_\theta$ is a scalar, thus we can apply reverse-mode AD to compute $\frac{\partial (g^T B(\theta) u_\theta)}{\partial \theta}$.
 		\item Declaring independence of variables can be done with \texttt{tf.stop\_gradient} in TensorFlow or \texttt{independent} in ADCME. 
 	\end{itemize}
 \end{frame}
 
 
 \begin{frame}
-	\frametitle{Physics Constrained Learning (Optional)}
+	\frametitle{Physics Constrained Learning}
 	 $${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
 	\begin{itemize}
 \item Assume in the forward computation, we solve for $u_h=G_h(\theta)$ in $F_h(\theta, u_h)=0$, and then
