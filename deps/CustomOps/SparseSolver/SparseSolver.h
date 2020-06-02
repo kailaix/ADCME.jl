@@ -13,33 +13,34 @@ typedef Eigen::Triplet<double> T;
 template<typename SOLVER>
 bool forward(double *u, const int64 *ii, const int64 *jj, const double *vv, int64 nv, 
                    const double *f,  int64 d){
-    // std::cout << "*************" << std::endl;
-    // auto start0 = high_resolution_clock::now();
     vector<T> triplets;
     Eigen::Map<const Eigen::VectorXd> rhs(f, d); 
     for(int64 i=0;i<nv;i++){
-      // printf("%d %d --> %f\n", ii[i],jj[i],vv[i]);
       triplets.push_back(T(ii[i]-1,jj[i]-1,vv[i]));
     }
     SpMat A(d, d);
     A.setFromTriplets(triplets.begin(), triplets.end());
-    // auto start1 = high_resolution_clock::now();
-    // auto duration = duration_cast<microseconds>(start1 - start0); 
-    // std::cout << duration.count() << std::endl;
     
     SOLVER solver;
 
-    // auto start2 = high_resolution_clock::now();
-    // auto duration1 = duration_cast<microseconds>(start2 - start1); 
-    // std::cout << duration1.count() << std::endl;
-
     solver.analyzePattern(A);
-    auto info = solver.info();
-    if (!info){
-      return false;
-    }
+#ifdef _WIN32
+if (solver.info()) return false;
+#else
+if (!solver.info()) return false;
+#endif 
     solver.factorize(A);
+#ifdef _WIN32
+if (solver.info()) return false;
+#else
+if (!solver.info()) return false;
+#endif 
     Eigen::VectorXd x = solver.solve(rhs);
+#ifdef _WIN32
+if (solver.info()) return false;
+#else
+if (!solver.info()) return false;
+#endif 
 
     // auto start3 = high_resolution_clock::now();
     // auto duration2 = duration_cast<microseconds>(start3 - start2); 
