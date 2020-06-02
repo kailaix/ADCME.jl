@@ -15,8 +15,10 @@ void SparseAccum::push_back(const int*cols, const double*vals, int row, int N){
       // printf("push %d: %d, %d, %f\n", i, row, cols[i], vals[i]);
       if(std::abs(vals[i])>tol){
         if (row > n) {
-          printf("row_id out of the bounds %d > %d\n", row, n);  
-          exit(1);
+          char info[1024];
+          sprintf(info, "row_id out of the bounds %d > %d\n", row, n);  
+          VLOG(FATAL) << info;
+          return;
         }
         jj[row-1].push_back(cols[i]);
         vv[row-1].push_back(vals[i]);
@@ -61,21 +63,23 @@ int create_sparse_assembler(map<int, SparseAccum*>& sa, int h, int nrow, double 
     auto s = new SparseAccum(h);
     sa[h] = s;
     sa[h]->initialize(nrow, tol);
-    printf("Create a new sparse assembler [Handle ID = %d] with %d rows and tolerance %g.\n", h, nrow, tol);
-    printf("Current sparse assembler:\n");
+    char info[1024];
+    sprintf(info, "Create a new sparse assembler [Handle ID = %d] with %d rows and tolerance %g.\n", h, nrow, tol);
+    VLOG(INFO) << info; 
+    VLOG(INFO) << "Current sparse assembler:";
     for(map<int, SparseAccum*>::iterator iter = sa.begin(); iter != sa.end(); ++iter)
     {
       int k =  iter->first;
-      printf(" %d |", k);
+      sprintf(info, " %d |", k);
+      VLOG(INFO) << info;
     }
-    printf("\n");
   }
   return h;
 }
 
 int destroy_sparse_assembler(map<int, SparseAccum*>& sa, int h){
   if (sa.count(h)>0){
-    printf("destroy_sparse_assembler\n");
+    VLOG(INFO) << "destroy_sparse_assembler";
     delete sa[h];
     sa.erase(h);
     return 0;

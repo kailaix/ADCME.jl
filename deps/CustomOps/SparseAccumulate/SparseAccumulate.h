@@ -1,7 +1,17 @@
+#ifndef SPARSE_ACCUMULATE_H
+#define SPARSE_ACCUMULATE_H
 #include <random>
 #include <iostream>
 #include <time.h>       /* time */
 #include <map>
+
+#include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/tensor_shape.h"
+#include "tensorflow/core/platform/default/logging.h"
+#include "tensorflow/core/framework/shape_inference.h"
+#include "SparseAccumulate.h"
+
+using namespace tensorflow;
 
 using std::map;
 
@@ -32,3 +42,4 @@ int accumulate_sparse_assembler(map<int, SparseAccum*>& sa, int h, int row, cons
 int copy_sparse_assemlber(map<int, SparseAccum*>& sa, int h, int*rows, int*cols, double*vals);
 
 
+#endif

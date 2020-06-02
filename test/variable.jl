@@ -155,3 +155,15 @@ end
     n = gradient_magnitude(l, [x, y])
     @test run(sess, n)≈sqrt(norm(run(sess, gx))^2 + norm(run(sess,gy))^2)
 end
+
+@testset "indexing with tensor" begin
+    a = rand(10,3)
+    i = constant(2)
+    A = constant(a)
+    @test run(sess, A[i,:])≈a[2,:]
+    @test run(sess, A[i,3])≈a[2,3]
+    @test run(sess, A[i,[1;2]])≈a[2,[1;2]]
+    @test run(sess, A[:, i])≈a[:, 2]
+    @test run(sess, A[3, i])≈a[3, 2]
+    @test run(sess, A[[1;2], i])≈a[[1;2], 2]
+end

@@ -392,7 +392,7 @@ truncated_normal_initializer(args...;kwargs...) = tf.truncated_normal_initialize
 uniform_unit_scaling_initializer(args...;kwargs...) = tf.uniform_unit_scaling_initializer(args...;kwargs...)
 variance_scaling_initializer(args...;kwargs...) = tf.uniform_unit_scaling_initializer(args...;kwargs...)
 
-
+#--------------------------------------------------------------------------------------------------------
 # Indexing
 
 function PyCall.:lastindex(o::PyObject)
@@ -434,11 +434,16 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
 end
 
 # less efficient
-function _to_range_array(o::PyObject, i::Union{Int64, Colon, Array{Bool,1},BitArray{1},  UnitRange{Int64}, Array{Int64,1}, StepRange{Int64, Int64}})
+function _to_range_array(o::PyObject, 
+    i::Union{Int64, Colon, Array{Bool,1},BitArray{1},  UnitRange{Int64}, Array{Int64,1}, StepRange{Int64, Int64}},
+    d::Int64)
     if typeof(i)==Int64
         return [i]
     elseif typeof(i)==Colon 
-        return collect(1:size(o,1))
+        if isnothing(size(o,d))
+            error(ArgumentError("Dimension $d of `o` is `nothing`. You need to set a concrete dimension, e.g., using `set_shape`"))
+        end
+        return collect(1:size(o,d))
     elseif typeof(i)<:StepRange || typeof(i)<:UnitRange
         return collect(i)
     elseif typeof(i)==Array{Bool,1}|| typeof(i)==BitArray{1}
@@ -455,8 +460,9 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
     if typeof(i1)==Int64 && typeof(i2)==Int64
         return squeeze(tf.strided_slice(o, (i1[1]-1,i2[1]-1),(i1[1],i2[1]),(1,1)), dims=(1,2))
     end
-    i1 = _to_range_array(o, i1)
-    i2 = _to_range_array(o, i2)
+    i1 = _to_range_array(o, i1, 1)
+    i2 = _to_range_array(o, i2, 2)
+    @info i1, i2
     temp = Base.Iterators.product(i2,i1)|>collect
     indices = [vec([x[2] for x in temp]) vec([x[1] for x in temp])] .- 1
     p = tf.gather_nd(o, indices)
@@ -470,6 +476,53 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
         return p
     end
 end
+
+function Base.:getindex(o::PyObject, i::PyObject, j::Union{Int64, Colon, Array{Bool,1},BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}})
+    flag = false
+    if isa(j, Colon) 
+        return o[i]
+    end
+    if length(size(i))!=0 || !(get_dtype(i)<:Integer)
+        error(ArgumentError("Only integer `i` is supported"))
+    end
+    if isnothing(size(o,2))
+        error(ArgumentError("Dimension 2 of `o` is `nothing`. You need to set a concrete dimension, e.g., using `set_shape`"))
+    end
+    if isa(j, Integer)
+        flag = true 
+    end
+    j = _to_range_array(o, j, 2)
+    idx = (i-1)*size(o,2) + j
+    ret = tf.reshape(o, (-1,))[idx]
+    if flag
+        return get(ret, 0)
+    else
+        return ret
+    end
+end
+
+function Base.:getindex(o::PyObject, i::Union{Int64, Colon, Array{Bool,1},BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}}, j::PyObject)
+    flag = false
+    if length(size(j))!=0 || !(get_dtype(j)<:Integer)
+        error(ArgumentError("Only integer `j` is supported"))
+    end
+    if isnothing(size(o,2))
+        error(ArgumentError("Dimension 2 of `o` is `nothing`. You need to set a concrete dimension, e.g., using `set_shape`"))
+    end
+    if isa(i, Integer)
+        flag = true 
+    end
+    i = _to_range_array(o, i, 1)
+    idx = (i .- 1)*size(o,2) + j
+    ret = tf.reshape(o, (-1,))[idx]
+    if flag
+        return get(ret, 0)
+    else
+        return ret
+    end
+end
+
+#-------------------------------------------------------------------------------------------------------
 
 # https://stackoverflow.com/questions/46718356/tensorflow-symmetric-matrix
 function sym(o::Union{Array{<:Real}, PyObject})

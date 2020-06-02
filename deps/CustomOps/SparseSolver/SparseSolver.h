@@ -41,7 +41,6 @@ if (solver.info()) return false;
 #else
 if (!solver.info()) return false;
 #endif 
-
     // auto start3 = high_resolution_clock::now();
     // auto duration2 = duration_cast<microseconds>(start3 - start2); 
     // std::cout << duration2.count() << std::endl;

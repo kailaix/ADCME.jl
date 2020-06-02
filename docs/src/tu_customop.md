@@ -390,6 +390,105 @@ If we have GPU resources, the kernel will run correctly with the output
 -2.0
 ```
 
+
+## Batch Build
+
+At some point, you might have a lot of custom operators. Building one-by-one will take up too much time. To reduce the building time, you might want to build all the operators all at once concurrently. To this end, you can consider batch build by using a common CMakeLists.txt. The commands in the CMakeLists.txt are the same as a typical custom operator, except that the designated libraries are different
+
+```cmake
+# ... The same as a typical CMake script ...
+
+# Specify all the library paths and library names. 
+set(LIBDIR_NAME VolumetricStrain ComputeVel DirichletBd
+    FemStiffness FemStiffness1 SpatialFemStiffness
+    SpatialVaryingTangentElastic Strain Strain1
+    StrainEnergy StrainEnergy1)
+set(LIB_NAME VolumetricStrain ComputeVel DirichletBd
+    FemStiffness UnivariateFemStiffness SpatialFemStiffness
+    SpatialVaryingTangentElastic StrainOp StrainOpUnivariate
+    StrainEnergy StrainEnergyUnivariate)
+
+# Copy and paste the following lines (no modification is required)
+list(LENGTH "LIBDIR_NAME" LIBLENGTH)
+message("Total number of libraries to make: ${LIBLENGTH}")
+MATH(EXPR LIBLENGTH "${LIBLENGTH}-1")
+foreach(IDX RANGE 0 ${LIBLENGTH})
+  list(GET LIBDIR_NAME ${IDX} _LIB_DIR)
+  list(GET LIB_NAME ${IDX} _LIB_NAME)
+  message("Compiling ${IDX}th library: ${_LIB_DIR}==>${_LIB_NAME}")
+  file(MAKE_DIRECTORY ${_LIB_DIR}/build)
+  add_library(${_LIB_NAME} SHARED ${_LIB_DIR}/${_LIB_NAME}.cpp)
+  set_property(TARGET ${_LIB_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(${_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${_LIB_DIR}/build)
+  target_link_libraries(${_LIB_NAME} ${TF_LIB_FILE})
+endforeach(IDX)
+```
+
+
+## Error Handling
+
+Sometimes we might encounter error in C++ kernels and we want to propagate the error to the Julia interface. This is done by `OP_REQUIRES_OK`. Its syntax is
+
+```c++
+OP_REQUIRES_OK(context, status)
+```
+
+where `context` is either a `OpKernelConstruction` or a `OpKernelContext`, and `status` can be created using 
+
+```c++
+Status(error::Code::ERROR_CODE, message)
+```
+
+Here `ERROR_CODE` is one of the following:
+
+```c++
+OK = 0,
+CANCELLED = 1,
+UNKNOWN = 2,
+INVALID_ARGUMENT = 3,
+DEADLINE_EXCEEDED = 4,
+NOT_FOUND = 5,
+ALREADY_EXISTS = 6,
+PERMISSION_DENIED = 7,
+UNAUTHENTICATED = 16,
+RESOURCE_EXHAUSTED = 8,
+FAILED_PRECONDITION = 9,
+ABORTED = 10,
+OUT_OF_RANGE = 11,
+UNIMPLEMENTED = 12,
+INTERNAL = 13,
+UNAVAILABLE = 14,
+DATA_LOSS = 15,
+DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_ = 20,
+Code_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+Code_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+```
+
+`message` is a string. 
+
+For example, 
+
+```c++
+OP_REQUIRES_OK(context, 
+        Status(error::Code::UNAVAILABLE, "Sparse solver type not supported."));
+```
+
+
+## Logging
+
+TensorFlow has a C++ level logging system. We can conveniently log messages to specific streams using the folloing syntax
+
+```c++
+VLOG(INFO) << message;
+VLOG(WARNING) << message;
+VLOG(ERROR) << message;
+VLOG(FATAL) << message;
+VLOG(NUM_SEVERITIES) << message;
+```
+
+
+
+
 ## Miscellany
 
 ### Mutable Inputs
@@ -476,88 +575,6 @@ op = load_system_op("OTNetwork")
 1. https://on-demand.gputechconf.com/ai-conference-2019/T1-3_Minseok%20Lee_Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)
 
 
-
-## Batch Build
-
-At some point, you might have a lot of custom operators. Building one-by-one will take up too much time. To reduce the building time, you might want to build all the operators all at once concurrently. To this end, you can consider batch build by using a common CMakeLists.txt. The commands in the CMakeLists.txt are the same as a typical custom operator, except that the designated libraries are different
-
-```cmake
-# ... The same as a typical CMake script ...
-
-# Specify all the library paths and library names. 
-set(LIBDIR_NAME VolumetricStrain ComputeVel DirichletBd
-    FemStiffness FemStiffness1 SpatialFemStiffness
-    SpatialVaryingTangentElastic Strain Strain1
-    StrainEnergy StrainEnergy1)
-set(LIB_NAME VolumetricStrain ComputeVel DirichletBd
-    FemStiffness UnivariateFemStiffness SpatialFemStiffness
-    SpatialVaryingTangentElastic StrainOp StrainOpUnivariate
-    StrainEnergy StrainEnergyUnivariate)
-
-# Copy and paste the following lines (no modification is required)
-list(LENGTH "LIBDIR_NAME" LIBLENGTH)
-message("Total number of libraries to make: ${LIBLENGTH}")
-MATH(EXPR LIBLENGTH "${LIBLENGTH}-1")
-foreach(IDX RANGE 0 ${LIBLENGTH})
-  list(GET LIBDIR_NAME ${IDX} _LIB_DIR)
-  list(GET LIB_NAME ${IDX} _LIB_NAME)
-  message("Compiling ${IDX}th library: ${_LIB_DIR}==>${_LIB_NAME}")
-  file(MAKE_DIRECTORY ${_LIB_DIR}/build)
-  add_library(${_LIB_NAME} SHARED ${_LIB_DIR}/${_LIB_NAME}.cpp)
-  set_property(TARGET ${_LIB_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-  set_target_properties(${_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${_LIB_DIR}/build)
-  target_link_libraries(${_LIB_NAME} ${TF_LIB_FILE})
-endforeach(IDX)
-```
-
-
-## Error Handling
-
-Sometimes we might encounter error in C++ kernels and we want to propagate the error to the Julia interface. This is done by `OP_REQUIRES_OK`. Its syntax is
-
-```c++
-OP_REQUIRES_OK(context, status)
-```
-
-where `context` is either a `OpKernelConstruction` or a `OpKernelContext`, and `status` can be created using 
-
-```c++
-Status(error::Code::ERROR_CODE, message)
-```
-
-Here `ERROR_CODE` is one of the following:
-
-```c++
-OK = 0,
-CANCELLED = 1,
-UNKNOWN = 2,
-INVALID_ARGUMENT = 3,
-DEADLINE_EXCEEDED = 4,
-NOT_FOUND = 5,
-ALREADY_EXISTS = 6,
-PERMISSION_DENIED = 7,
-UNAUTHENTICATED = 16,
-RESOURCE_EXHAUSTED = 8,
-FAILED_PRECONDITION = 9,
-ABORTED = 10,
-OUT_OF_RANGE = 11,
-UNIMPLEMENTED = 12,
-INTERNAL = 13,
-UNAVAILABLE = 14,
-DATA_LOSS = 15,
-DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_ = 20,
-Code_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-Code_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
-```
-
-`message` is a string. 
-
-For example, 
-
-```c++
-OP_REQUIRES_OK(context, 
-        Status(error::Code::UNAVAILABLE, "Sparse solver type not supported."));
-```
 
 ## Troubleshooting
 

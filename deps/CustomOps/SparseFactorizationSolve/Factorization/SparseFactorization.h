@@ -27,7 +27,8 @@ void forward(int64 *o, const int64 *ii, const int64 *jj, const double *vv, int N
   cache2.put(id, solvert);
   // printf("B factorized!\n");
 
-  printf("Factorization: current matrix id= %d, maximum cache size = %d\n", id, cache1.max_size());
-
+  char info[1024];
+  sprintf(info, "Factorization: current matrix id= %d, maximum cache size = %d\n", id, cache1.max_size());
+  VLOG(INFO) << info; 
   *o = id;
 }
