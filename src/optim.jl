@@ -12,7 +12,10 @@ BFGS!,
 CustomOptimizer,
 newton_raphson,
 newton_raphson_with_grad,
-NonlinearConstrainedProblem
+NonlinearConstrainedProblem,
+pack, unpack,
+UnconstrainedOptimizer,
+getInit, getLoss, getLossAndGrad, update
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -693,3 +696,234 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
          kwargs...))
     return __losses
 end
+
+
+# #---------------------------------------------------------------
+# # Custom Optimizers 
+
+function pack(jvars::Array)
+    k = 0
+    l = sum([length(v) for v in jvars])
+    val = zeros(l)
+    for i = 1:length(jvars)
+        if length(size(jvars[i]))==0
+            val[k+1] = jvars[i]
+            k+=1
+        elseif length(size(jvars[i]))==1
+            val[k+1:k+length(jvars[i])] = jvars[i]
+            k += length(jvars[i])
+        else
+            val[k+1:k+length(jvars[i])] = permutedims(jvars[i], collect(ndims(jvars[i]):-1:1))[:]
+            k += length(jvars[i])
+        end
+    end
+    return val 
+end
+
+function unpack(jvars::Array{Float64}, vars::Array{PyObject})
+    a = Array{Any}(undef, length(vars))
+    k = 0
+    for i = 1:length(vars)
+        vsize = size(vars[i])
+        if length(vsize)==0
+            a[i] = jvars[k+1]
+            k += 1
+        elseif length(vsize)==1
+            a[i] = jvars[k+1:k+length(vars[i])]
+            k += length(vars[i])
+        else
+            a[i] = permutedims(reshape(jvars[k+1:k+length(vars[i])], reverse(vsize)),collect(ndims(vars[i]):-1:1))
+            k += length(vars[i])
+        end
+    end
+    return a 
+end
+
+mutable struct UnconstrainedOptimizer
+    eval_fn_and_grad::Function
+    eval_fn::Function
+    eval_fn_and_grad_ls::Function
+    eval_fn_ls::Function
+    get_init::Function
+    update_fn::Function
+    vars::Array{PyObject}
+end
+
+function Base.:show(io::IO, uo::UnconstrainedOptimizer)
+    print("UnconstrainedOptimizer with variables: \n$(uo.vars...)")
+end
+
+"""
+    UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Array, Missing} = missing, packed::Bool=true)
+
+Constructs an unconstrained optimization optimizer. Users need 
+
+# Without Linesearch
+```
+reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
+x = Variable(2*ones(10))
+y = constant(ones(10))
+loss = sum((y-x)^4)
+sess = Session(); init(sess)
+uo = UnconstrainedOptimizer(sess, loss)
+
+getInit(uo) # get initial guess
+getLoss(uo, 3*ones(10)) # get the loss function 
+getLossAndGrad(uo, 3*ones(10)) # get the loss function and grad 
+
+x0 = getInit(uo)
+for i = 1:100
+    global x0 
+    l, g = getLossAndGrad(uo, x0)
+    x0 -= 1/(1+i) * g 
+    @info l
+end
+update(uo, x0)
+
+run(sess, x0)
+```
+
+# With Linesearch
+```
+using LineSearches
+reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
+x = Variable(2*ones(10))
+y = constant(ones(10))
+loss = mean((y-x)^4)
+sess = Session(); init(sess)
+uo = UnconstrainedOptimizer(sess, loss)
+
+x0 = getInit(uo)
+_, d = getLossAndGrad(uo, x0)
+φ0, dφ0  = getLossAndGrad(uo, x0, -d, 0.0)
+
+function φ(α)
+    return getLoss(uo, x0, -d, α)
+end
+
+ls = BackTracking()
+ls(φ, 200.0, φ0, dφ0)
+```
+"""
+function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Array, Missing} = missing, packed::Bool=true)
+    if ismissing(vars)
+        vars = get_collection()
+    end
+    pl = [placeholder(Float64, shape = size(v)) for v in vars]
+    update_op = group([assign(x, y) for (x,y) in zip(vars, pl)])
+    d = [placeholder(Float64, shape = size(v)) for v in vars]
+    loss_grads = gradients(loss, vars)
+    loss_grads_ls = sum(map((x,y)->dot(x,y), loss_grads, d))
+    function eval_fn_and_grad(xs)
+        if packed
+            xs = unpack(xs, vars)
+        end
+        l, grad = run(sess, [loss, loss_grads], [x=>y for (x,y) in zip(vars, xs)]...)
+        packed && (grad = pack(grad))
+        return l, grad
+    end
+
+    function eval_fn(xs)
+        if packed
+            xs = unpack(xs, vars)
+        end
+        run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
+    end
+
+    function eval_fn_and_grad_ls(xs, dval, α)
+        if packed
+            xs += α*dval
+            xs = unpack(xs, vars)
+            dval = unpack(dval, vars)
+        else
+            xs .+= α*dval
+        end
+        l, grad = run(sess, [loss, loss_grads_ls], [x=>y for (x,y) in zip(d,dval)]..., [x=>y for (x,y) in zip(vars, xs)]...)
+        return l, grad
+    end
+
+    function eval_fn_ls(xs, dval, α)
+        if packed
+            xs += α*dval
+            xs = unpack(xs, vars)
+            dval = unpack(dval, vars)
+        else
+            xs .+= α*dval
+        end
+        run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
+    end
+
+    function get_init()
+        ret = run(sess, vars)
+        packed && (ret = pack(ret))
+        return ret 
+    end
+
+    function update_fn(xs)
+        if packed
+            xs = unpack(xs, vars)
+        end
+        run(sess, update_op, [x=>y for (x,y) in zip(pl, xs)]...)
+    end
+
+    UnconstrainedOptimizer(
+        eval_fn_and_grad,
+        eval_fn,
+        eval_fn_and_grad_ls,
+        eval_fn_ls,
+        get_init,
+        update_fn,
+        vars
+    )    
+end
+
+"""
+    getInit(UO::UnconstrainedOptimizer)
+
+Returns the initial value of variables in `UO`.
+"""
+function getInit(UO::UnconstrainedOptimizer)
+    UO.get_init()
+end
+
+"""
+    getLoss(UO::UnconstrainedOptimizer, xs)
+
+Returns `Loss(xs)`.
+"""
+function getLoss(UO::UnconstrainedOptimizer, xs)
+    UO.eval_fn(xs)
+end
+
+
+@doc raw"""
+    getLoss(UO::UnconstrainedOptimizer, xs, d, α)
+
+Returns `Loss(xs + α*d)` and 
+
+$$d^T \nabla L(x+\alpha d)$$
+"""
+function getLossAndGrad(UO::UnconstrainedOptimizer, xs)
+    UO.eval_fn_and_grad(xs)
+end
+
+
+
+"""
+    getLoss(UO::UnconstrainedOptimizer, xs, d, α)
+
+Returns `Loss(xs + α*d)`.
+"""
+function getLoss(UO::UnconstrainedOptimizer, xs, d, α)
+    UO.eval_fn_ls(xs, d, α)
+end
+
+
+function getLossAndGrad(UO::UnconstrainedOptimizer, xs, d, α)
+    UO.eval_fn_and_grad_ls(xs, d, α)
+end
+
+function update(UO::UnconstrainedOptimizer, xs)
+    UO.update_fn(xs)
+end
+

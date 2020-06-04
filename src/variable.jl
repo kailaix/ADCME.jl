@@ -244,6 +244,10 @@ function PyCall.:length(o::PyObject)
     end
 end
 
+function Base.:ndims(o::PyObject)
+    return length(size(o))
+end
+
 @doc raw"""
     gradients(ys::PyObject, xs::PyObject; kwargs...)
 

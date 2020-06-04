@@ -167,3 +167,10 @@ end
     @test run(sess, A[3, i])≈a[3, 2]
     @test run(sess, A[[1;2], i])≈a[[1;2], 2]
 end
+
+@testset "ndims" begin 
+    @test ndims(constant(0.0))==0
+    @test ndims(constant(rand(2)))==1
+    @test ndims(constant(rand(3,3)))==2
+    @test ndims(constant(rand(4,4,4)))==3
+end
