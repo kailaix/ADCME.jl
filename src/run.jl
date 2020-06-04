@@ -24,7 +24,7 @@ function Base.:run(sess::PyObject, fetches::Union{PyObject, Array{PyObject}, Arr
     end 
     if isnothing(ret)
         return nothing
-    elseif size(ret)==()
+    elseif isa(ret, Array) && size(ret)==()
         return ret[1]
     else
         return ret
