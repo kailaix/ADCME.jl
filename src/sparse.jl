@@ -28,11 +28,11 @@ function Base.:values(o::SparseTensor)
 end
 
 function rows(o::SparseTensor)
-    o.o.indices'[1]+1
+    get(o.o.indices',0)+1
 end
 
 function cols(o::SparseTensor)
-    o.o.indices'[2]+1
+    get(o.o.indices',1)+1
 end
 
 """
@@ -69,7 +69,8 @@ function dense_to_sparse(o::Union{Array, PyObject})
         return SparseTensor(sparse(o))
     else
         idx = tf.where(tf.not_equal(o, 0))
-        return SparseTensor(tf.SparseTensor(idx, tf.gather_nd(o, idx), o.get_shape()), false)
+        indices, value = convert_to_tensor([idx, tf.gather_nd(o, idx)], [Int64, Float64])
+        return SparseTensor(tf.SparseTensor(indices, value, o.get_shape()), false)
     end
 end
 
@@ -97,9 +98,9 @@ end
 
 function SparseTensor_(indices::Union{PyObject,Array{T,2}}, value::Union{PyObject,Array{Float64,1}},
         shape::Union{PyObject,Array{T,1}}; is_diag::Bool=false) where T<:Integer
-    indices = convert_to_tensor(indices)
-    value = convert_to_tensor(value)
-    shape = convert_to_tensor(shape)
+    indices = convert_to_tensor(indices, dtype=Int64)
+    value = convert_to_tensor(value, dtype=Float64)
+    shape = convert_to_tensor(shape, dtype=Int64)
     sp = tf.SparseTensor(indices-1, value, shape)
     options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
     SparseTensor(sp, is_diag)
@@ -229,7 +230,7 @@ function _sparse_concate(A1::SparseTensor, A2::SparseTensor, hcat_::Bool)
     m2,n2 = size(A2)
     ii1,jj1,vv1 = find(A1)
     ii2,jj2,vv2 = find(A2)
-    sparse_concate_ = load_system_op(COLIB["sparse_concate"]...; multiple=true)
+    sparse_concate_ = load_system_op("sparse_concate"; multiple=true)
     ii1,jj1,vv1,m1_,n1_,ii2,jj2,vv2,m2_,n2_ = convert_to_tensor([ii1,jj1,vv1,m1,n1,ii2,jj2,vv2,m2,n2], [Int64,Int64,Float64,Int32,Int32,Int64,Int64,Float64,Int32,Int32])
     ii,jj,vv = sparse_concate_(ii1,jj1,vv1,m1_,n1_,ii2,jj2,vv2,m2_,n2_,constant(hcat_))
     if hcat_
@@ -274,9 +275,9 @@ function Base.:getindex(s::SparseTensor, i1::Union{Integer, Colon, UnitRange{S},
     i1 = convert_to_tensor(i1, dtype=Int64)
     i2 = convert_to_tensor(i2, dtype=Int64)
     ii1, jj1, vv1 = find(s)
-    m = tf.convert_to_tensor(s.o.shape[1],dtype=tf.int64)
-    n = tf.convert_to_tensor(s.o.shape[2],dtype=tf.int64)
-    ss = load_system_op(COLIB["sparse_indexing"]...; multiple=true)
+    m = tf.convert_to_tensor(get(s.o.shape,0),dtype=tf.int64)
+    n = tf.convert_to_tensor(get(s.o.shape,1),dtype=tf.int64)
+    ss = load_system_op("sparse_indexing"; multiple=true)
     ii2, jj2, vv2 = ss(ii1,jj1,vv1,m,n,i1,i2)
     ret = SparseTensor(ii2, jj2, vv2, m_, n_)
     if length(squeeze_dims)>0
@@ -316,7 +317,7 @@ function scatter_update(A::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}},
     ii1, jj1, vv1 = find(A)
     m1_, n1_ = size(A)
     ii2, jj2, vv2 = find(B)
-    sparse_scatter_update_ = load_system_op(COLIB["sparse_scatter_update"]...; multiple=true)
+    sparse_scatter_update_ = load_system_op("sparse_scatter_update"; multiple=true)
     ii1,jj1,vv1,m1,n1,ii2,jj2,vv2,ii,jj = convert_to_tensor([ii1,jj1,vv1,m1_,n1_,ii2,jj2,vv2,ii,jj], [Int64,Int64,Float64,Int64,Int64,Int64,Int64,Float64,Int64,Int64])
     ii, jj, vv = sparse_scatter_update_(ii1,jj1,vv1,m1,n1,ii2,jj2,vv2,ii,jj)
     SparseTensor(ii, jj, vv, m1_, n1_)
@@ -373,7 +374,7 @@ function PyCall.:\(s::SparseTensor, o::PyObject, method::String="auto")
         method = options.sparse.solver
     end
     if size(s,1)!=size(s,2)
-        _cfun = load_system_op(COLIB["sparse_least_square"]...)
+        _cfun = load_system_op("sparse_least_square")
         ii, jj, vv = find(s)
         ii, jj, vv, o = convert_to_tensor([ii, jj, vv, o], [Int32, Int32, Float64, Float64])
         if length(size(o))==1
@@ -388,7 +389,7 @@ function PyCall.:\(s::SparseTensor, o::PyObject, method::String="auto")
             u.set_shape((size(o,1), size(s,2)))
         end
     else
-        ss = load_system_op(COLIB["sparse_solver"]...)
+        ss = load_system_op("sparse_solver")
         # in case `indices` has dynamical shape
         ii, jj, vv = find(s)
         ii,jj,vv,o = convert_to_tensor([ii,jj,vv,o], [Int64,Int64,Float64,Float64])
@@ -435,8 +436,7 @@ Array(run(sess, J))≈[1.0  1.0  2.0  0.0  0.0
 ```
 """
 function SparseAssembler(handle::Union{PyObject, <:Integer}, n::Union{PyObject, <:Integer}, tol::Union{PyObject, <:Real}=0.0)
-    s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
-    sparse_accumulator = load_op(s, "sparse_accumulator")
+    sparse_accumulator = load_system_op("sparse_accumulator", false)
     n = convert_to_tensor(n, dtype=Int32)
     tol = convert_to_tensor(tol, dtype=Float64)
     handle = convert_to_tensor(handle, dtype=Int32)
@@ -462,8 +462,7 @@ See [`SparseAssembler`](@ref) for an example.
 """
 function accumulate(handle::PyObject, row::Union{PyObject, <:Integer}, cols::Union{PyObject, Array{<:Integer}}, 
     vals::Union{PyObject, Array{<:Real}})
-    s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
-    sparse_accumulator_add = load_op(s, "sparse_accumulator_add")
+    sparse_accumulator_add = load_system_op("sparse_accumulator_add", false)
     row = convert_to_tensor(row, dtype=Int32)
     cols = convert_to_tensor(cols, dtype=Int32)
     vals = convert_to_tensor(vals, dtype=Float64)
@@ -484,8 +483,7 @@ op = [op1;op2] # equivalent to `vcat([op1, op2]...)`
 See [`SparseAssembler`](@ref) for an example.
 """
 function assemble(m::Union{PyObject, <:Integer}, n::Union{PyObject, <:Integer}, ops::PyObject)
-    s = load_system_op(COLIB["sparse_assembler"]...; return_str=true)
-    sparse_accumulator_copy = load_op(s, "sparse_accumulator_copy")
+    sparse_accumulator_copy = load_system_op("sparse_accumulator_copy", false)
     if length(size(ops))==0
         ops = reshape(ops, 1)
     end
@@ -542,13 +540,13 @@ function Base.:*(s1::SparseTensor, s2::SparseTensor)
     if n!=n_
         error("IGACS: matrix size mismatch: ($m, $n) vs ($n_, $k)")
     end
-    mat_mul_fn = load_system_op(COLIB["sparse_mat_mul"]...)
+    mat_mul_fn = load_system_op("sparse_sparse_mat_mul")
     if s1._diag
-        mat_mul_fn = load_system_op(COLIB["diag_sparse_mat_mul"]...)
+        mat_mul_fn = load_system_op("diag_sparse_mat_mul")
     elseif s2._diag
-        mat_mul_fn = load_system_op(COLIB["sparse_diag_mat_mul"]...)
+        mat_mul_fn = load_system_op("sparse_diag_mat_mul")
     end
-    ii3, jj3, vv3 = mat_mul_fn(ii1-1,jj1-1,vv1,ii2-1,jj2-1,vv2,m,n,k)
+    ii3, jj3, vv3 = mat_mul_fn(ii1-1,jj1-1,vv1,ii2-1,jj2-1,vv2, constant(m), constant(n), constant(k))
     SparseTensor(ii3, jj3, vv3, m, k, is_diag=s1._diag&&s2._diag)
 end
 
@@ -627,11 +625,7 @@ run(sess, Afac\rand(10)) # no factorization, solving the equation
 ```
 """
 function factorize(A::Union{SparseTensor, SparseMatrixCSC}, max_cache_size::Int64 = 999999)
-    c = COLIB["sparse_factorization"]
-    if Sys.iswindows()
-        c = (c[1], "libwinlu", c[3], c[4])
-    end
-    sparse_factorization_ = load_system_op(c...; multiple=false)
+    sparse_factorization_ = load_system_op("sparse_factorization"; multiple=false)
     A = constant(A)
     ii, jj, vv = find(A)
     d = size(A, 1)
@@ -647,11 +641,7 @@ Solves the equation `A_factorized * x = rhs` using the factorized sparse matrix.
 """
 function solve(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject})
     A, o = A_factorized
-    c = COLIB["sparse_solve"]
-    if Sys.iswindows()
-        c = (c[1], "libwinlu", c[3], c[4])
-    end
-    solve_ = load_system_op(c...; multiple=false)
+    solve_ = load_system_op("solve"; multiple=false)
     ii, jj, vv = find(constant(A))
     rhs,ii, jj, vv,o = convert_to_tensor([rhs,ii, jj, vv,o], [Float64,Int64, Int64, Float64,Int64])
     out = solve_(rhs,ii, jj, vv,o)

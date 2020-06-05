@@ -517,7 +517,7 @@ sol = solve_batch(a, b)
     Internally, the matrix $A$ is factorized first and then the factorization is used to solve multiple right hand side.
 """
 function solve_batch(A::Union{PyObject, Array{<:Real, 2}}, rhs::Union{PyObject, Array{<:Real,2}})
-    solve_batched_rhs_ = load_system_op(COLIB["solve_batched_rhs"]...; multiple=false)
+    solve_batched_rhs_ = load_system_op("solve_batched_rhs"; multiple=false)
     a,rhs = convert_to_tensor([A,rhs], [Float64,Float64])
     sol = solve_batched_rhs_(a,rhs)
     if size(a, 2)!=nothing && size(rhs,1) != nothing
@@ -1090,7 +1090,7 @@ function tril(o::PyObject, num::Int64 = 0)
         flag = true 
         o = tf.expand_dims(o, 0)
     end
-    tri_lu_ = load_system_op(COLIB["tri_lu"]...; multiple=false)
+    tri_lu_ = load_system_op("tri_lu"; multiple=false)
     u,num,lu = convert_to_tensor([o,num,1], [Float64,Int64,Int64])
     out = tri_lu_(u,num,lu)
     if flag 
@@ -1106,7 +1106,7 @@ function triu(o::PyObject, num::Int64 = 0)
         flag = true 
         o = tf.expand_dims(o, 0)
     end
-    tri_lu_ = load_system_op(COLIB["tri_lu"]...; multiple=false)
+    tri_lu_ = load_system_op("tri_lu"; multiple=false)
     u,num,lu = convert_to_tensor([o,num,0], [Float64,Int64,Int64])
     out = tri_lu_(u,num,lu)
     if flag 

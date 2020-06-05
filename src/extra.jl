@@ -11,8 +11,7 @@ install_adept,
 register,
 debug,
 doctor,
-nnuq,
-clean
+nnuq
 
 """
     xavier_init(size, dtype=Float64)
@@ -36,10 +35,10 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
     end
     if Sys.iswindows()
         if !haskey(ENV_, "VS150COMNTOOLS")
-            @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools" maxlog=1
+            # @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools" maxlog=1
             ENV_["VS150COMNTOOLS"] = "/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools"
         end
-        @info "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
+        # @info "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
         run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
     else
         run(setenv(`$CMAKE -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
@@ -178,58 +177,9 @@ end
         return s
 end
 
-"""
-    clean()
-
-Clean up CustomOps directory. 
-"""
-function clean()
-    colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
-    CO = String[]
-    for c in colibs
-        push!(CO, c.second[1])
-    end
-    for c in CO 
-        rm(joinpath("$(@__DIR__)/../deps/CustomOps/"*c, "build"), force=true, recursive=true)
-    end
-    for file in readdir("$(@__DIR__)/../deps/CustomOps/")
-        if isdir(file) && !(file in CO)
-            rm(file, recursive=true, force=true)
-        end
-    end
-    rm("$(@__DIR__)/../deps/CustomOps/formulas.txt", force=true)
-    rm("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt", force=true)
-    rm("$(@__DIR__)/../deps/CustomOps/build", recursive=true, force=true)
-end
-
-function refresh_cmake()
-    colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
-    for c in colibs
-        push!(COLIB, c)
-    end
-    
-    if isfile("$(@__DIR__)/../deps/CustomOps/formulas.jl")
-        colibs = include("$(@__DIR__)/../deps/CustomOps/formulas.jl")
-        for c in colibs
-            push!(COLIB, c)
-        end
-    end
-    
-    NEWLIB = String[]
-    for c in COLIB
-        push!(NEWLIB, c.second[1])
-    end
-    NEWLIB = unique(NEWLIB)
-    cmakecnt = read(joinpath(@__DIR__, "../deps/CustomOps/CMakeListsTemplate.txt"),String)
-    cmakecnt = replace(cmakecnt, "set(LIBDIR_NAME"=>"set(LIBDIR_NAME "*join(NEWLIB, ' '))
-    open(joinpath(@__DIR__, "../deps/CustomOps/CMakeLists.txt"), "w") do io 
-        write(io, cmakecnt)
-    end
-    NEWLIB
-end
 
 """
-    load_system_op(s::String, oplib::String, grad::Bool=true)
+    load_system_op(opname::String, grad::Bool=true; multiple::Bool=false)
 
 Loads custom operator from CustomOps directory (shipped with ADCME instead of TensorFlow)
 For example 
@@ -240,38 +190,17 @@ grad = true
 ```
 this will direct Julia to find library `CustomOps/SparseOperator/libSO.dylib` on MACOSX
 """
-function load_system_op(s::String, oplib::String, opname::String, grad::Bool=true; 
-    return_str::Bool=false, multiple::Bool=false)
-    dir = joinpath(joinpath("$(@__DIR__)", "../deps/CustomOps"), s)
-    if !isdir(dir)
-        error("Folder for the operator $s does not exist: $dir")
-    end
-    if Sys.iswindows()
-        if length(oplib)>=3 && oplib[1:3]=="lib"
-            oplib = oplib[4:end]
-        end
-    end
-    oplibpath = joinpath(joinpath(dir, "build"), oplib)
-    # check if the library exists 
-    libfile = abspath(oplibpath * (Sys.islinux() ? 
-                        ".so" : Sys.isapple() ? ".dylib" : ".dll"))
-    # @show libfile
-    # error()
-    if !isfile(libfile)
-        @info "Lib $s exists in registery but was not initialized. Compiling..."
+function load_system_op(opname::String, grad::Bool=true; multiple::Bool=false)
+    if !isfile(LIBADCME)
+        @info "$LIBADCME does not exist. Precompiling..."
         ADCME.precompile()
     end
-    if return_str
-        return oplibpath
-    end
     if grad
-        load_op_and_grad(oplibpath, opname; multiple=multiple)
+        load_op_and_grad(LIBADCME, opname; multiple=multiple)
     else
-        load_op(oplibpath, opname)
+        load_op(LIBADCME, opname)
     end
 end
-
-load_system_op(s::String; kwargs...) = load_system_op(COLIB[s]...; kwargs...)
 
 """
     compile(s::String; force::Bool=false)
@@ -330,17 +259,10 @@ Compiles all the operators in `formulas.txt`.
 """
 function Base.:precompile(force::Bool=true)
     PWD = pwd()
-    if (!force) && isfile("$(@__DIR__)/../deps/CustomOps/CMakeLists.txt") && 
-            isdir("$(@__DIR__)/../deps/CustomOps/build")
-        @info "Reuse existing cmake files"
-        PWD = pwd()
-        cd("$(@__DIR__)/../deps/CustomOps/build")
-        ADCME.cmake()
-        ADCME.make()
-        cd(PWD)
+    if (!force) && isdir("$(@__DIR__)/../deps/CustomOps/build")
         return 
     end
-    refresh_cmake()
+    @info "Compiling ADCME built-in custom operators..."
     cd("$(@__DIR__)/../deps/CustomOps")
     rm("build", force=true, recursive=true)
     mkdir("build")
@@ -430,65 +352,58 @@ function test_jacobian(f::Function, x0::Array{Float64}; scale::Float64 = 1.0)
 end
 
 """
-    install(s::String; force::Bool = false)
+    install(s::String; force::Bool = false, islocal::Bool = false)
 
-Install a custom operator via URL. `s` can be
-- A URL. ADCME will download the directory through `git`
-- A string. ADCME will search for the associated package on https://github.com/ADCMEMarket
+Install a custom operator from a URL, a directory (when `islocal` is true), or a string. In any of the three case, 
+`install` copy the folder to $(abspath(joinpath(LIBADCME, "../../Plugin"))). 
+When `s` is a string, `s` is converted to 
+
+https://github.com/ADCMEMarket/<s>
 """
-function install(s::String; force::Bool = false)
-    global COLIB
-    codir = "$(@__DIR__)/../deps/CustomOps"
-    if !startswith(s, "https://github.com")
+function install(s::String; force::Bool = false, islocal::Bool = false)
+    if !islocal && !startswith(s, "http")
         s = "https://github.com/ADCMEMarket/"*s
-    end
+    end 
     _, name = splitdir(s)
-    if name in readdir(codir)
-        if force
-            rm(joinpath(codir, name), recursive=true, force=true)
-        else
-            error("$name already in $codir, fix it with\n\n\tinstall(\"$s\", force=true)\n")
-        end
+    if force 
+        rm(joinpath(LIBPLUGIN, name), force=true, recursive=true)
+    elseif isdir(joinpath(LIBPLUGIN, name)) && ("build" in readdir(joinpath(LIBPLUGIN, name)))
+        return _plugin_lib(joinpath(LIBPLUGIN, name))
     end
     try
-        LibGit2.clone(s, joinpath(codir, name))
+        LibGit2.clone(s, joinpath(LIBPLUGIN, name))
     catch
-        LibGit2.clone("git://$(s[9:end]).git", joinpath(codir, name))
+        LibGit2.clone("git://$(s[9:end]).git", joinpath(LIBPLUGIN, name))
     end
-
-    # If there is a build script `build.sh`, run the build script
-    if isfile(joinpath(joinpath(codir, name), "build.sh"))
-        PWD = pwd()
-        cd(joinpath(codir, name))
-        try
-            run(`bash build.sh`)
-        catch 
-        end
-        cd(PWD)
+    PWD = pwd()
+    cd(joinpath(LIBPLUGIN, name))
+    if isfile(joinpath(LIBPLUGIN, name, "build.jl"))
+        include(joinpath(LIBPLUGIN, name, "build.jl"))
     end
-
-    formula = eval(Meta.parse(read(joinpath(joinpath(codir, name),"formula.txt"), String)))
-    if isnothing(formula)
-        error("Broken package: $s does not have formula.txt.")
-    else
-        @info "Add formula $formula"
-        push!(COLIB, formula)
+    cmakelists = String(read("CMakeLists.txt"))
+    cmakelists = replace(String(read(joinpath(LIBPLUGIN, "CMakeLists.txt"))), "[INSTRUCTION]"=>cmakelists)
+    open("CMakeLists.txt", "w") do io 
+        write(io, cmakelists)
     end
-
-    rm("$(@__DIR__)/../deps/CustomOps/formulas.jl", force=true)
-    open("$(@__DIR__)/../deps/CustomOps/formulas.jl", "a") do io 
-        n = length(COLIB)
-        for (k, c) in enumerate(COLIB)
-            if k == n 
-                write(io, string(c)*"\n")
-            else 
-                write(io, string(c)*",\n")
-            end
-        end
-    end
+    mkdir("build")
+    cd("build")
+    ADCME.cmake()
+    ADCME.make()
+    cd(PWD)    
+    return _plugin_lib(joinpath(LIBPLUGIN, name))
 end
 
-
+function _plugin_lib(D)
+    files = readdir(joinpath(D, "build"))
+    dylib = filter(x->endswith(x, ".$dlext"), files)
+    if length(dylib)==0
+        error(SystemError("No dynamic library found."))
+    elseif length(dylib)>1
+        error(SystemError("More then one dynamic libraries found."))
+    else
+        return joinpath(D, "build", dylib[1])
+    end
+end
 
 function _make_blas(blas_binary)
     if Sys.iswindows()
@@ -724,9 +639,9 @@ Pkg.build("PyCall")
     if c 
         yes("Julia path")
     else
-        no("Julia path", 
+        no("Julia path (Optional)", 
 """`julia` outputs nothing. This will break custom operator compilation.""",
-"""(Optional) Add your julia binary path to your environment path, e.g. (Unix systems) 
+"""Add your julia binary path to your environment path, e.g. (Unix systems) 
 
 export PATH=$(Sys.BINDIR):\$PATH
 
@@ -740,9 +655,9 @@ For Windows, you need to add it to system environment.""")
     if c 
         yes("Dynamic library path")
     else
-        no("Dynamic library path", 
+        no("Dynamic library path (Optional)", 
 """$(ADCME.LIBDIR) is not in LD_LIBRARY_PATH. This MAY break custom operator compilation. However, in most cases, ADCME automatic fixes this problem for you.""",
-"""(Optional) Add your dynamic library path path to your environment path, e.g. (Unix systems) 
+"""Add your dynamic library path path to your environment path, e.g. (Unix systems) 
 
 export LD_LIBRARY_PATH=$(ADCME.LIBDIR):\$LD_LIBRARY_PATH
 
@@ -752,7 +667,7 @@ For Windows, you need to add it to PATH instead of LD_LIBRARY_PATH.""")
 
     c  = Sys.WORD_SIZE==64
     if c 
-        yes("Memory Address Length")
+        yes("Memory Address Length =  64")
     else 
         no("Memory Address Length",
 """Your memory address length is $(Sys.WORD_SIZE). ADCME is only tested against 64-bit machine.""",
@@ -852,7 +767,7 @@ and `nvcc` is in your path.""")
         """It might be possible that your cuda include library is located somewhere else other than $(ADCME.CUDA_INC). Fix the dependency file.""")
         end
     else
-        no("GPU Support", 
+        no("GPU Support (Optional)", 
     """ADCME is not compiled against GPU.""",
     """If you intend to use GPU, set ENV["GPU"] = 1 and then rebuild ADCME.""")
     end

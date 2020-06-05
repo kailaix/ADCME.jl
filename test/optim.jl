@@ -264,16 +264,16 @@ end
     ])≈p
 end
 
-@testset "Constrained Optimizer" begin 
-    reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
-    x = Variable(2*ones(10))
-    y = constant(ones(10))
-    loss = sum((y-x)^4)
-    init(sess)
-    uo = UnconstrainedOptimizer(sess, loss)
+# @testset "Constrained Optimizer" begin 
+#     reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
+#     x = Variable(2*ones(10))
+#     y = constant(ones(10))
+#     loss = sum((y-x)^4)
+#     init(sess)
+#     uo = UnconstrainedOptimizer(sess, loss)
 
-    @test getInit(uo) ≈ 2ones(10)
-    @test getLoss(uo, 3*ones(10))≈ 160.0
-    @test getLossAndGrad(uo, 3*ones(10))[2] ≈  [32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0]
-    @test getLossAndGrad(uo, 3*ones(10))[1] ≈  160.0
-end
+#     @test getInit(uo) ≈ 2ones(10)
+#     @test getLoss(uo, 3*ones(10))≈ 160.0
+#     @test getLossAndGrad(uo, 3*ones(10))[2] ≈  [32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0]
+#     @test getLossAndGrad(uo, 3*ones(10))[1] ≈  160.0
+# end

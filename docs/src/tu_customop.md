@@ -542,34 +542,20 @@ We can see that the tensors depending on `u` are also aware of the assign operat
 
 ### Third-party Plugins
 
-ADCME also allows third-party custom operators hosted on Github. To build your own custom operators, implement your own custom operators in a Github repository. The root directory of the repository should have the following files
-
-* `formula.txt`, which tells how ADCME should interact with the custom operator. It is a Julia Pair, which has the format
-
-  ```
-  signature => (source_directory, library_name, signature, has_gradient)
-  ```
-
-  For example
-
-  ```julia
-  "ot_network"=>("OTNetwork", "libOTNetwork", "ot_network", true)
-  ```
-
-* `CMakeLists.txt`, which is used for compiling the library. 
+ADCME also allows third-party custom operators hosted on Github. To build your own custom operators, implement your own custom operators in a Github repository. 
 
 Users are free to arrange other source files or other third-party libraries. 
 
 Upon using those libraries in ADCME, users first download those libraries to `deps` directory via
 
 ```julia
-install("https://github.com/ADCMEMarket/OTNetwork")
+pth = install("OTNetwork")
 ```
 
-The official plugins are hosted on `https://github.com/ADCMEMarket`. To get access to the custom operators in ADCME, use
+`pth` is the dynamic library product generated with source codes in `OTNetwork`. The official plugins are hosted on `https://github.com/ADCMEMarket`. To get access to the custom operators in ADCME, use
 
 ```julia
-op = load_system_op("OTNetwork")
+op = load_op_and_grad(pth, "ot_network"; multiple=true)
 ```
 
 1. https://on-demand.gputechconf.com/ai-conference-2019/T1-3_Minseok%20Lee_Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)
