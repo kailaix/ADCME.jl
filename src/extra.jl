@@ -78,7 +78,7 @@ load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
 Loads the operator `opname` from library `oplibpath`.
 """
-function load_op(oplibpath::String, opname::String)
+function load_op(oplibpath::String, opname::String; verbose::Bool = true)
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
         if length(b)>=3 && b[1:3]=="lib"
@@ -111,7 +111,7 @@ end
     lib = py"lib$$fn_name"
     s = getproperty(lib, opname)
     load_op_dict[(oplibpath,opname)] = s
-    printstyled("Load library operator: $oplibpath ==> $opname\n", color=:green)
+    verbose && printstyled("Load library operator: $oplibpath ==> $opname\n", color=:green)
     return s
 end
 
@@ -121,7 +121,7 @@ end
 Loads the operator `opname` from library `oplibpath`; gradients are also imported. 
 If `multiple` is true, the operator is assumed to have multiple outputs. 
 """
-function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false)
+function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false, verbose::Bool = true)
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
         if length(b) >=3 && b[1:3]=="lib"
@@ -174,7 +174,7 @@ catch(e)
 end
         s = py"$$fn_name"
         load_op_grad_dict[(oplibpath,opname)] = s
-        printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
+        verbose && printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
         return s
 end
 
@@ -197,9 +197,9 @@ function load_system_op(opname::String, grad::Bool=true; multiple::Bool=false)
         ADCME.precompile()
     end
     if grad
-        load_op_and_grad(LIBADCME, opname; multiple=multiple)
+        load_op_and_grad(LIBADCME, opname; multiple=multiple, verbose=false)
     else
-        load_op(LIBADCME, opname)
+        load_op(LIBADCME, opname, verbose=false)
     end
 end
 

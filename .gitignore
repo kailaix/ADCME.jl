@@ -21,14 +21,7 @@ docs/src/assets/Slide/*.out
 research/*
 *.ipynb
 *.gz 
-deps/CustomOps/Laplace2D
-deps/CustomOps/OT
-deps/CustomOps/OTNetwork
-deps/CustomOps/FastDTW
-deps/CustomOps/ExtendedNN
-deps/CustomOps/formulas.jl
 deps/deps.jl
-!deps/build2.jl
 docs/src/assets/Slide/figures
 !deps/Anaconda/build.sh
 data.txt
