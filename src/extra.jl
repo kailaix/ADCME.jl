@@ -381,7 +381,9 @@ function install(s::String; force::Bool = false, islocal::Bool = false)
         include(joinpath(LIBPLUGIN, name, "build.jl"))
     end
     cmakelists = String(read("CMakeLists.txt"))
-    cmakelists = replace(String(read(joinpath(LIBPLUGIN, "CMakeLists.txt"))), "[INSTRUCTION]"=>cmakelists)
+    if !occursin("cmake_minimum_required", cmakelists)
+        cmakelists = replace(String(read(joinpath(LIBPLUGIN, "CMakeLists.txt"))), "[INSTRUCTION]"=>cmakelists)
+    end
     open("CMakeLists.txt", "w") do io 
         write(io, cmakelists)
     end

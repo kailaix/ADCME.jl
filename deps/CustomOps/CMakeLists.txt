@@ -58,7 +58,7 @@ endif()
 include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
 link_directories(${LIBDIR})
 
-add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp OTNetwork/OTNetwork.cpp OTNetwork/src/EMD_wrapper.cpp SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp SparseConcate/SparseConcate.cpp SparseFactorizationSolve/Factorization/SparseFactorization.cpp SparseFactorizationSolve/Solve/Solve.cpp SparseFactorizationSolve/lru_cache.cpp SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp SparseMatMul/SparseMatMul.cpp SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp)
+add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp SparseConcate/SparseConcate.cpp SparseFactorizationSolve/Factorization/SparseFactorization.cpp SparseFactorizationSolve/Solve/Solve.cpp SparseFactorizationSolve/lru_cache.cpp SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp SparseMatMul/SparseMatMul.cpp SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp)
 
 set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(adcme ${TF_LIB_FILE})
