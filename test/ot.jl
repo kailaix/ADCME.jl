@@ -12,6 +12,7 @@
     tol = 1e-10
     loss = sinkhorn(a, b, m)
     @test run(sess, loss) ≈ 0.10269121
+    @test_nowarn loss = sinkhorn(a, b, m, method = "lp")
 end
 
 @testset "dist" begin

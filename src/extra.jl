@@ -11,7 +11,8 @@ install_adept,
 register,
 debug,
 doctor,
-nnuq
+nnuq,
+compile
 
 """
     xavier_init(size, dtype=Float64)
@@ -270,6 +271,30 @@ function Base.:precompile(force::Bool=true)
     ADCME.cmake()
     ADCME.make()
     cd(PWD)
+end
+
+"""
+    compile()
+
+Compile a custom operator in the current directory. A `CMakeLists.txt` must be present. 
+"""
+function compile()
+    PWD = pwd()
+    if !isfile("CMakeLists.txt")
+        error(SystemError("No CMakeLists.txt in the current directory found."))
+    end
+    if !isdir("build")
+        mkdir("build")
+    end
+    cd("build")
+    try 
+        cmake()
+        make()
+    catch e
+        @warn "Compiling failed: $e"
+    finally
+        cd(PWD)
+    end
 end
 
 

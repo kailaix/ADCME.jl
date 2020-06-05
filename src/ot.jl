@@ -32,7 +32,7 @@ function sinkhorn(a::Union{PyObject, Array{Float64}}, b::Union{PyObject, Array{F
         return sk(a,b,M,reg,iter,tol, constant(0))[2]
     elseif method=="lp"
         pth = install("OTNetwork")
-        lp = load_op_and_grad(pth, "ot_network"; multiple=true)
+        lp = load_op_and_grad(pth, "o_t_network"; multiple=true)
         if return_optimal
             return lp(a, b, M, iter)
         end
@@ -91,7 +91,7 @@ function dtw(s::Union{PyObject, Array{Float64}}, t::Union{PyObject, Array{Float6
             use_fast::Bool = false)
     use_fast = Int32(use_fast)
     pth = install("FastDTW")
-    dtw_ = load_op_and_grad(pth, "fast_dtw"; multiple=true)
+    dtw_ = load_op_and_grad(pth, "dtw"; multiple=true)
     s,t, use_fast = convert_to_tensor([s,t,use_fast], [Float64,Float64, Int32])
     cost, path = dtw_(s,t,use_fast)
     return cost, path + 1
