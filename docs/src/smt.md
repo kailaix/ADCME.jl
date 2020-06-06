@@ -86,6 +86,18 @@ optional arguments:
                         init.hoc.
 ```
 
----
+**Example: Submit a Batch Job**
+
+```bash
+set +x
+smt configure --labelgenerator=uuid # 1
+for o in 1 2 3 4 5 
+do 
+smt run --label $o -d Data/$o -e 'srun julia' $o & # 2
+sleep 1  # 3
+done 
+wait 
+```
+
 
 
