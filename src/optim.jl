@@ -18,6 +18,18 @@ UnconstrainedOptimizer,
 getInit, getLoss, getLossAndGrad, update!,
 setSearchDirection!, linesearch, getSearchDirection
 
+using .Optimizer
+export Optimizer
+for OP in [:ADAM, :Descent,
+    :Momentum, :Nesterov, :RMSProp, :RADAM,
+    :AdaMax, :ADAGrad, :ADADelta, :AMSGrad,
+    :NADAM, :LBFGS, :AndersonAcceleration, :apply!]
+    @eval begin
+        $OP = Optimizer.$OP 
+        export $OP 
+    end
+end
+
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
 end

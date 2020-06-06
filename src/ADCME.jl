@@ -81,7 +81,6 @@ $e"""
     include("core.jl")
     include("io.jl")
     include("optimizers.jl")
-    using .Optimizer; export Optimizer
     include("optim.jl")
     include("run.jl")
     include("variable.jl")
