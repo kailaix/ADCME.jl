@@ -80,6 +80,8 @@ $e"""
     
     include("core.jl")
     include("io.jl")
+    include("optim_flux.jl")
+    using .Optimizer; export Optimizer
     include("optim.jl")
     include("run.jl")
     include("variable.jl")
