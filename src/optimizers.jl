@@ -609,7 +609,7 @@ function apply!(o::AndersonAcceleration, x, Δ)
   n = length(x)
   x_prev = x
   x -= Δ
-  pth = raw"""C:\Users\kaila\Desktop\aa\julia\build\AA.dll"""
+  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build")
   if !o.initilized
     @eval ccall((:init_aa, $pth), Cvoid, (Cint, Cint, Cint), $n, $o.mem, $o.atype)
   end
@@ -618,7 +618,7 @@ function apply!(o::AndersonAcceleration, x, Δ)
 end
 
 function Base.:finalizer(f, o::AndersonAcceleration)
-  pth = raw"""C:\Users\kaila\Desktop\aa\julia\build\AA.dll"""
+  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build")
   @eval ccall((:finalize_aa, $pth), Cvoid, ())
 end
 
