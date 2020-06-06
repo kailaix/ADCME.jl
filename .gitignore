@@ -25,3 +25,4 @@ deps/deps.jl
 docs/src/assets/Slide/figures
 !deps/Anaconda/build.sh
 data.txt
+docs\src\assets\Codes\Optimizer
