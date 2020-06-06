@@ -15,7 +15,7 @@ newton_raphson_with_grad,
 NonlinearConstrainedProblem,
 pack, unpack,
 UnconstrainedOptimizer,
-getInit, getLoss, getLossAndGrad, update,
+getInit, getLoss, getLossAndGrad, update!,
 setSearchDirection!, linesearch, getSearchDirection
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
@@ -994,7 +994,7 @@ function linesearch(UO::UnconstrainedOptimizer,  f::Real, df, linesearch_fn, α:
     return α, fx 
 end
 
-function update(UO::UnconstrainedOptimizer, xs)
+function update!(UO::UnconstrainedOptimizer, xs)
     UO.update_fn(xs)
 end
 
