@@ -1,7 +1,7 @@
 module Optimizer 
 
 using LinearAlgebra
-
+using Libdl
 #=
 The following code is adapted from Flux.jl: https://github.com/FluxML/Flux.jl
 The original license from Flux.jl:
@@ -609,7 +609,9 @@ function apply!(o::AndersonAcceleration, x, Δ)
   n = length(x)
   x_prev = x
   x -= Δ
-  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build")
+
+  lib = Sys.iswindows() ? "AA.dll" : "libAA.$dlext"
+  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build", lib)
   if !o.initilized
     @eval ccall((:init_aa, $pth), Cvoid, (Cint, Cint, Cint), $n, $o.mem, $o.atype)
   end
@@ -618,7 +620,8 @@ function apply!(o::AndersonAcceleration, x, Δ)
 end
 
 function Base.:finalizer(f, o::AndersonAcceleration)
-  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build")
+  lib = Sys.iswindows() ? "AA.dll" : "libAA.$dlext"
+  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build", lib)
   @eval ccall((:finalize_aa, $pth), Cvoid, ())
 end
 
