@@ -11,7 +11,7 @@ pages = Any[
         "tu_inv.md", "tu_recipe.md", "tu_nn.md", "tu_implicit.md", "tu_customop.md","tu_debug.md", "exercise.md"],
     "Resources" => ["newton_raphson.md", "parallel.md", "ode.md", "global.md", 
             "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md", "customopt.md",
-            "options.md"],
+            "options.md", "smt.md"],
     "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
             "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md", "apps_nnfem.md"],
