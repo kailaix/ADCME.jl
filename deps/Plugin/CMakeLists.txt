@@ -1,9 +1,17 @@
 cmake_minimum_required(VERSION 3.5)
-project(TFApp)
+project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
 message("JULIA=${JULIA}")
+
+IF(JULIA)
+ELSE()
+find_program(JULIA "julia")
+ENDIF()
+
 execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
+
+
 list(GET JL_OUT 0 BINDIR)
 list(GET JL_OUT 1 LIBDIR)
 list(GET JL_OUT 2 TF_INC)
@@ -16,14 +24,13 @@ list(GET JL_OUT 8 MAKE)
 list(GET JL_OUT 9 GIT)
 list(GET JL_OUT 10 PYTHON)
 list(GET JL_OUT 11 TF_LIB_FILE)
+list(GET JL_OUT 12 LIBCUDA)
+list(GET JL_OUT 13 CUDA_INC)
 
-
-message("BINDIR=${BINDIR}")
-message("LIBDIR=${LIBDIR}")
+message("Python path=${PYTHON}")
+message("EIGEN_INC=${EIGEN_INC}")
 message("TF_INC=${TF_INC}")
 message("TF_ABI=${TF_ABI}")
-message("EIGEN_INC=${EIGEN_INC}")
-message("Python path=${PYTHON}")
 message("TF_LIB_FILE=${TF_LIB_FILE}")
 
 
@@ -31,22 +38,13 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION
   set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
 
-# set(CMAKE_BUILD_TYPE Debug)
-
 set(CMAKE_BUILD_TYPE Release)
+
 if(MSVC)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
 else()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 endif()
-
-include_directories(${TF_INC} ${EIGEN_INC})
-
-include_directories(${LIBDIR}/Adept-2/include)
-find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
-find_library(LIBOPENBLAS openblas HINTS ${LIBDIR})
-message("ADEPT_LIB_FILE=${ADEPT_LIB_FILE}")
-message("LIBOPENBLAS=${LIBOPENBLAS}")
 
 if(MSVC)
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -57,17 +55,10 @@ if(MSVC)
   add_definitions(-DNOMINMAX)
 endif()
 
-set(LIBDIR_NAME )
+include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
+link_directories(${LIBDIR})
 
-# Copy and paste the following lines (no modification is required)
-list(LENGTH "LIBDIR_NAME" LIBLENGTH)
-message("Total number of libraries to make: ${LIBLENGTH}")
-MATH(EXPR LIBLENGTH "${LIBLENGTH}-1")
-foreach(IDX RANGE 0 ${LIBLENGTH})
-  list(GET LIBDIR_NAME ${IDX} _LIB_NAME)
-  message("Preparing ${IDX}th library: ${_LIB_NAME}")
-  add_subdirectory(${_LIB_NAME})
-endforeach(IDX)
+find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
+message("ADEPT_LIB_FILE=${ADEPT_LIB_FILE}")
 
-
-
+[INSTRUCTION]

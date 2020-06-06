@@ -74,11 +74,8 @@ $$x \rightarrow o_1 \rightarrow o_2 \rightarrow \ldots \rightarrow o_k$$
 function fcx(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
     θ::Union{Array{Float64,1}, PyObject};
     activation::String = "tanh")
-    if !haskey(COLIB, "extended_nn")
-        install_adept()
-        install("ExtendedNN", force=true)
-    end
-    extended_nn_ = load_system_op(COLIB["extended_nn"]...; multiple=true)
+    pth = install("ExtendedNN")
+    extended_nn_ = load_op_and_grad(pth, "extended_nn"; multiple=true)
     config = [size(x,2);output_dims]
     x_,config_,θ_ = convert_to_tensor([x,config,θ], [Float64,Int64,Float64])
     x_ = reshape(x_, (-1,))

@@ -22,7 +22,11 @@ module ADCME
     #------------------------------------------------------------------------------------------
     # Global Storage 
     DTYPE = Dict{Type, PyObject}()
-    COLIB = Dict{String, Tuple{String, String, String, Bool}}() # custom operators
+    LIBADCME = joinpath("$(@__DIR__)", "../deps/CustomOps/build", "libadcme.$dlext")
+    if Sys.iswindows()
+        LIBADCME = joinpath("$(@__DIR__)", "../deps/CustomOps/build", "adcme.dll")
+    end
+    LIBPLUGIN = joinpath("$(@__DIR__)", "../deps/Plugin")
     
     if isfile("$(@__DIR__)/../deps/deps.jl")
         include("$(@__DIR__)/../deps/deps.jl")
@@ -33,7 +37,7 @@ module ADCME
     STORAGE = Dict{String, Any}()
         
     function __init__()
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, COLIB
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
         copy!(tf, pyimport("tensorflow"))
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         copy!(tfp, pyimport("tensorflow_probability"))
@@ -52,16 +56,24 @@ module ADCME
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
         global options = Options()
-        colibs = include("$(@__DIR__)/../deps/CustomOps/default_formulas.jl")
-        for c in colibs
-            push!(COLIB, c)
-        end
-        
-        if isfile("$(@__DIR__)/../deps/CustomOps/formulas.jl")
-            colibs = include("$(@__DIR__)/../deps/CustomOps/formulas.jl")
-            for c in colibs
-                push!(COLIB, c)
+        try
+            PWD = pwd()
+            if !isdir("$(@__DIR__)/../deps/CustomOps/build")
+                @info "You are using ADCME for the first time. Precompiling built-in custom operators may take some time..."
+                cd("$(@__DIR__)/../deps/CustomOps")
+                rm("build", force=true, recursive=true)
+                mkdir("build")
+                cd("build")
+                ADCME.cmake()
+                ADCME.make()
+                cd(PWD)
             end
+        catch e
+            @warn """Compiling ADCME custom operators failed. The functionalities of ADCME is limited to TensorFlow backend
+=============================================================================
+                            Error Message
+=============================================================================
+$e"""
         end
     end
 

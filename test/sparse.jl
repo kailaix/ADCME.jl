@@ -77,7 +77,6 @@ end
     @test run(sess, u) ≈ A\b
 end
 
-if !Sys.iswindows()
 @testset "sparse_assembler" begin
         
     m = 20
@@ -127,7 +126,8 @@ if !Sys.iswindows()
 
         
 end
-end
+
+
 @testset "sparse_least_square" begin
     ii = Int32[1;1;2;2;3;3]
     jj = Int32[1;2;1;2;1;2]
