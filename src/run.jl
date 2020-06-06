@@ -10,15 +10,25 @@ save_profile
 function Session(args...;kwargs...)
     config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth=true
-    tf.compat.v1.Session(args...;config=config, kwargs...)
+    sess = tf.compat.v1.Session(args...;config=config, kwargs...)
+    STORAGE["session"] = sess 
+    return sess 
 end
 
-function Base.:run(o::PyObject, fetches::Union{PyObject, Array{PyObject}, Array{Any}, Tuple}, args::Pair{PyObject, <:Any}...; kwargs...)
+function Base.:run(sess::PyObject, fetches::Union{PyObject, Array{PyObject}, Array{Any}, Tuple}, args::Pair{PyObject, <:Any}...; kwargs...)
+    local ret 
     if length(args)>0
-        o.run(fetches, feed_dict = Dict(args))
+        ret = sess.run(fetches, feed_dict = Dict(args))
     else
-        o.run(fetches; kwargs...)
+        ret = sess.run(fetches; kwargs...)
     end 
+    if isnothing(ret)
+        return nothing
+    elseif isa(ret, Array) && size(ret)==()
+        return ret[1]
+    else
+        return ret
+    end
 end
 
 function global_variables_initializer()

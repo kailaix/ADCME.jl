@@ -24,17 +24,15 @@ function sinkhorn(a::Union{PyObject, Array{Float64}}, b::Union{PyObject, Array{F
     reg = convert_to_tensor(reg)
     iter = convert_to_tensor(iter)
     tol = convert_to_tensor(tol)
-    sk = load_system_op(COLIB["sinkhorn_knopp"]...; multiple=true)
     if method=="sinkhorn"
+        sk = load_system_op("sinkhorn_knopp"; multiple=true)
         if return_optimal
             return sk(a,b,M,reg,iter,tol, constant(0))
         end
         return sk(a,b,M,reg,iter,tol, constant(0))[2]
     elseif method=="lp"
-        if !haskey(COLIB, "ot_network")
-            install("OTNetwork", force=true)
-        end
-        lp = load_system_op("ot_network"; multiple=true)
+        pth = install("OTNetwork")
+        lp = load_op_and_grad(pth, "ot_network"; multiple=true)
         if return_optimal
             return lp(a, b, M, iter)
         end
@@ -92,10 +90,8 @@ fast algorithm may not be accurate.
 function dtw(s::Union{PyObject, Array{Float64}}, t::Union{PyObject, Array{Float64}}, 
             use_fast::Bool = false)
     use_fast = Int32(use_fast)
-    if !haskey(COLIB, "fast_dtw")
-        install("FastDTW", force=true)
-    end
-    dtw_ = load_system_op(COLIB["fast_dtw"]...; multiple=true)
+    pth = install("FastDTW")
+    dtw_ = load_op_and_grad(pth, "dtw"; multiple=true)
     s,t, use_fast = convert_to_tensor([s,t,use_fast], [Float64,Float64, Int32])
     cost, path = dtw_(s,t,use_fast)
     return cost, path + 1

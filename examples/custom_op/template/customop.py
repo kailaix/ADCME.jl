@@ -449,11 +449,7 @@ with open("{}/custom_op{}.template".format(dirname, simple_or_not),"r") as fp:
 with open("{}.cpp".format(op), "w") as fp:
     fp.write(cpp)
 
-d = {"include": tf.sysconfig.get_compile_flags()[0][2:],
-    "link": tf.sysconfig.get_link_flags()[0][2:],
-    "ABI": tf.sysconfig.get_compile_flags()[1][-1],
-    "OperatorName": op,
-    "HEADERS": os.path.join(pypath, "../headers"),
+d = {"OperatorName": op,
     "USEGPU": "" if simple_or_not=="false" else "#"}
 with open("{}/CMakeLists.template".format(dirname),"r") as fp:
     print("CMakeLists.txt template: {}/CMakeLists.template".format(dirname))

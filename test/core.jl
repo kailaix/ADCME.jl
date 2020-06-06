@@ -132,3 +132,8 @@ end
     z = sum(independent(y))
     @test isnothing(gradients(z, x))
 end
+
+@testset "run corner cases" begin 
+    pl = placeholder(0.1)
+    @test run(sess, pl, pl=>4.0) ≈ 4.0
+end

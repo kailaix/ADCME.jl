@@ -43,6 +43,5 @@ jobs:
         with:
           args: install visualstudio2017-workload-nativedesktop
       - uses: julia-actions/julia-buildpkg@latest
-      - run: julia --color=yes -e 'using ADCME; install_adept(); ADCME.precompile()'
 
 

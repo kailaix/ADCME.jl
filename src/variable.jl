@@ -244,6 +244,10 @@ function PyCall.:length(o::PyObject)
     end
 end
 
+function Base.:ndims(o::PyObject)
+    return length(size(o))
+end
+
 @doc raw"""
     gradients(ys::PyObject, xs::PyObject; kwargs...)
 
@@ -374,7 +378,7 @@ function hessian(ys::PyObject, xs::PyObject; kwargs...)
     vs = Array{PyObject}(undef, s2[1])
     for i = 1:s2[1]
         # verbose && (@info "_hessian... $i/$(s2[1])")
-        vs[i] = gradients(h[i], xs)
+        vs[i] = gradients(get(h,i-1), xs)
         if vs[i]==nothing
             vs[i] = constant(zeros(get_dtype(ys), s2[1]))
         end
