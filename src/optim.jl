@@ -751,6 +751,8 @@ mutable struct UnconstrainedOptimizer
     update_fn::Function
     xs
     d
+    f_ncall::Int64 
+    df_ncall::Int64
     vars::Array{PyObject}
 end
 
@@ -898,6 +900,8 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
         update_fn,
         missing, 
         missing,
+        0,
+        0,
         vars
     )    
 end
@@ -918,6 +922,7 @@ end
 Returns `Loss(xs)`.
 """
 function getLoss(UO::UnconstrainedOptimizer, xs)
+    UO.f_ncall += 1
     UO.eval_fn(xs)
 end
 
@@ -930,6 +935,8 @@ Returns
 $$L(x), \qquad \nabla L(x)$$
 """
 function getLossAndGrad(UO::UnconstrainedOptimizer, xs)
+    UO.f_ncall += 1
+    UO.df_ncall += 1
     UO.eval_fn_and_grad(xs)
 end
 
@@ -975,9 +982,9 @@ Here the inputs are
 The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
 """
 function linesearch(UO::UnconstrainedOptimizer,  f::Real, df, linesearch_fn, α::Real=1.0)
-    φ = α->UO.eval_fn_ls(UO.xs, UO.d, α)
-    dφ = α->UO.eval_grad_ls(UO.xs, UO.d, α)
-    φdφ = α->UO.eval_fn_and_grad_ls(UO.xs, UO.d, α)
+    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(UO.xs, UO.d, α))
+    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(UO.xs, UO.d, α))
+    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(UO.xs, UO.d, α))
     if isa(df, Array{Float64})
         dφ_0 = sum(df .* UO.d)
     else
