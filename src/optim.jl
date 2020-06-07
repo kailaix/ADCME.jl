@@ -15,7 +15,20 @@ newton_raphson_with_grad,
 NonlinearConstrainedProblem,
 pack, unpack,
 UnconstrainedOptimizer,
-getInit, getLoss, getLossAndGrad, update
+getInit, getLoss, getLossAndGrad, update!,
+setSearchDirection!, linesearch, getSearchDirection
+
+using .Optimizer
+export Optimizer
+for OP in [:ADAM, :Descent,
+    :Momentum, :Nesterov, :RMSProp, :RADAM,
+    :AdaMax, :ADAGrad, :ADADelta, :AMSGrad,
+    :NADAM, :LBFGS, :AndersonAcceleration, :apply!]
+    @eval begin
+        $OP = Optimizer.$OP 
+        export $OP 
+    end
+end
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -742,10 +755,16 @@ end
 mutable struct UnconstrainedOptimizer
     eval_fn_and_grad::Function
     eval_fn::Function
+    eval_grad::Function
     eval_fn_and_grad_ls::Function
     eval_fn_ls::Function
+    eval_grad_ls::Function 
     get_init::Function
     update_fn::Function
+    xs
+    d
+    f_ncall::Int64 
+    df_ncall::Int64
     vars::Array{PyObject}
 end
 
@@ -793,16 +812,11 @@ loss = mean((y-x)^4)
 sess = Session(); init(sess)
 uo = UnconstrainedOptimizer(sess, loss)
 
-x0 = getInit(uo)
-_, d = getLossAndGrad(uo, x0)
-φ0, dφ0  = getLossAndGrad(uo, x0, -d, 0.0)
-
-function φ(α)
-    return getLoss(uo, x0, -d, α)
-end
-
 ls = BackTracking()
-ls(φ, 200.0, φ0, dφ0)
+x0 = getInit(uo)
+f, df = getLossAndGrad(uo, x0)
+setSearchDirection!(uo, x0, -df)
+linesearch(uo, f, df, ls, 100.0)
 ```
 """
 function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Array, Missing} = missing, packed::Bool=true)
@@ -830,6 +844,15 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
         run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
     end
 
+    function eval_grad(xs)
+        if packed
+            xs = unpack(xs, vars)
+        end
+        grad = run(sess, loss_grads, [x=>y for (x,y) in zip(vars, xs)]...)
+        packed && (grad = pack(grad))
+        return grad
+    end
+
     function eval_fn_and_grad_ls(xs, dval, α)
         if packed
             xs += α*dval
@@ -853,6 +876,19 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
         run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
     end
 
+
+    function eval_grad_ls(xs, dval, α)
+        if packed
+            xs += α*dval
+            xs = unpack(xs, vars)
+            dval = unpack(dval, vars)
+        else
+            xs .+= α*dval
+        end
+        grad = run(sess, loss_grads_ls, [x=>y for (x,y) in zip(d,dval)]..., [x=>y for (x,y) in zip(vars, xs)]...)
+        return grad
+    end
+  
     function get_init()
         ret = run(sess, vars)
         packed && (ret = pack(ret))
@@ -869,10 +905,16 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
     UnconstrainedOptimizer(
         eval_fn_and_grad,
         eval_fn,
+        eval_grad,
         eval_fn_and_grad_ls,
         eval_fn_ls,
+        eval_grad_ls,
         get_init,
         update_fn,
+        missing, 
+        missing,
+        0,
+        0,
         vars
     )    
 end
@@ -886,44 +928,86 @@ function getInit(UO::UnconstrainedOptimizer)
     UO.get_init()
 end
 
+
 """
     getLoss(UO::UnconstrainedOptimizer, xs)
 
 Returns `Loss(xs)`.
 """
 function getLoss(UO::UnconstrainedOptimizer, xs)
+    UO.f_ncall += 1
     UO.eval_fn(xs)
 end
 
 
 @doc raw"""
-    getLoss(UO::UnconstrainedOptimizer, xs, d, α)
+    getLossAndGrad(UO::UnconstrainedOptimizer, xs)
 
-Returns `Loss(xs + α*d)` and 
+Returns 
 
-$$d^T \nabla L(x+\alpha d)$$
+$$L(x), \qquad \nabla L(x)$$
 """
 function getLossAndGrad(UO::UnconstrainedOptimizer, xs)
+    UO.f_ncall += 1
+    UO.df_ncall += 1
     UO.eval_fn_and_grad(xs)
 end
 
+"""
+    setSearchDirection!(UO::UnconstrainedOptimizer, xs, d)
 
+Sets the direction for linesearch, `xs` is the current state, `d` is the search directon.
+"""
+function setSearchDirection!(UO::UnconstrainedOptimizer, xs, d)
+    UO.d = d 
+    UO.xs = xs 
+    nothing 
+end
 
 """
-    getLoss(UO::UnconstrainedOptimizer, xs, d, α)
+    getSearchDirection(opt, xs, d)
 
-Returns `Loss(xs + α*d)`.
+Returns the search direction for the optimizer `opt` at `xs`. The gradient at `xs` is given by `d`.
 """
-function getLoss(UO::UnconstrainedOptimizer, xs, d, α)
-    UO.eval_fn_ls(xs, d, α)
+function getSearchDirection(opt, xs, d)
+    Optimizer.apply!(opt, xs, d)
 end
 
 
-function getLossAndGrad(UO::UnconstrainedOptimizer, xs, d, α)
-    UO.eval_fn_and_grad_ls(xs, d, α)
+"""
+    linesearch(UO::UnconstrainedOptimizer,  f::Float64, df, linesearch_fn::Function, α::Float64=1.0)
+
+Performs linesearch. `f` and `df` are the current loss function value and gradient. `α` is the initial step size for linesearch. 
+
+`linesearch_fn` has the signature
+
+`α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)`
+
+Here the inputs are 
+
+- `φ(α)`: `φ( x + α * d )`
+- `dφ(α)`: `d' * ∇φ( x + α * d )`
+- `φdφ`: returns both `φ(α)` and `dφ(α)`
+- `α`: initial search step size 
+- `f`: inital function value 
+- `dφ_0`: `dφ(0)`
+
+The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
+"""
+function linesearch(UO::UnconstrainedOptimizer,  f::Real, df, linesearch_fn, α::Real=1.0)
+    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(UO.xs, UO.d, α))
+    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(UO.xs, UO.d, α))
+    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(UO.xs, UO.d, α))
+    if isa(df, Array{Float64})
+        dφ_0 = sum(df .* UO.d)
+    else
+        dφ_0 = sum(sum.(df .* UO.d))
+    end
+    α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)
+    return α, fx 
 end
 
-function update(UO::UnconstrainedOptimizer, xs)
+function update!(UO::UnconstrainedOptimizer, xs)
     UO.update_fn(xs)
 end
 

@@ -80,6 +80,7 @@ $e"""
     
     include("core.jl")
     include("io.jl")
+    include("optimizers.jl")
     include("optim.jl")
     include("run.jl")
     include("variable.jl")
