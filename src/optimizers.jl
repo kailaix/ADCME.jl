@@ -682,6 +682,14 @@ function AndersonAcceleration(; mem::Int64 = 10, atype::Int64 = 1)
       cd(PWD)
     end
   end
+  lib = Sys.iswindows() ? "AA.dll" : "libAA.$dlext"
+  pth = joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration", "build", lib)
+  if !isfile(pth)
+    PWD = pwd()
+    cd(joinpath(@__DIR__, "..", "deps", "CustomOps", "AndersonAcceleration"))
+    compile()
+    cd(PWD)
+  end
   AndersonAcceleration(mem, atype, false)
 end
 
