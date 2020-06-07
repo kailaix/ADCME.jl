@@ -486,6 +486,34 @@ VLOG(FATAL) << message;
 VLOG(NUM_SEVERITIES) << message;
 ```
 
+## Windows: Load Shared Library
+
+Sometimes you might encounter `NotFoundError()` when using `tf.load_op_library` on Windows system, despite that the library you referred does exist. You can then check using `Libdl`
+
+```julia
+using Libdl
+dlopen(<MySharedLibrary.dll>)
+```
+
+and you still get an error
+
+```
+ERROR: could not load library "MySharedLibrary.dll"
+The specified module could not be found. 
+```
+
+This is annoying. The reason is that when you load this shared library on windows, the system looks for all its dependencies. If at least one of the dependent library is not in the path, then the error occurs. To solve this problem, you need a dependency walker, such as [die.exe](https://gamejolt.com/games/die-exe/36157). 
+
+
+
+For example, in the following right panel we see a lot of dynamic libraries. They must be in the system path so that we can load the current dynamic library (`dlopen(...)`). 
+
+
+
+|  Main Window    |   Import Window   |
+| ---- | ---- |
+|  ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/die1.png?raw=true)    |   ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/die2.png?raw=true)    |
+
 
 
 
