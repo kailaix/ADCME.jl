@@ -9,7 +9,7 @@ pages = Any[
     "index.md",
     "Tutorial"=>["tutorial.md","resources.md", "tu_whatis.md", "tu_basic.md", "tu_optimization.md", "tu_sparse.md", "tu_fd.md", "tu_fem.md",
         "tu_inv.md", "tu_recipe.md", "tu_nn.md", "tu_implicit.md", "tu_customop.md","tu_debug.md", "exercise.md"],
-    "Resources" => ["newton_raphson.md", "parallel.md", "ode.md", "global.md", 
+    "Resources" => ["newton_raphson.md", "parallel.md", "optimizers.md", "ode.md", "global.md", 
             "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md", "customopt.md",
             "options.md"],
     "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md"],
