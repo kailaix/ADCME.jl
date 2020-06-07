@@ -876,6 +876,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
         run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
     end
 
+
     function eval_grad_ls(xs, dval, α)
         if packed
             xs += α*dval
@@ -887,7 +888,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
         grad = run(sess, loss_grads_ls, [x=>y for (x,y) in zip(d,dval)]..., [x=>y for (x,y) in zip(vars, xs)]...)
         return grad
     end
-
+  
     function get_init()
         ret = run(sess, vars)
         packed && (ret = pack(ret))
