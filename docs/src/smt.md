@@ -51,12 +51,6 @@ SMT provides a web-based visualization tool to visualize your tasks. To start th
 $ smtweb
 ```
 
-Or in Julia
-
-```@example smt
-init_smt_remote()
-```
-
 Here are some snapshots for the web-based visualization tool.
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCMEKit/smt1.png?raw=true)
@@ -90,14 +84,16 @@ optional arguments:
 
 ```bash
 set +x
-smt configure --labelgenerator=uuid # 1
+smt configure -l cmdline # 1
 for o in 1 2 3 4 5 
 do 
-smt run --label $o -d Data/$o -e 'srun julia' $o & # 2
+smt run --label $o -e 'srun julia' $o & # 2
 sleep 1  # 3
 done 
 wait 
 ```
+
+`#1` will ensure that each job will look for output files in `Data/$o`. 
 
 
 
