@@ -18,9 +18,8 @@ The package inherents the scalability and efficiency from the well-optimized bac
 
 
 ADCME is open-sourced with an MIT license. You can find the source codes at 
-```@raw html
-<center><a href="https://github.com/kailaix/ADCME.jl">https://github.com/kailaix/ADCME.jl</a></center>
-```
+
+![](https://github.com/kailaix/ADCME.jl)
 
 Read more about methodology, philosophy, and insights about ADCME: [slides](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Slide/ADCME.pdf?raw=true). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems!
 
