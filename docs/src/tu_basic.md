@@ -147,3 +147,5 @@ Here we show a list of commonly used operators in ADCME.
 | `A[idx, idy] += updates`          | `A = scatter_add(A, idx, idy, updates)`         |
 | `A[idx, idy] -= updates`          | `A = scatter_sub(A, idx, idy, updates)`         |
 
+!!! tip
+    In some cases you might find some features missing in ADCME but present in TensorFlow. You can always use `tf.<function_name>`. It's compatible.
