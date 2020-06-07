@@ -130,7 +130,10 @@ The magenta dots in the right panel shows the observed state variables.
 
 The above forward computation is implemented in an AD-capable way; that is, all the operators in the above forward computation possess automatic differentiation capabilities. Therefore, we can easily cast the above code to an inverse modeling version. The inverse problem we want to solve is
 
-> Suppose we have observed some state variables (the magenta dots in the right panel above), and suppose the source term and boundary conditions are known, we want to estimate a **spatially-varying** diffusivity coefficient $\kappa(x,y)$. 
+> Suppose we have observed some state variables (the magenta dots in the right panel above), and suppose the source term and boundary conditions are known, we want to estimate a **spatially-varying** diffusivity coefficient $\kappa(x,y)$.
+
+Note that in terms of degrees of freedom, the number of unknowns ($\kappa(x_i,y_i)$ at each Gauss points) is far more than the number of observations. Therefore the inverse problem is underdetermined, making it necessary to adopt regularization. Here the neural network representation of $\kappa(x,y)$ is a form of regularization.
+
 
 Here we show the content for `compute_loss.jl`, which is used in a later text. We use `ArgParse` to manage the command line parameters 
 
@@ -262,7 +265,7 @@ Don't forget `update!` after the optimization is finshied. Also don't forget `re
 The following figures show the loss function and estimated $\kappa(x,y)$ and $u(x,y)$.
 
 ```@raw html
-<center><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/kandsol.png?raw=true" width="50%"></center>
+<center><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/opt_loss.png?raw=true" width="50%"></center>
 ```
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/kandsol.png?raw=true)
