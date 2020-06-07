@@ -7,6 +7,7 @@ ae_init,
 fc,
 fc_num,
 fc_init,
+fc_to_code,
 ae_to_code,
 fcx,
 bn,
@@ -330,11 +331,13 @@ eval(Meta.parse(s))
 ```
 If `activation` is not specified, `tanh` is the default. 
 """
-function ae_to_code(file::String, scope::String; activation::String = "tanh")
+function ae_to_code(file::String, scope::String = "default"; activation::String = "tanh")
     d = matread(file)
     s = "let aedict$scope = matread(\"$file\")\n"*_ae_to_code(d, scope; activation = activation)*"\nend\n"
     return s
 end
+
+fc_to_code = ae_to_code
 
 # tensorflow layers from contrib 
 for (op, tfop) in [(:avg_pool2d, :avg_pool2d), (:avg_pool3d, :avg_pool3d),

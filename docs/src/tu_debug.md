@@ -1,4 +1,4 @@
-# Advanced: Debugging
+# Advanced: Debugging and Profiling 
 
 There are many handy tools implemented in `ADCME` for analysis, benchmarking, input/output, etc. 
 

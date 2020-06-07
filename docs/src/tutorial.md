@@ -34,7 +34,7 @@ The tutorial does not assume readers with experience in deep learning. However, 
 
 [Advanced: Custom Operators](./tu_customop.md)
 
-[Advanced: Debugging](./tu_debug.md)
+[Advanced: Debugging and Profiling](./tu_debug.md)
 
 [Exercise](./exercise.md)[^exercise]
 

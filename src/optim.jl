@@ -775,7 +775,7 @@ end
 """
     UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
     vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing,
-    loss_grads::Union{Missing, Function} = missing)
+    grads::Union{Missing, Array} = missing)
 
 Constructs an unconstrained optimization optimizer. 
 
