@@ -199,7 +199,7 @@ k0 = softplus(k0 + 3.0) + 1e-6 # to avoid factorization error
 We transform the neural network using `softplus` and add a small value to avoid negative or close to zero $\kappa(x,y)$, which is clearly not physical. 
 
 
-## Choose Different Optimizers 
+## Choosing Different Optimizers 
 
 ### (Accelerated) Gradient Descent Optimizers
 
@@ -352,3 +352,72 @@ apply!(opt, x, Δ) -> d
 ```
 
 where `opt` is the optimizer, `x` is the current state, `Δ` is the gradient direction, and `d` is the search direction. Looking at the example, such as `ADAM`, in the source code is helpful.
+
+
+## Appendix: Benchmark Results for Different Optimizers
+
+
+Here we present a benchmark result for different optimizers for solving Equation 1. We consider two choices for $f(x,y)$:
+
+* High frequency: $f(x,y) = \sin\left(4\pi y+\frac{\pi}{8}\right)$
+
+* Low frequency: $f(x,y) = \sin\left(2\pi y+\frac{\pi}{8}\right)$
+
+Additionally, in the inverse modeling, we consider two cases: very sparse data ($n_{\text{obs}}=20$) and moderate amount of data ($n_{\text{obs}}=900$). Here $n_{\text{obs}}$ is the number of observations. In the latter case, the amount of data consists roughly 70%~80% of the degrees of freedom. 
+
+The following shows reference solutions and observation distributions for $u(x,y)$. 
+
+In the following plot, we show the normalized loss function versus the number of function evaluations/gradient evaluations. The normalized loss function is defined as
+
+
+$${{{1 \over N}\sum\limits_{i = 1}^N {{{({u_{{\rm{obs}}}}({x_i}) - {u_\theta }({x_i}))}^2}} } \over {{1 \over N}\sum\limits_{i = 1}^N {{u_{{\rm{obs}}}}{{({x_i})}^2}} }}$$
+
+Here ${{u_{{\rm{obs}}}}({x_i})}$ is the observation function value at $x_i$ and ${{u_\theta }({x_i})}$ is the hypothetical solution computed using the neural network ($\theta$ denotes the weights and biases of the neural network). 
+
+### Low Frequency, $n_{\text{obs}}=20$
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-20-1.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-20-1.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-1.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-1.png?raw=true)
+
+
+
+### Low Frequency, $n_{\text{obs}}=900$
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-900-1.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-900-1.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-1.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-1.png?raw=true)
+
+
+### High Frequency, $n_{\text{obs}}=20$
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-20-2.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-20-2.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-2.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-2.png?raw=true)
+
+
+### High Frequency, $n_{\text{obs}}=900$
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-900-2.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-900-2.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-2.png?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-2.png?raw=true)
+
+
+
+We can say that LBFGS with a HagerZhang linesearch algorithm has the best performance, although it is very computationally expensive. Gradient descent methods without line search algorithms are not stable. However, if we apply Anderson Acceleration, the stability can be improved without additionaly function/gradient evaluations. 
