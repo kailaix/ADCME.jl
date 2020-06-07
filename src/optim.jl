@@ -733,7 +733,7 @@ function pack(jvars::Array)
     return val 
 end
 
-function unpack(jvars::Array{Float64}, vars::Array{PyObject})
+function unpack(jvars::Array{<:Real}, vars::Array{PyObject})
     a = Array{Any}(undef, length(vars))
     k = 0
     for i = 1:length(vars)
@@ -823,9 +823,10 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
     if ismissing(vars)
         vars = get_collection()
     end
-    pl = [placeholder(Float64, shape = size(v)) for v in vars]
+    T = get_dtype(vars[1])
+    pl = [placeholder(T, shape = size(v)) for v in vars]
     update_op = group([assign(x, y) for (x,y) in zip(vars, pl)])
-    d = [placeholder(Float64, shape = size(v)) for v in vars]
+    d = [placeholder(T, shape = size(v)) for v in vars]
     loss_grads = gradients(loss, vars)
     loss_grads_ls = sum(map((x,y)->dot(x,y), loss_grads, d))
     function eval_fn_and_grad(xs)
@@ -975,7 +976,7 @@ end
 
 
 """
-    linesearch(UO::UnconstrainedOptimizer,  f::Float64, df, linesearch_fn::Function, α::Float64=1.0)
+    linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn::Function, α::T=1.0) where T<:Real
 
 Performs linesearch. `f` and `df` are the current loss function value and gradient. `α` is the initial step size for linesearch. 
 
@@ -994,11 +995,11 @@ Here the inputs are
 
 The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
 """
-function linesearch(UO::UnconstrainedOptimizer,  f::Real, df, linesearch_fn, α::Real=1.0)
+function linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn::Function, α::T=1.0) where T<:Real
     φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(UO.xs, UO.d, α))
     dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(UO.xs, UO.d, α))
     φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(UO.xs, UO.d, α))
-    if isa(df, Array{Float64})
+    if isa(df, Array{T})
         dφ_0 = sum(df .* UO.d)
     else
         dφ_0 = sum(sum.(df .* UO.d))
