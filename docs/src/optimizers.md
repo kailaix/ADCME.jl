@@ -457,4 +457,4 @@ Some of the optimizers break (encountering `Inf` or `NaN`) during the optimizati
 
 
 
-We can say that LBFGS with a HagerZhang linesearch algorithm has the best performance, although it is very computationally expensive. Gradient descent methods without line search algorithms are not stable. However, if we apply Anderson Acceleration, the stability can be improved without additionaly function/gradient evaluations. 
+We can see that LBFGS with a HagerZhang linesearch algorithm has the best performance, although it is very computationally expensive. Gradient descent methods without line search algorithms are not stable. However, if we apply Anderson Acceleration, the stability can be improved without additionaly function/gradient evaluations. 

@@ -23,7 +23,7 @@ export Optimizer
 for OP in [:ADAM, :Descent,
     :Momentum, :Nesterov, :RMSProp, :RADAM,
     :AdaMax, :ADAGrad, :ADADelta, :AMSGrad,
-    :NADAM, :LBFGS, :AndersonAcceleration, :apply!]
+    :NADAM, :LBFGS, :AndersonAcceleration, :apply!, :ExpDecay, :InvDecay]
     @eval begin
         $OP = Optimizer.$OP 
         export $OP 

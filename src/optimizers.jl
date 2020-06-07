@@ -411,6 +411,71 @@ function apply!(o::NADAM, x, Δ)
   return Δ
 end
 
+
+"""
+    InvDecay(γ = 0.001)
+Apply inverse time decay to an optimiser, so that the effective step size at
+iteration `n` is `eta / (1 + γ * n)` where `eta` is the initial step size.
+The wrapped optimiser's step size is not modified.
+# Examples
+```julia
+decay = InvDecay()
+d = apply!(decay, x0, g)
+```
+"""
+mutable struct InvDecay
+  gamma::Float64
+  state::IdDict
+end
+
+InvDecay(γ = 0.001) = InvDecay(γ, IdDict())
+
+function apply!(o::InvDecay, x, Δ)
+  γ = o.gamma
+  n = get!(o.state, x, 1)
+  Δ .*= 1 / (1 + γ * n)
+  o.state[x] = n + 1
+  return Δ
+end
+
+"""
+    ExpDecay(η = 0.001, decay = 0.1, decay_step = 1000, clip = 1e-4)
+Discount the learning rate `η` by the factor `decay` every `decay_step` steps till
+a minimum of `clip`.
+# Parameters
+- Learning rate (`η`): Amount by which gradients are discounted before updating
+                       the weights.
+- `decay`: Factor by which the learning rate is discounted.
+- `decay_step`: Schedule decay operations by setting the number of steps between
+                two decay operations.
+- `clip`: Minimum value of learning rate.
+# Examples
+To apply exponential decay to an optimiser:
+```julia
+decay = ExpDecay()
+d = apply!(decay, x0, g)
+```
+"""
+mutable struct ExpDecay
+  eta::Float64
+  decay::Float64
+  step::Int64
+  clip::Float64
+  current::IdDict
+end
+
+ExpDecay(opt = 0.001, decay = 0.1, decay_step = 1000, clip = 1e-4) = ExpDecay(opt, decay, decay_step, clip, IdDict())
+
+function apply!(o::ExpDecay, x, Δ)
+  η, s, decay = o.eta, o.step, o.decay
+  n = o.current[x] = get(o.current, x, 0) + 1
+  if o.current[x]%s == 0 && count(x -> x%s == 0, values(o.current)) == 1
+    η = max(η * decay, o.clip)
+    o.eta = η
+  end
+  @. Δ *= η
+end
+
 #=
 The following code is adapted from Optim.jl: https://github.com/JuliaNLSolvers/Optim.jl
 Original license:
