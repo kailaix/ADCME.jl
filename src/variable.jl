@@ -379,7 +379,7 @@ function hessian(ys::PyObject, xs::PyObject; kwargs...)
     for i = 1:s2[1]
         # verbose && (@info "_hessian... $i/$(s2[1])")
         vs[i] = gradients(get(h,i-1), xs)
-        if vs[i]==nothing
+        if isnothing(vs[i])
             vs[i] = constant(zeros(get_dtype(ys), s2[1]))
         end
     end
@@ -466,7 +466,6 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
     end
     i1 = _to_range_array(o, i1, 1)
     i2 = _to_range_array(o, i2, 2)
-    @info i1, i2
     temp = Base.Iterators.product(i2,i1)|>collect
     indices = [vec([x[2] for x in temp]) vec([x[1] for x in temp])] .- 1
     p = tf.gather_nd(o, indices)
