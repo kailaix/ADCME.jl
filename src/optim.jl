@@ -773,9 +773,16 @@ function Base.:show(io::IO, uo::UnconstrainedOptimizer)
 end
 
 """
-    UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Array, Missing} = missing, packed::Bool=true)
+    UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
+    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing)
 
-Constructs an unconstrained optimization optimizer. Users need 
+Constructs an unconstrained optimization optimizer. `callback` is called whenever the loss function is evaluated in 
+the **linesearch** stage. It has the signature
+
+```
+callback(α::Float64, loss::Float64) 
+```
+
 
 # Without Linesearch
 ```
@@ -819,7 +826,9 @@ setSearchDirection!(uo, x0, -df)
 linesearch(uo, f, df, ls, 100.0)
 ```
 """
-function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Array, Missing} = missing, packed::Bool=true)
+function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
+    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing)
+
     if ismissing(vars)
         vars = get_collection()
     end
@@ -863,6 +872,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
             xs .+= α*dval
         end
         l, grad = run(sess, [loss, loss_grads_ls], [x=>y for (x,y) in zip(d,dval)]..., [x=>y for (x,y) in zip(vars, xs)]...)
+        !ismissing(callback) && callback(α, l)
         return l, grad
     end
 
@@ -874,7 +884,9 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; vars::Union{Arra
         else
             xs .+= α*dval
         end
-        run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
+        l = run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
+        !ismissing(callback) && callback(α, l)
+        return l 
     end
 
 
