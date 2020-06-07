@@ -976,7 +976,7 @@ end
 
 
 """
-    linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn::Function, α::T=1.0) where T<:Real
+    linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn, α::T=1.0) where T<:Real
 
 Performs linesearch. `f` and `df` are the current loss function value and gradient. `α` is the initial step size for linesearch. 
 
@@ -995,7 +995,7 @@ Here the inputs are
 
 The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
 """
-function linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn::Function, α::T=1.0) where T<:Real
+function linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn, α::T=1.0) where T<:Real
     φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(UO.xs, UO.d, α))
     dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(UO.xs, UO.d, α))
     φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(UO.xs, UO.d, α))
