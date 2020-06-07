@@ -30,6 +30,15 @@ module ADCME
     
     if isfile("$(@__DIR__)/../deps/deps.jl")
         include("$(@__DIR__)/../deps/deps.jl")
+        if Sys.iswindows()
+            ENV["PATH"] = LIBDIR*";"*ENV["PATH"]
+        else
+            if haskey(ENV, "LD_LIBRARY_PATH")
+                ENV["LD_LIBRARY_PATH"] = LIBDIR*":"*ENV["LD_LIBRARY_PATH"]
+            else
+                ENV["LD_LIBRARY_PATH"] = LIBDIR
+            end
+        end
     else
         error("ADCME is not properly built; run `Pkg.build(\"ADCME\")` to fix the problem.")
     end

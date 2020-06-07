@@ -376,11 +376,17 @@ Here ${{u_{{\rm{obs}}}}({x_i})}$ is the observation function value at $x_i$ and 
 
 ### Low Frequency, $n_{\text{obs}}=20$
 
+**Function Evaluations**
+
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-20-1.png?raw=true)
+
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-1.png?raw=true)
+**Gradient Evaluations**
+
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-20-1.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-1.png?raw=true)
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-1.png?raw=true)
 
@@ -388,35 +394,55 @@ Here ${{u_{{\rm{obs}}}}({x_i})}$ is the observation function value at $x_i$ and 
 
 ### Low Frequency, $n_{\text{obs}}=900$
 
+**Function Evaluations**
+
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-900-1.png?raw=true)
+
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-1.png?raw=true)
+
+**Gradient Evaluations**
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-900-1.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-1.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-1.png?raw=true)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-g-900-1.png?raw=true)
 
 
 ### High Frequency, $n_{\text{obs}}=20$
 
+**Function Evaluations**
+
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-20-2.png?raw=true)
+
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-2.png?raw=true)
+**Gradient Evaluations**
+
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-20-2.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-2.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-20-2.png?raw=true)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-g-20-2.png?raw=true)
 
 
 ### High Frequency, $n_{\text{obs}}=900$
 
+**Function Evaluations**
+
+
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/fn-900-2.png?raw=true)
+
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-2.png?raw=true)
+
+
+**Gradient Evaluations**
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/g-900-2.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-2.png?raw=true)
 
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-fn-900-2.png?raw=true)
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/aa-g-900-2.png?raw=true)
 
 
 

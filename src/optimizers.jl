@@ -1,5 +1,7 @@
 module Optimizer 
 
+using ..ADCME
+
 using LinearAlgebra
 using Libdl
 #=
@@ -602,6 +604,19 @@ end
 Creates an Anderson accelerator. 
 """
 function AndersonAcceleration(; mem::Int64 = 10, atype::Int64 = 1)
+  if Sys.iswindows()
+    if !isfile(joinpath(ADCME.LIBDIR, "liblapack.lib"))
+      PWD = pwd()
+      download("https://github.com/kailaix/ADCME.jl/releases/download/blas_lapack/aa_win.zip", joinpath(ADCME.LIBDIR, "aa_win.zip"))
+      cd(ADCME.LIBDIR)
+      run(`cmd /c unzip aa_win.zip`)
+      files = readdir("aa_win")
+      for f in files 
+        mv(joinpath("aa_win", f), f, force=true)
+      end
+      cd(PWD)
+    end
+  end
   AndersonAcceleration(mem, atype, false)
 end
 
