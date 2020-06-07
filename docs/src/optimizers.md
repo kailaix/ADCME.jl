@@ -367,12 +367,23 @@ Additionally, in the inverse modeling, we consider two cases: very sparse data (
 
 The following shows reference solutions and observation distributions for $u(x,y)$. 
 
+
+
+| $n_{\text{obs}}$ | Low Frequency                                                | High Frequency                                               |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 20               | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/reference20-1.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/reference20-2.png?raw=true) |
+| 900              | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/reference900-1.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/reference900-2.png?raw=true) |
+
+
+
 In the following plot, we show the normalized loss function versus the number of function evaluations/gradient evaluations. The normalized loss function is defined as
 
 
 $${{{1 \over N}\sum\limits_{i = 1}^N {{{({u_{{\rm{obs}}}}({x_i}) - {u_\theta }({x_i}))}^2}} } \over {{1 \over N}\sum\limits_{i = 1}^N {{u_{{\rm{obs}}}}{{({x_i})}^2}} }}$$
 
-Here ${{u_{{\rm{obs}}}}({x_i})}$ is the observation function value at $x_i$ and ${{u_\theta }({x_i})}$ is the hypothetical solution computed using the neural network ($\theta$ denotes the weights and biases of the neural network). 
+Here ${{u_{{\rm{obs}}}}({x_i})}$ is the observation function value at $x_i$ and ${{u_\theta }({x_i})}$ is the hypothetical solution computed using the neural network ($\theta$ denotes the weights and biases of the neural network).
+
+Some of the optimizers break (encountering `Inf` or `NaN`) during the optimization process. We do not includethem in the plot.  
 
 ### Low Frequency, $n_{\text{obs}}=20$
 
