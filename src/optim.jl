@@ -774,15 +774,19 @@ end
 
 """
     UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
-    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing)
+    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing,
+    loss_grads::Union{Missing, Function} = missing)
 
-Constructs an unconstrained optimization optimizer. `callback` is called whenever the loss function is evaluated in 
+Constructs an unconstrained optimization optimizer. 
+
+- `callback` is called whenever the loss function is evaluated in 
 the **linesearch** stage. It has the signature
 
 ```
 callback(α::Float64, loss::Float64) 
 ```
 
+- If `loss_grads` is provided, it will be used as gradients instead of `gradients(loss, vars)`. 
 
 # Without Linesearch
 ```
@@ -827,7 +831,8 @@ linesearch(uo, f, df, ls, 100.0)
 ```
 """
 function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
-    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing)
+    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing,
+    loss_grads::Union{Missing, Function} = missing)
 
     if ismissing(vars)
         vars = get_collection()
@@ -836,7 +841,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject;
     pl = [placeholder(T, shape = size(v)) for v in vars]
     update_op = group([assign(x, y) for (x,y) in zip(vars, pl)])
     d = [placeholder(T, shape = size(v)) for v in vars]
-    loss_grads = gradients(loss, vars)
+    loss_grads = coalesce(loss_grads, gradients(loss, vars))
     loss_grads_ls = sum(map((x,y)->dot(x,y), loss_grads, d))
     function eval_fn_and_grad(xs)
         if packed
