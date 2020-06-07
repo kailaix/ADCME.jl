@@ -832,7 +832,7 @@ linesearch(uo, f, df, ls, 100.0)
 """
 function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
     vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing,
-    loss_grads::Union{Missing, Function} = missing)
+    grads::Union{Missing, Array} = missing)
 
     if ismissing(vars)
         vars = get_collection()
@@ -841,7 +841,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject;
     pl = [placeholder(T, shape = size(v)) for v in vars]
     update_op = group([assign(x, y) for (x,y) in zip(vars, pl)])
     d = [placeholder(T, shape = size(v)) for v in vars]
-    loss_grads = coalesce(loss_grads, gradients(loss, vars))
+    loss_grads = coalesce(grads, gradients(loss, vars))
     loss_grads_ls = sum(map((x,y)->dot(x,y), loss_grads, d))
     function eval_fn_and_grad(xs)
         if packed
