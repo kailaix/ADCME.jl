@@ -279,8 +279,8 @@ end
 # end
 
 @testset "optimzers" begin
-    @test_nowarn begin 
-        ad = AndersonAcceleration()
+    ad = AndersonAcceleration()
+    @test_nowarn begin
         apply!(ad, rand(10), rand(10))
     end
 end

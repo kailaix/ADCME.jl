@@ -41,7 +41,6 @@ endif()
 
 message("${LIBLAPACK}")
 add_library(AA SHARED libaa.cpp aa.c)
-set(WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_property(TARGET AA PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(AA ${LIBOPENBLAS} ${LIBLAPACK})
 
