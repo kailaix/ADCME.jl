@@ -238,7 +238,7 @@ using Statistics
 include("compute_loss.jl")
 ls = BackTracking()
 
-adam = AMSGrad()
+amsgrad = AMSGrad()
 sess = Session(); init(sess)
 uo = UnconstrainedOptimizer(sess, loss)
 x0 = getInit(uo)
@@ -246,7 +246,7 @@ x0 = getInit(uo)
 for i = 1:1000
     global x0 
     f, df = getLossAndGrad(uo, x0)
-    Δ = getSearchDirection(adam, x0, df)
+    Δ = getSearchDirection(amsgrad, x0, df)
     setSearchDirection!(uo, x0, -Δ)
     α, fx = linesearch(uo, f, df, ls, 100.0)
     x0 -= α*Δ 

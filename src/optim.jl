@@ -16,7 +16,7 @@ NonlinearConstrainedProblem,
 pack, unpack,
 UnconstrainedOptimizer,
 getInit, getLoss, getLossAndGrad, update!,
-setSearchDirection!, linesearch, getSearchDirection
+setSearchDirection!, linesearch, getSearchDirection, getOptimizerState
 
 using .Optimizer
 export Optimizer
@@ -141,19 +141,19 @@ function CustomOptimizer(opt::Function)
         @pydef mutable struct $name <: tf.contrib.opt.ExternalOptimizerInterface
             function _minimize(self; initial_val, loss_grad_func, equality_funcs,
                 equality_grad_funcs, inequality_funcs, inequality_grad_funcs,
-                packed_bounds, step_callback, optimizer_kwargs)
+                flattened_bounds, step_callback, optimizer_kwargs)
                 local x_L, x_U
                 x0 = initial_val # rename 
                 nineq, neq = length(inequality_funcs), length(equality_funcs)
                 printstyled("[CustomOptimizer] Number of inequalities constraints = $nineq, Number of equality constraints = $neq\n", color=:blue)
                 nvar = Int64(sum([prod(self._vars[i].get_shape().as_list()) for i = 1:length(self._vars)]))
                 printstyled("[CustomOptimizer] Total number of variables = $nvar\n", color=:blue)
-                if isnothing(packed_bounds)
+                if isnothing(flattened_bounds)
                     printstyled("[CustomOptimizer] No bounds provided, use (-∞, +∞) as default; or you need to provide bounds in the function CustomOptimizer\n", color=:blue)
                     x_L = -Inf*ones(nvar); x_U = Inf*ones(nvar)
                 else
-                    x_L = vcat([x[1] for x in packed_bounds]...)
-                    x_U = vcat([x[2] for x in packed_bounds]...)
+                    x_L = vcat([x[1] for x in flattened_bounds]...)
+                    x_U = vcat([x[2] for x in flattened_bounds]...)
                 end
                 ncon = nineq + neq
                 f(x) = loss_grad_func(x)[1]
@@ -772,9 +772,10 @@ function Base.:show(io::IO, uo::UnconstrainedOptimizer)
     print("UnconstrainedOptimizer with variables: \n$(uo.vars...)")
 end
 
+
 """
     UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
-    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing,
+    vars::Union{Array, Missing} = missing, callback::Union{Missing,Function}=missing,
     grads::Union{Missing, Array} = missing)
 
 Constructs an unconstrained optimization optimizer. 
@@ -831,93 +832,79 @@ linesearch(uo, f, df, ls, 100.0)
 ```
 """
 function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
-    vars::Union{Array, Missing} = missing, packed::Bool=true, callback::Union{Missing,Function}=missing,
+    vars::Union{Array, Missing} = missing, callback::Union{Missing,Function}=missing,
     grads::Union{Missing, Array} = missing)
 
     if ismissing(vars)
         vars = get_collection()
     end
-    T = get_dtype(vars[1])
-    pl = [placeholder(T, shape = size(v)) for v in vars]
-    update_op = group([assign(x, y) for (x,y) in zip(vars, pl)])
-    d = [placeholder(T, shape = size(v)) for v in vars]
-    loss_grads = coalesce(grads, gradients(loss, vars))
-    loss_grads_ls = sum(map((x,y)->dot(x,y), loss_grads, d))
-    function eval_fn_and_grad(xs)
-        if packed
-            xs = unpack(xs, vars)
-        end
-        l, grad = run(sess, [loss, loss_grads], [x=>y for (x,y) in zip(vars, xs)]...)
-        packed && (grad = pack(grad))
+    T = get_dtype(vars[1]) # Only FloatXX are supported 
+    
+    # we use a flattened vector `pl` for internal update. This makes it easy to interact with external optimizers. 
+    pl = placeholder(T, shape = sum([length(v) for v in vars]))
+    update_op = PyObject[]
+    k = 0
+    for i = 1:length(vars)
+        push!(update_op, assign(vars[i], reshape(pl[k+1:k+length(vars[i])], size(vars[i]))))
+    end
+    update_op = group(update_op)
+
+    # search direction 
+    d = placeholder(T, shape = sum([length(v) for v in vars]))
+    raw_loss_grads = [tf.convert_to_tensor(x) for x in coalesce(grads, gradients(loss, vars, unconnected_gradients="zero"))]
+    loss_grads = vcat([reshape(x, (-1,)) for x in raw_loss_grads]...)
+    loss_grads_ls = sum(dot(d, loss_grads))
+
+
+    function eval_fn_and_grad(xs::Array{<:Real, 1})
+        update_fn(xs)
+        l, grad = run(sess, [loss, loss_grads])
         return l, grad
     end
 
-    function eval_fn(xs)
-        if packed
-            xs = unpack(xs, vars)
-        end
-        run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
+    function eval_fn(xs::Array{<:Real, 1})
+        update_fn(xs)
+        run(sess, loss)
     end
 
-    function eval_grad(xs)
-        if packed
-            xs = unpack(xs, vars)
-        end
-        grad = run(sess, loss_grads, [x=>y for (x,y) in zip(vars, xs)]...)
-        packed && (grad = pack(grad))
+    function eval_grad(xs::Array{<:Real, 1})
+        update_fn(xs)
+        grad = run(sess, loss_grads)
         return grad
     end
 
-    function eval_fn_and_grad_ls(xs, dval, α)
-        if packed
-            xs += α*dval
-            xs = unpack(xs, vars)
-            dval = unpack(dval, vars)
-        else
-            xs .+= α*dval
-        end
-        l, grad = run(sess, [loss, loss_grads_ls], [x=>y for (x,y) in zip(d,dval)]..., [x=>y for (x,y) in zip(vars, xs)]...)
+    function eval_fn_and_grad_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
+        xs .+= α*search_direction
+        update_fn(xs)
+        l, grad = run(sess, [loss, loss_grads_ls], d=>search_direction)
         !ismissing(callback) && callback(α, l)
         return l, grad
     end
 
-    function eval_fn_ls(xs, dval, α)
-        if packed
-            xs += α*dval
-            xs = unpack(xs, vars)
-            dval = unpack(dval, vars)
-        else
-            xs .+= α*dval
-        end
-        l = run(sess, loss, [x=>y for (x,y) in zip(vars, xs)]...)
+    function eval_fn_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Array{<:Real, 1})
+        xs .+= α*search_direction
+        update_fn(xs)
+        l = run(sess, loss, d=>search_direction)
         !ismissing(callback) && callback(α, l)
         return l 
     end
 
 
-    function eval_grad_ls(xs, dval, α)
-        if packed
-            xs += α*dval
-            xs = unpack(xs, vars)
-            dval = unpack(dval, vars)
-        else
-            xs .+= α*dval
-        end
-        grad = run(sess, loss_grads_ls, [x=>y for (x,y) in zip(d,dval)]..., [x=>y for (x,y) in zip(vars, xs)]...)
+    function eval_grad_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
+        xs .+= α*search_direction
+        update_fn(xs)
+        grad = run(sess, loss_grads_ls, d=>search_direction)
         return grad
     end
   
     function get_init()
         ret = run(sess, vars)
-        packed && (ret = pack(ret))
+        ret = pack(ret)
         return ret 
     end
 
     function update_fn(xs)
-        if packed
-            xs = unpack(xs, vars)
-        end
-        run(sess, update_op, [x=>y for (x,y) in zip(pl, xs)]...)
+        run(sess, update_op, pl=>xs)
     end
 
     UnconstrainedOptimizer(
@@ -952,7 +939,7 @@ end
 
 Returns `Loss(xs)`.
 """
-function getLoss(UO::UnconstrainedOptimizer, xs)
+function getLoss(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
     UO.f_ncall += 1
     UO.eval_fn(xs)
 end
@@ -965,7 +952,7 @@ Returns
 
 $$L(x), \qquad \nabla L(x)$$
 """
-function getLossAndGrad(UO::UnconstrainedOptimizer, xs)
+function getLossAndGrad(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
     UO.f_ncall += 1
     UO.df_ncall += 1
     UO.eval_fn_and_grad(xs)
@@ -976,7 +963,7 @@ end
 
 Sets the direction for linesearch, `xs` is the current state, `d` is the search directon.
 """
-function setSearchDirection!(UO::UnconstrainedOptimizer, xs, d)
+function setSearchDirection!(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1}, d::Array{<:Real, 1})
     UO.d = d 
     UO.xs = xs 
     nothing 
@@ -987,8 +974,29 @@ end
 
 Returns the search direction for the optimizer `opt` at `xs`. The gradient at `xs` is given by `d`.
 """
-function getSearchDirection(opt, xs, d)
+function getSearchDirection(opt, xs::Array{<:Real, 1}, d::Array{<:Real, 1})
     Optimizer.apply!(opt, xs, d)
+end
+
+""" 
+getOptimizerState(UO::UnconstrainedOptimizer, xs)
+
+Returns the unflattened value based on the flattened vector `xs`.
+
+# Example
+```julia
+a = Variable(ones(10,10))
+loss = sum(a)
+sess = Session(); init(sess)
+uo = UnconstrainedOptimizer(sess, loss, vars = [a])
+x0 = getInit(uo) # equal to ones(100)
+y0 = getOptimizerState(uo, x0) 
+# 1-element Array{Any,1}:
+# [1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0; … ; 1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0]
+```
+"""
+function getOptimizerState(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
+    unpack(xs, UO.vars)
 end
 
 
