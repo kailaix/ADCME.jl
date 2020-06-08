@@ -260,7 +260,7 @@ The above code also show a typical routine for iterative optimization algorithms
 getLossAndGrad → getSearchDirection → setSearchDirection → linesearch
 ```
 
-Don't forget `update!` after the optimization is finshied. Also don't forget `reset_default_graph()` (in `compute_loss.jl`) before creating any graph nodes. 
+Don't forget `update!` after the optimization is finished. Also don't forget `reset_default_graph()` (in `compute_loss.jl`) before creating any graph nodes. 
 
 The following figures show the loss function and estimated $\kappa(x,y)$ and $u(x,y)$.
 
