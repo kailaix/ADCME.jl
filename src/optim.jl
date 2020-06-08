@@ -77,7 +77,7 @@ https://www.tensorflow.org/api_docs/python/tf/contrib/opt/ScipyOptimizerInterfac
 
 - feed_dict: A feed dict to be passed to calls to session.run.
 - fetches: A list of Tensors to fetch and supply to loss_callback as positional arguments.
-- step_callback: A function to be called at each optimization step; arguments are the current values of all optimization variables flattened into a single vector.
+- step_callback: A function to be called at each optimization step; arguments are the current values of all optimization variables packed into a single vector.
 - loss_callback: A function to be called every time the loss and gradients are computed, with evaluated fetches supplied as positional arguments.
 - run_kwargs: kwargs to pass to session.run.
 """
@@ -141,19 +141,19 @@ function CustomOptimizer(opt::Function)
         @pydef mutable struct $name <: tf.contrib.opt.ExternalOptimizerInterface
             function _minimize(self; initial_val, loss_grad_func, equality_funcs,
                 equality_grad_funcs, inequality_funcs, inequality_grad_funcs,
-                flattened_bounds, step_callback, optimizer_kwargs)
+                packed_bounds, step_callback, optimizer_kwargs)
                 local x_L, x_U
                 x0 = initial_val # rename 
                 nineq, neq = length(inequality_funcs), length(equality_funcs)
                 printstyled("[CustomOptimizer] Number of inequalities constraints = $nineq, Number of equality constraints = $neq\n", color=:blue)
                 nvar = Int64(sum([prod(self._vars[i].get_shape().as_list()) for i = 1:length(self._vars)]))
                 printstyled("[CustomOptimizer] Total number of variables = $nvar\n", color=:blue)
-                if isnothing(flattened_bounds)
+                if isnothing(packed_bounds)
                     printstyled("[CustomOptimizer] No bounds provided, use (-∞, +∞) as default; or you need to provide bounds in the function CustomOptimizer\n", color=:blue)
                     x_L = -Inf*ones(nvar); x_U = Inf*ones(nvar)
                 else
-                    x_L = vcat([x[1] for x in flattened_bounds]...)
-                    x_U = vcat([x[2] for x in flattened_bounds]...)
+                    x_L = vcat([x[1] for x in packed_bounds]...)
+                    x_U = vcat([x[2] for x in packed_bounds]...)
                 end
                 ncon = nineq + neq
                 f(x) = loss_grad_func(x)[1]
@@ -840,7 +840,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject;
     end
     T = get_dtype(vars[1]) # Only FloatXX are supported 
     
-    # we use a flattened vector `pl` for internal update. This makes it easy to interact with external optimizers. 
+    # we use a packed vector `pl` for internal update. This makes it easy to interact with external optimizers. 
     pl = placeholder(T, shape = sum([length(v) for v in vars]))
     update_op = PyObject[]
     k = 0
@@ -981,7 +981,7 @@ end
 """ 
 getOptimizerState(UO::UnconstrainedOptimizer, xs)
 
-Returns the unflattened value based on the flattened vector `xs`.
+Returns the unpacked value based on the packed vector `xs`.
 
 # Example
 ```julia
