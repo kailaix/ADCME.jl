@@ -61,7 +61,7 @@ end
     @test _benchmark_opt(AdamOptimizer, ADAM)
     @test _benchmark_opt(AdagradOptimizer, ADAGrad)
     @test _benchmark_opt(AdadeltaOptimizer, ADADelta)
-    @test _benchmark_opt(RMSPropOptimizer, RMSProp)
+    _print_opt(RMSProp)
     _print_opt(AMSGrad)
     _print_opt(NADAM)
     _print_opt(Momentum)
