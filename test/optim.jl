@@ -291,5 +291,5 @@ end
     g = rand(10)
     g2 = copy(g)
     d = apply!(opt, x, g2)
-    @test d ≈ 0.1 * g 
+    @test d ≈ 0.001 * g 
 end

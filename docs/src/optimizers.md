@@ -246,8 +246,7 @@ x0 = getInit(uo)
 for i = 1:1000
     global x0 
     f, df = getLossAndGrad(uo, x0)
-    Δ = getSearchDirection(amsgrad, x0, df)
-    setSearchDirection!(uo, x0, -Δ)
+    g = apply!(amsgrad, x0, df)
     α, fx = linesearch(uo, f, df, ls, 100.0)
     x0 -= α*Δ 
 end

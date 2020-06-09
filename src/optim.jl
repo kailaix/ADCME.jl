@@ -1007,7 +1007,8 @@ Here the inputs are
 
 The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
 """
-function linesearch(UO::UnconstrainedOptimizer, x0::Array{T},  
+function linesearch(UO::UnconstrainedOptimizer, 
+    x0::Array{T},  
     f::T, df::Array{T},
     search_direction::Array{T},
     linesearch_fn, 
@@ -1017,7 +1018,7 @@ function linesearch(UO::UnconstrainedOptimizer, x0::Array{T},
     φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(x0, search_direction, α))
     dφ_0 = sum(df .* search_direction)
     if dφ_0 > 0 
-        error(DomainError("Δ is not a descent direction."))
+        error(DomainError("Δ is not a descent direction. You might have passed (modified) gradient to `linesearch`. In this case, you need to pass its negative value."))
     end
     α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)
     return α, fx 

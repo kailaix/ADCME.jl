@@ -674,11 +674,19 @@ mutable struct AndersonAcceleration
 end
 
 """
-    AndersonAcceleration(; mem::Int64 = 10, atype::Int64 = 1)
+    AndersonAcceleration(; mem::Int64 = 50, atype::Int64 = 1)
 
-Creates an Anderson accelerator. 
+Creates an Anderson accelerator. To apply the Anderson Accelerator, do 
+
+```julia
+y = apply!(aa, x, Δ)
+```
+
+Here `aa` is an AndersonAcceleration instant, `x` is the current state, and `Δ` is the (modified) gradient.
+
+`x` will be modified in place, but is also returned for convenience. 
 """
-function AndersonAcceleration(; mem::Int64 = 10, atype::Int64 = 1)
+function AndersonAcceleration(; mem::Int64 = 50, atype::Int64 = 1)
   if Sys.iswindows()
     if !isfile(joinpath(ADCME.LIBDIR, "liblapack.lib"))
       PWD = pwd()
