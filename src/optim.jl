@@ -1018,7 +1018,7 @@ function linesearch(UO::UnconstrainedOptimizer,
     φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(x0, search_direction, α))
     dφ_0 = sum(df .* search_direction)
     if dφ_0 > 0 
-        error(DomainError("Δ is not a descent direction. You might have passed (modified) gradient to `linesearch`. In this case, you need to pass its negative value."))
+        @warn("Δ is not a descent direction. You might have passed (modified) gradient to `linesearch`. In this case, you need to pass its negative value.")
     end
     α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)
     return α, fx 
