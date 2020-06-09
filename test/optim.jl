@@ -284,3 +284,12 @@ end
         apply!(ad, rand(10), rand(10))
     end
 end
+
+@testset "search direction" begin 
+    opt = Descent()
+    x = rand(10)
+    g = rand(10)
+    g2 = copy(g)
+    d = apply!(opt, x, g2)
+    @test d ≈ 0.1 * g 
+end

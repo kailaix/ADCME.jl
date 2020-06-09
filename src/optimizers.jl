@@ -21,7 +21,7 @@ const ϵ = 1e-8
 # TODO: should use weak refs
 
 """
-Descent(η = 0.1)
+Descent(η = 0.001)
 
 Classic gradient descent optimiser with learning rate `η`.
 For each parameter `p` and its gradient `δp`, this runs `p -= η*δp`
@@ -49,7 +49,7 @@ mutable struct Descent
   eta::Float64
 end
 
-Descent() = Descent(0.1)
+Descent() = Descent(0.001)
 
 function apply!(o::Descent, x, Δ)
   Δ .*= o.eta
@@ -76,15 +76,16 @@ opt = Momentum(0.01, 0.99)
 mutable struct Momentum
   eta::Float64
   rho::Float64
-  velocity::IdDict
+  velocity::Union{Missing, Array}
 end
 
-Momentum(η = 0.01, ρ = 0.9) = Momentum(η, ρ, IdDict())
+Momentum(η = 0.01, ρ = 0.9) = Momentum(η, ρ, missing)
 
 function apply!(o::Momentum, x, Δ)
   η, ρ = o.eta, o.rho
-  v = get!(o.velocity, x, zero(x))::typeof(x)
+  v = coalesce(o.velocity, zero(x))
   @. v = ρ * v - η * Δ
+  ismissing(o.velocity) && (o.velocity = v)
   @. Δ = -v
 end
 
@@ -109,16 +110,17 @@ opt = Nesterov(0.003, 0.95)
 mutable struct Nesterov
   eta::Float64
   rho::Float64
-  velocity::IdDict
+  velocity::Union{Array, Missing}
 end
 
-Nesterov(η = 0.001, ρ = 0.9) = Nesterov(η, ρ, IdDict())
+Nesterov(η = 0.001, ρ = 0.9) = Nesterov(η, ρ, missing)
 
 function apply!(o::Nesterov, x, Δ)
   η, ρ = o.eta, o.rho
-  v = get!(o.velocity, x, zero(x))::typeof(x)
+  v = coalesce(o.velocity, zero(x))
   d = @. ρ^2 * v - (1+ρ) * η * Δ
   @. v = ρ*v - η*Δ
+  ismissing(o.velocity) && (o.velocity = v)
   @. Δ = -d
 end
 
@@ -146,15 +148,16 @@ opt = RMSProp(0.002, 0.95)
 mutable struct RMSProp
   eta::Float64
   rho::Float64
-  acc::IdDict
+  acc::Union{Missing, Array}
 end
 
-RMSProp(η = 0.001, ρ = 0.9) = RMSProp(η, ρ, IdDict())
+RMSProp(η = 0.001, ρ = 0.9) = RMSProp(η, ρ, missing)
 
 function apply!(o::RMSProp, x, Δ)
   η, ρ = o.eta, o.rho
-  acc = get!(o.acc, x, zero(x))::typeof(x)
+  acc = coalesce(o.acc, zero(x))
   @. acc = ρ * acc + (1 - ρ) * Δ^2
+  ismissing(o.acc) && (o.acc = acc)
   @. Δ *= η / (√acc + ϵ)
 end
 
@@ -179,18 +182,18 @@ opt = ADAM(0.001, (0.9, 0.8))
 mutable struct ADAM
   eta::Float64
   beta::Tuple{Float64,Float64}
-  state::IdDict
+  state::Union{Missing, Tuple}
 end
 
-ADAM(η = 0.001, β = (0.9, 0.999)) = ADAM(η, β, IdDict())
+ADAM(η = 0.001, β = (0.9, 0.999)) = ADAM(η, β, missing)
 
 function apply!(o::ADAM, x, Δ)
   η, β = o.eta, o.beta
-  mt, vt, βp = get!(o.state, x, (zero(x), zero(x), β))
+  mt, vt, βp = coalesce(o.state, (zero(x), zero(x), β))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. vt = β[2] * vt + (1 - β[2]) * Δ^2
   @. Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η
-  o.state[x] = (mt, vt, βp .* β)
+  o.state = (mt, vt, βp .* β)
   return Δ
 end
 
@@ -215,15 +218,15 @@ opt = RADAM(0.001, (0.9, 0.8))
 mutable struct RADAM
   eta::Float64
   beta::Tuple{Float64,Float64}
-  state::IdDict
+  state::Union{Tuple, Missing}
 end
 
-RADAM(η = 0.001, β = (0.9, 0.999)) = RADAM(η, β, IdDict())
+RADAM(η = 0.001, β = (0.9, 0.999)) = RADAM(η, β, missing)
 
 function apply!(o::RADAM, x, Δ)
   η, β = o.eta, o.beta
   ρ∞ = 2/(1-β[2])-1
-  mt, vt, βp, t = get!(o.state, x, (zero(x), zero(x), β, 1))
+  mt, vt, βp, t = coalesce(o.state, (zero(x), zero(x), β, 1))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. vt = β[2] * vt + (1 - β[2]) * Δ^2
   ρ = ρ∞ - 2t*βp[2]/(1-βp[2])
@@ -233,7 +236,7 @@ function apply!(o::RADAM, x, Δ)
   else
     @. Δ =  mt / (1 - βp[1]) * η
   end
-  o.state[x] = (mt, vt, βp .* β, t+1)
+  o.state = (mt, vt, βp .* β, t+1)
   return Δ
 end
 
@@ -258,18 +261,18 @@ opt = AdaMax(0.001, (0.9, 0.995))
 mutable struct AdaMax
   eta::Float64
   beta::Tuple{Float64,Float64}
-  state::IdDict
+  state::Union{Tuple, Missing}
 end
 
-AdaMax(η = 0.001, β = (0.9, 0.999)) = AdaMax(η, β, IdDict())
+AdaMax(η = 0.001, β = (0.9, 0.999)) = AdaMax(η, β, missing)
 
 function apply!(o::AdaMax, x, Δ)
   η, β = o.eta, o.beta
-  mt, ut, βp = get!(o.state, x, (zero(x), zero(x), β))
+  mt, ut, βp = coalesce(o.state,  (zero(x), zero(x), β))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. ut = max(β[2] * ut, abs(Δ))
   @. Δ = (η/(1 - βp[1])) * mt/(ut + ϵ)
-  o.state[x] = (mt, ut, βp .* β)
+  o.state = (mt, ut, βp .* β)
   return Δ
 end
 
@@ -293,15 +296,16 @@ opt = ADAGrad(0.001)
 """
 mutable struct ADAGrad
   eta::Float64
-  acc::IdDict
+  acc::Union{Array, Missing}
 end
 
-ADAGrad(η = 0.1) = ADAGrad(η, IdDict())
+ADAGrad(η = 0.001) = ADAGrad(η, missing)
 
 function apply!(o::ADAGrad, x, Δ)
   η = o.eta
-  acc = get!(o.acc, x, fill!(zero(x), ϵ))::typeof(x)
+  acc = coalesce(o.acc, fill!(zero(x), ϵ))
   @. acc += Δ^2
+  ismissing(o.acc) && (o.acc = acc)
   @. Δ *= η / (√acc + ϵ)
 end
 
@@ -324,17 +328,20 @@ opt = ADADelta(0.89)
 """
 mutable struct ADADelta
   rho::Float64
-  state::IdDict
+  state::Union{Tuple, Missing}
 end
 
-ADADelta(ρ = 0.9) = ADADelta(ρ, IdDict())
+ADADelta(ρ = 0.9) = ADADelta(ρ, missing)
 
 function apply!(o::ADADelta, x, Δ)
   ρ = o.rho
-  acc, Δacc = get!(o.state, x, (zero(x), zero(x)))
+  acc, Δacc = coalesce(o.state, (zero(x), zero(x)))
   @. acc = ρ * acc + (1 - ρ) * Δ^2
   @. Δ *= √Δacc/ (√acc + ϵ)
   @. Δacc = ρ * Δacc + (1 - ρ) * Δ^2
+  if ismissing(o.state) 
+    o.state = (acc, Δacc)
+  end
   return Δ
 end
 
@@ -360,17 +367,20 @@ opt = AMSGrad(0.001, (0.89, 0.995))
 mutable struct AMSGrad
   eta::Float64
   beta::Tuple{Float64, Float64}
-  state::IdDict
+  state::Union{Tuple, Missing}
 end
 
-AMSGrad(η = 0.001, β = (0.9, 0.999)) = AMSGrad(η, β, IdDict())
+AMSGrad(η = 0.001, β = (0.9, 0.999)) = AMSGrad(η, β, missing)
 
 function apply!(o::AMSGrad, x, Δ)
   η, β = o.eta, o.beta
-  mt, vt, v̂t = get!(o.state, x, (fill!(zero(x), ϵ), fill!(zero(x), ϵ), fill!(zero(x), ϵ)))
+  mt, vt, v̂t = coalesce(o.state, (fill!(zero(x), ϵ), fill!(zero(x), ϵ), fill!(zero(x), ϵ)))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. vt = β[2] * vt + (1 - β[2]) * Δ ^ 2
   @. v̂t = max(v̂t, vt)
+  if ismissing(o.state)
+    o.state = (mt, vt, v̂t)
+  end
   @. Δ = η * mt / (√v̂t + ϵ)
 end
 
@@ -396,18 +406,18 @@ opt = NADAM(0.002, (0.89, 0.995))
 mutable struct NADAM
   eta::Float64
   beta::Tuple{Float64, Float64}
-  state::IdDict
+  state::Union{Tuple, Missing}
 end
 
-NADAM(η = 0.001, β = (0.9, 0.999)) = NADAM(η, β, IdDict())
+NADAM(η = 0.001, β = (0.9, 0.999)) = NADAM(η, β, missing)
 
 function apply!(o::NADAM, x, Δ)
   η, β = o.eta, o.beta
-  mt, vt, (β1p, β2p) = get!(o.state, x, (zero(x), zero(x), o.beta))
+  mt, vt, (β1p, β2p) = coalesce(o.state, (zero(x), zero(x), o.beta))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. vt = β[2] * vt + (1 - β[2]) * Δ^2
   @. Δ = (β[1] * mt / (1 - β[1] * β1p) + (1 - β[1]) * Δ / (1 - β1p)) / (√(vt * β[2] / (1 - β2p)) + ϵ) * η
-  o.state[x] = (mt, vt, (β1p * β[1], β2p * β[2]))
+  o.state = (mt, vt, (β1p * β[1], β2p * β[2]))
   return Δ
 end
 
@@ -425,16 +435,16 @@ d = apply!(decay, x0, g)
 """
 mutable struct InvDecay
   gamma::Float64
-  state::IdDict
+  state::Union{Int64, Missing}
 end
 
-InvDecay(γ = 0.001) = InvDecay(γ, IdDict())
+InvDecay(γ = 0.001) = InvDecay(γ, missing)
 
 function apply!(o::InvDecay, x, Δ)
   γ = o.gamma
-  n = get!(o.state, x, 1)
+  n = coalesce(o.state, 1)
   Δ .*= 1 / (1 + γ * n)
-  o.state[x] = n + 1
+  o.state = n + 1
   return Δ
 end
 
@@ -461,15 +471,15 @@ mutable struct ExpDecay
   decay::Float64
   step::Int64
   clip::Float64
-  current::IdDict
+  current::Union{Int64, Missing}
 end
 
-ExpDecay(opt = 0.001, decay = 0.1, decay_step = 1000, clip = 1e-4) = ExpDecay(opt, decay, decay_step, clip, IdDict())
+ExpDecay(opt = 0.001, decay = 0.1, decay_step = 1000, clip = 1e-4) = ExpDecay(opt, decay, decay_step, clip, missing)
 
 function apply!(o::ExpDecay, x, Δ)
   η, s, decay = o.eta, o.step, o.decay
-  n = o.current[x] = get(o.current, x, 0) + 1
-  if o.current[x]%s == 0 && count(x -> x%s == 0, values(o.current)) == 1
+  n = o.current = coalesce(o.current, 0) + 1
+  if o.current%s == 0 && o.current÷s == 1
     η = max(η * decay, o.clip)
     o.eta = η
   end

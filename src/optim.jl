@@ -23,12 +23,25 @@ export Optimizer
 for OP in [:ADAM, :Descent,
     :Momentum, :Nesterov, :RMSProp, :RADAM,
     :AdaMax, :ADAGrad, :ADADelta, :AMSGrad,
-    :NADAM, :LBFGS, :AndersonAcceleration, :apply!, :ExpDecay, :InvDecay]
+    :NADAM, :LBFGS, :AndersonAcceleration, :ExpDecay, :InvDecay]
     @eval begin
         $OP = Optimizer.$OP 
         export $OP 
     end
 end
+
+
+export apply!
+"""
+    apply!(opt, x, g) 
+
+Modifies the gradient direction `g` to the modified direction (if line search is used, `-g` is the search direction).
+
+- `opt`: Optimizer, such as `Descent`, `ADAM`
+- `x`: current state, a real vector
+- `g`: gradient 
+"""
+apply! = Optimizer.apply!
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -874,15 +887,15 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject;
     end
 
     function eval_fn_and_grad_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
-        xs .+= α*search_direction
+        xs += α*search_direction
         update_fn(xs)
         l, grad = run(sess, [loss, loss_grads_ls], d=>search_direction)
         !ismissing(callback) && callback(α, l)
         return l, grad
     end
 
-    function eval_fn_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Array{<:Real, 1})
-        xs .+= α*search_direction
+    function eval_fn_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
+        xs += α*search_direction
         update_fn(xs)
         l = run(sess, loss, d=>search_direction)
         !ismissing(callback) && callback(α, l)
@@ -891,7 +904,7 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject;
 
 
     function eval_grad_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
-        xs .+= α*search_direction
+        xs += α*search_direction
         update_fn(xs)
         grad = run(sess, loss_grads_ls, d=>search_direction)
         return grad
@@ -924,16 +937,10 @@ function UnconstrainedOptimizer(sess::PyObject, loss::PyObject;
     )    
 end
 
-"""
-    getInit(UO::UnconstrainedOptimizer)
 
-Returns the initial value of variables in `UO`.
-"""
 function getInit(UO::UnconstrainedOptimizer)
     UO.get_init()
 end
-
-
 """
     getLoss(UO::UnconstrainedOptimizer, xs)
 
@@ -956,26 +963,6 @@ function getLossAndGrad(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
     UO.f_ncall += 1
     UO.df_ncall += 1
     UO.eval_fn_and_grad(xs)
-end
-
-"""
-    setSearchDirection!(UO::UnconstrainedOptimizer, xs, d)
-
-Sets the direction for linesearch, `xs` is the current state, `d` is the search directon.
-"""
-function setSearchDirection!(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1}, d::Array{<:Real, 1})
-    UO.d = d 
-    UO.xs = xs 
-    nothing 
-end
-
-"""
-    getSearchDirection(opt, xs, d)
-
-Returns the search direction for the optimizer `opt` at `xs`. The gradient at `xs` is given by `d`.
-"""
-function getSearchDirection(opt, xs::Array{<:Real, 1}, d::Array{<:Real, 1})
-    Optimizer.apply!(opt, xs, d)
 end
 
 """ 
@@ -1020,14 +1007,17 @@ Here the inputs are
 
 The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
 """
-function linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn, α::T=1.0) where T<:Real
-    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(UO.xs, UO.d, α))
-    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(UO.xs, UO.d, α))
-    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(UO.xs, UO.d, α))
-    if isa(df, Array{T})
-        dφ_0 = sum(df .* UO.d)
-    else
-        dφ_0 = sum(sum.(df .* UO.d))
+function linesearch(UO::UnconstrainedOptimizer, x0::Array{T},  
+    f::T, df::Array{T},
+    search_direction::Array{T},
+    linesearch_fn, 
+    α::T=1.0) where T<:Real
+    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(x0, search_direction, α))
+    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(x0, search_direction, α))
+    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(x0, search_direction, α))
+    dφ_0 = sum(df .* search_direction)
+    if dφ_0 > 0 
+        error(DomainError("Δ is not a descent direction."))
     end
     α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)
     return α, fx 
