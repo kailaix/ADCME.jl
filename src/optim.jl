@@ -671,7 +671,7 @@ end
     Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     vars::Union{Array{PyObject},PyObject, Missing} = missing, 
     grads::Union{Array{T},Nothing,PyObject, Missing} = missing, 
-    method = missing,
+    optimizer = missing,
     callback::Union{Function, Missing}=missing,
     x_tol::Union{Missing, Float64} = missing,
     f_tol::Union{Missing, Float64} = missing,
@@ -688,7 +688,7 @@ An interface for using optimizers in the Optim package.
 
 - `vars`, `grads`: optimizable variables and gradients 
 
-- `method`: Optim optimizers (default: LBFGS)
+- `optimizer`: Optim optimizers (default: LBFGS)
 
 - `callback`: callback after each linesearch completion (NOT one step in the linesearch)
 
@@ -697,7 +697,7 @@ Other arguments are passed to Options in Optim optimizers.
 function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     vars::Union{Array{PyObject},PyObject, Missing} = missing, 
     grads::Union{Array{T},Nothing,PyObject, Missing} = missing, 
-    method = missing,
+    optimizer = missing,
     callback::Union{Function, Missing}=missing,
     x_tol::Union{Missing, Float64} = missing,
     f_tol::Union{Missing, Float64} = missing,
@@ -712,14 +712,14 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     if length(grads)!=length(vars); error("ADCME: length of grads and vars do not match"); end
 
     idx = ones(Bool, length(grads))
+    pynothing = pytypeof(PyObject(nothing))
     for i = 1:length(grads)
-        if isnothing(grads[i])
+        if isnothing(grads[i]) || pytypeof(grads[i])==pynothing
             idx[i] = false
         end
     end
     grads = grads[idx]
     vars = vars[idx]
-
     sizes = []
     for v in vars
         push!(sizes, size(v))
@@ -767,9 +767,9 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         false
     end
 
-    method = coalesce(method, Main.Optim.LBFGS())
+    method = coalesce(optimizer, Main.Optim.LBFGS())
 
-    @info "Optimization starts.."
+    @info "Optimization starts..."
     res = Main.Optim.optimize(f, g!, x0, method, Main.Optim.Options(
         store_trace = false, 
         show_trace = false, 

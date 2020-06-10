@@ -1,6 +1,8 @@
 # Overview
 
-ADCME is suitable for conducting inverse modeling in scientific computing. The purpose of the package is to: (1) provide differentiable programming framework for scientific computing based on TensorFlow automatic differentiation (AD) backend; (2) adapt syntax to facilitate implementing scientific computing, particularly for numerical PDE discretization schemes; (3) supply missing functionalities in the backend (TensorFlow) that are important for engineering, such as sparse linear algebra, constrained optimization, etc. Applications include
+ADCME is suitable for conducting inverse modeling in scientific computing; specifically, ADCME targets **physics informed machine learning**, which leverages machine learning techniques to solve challenging scientific computing problems. The purpose of the package is to: (1) provide differentiable programming framework for scientific computing based on TensorFlow automatic differentiation (AD) backend; (2) adapt syntax to facilitate implementing scientific computing, particularly for numerical PDE discretization schemes; (3) supply missing functionalities in the backend (TensorFlow) that are important for engineering, such as sparse linear algebra, constrained optimization, etc. Applications include
+
+- physics informed machine learning (a.k.a., scientific machine learning, physics informed learning, etc.)
 
 - coupled hydrological and full waveform inversion
 
@@ -8,11 +10,9 @@ ADCME is suitable for conducting inverse modeling in scientific computing. The p
 
 - learning hidden geophysical dynamics
 
-- physics informed machine learning (scientific machine learning)
-
 - parameter estimation in stochastic processes
 
-The package inherents the scalability and efficiency from the well-optimized backend TensorFlow. Meanwhile, it provides access to incooperate existing C/C++ codes via the custom operators. For example, some functionalities for sparse matrices are implemented in this way and serve as extendable "plugins" for ADCME. 
+The package inherits the scalability and efficiency from the well-optimized backend TensorFlow. Meanwhile, it provides access to incorporate existing C/C++ codes via the custom operators. For example, some functionalities for sparse matrices are implemented in this way and serve as extendable "plugins" for ADCME. 
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/summary.png?raw=true)
 
@@ -24,7 +24,7 @@ ADCME is open-sourced with an MIT license. You can find the source codes at
 Read more about methodology, philosophy, and insights about ADCME: [slides](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Slide/ADCME.pdf?raw=true). Start with [tutorial](./tutorial.md) to solve your own inverse modeling problems!
 
 
-**Installation**
+## Installation
 
 If you use Windows OS, you need to install Microsoft Visual Studio 15 (2017) first. If you do not have the compiler yet, you can download and install the compiler from [here](https://visualstudio.microsoft.com/vs/older-downloads/). A free community version is available. 
 
@@ -34,33 +34,36 @@ using Pkg
 Pkg.add("ADCME")
 ```
 
-However, in some cases, you may want to install the package and configure the environment manually. 
+!!! info 
+    In some cases, you may want to install the package and configure the environment manually. 
 
-Step 1: Install `ADCME` on a computer with Internet access and zip all files from the following paths
+    Step 1: Install `ADCME` on a computer with Internet access and zip all files from the following paths
 
-```julia
-julia> using Pkg
-julia> Pkg.depots()
-```
+    ```julia
+    julia> using Pkg
+    julia> Pkg.depots()
+    ```
 
-The files will contain all the dependencies. 
+    The files will contain all the dependencies. 
 
-Step 2: Build `ADCME` mannually. 
+    Step 2: Build `ADCME` mannually. 
 
-```julia
-using Pkg;
-ENV["manual"] = 1
-Pkg.build("ADCME")
-```
+    ```julia
+    using Pkg;
+    ENV["manual"] = 1
+    Pkg.build("ADCME")
+    ```
 
-However, in this case you are responsible for configuring the environment by modifying the file
+    However, in this case you are responsible for configuring the environment by modifying the file
 
-```julia
-using ADCME; 
-print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
-```
+    ```julia
+    using ADCME; 
+    print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
+    ```
 
-**Quick Overview**
+## Optimization 
+
+ADCME is an all-in-one solver for gradient-based optimization problems. It leverages highly optimized and concurrent/parallel kernels that are implemented in C++ for both the forward computation and gradient computation. Additionally, it provides a friendly user interface to specify the mathematical optimization problem: constructing a computational graph. 
 
 Let's consider a simple problem: we want to solve the unconstrained optimization problem
 
@@ -85,9 +88,19 @@ To get the value of $\mathbf{x}$, we use [`run`](@ref) to extract the values
 run(sess, x)
 ```
 
-The above command will return a value close to  the optimal values $\mathbf{x} = [1\ 1\ \ldots\ 1]$. 
+The above code will return a value close to  the optimal values $\mathbf{x} = [1\ 1\ \ldots\ 1]$. 
 
-**Do you know...**
+
+!!! info 
+    You can also use [`Optimize!`](@ref) to use other optimizers. For example, if you want to use an optimizer, such as `ConjugateGraidient` from the `Optim` package, simply replace `BFGS!` with `Optimize!` and specify the corresponding optimizer
+
+    ```julia
+    using Optim
+    Optimize!(sess, loss, optimizer = ConjugateGradient())
+    ```
+
+
+## Machine Learning 
 
 You can also use ADCME to do typical machine learning tasks and leverage the Julia machine learning ecosystem! Here is an example of training a ResNet for digital number recognition.
 
@@ -131,6 +144,6 @@ end
 
 
 
-**Contributing**
+## Contributing
 
 Contribution and suggestions are always welcome. In addition, we are also looking for research collaborations. You can submit issues for suggestions, questions, bugs, and feature requests, or submit pull requests to contribute directly. You can also contact the authors for research collaboration. 
