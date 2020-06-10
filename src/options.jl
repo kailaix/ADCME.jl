@@ -47,7 +47,8 @@ end
 
 mutable struct OptionsTraining
     training::PyObject
-    OptionsTraining() = new(placeholder(false))
+    verbose::Bool
+    OptionsTraining() = new(placeholder(false), true)
 end
 
 ######################################################

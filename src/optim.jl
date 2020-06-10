@@ -16,7 +16,8 @@ NonlinearConstrainedProblem,
 pack, unpack,
 UnconstrainedOptimizer,
 getInit, getLoss, getLossAndGrad, update!,
-setSearchDirection!, linesearch, getSearchDirection, getOptimizerState
+setSearchDirection!, linesearch, getSearchDirection, getOptimizerState,
+Optimize!
 
 using .Optimizer
 export Optimizer
@@ -661,12 +662,53 @@ BFGS!(sess, loss, g, a; callback = cb)
 ```
 """
 function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyObject}, 
-        vars::Union{Array{PyObject},PyObject}; callback::Union{Function, Missing}=missing, kwargs...) where T<:Union{Nothing, PyObject}
+    vars::Union{Array{PyObject},PyObject}; kwargs...) where T<:Union{Nothing, PyObject}
+    Optimize!(sess, loss; vars=vars, grads = grads, kwargs...)
+end
+
+
+"""
+    Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
+    vars::Union{Array{PyObject},PyObject, Missing} = missing, 
+    grads::Union{Array{T},Nothing,PyObject, Missing} = missing, 
+    method = missing,
+    callback::Union{Function, Missing}=missing,
+    x_tol::Union{Missing, Float64} = missing,
+    f_tol::Union{Missing, Float64} = missing,
+    g_tol::Union{Missing, Float64} = missing, kwargs...) where T<:Union{Nothing, PyObject}
+
+
+An interface for using optimizers in the Optim package. 
+
+- `sess`: a session;
+
+- `loss`: a loss function;
+
+- `max_iter`: maximum number of max_iterations;
+
+- `vars`, `grads`: optimizable variables and gradients 
+
+- `method`: Optim optimizers (default: LBFGS)
+
+- `callback`: callback after each linesearch completion (NOT one step in the linesearch)
+
+Other arguments are passed to Options in Optim optimizers. 
+"""
+function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
+    vars::Union{Array{PyObject},PyObject, Missing} = missing, 
+    grads::Union{Array{T},Nothing,PyObject, Missing} = missing, 
+    method = missing,
+    callback::Union{Function, Missing}=missing,
+    x_tol::Union{Missing, Float64} = missing,
+    f_tol::Union{Missing, Float64} = missing,
+    g_tol::Union{Missing, Float64} = missing, kwargs...) where T<:Union{Nothing, PyObject}
     if !isdefined(Main, :Optim)
         error("Package Optim.jl must be imported in the main module using `import Optim` or `using Optim`")
     end
-    if isa(grads, PyObject); grads = [grads]; end
+    vars = coalesce(vars, get_collection())
+    grads = coalesce(grads, gradients(loss, vars))
     if isa(vars, PyObject); vars = [vars]; end
+    if isa(grads, PyObject); grads = [grads]; end
     if length(grads)!=length(vars); error("ADCME: length of grads and vars do not match"); end
 
     idx = ones(Bool, length(grads))
@@ -696,9 +738,12 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
     __losses = Float64[]
     __iter = 0
     __value = nothing
+    __ls_iter = 0
     function f(x)
         run(sess, assign_ops, pl=>x)
+        __ls_iter += 1
         __loss = run(sess, loss)
+        options.training.verbose && (println("iter $__ls_iter, current loss = $__loss"))
         return __loss
     end
 
@@ -709,16 +754,30 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
     end
 
     function callback1(x)
+        @info x.iteration, x.value
         __iter = x.iteration
         __loss = x.value
         push!(__losses, __loss)
+        if options.training.verbose
+            println("================== STEP $__iter ==================")
+        end
         if !ismissing(callback)
             callback(__value, __iter, __loss)
         end
         false
     end
 
-    Main.Optim.optimize(f, g!, x0, Main.Optim.LBFGS(), Main.Optim.Options(show_trace=true, callback=callback1,
+    method = coalesce(method, Main.Optim.LBFGS())
+
+    @info "Optimization starts.."
+    res = Main.Optim.optimize(f, g!, x0, method, Main.Optim.Options(
+        store_trace = false, 
+        show_trace = false, 
+        callback=callback1,
+        iterations = max_iter,
+        x_tol = coalesce(x_tol, 1e-12),
+        f_tol = coalesce(f_tol, 1e-12),
+        g_tol = coalesce(g_tol, 1e-12),
          kwargs...))
     return __losses
 end
