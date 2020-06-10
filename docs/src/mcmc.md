@@ -5,16 +5,18 @@ The idea is that we use MCMC to sample from the posterior distribution of the **
 We consider an inverse problem, where the governing equation is a heat equation in an 1D interval $[0,1]$.
 
 The simulation is conducted over a time horizon $[0,1]$. We record the temperature $u(0,t)$ on the left of the interval.
-The diffusivity coefficient $\kappa(x,y)$ is assumed unknown and will be estimated from the temperature record. $\kappa(x,y)$
+The diffusivity coefficient $\kappa(x)$ is assumed unknown and will be estimated from the temperature record. $\kappa(x)$
 is approximated by a neural network
 
-$$\kappa(x,y) = \mathcal{NN}_{w}([x, y])$$
+$$\kappa(x) = \mathcal{NN}_{w}(x)$$
 
 Here $w$ is the neural network weights and biases.
 
 First of all, we define a function `simulate` that takes in the diffusivity coefficient, and returns the solution of the PDE.
 
-```@example heateq
+File `heateq.jl`:
+
+```julia
 using ADCME
 using PyPlot
 using ADCME
@@ -68,7 +70,7 @@ end
 
 We set up the geometry as follows
 
-```@example heateq
+```julia
 n = 50
 xi = LinRange(0, 1, n + 1)[1:end - 1]
 x = Array(LinRange(0, 1, n+1)[1:end-1])
@@ -81,7 +83,7 @@ The forward computation is run with an analytical $\kappa(x)$, given by
 $$\kappa(x) = 5x^2 + \exp(x) + 1.0$$
 We can generate the code using the following code:
 
-```@example forward
+```julia
 include("heateq.jl")
 
 κ = @. 5x^2 + exp(x) + 1.0
@@ -128,7 +130,7 @@ Therefore, we first solve the inverse problem by solving a PDE-constrained optim
 We use the [`BFGS!`](@ref) optimizer. Note we do not need to solve the inverse problem very accurately because in Bayesian approaches,
 the solution is interpreted as a probability, instead of a point estimation.
 
-```@example inverse
+```julia
 include("heateq.jl")
 using PyCall
 using Distributions
@@ -161,7 +163,7 @@ savefig("inversekappa.png")
 
 We also save the solution for MCMC
 
-```@example inverse
+```julia
 matwrite("nn.mat", Dict("w"=>run(sess, w)))
 ```
 
@@ -171,7 +173,7 @@ matwrite("nn.mat", Dict("w"=>run(sess, w)))
 Finally, we are ready to conduct uncertainty quantification using MCMC.
 We will use the `Mamba` package, which provides MCMC utilities. We will use the random walk MCMC because of its simplicity.
 
-```@example mcmc
+```julia
 include("heateq.jl")
 using PyCall
 using Mamba
@@ -182,7 +184,7 @@ using PyPlot
 The neural network weights and biases are conveniently expressed as a `placeholder`.
 This allows us to `sample` from a distribution of weights and biases easily.
 
-```@example mcmc
+```julia
 w = placeholder(ae_init([1,20,20,20,1]))
 κ = fc(x, [20,20,20,1], w, activation="tanh") + 1.0
 u = simulate(κ)
@@ -201,7 +203,7 @@ A large $\sigma_w$ means very wide prior, and a small $\sigma_w$ means a very na
 The relative value $\sigma/\sigma_w$ implies **the strength of prior influence**.
 Typically, we can choose a very large $\sigma_w$ so that the prior does not influence the posterior too much. 
 
-```@example mcmc
+```julia
 σ = 1.0
 σx = 1000000.0
 function logf(x)
@@ -216,35 +218,36 @@ sim = Chains(n, length(w0))
 
 A second important parameter is the scale (0.002 in the following code). It controls **the uncertainty bound width** via the way we generate the random numbers.
 
-```@example mcmc
-θ = RWMVariate(w0, 0.002ones(length(w0)), logf, proposal = SymUniform)
+```julia
+θ = RWMVariate(copy(w0), 0.001ones(length(w0)), logf, proposal = SymUniform)
 ```
 
 An immediate consequence is that the smaller the scale factor we use, the narrower the uncertainty band will be.
 In sum, we have two important parameters--relative standard deviation and the scaling factor--to control our uncertainty bound.
 
-```@example mcmc
-@showprogress for i = 1:n
+```julia
+
+@showprogress for i = 1:n 
     sample!(θ)
     sim[i,:,1] = θ
 end
 
 
 v = sim.value
-K = zeros(length(κ), 4000)
-@showprogress for i = 1:4000
+K = zeros(length(κ), n-burnin)
+@showprogress for i = 1:n-burnin
     ws = v[i+burnin,:,1]
     K[:,i] = run(sess, κ, w=>ws)
-end
-
+end 
 
 kappa = mean(K, dims=2)[:]
 k_std = std(K, dims=2)[:]
-close("all")
+figure()
 κ1 = @. 5x^2 + exp(x) + 1.0
-PyPlot.plot(x, kappa, label="Posterior Mean")
-PyPlot.plot(x, κ1, label="True")
-fill_between(x, kappa-3k_std, kappa+3k_std, alpha=0.8)
+PyPlot.plot(x, kappa, "--", label="Posterior Mean")
+PyPlot.plot(x, κ1, "r", label="True")
+PyPlot.plot(x, run(sess, κ, w=>w0), label="Point Estimation")
+fill_between(x, kappa-3k_std, kappa+3k_std, alpha=0.5)
 legend()
 xlabel("x")
 ylabel("\$\\kappa(x)\$")
