@@ -7,10 +7,19 @@ init,
 run_profile,
 save_profile
 
-function Session(args...;kwargs...)
-    config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth=true
-    sess = tf.compat.v1.Session(args...;config=config, kwargs...)
+"""
+    Session(args...;allow_growth::Bool = false, kwargs...)
+
+Create an ADCME session. If `allow_growth` is true, when using GPU, ADCME will not take up all the GPU resources at the start, 
+but instead request memory on a need basis. 
+"""
+function Session(args...;allow_growth::Bool = false, kwargs...)
+    if allow_growth
+        ENV["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
+    else
+        ENV["TF_FORCE_GPU_ALLOW_GROWTH"] = "false"
+    end
+    sess = tf.compat.v1.Session(args...;kwargs...)
     STORAGE["session"] = sess 
     return sess 
 end
