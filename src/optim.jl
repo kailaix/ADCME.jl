@@ -1013,13 +1013,18 @@ function linesearch(UO::UnconstrainedOptimizer,
     search_direction::Array{T},
     linesearch_fn, 
     α::T=1.0) where T<:Real
-    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(x0, search_direction, α))
-    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(x0, search_direction, α))
-    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(x0, search_direction, α))
+
     dφ_0 = sum(df .* search_direction)
     if dφ_0 > 0 
         @warn("Δ is not a descent direction. You might have passed (modified) gradient to `linesearch`. In this case, you need to pass its negative value.")
+        search_direction = -search_direction
+        dφ_0 = -dφ_0
     end
+
+    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(x0, search_direction, α))
+    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(x0, search_direction, α))
+    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(x0, search_direction, α))
+    
     α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)
     return α, fx 
 end

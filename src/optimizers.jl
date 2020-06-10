@@ -86,7 +86,7 @@ function apply!(o::Momentum, x, Δ)
   v = coalesce(o.velocity, zero(x))
   @. v = ρ * v - η * Δ
   ismissing(o.velocity) && (o.velocity = v)
-  @. Δ = -v
+  Δ = -v
 end
 
 """
@@ -121,7 +121,7 @@ function apply!(o::Nesterov, x, Δ)
   d = @. ρ^2 * v - (1+ρ) * η * Δ
   @. v = ρ*v - η*Δ
   ismissing(o.velocity) && (o.velocity = v)
-  @. Δ = -d
+  Δ = -d
 end
 
 """
@@ -158,7 +158,7 @@ function apply!(o::RMSProp, x, Δ)
   acc = coalesce(o.acc, zero(x))
   @. acc = ρ * acc + (1 - ρ) * Δ^2
   ismissing(o.acc) && (o.acc = acc)
-  @. Δ *= η / (√acc + ϵ)
+  Δ *= η / (√acc + ϵ)
 end
 
 """
@@ -192,7 +192,7 @@ function apply!(o::ADAM, x, Δ)
   mt, vt, βp = coalesce(o.state, (zero(x), zero(x), β))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. vt = β[2] * vt + (1 - β[2]) * Δ^2
-  @. Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η
+  Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η
   o.state = (mt, vt, βp .* β)
   return Δ
 end
@@ -232,9 +232,9 @@ function apply!(o::RADAM, x, Δ)
   ρ = ρ∞ - 2t*βp[2]/(1-βp[2])
   if ρ > 4
     r = sqrt((ρ-4)*(ρ-2)*ρ∞/((ρ∞-4)*(ρ∞-2)*ρ))
-    @. Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η * r
+    Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η * r
   else
-    @. Δ =  mt / (1 - βp[1]) * η
+    Δ =  mt / (1 - βp[1]) * η
   end
   o.state = (mt, vt, βp .* β, t+1)
   return Δ
@@ -271,7 +271,7 @@ function apply!(o::AdaMax, x, Δ)
   mt, ut, βp = coalesce(o.state,  (zero(x), zero(x), β))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. ut = max(β[2] * ut, abs(Δ))
-  @. Δ = (η/(1 - βp[1])) * mt/(ut + ϵ)
+  Δ = (η/(1 - βp[1])) * mt/(ut + ϵ)
   o.state = (mt, ut, βp .* β)
   return Δ
 end
@@ -306,7 +306,7 @@ function apply!(o::ADAGrad, x, Δ)
   acc = coalesce(o.acc, fill!(zero(x), ϵ))
   @. acc += Δ^2
   ismissing(o.acc) && (o.acc = acc)
-  @. Δ *= η / (√acc + ϵ)
+  Δ *= η / (√acc + ϵ)
 end
 
 """
@@ -337,8 +337,8 @@ function apply!(o::ADADelta, x, Δ)
   ρ = o.rho
   acc, Δacc = coalesce(o.state, (zero(x), zero(x)))
   @. acc = ρ * acc + (1 - ρ) * Δ^2
-  @. Δ *= √Δacc/ (√acc + ϵ)
-  @. Δacc = ρ * Δacc + (1 - ρ) * Δ^2
+  Δ *= √Δacc/ (√acc + ϵ)
+  Δacc = ρ * Δacc + (1 - ρ) * Δ^2
   if ismissing(o.state) 
     o.state = (acc, Δacc)
   end
@@ -381,7 +381,7 @@ function apply!(o::AMSGrad, x, Δ)
   if ismissing(o.state)
     o.state = (mt, vt, v̂t)
   end
-  @. Δ = η * mt / (√v̂t + ϵ)
+  Δ = η * mt / (√v̂t + ϵ)
 end
 
 """
@@ -416,7 +416,7 @@ function apply!(o::NADAM, x, Δ)
   mt, vt, (β1p, β2p) = coalesce(o.state, (zero(x), zero(x), o.beta))
   @. mt = β[1] * mt + (1 - β[1]) * Δ
   @. vt = β[2] * vt + (1 - β[2]) * Δ^2
-  @. Δ = (β[1] * mt / (1 - β[1] * β1p) + (1 - β[1]) * Δ / (1 - β1p)) / (√(vt * β[2] / (1 - β2p)) + ϵ) * η
+  Δ = (β[1] * mt / (1 - β[1] * β1p) + (1 - β[1]) * Δ / (1 - β1p)) / (√(vt * β[2] / (1 - β2p)) + ϵ) * η
   o.state = (mt, vt, (β1p * β[1], β2p * β[2]))
   return Δ
 end
@@ -443,7 +443,7 @@ InvDecay(γ = 0.001) = InvDecay(γ, missing)
 function apply!(o::InvDecay, x, Δ)
   γ = o.gamma
   n = coalesce(o.state, 1)
-  Δ .*= 1 / (1 + γ * n)
+  Δ *= 1 / (1 + γ * n)
   o.state = n + 1
   return Δ
 end
@@ -483,7 +483,8 @@ function apply!(o::ExpDecay, x, Δ)
     η = max(η * decay, o.clip)
     o.eta = η
   end
-  @. Δ *= η
+  Δ *= η
+  return Δ
 end
 
 #=
