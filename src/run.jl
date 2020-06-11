@@ -8,17 +8,17 @@ run_profile,
 save_profile
 
 """
-    Session(args...;allow_growth::Bool = false, kwargs...)
+    Session(args...; kwargs...)
 
-Create an ADCME session. If `allow_growth` is true, when using GPU, ADCME will not take up all the GPU resources at the start, 
-but instead request memory on a need basis. 
+Create an ADCME session. By default, ADCME will take up all the GPU resources at the start. If you want the GPU usage to grow on a need basis,
+before starting ADCME, you need to set the environment variable via
+
+```julia
+ENV["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
+```
+
 """
-function Session(args...;allow_growth::Bool = false, kwargs...)
-    if allow_growth
-        ENV["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
-    else
-        ENV["TF_FORCE_GPU_ALLOW_GROWTH"] = "false"
-    end
+function Session(args...; kwargs...)
     sess = tf.compat.v1.Session(args...;kwargs...)
     STORAGE["session"] = sess 
     return sess 
