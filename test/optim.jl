@@ -278,12 +278,12 @@ end
 #     @test getLossAndGrad(uo, 3*ones(10))[1] ≈  160.0
 # end
 
-@testset "optimzers" begin
-    ad = AndersonAcceleration()
-    @test_nowarn begin
-        apply!(ad, rand(10), rand(10))
-    end
-end
+# @testset "optimzers" begin
+#     ad = AndersonAcceleration()
+#     @test_nowarn begin
+#         apply!(ad, rand(10), rand(10))
+#     end
+# end
 
 @testset "search direction" begin 
     opt = Descent()
