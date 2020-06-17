@@ -452,7 +452,7 @@ with open("{}.cpp".format(op), "w") as fp:
 d = {"OperatorName": op,
     "USEGPU": "" if simple_or_not=="false" else "#"}
 with open("{}/CMakeLists.template".format(dirname),"r") as fp:
-    print("CMakeLists.txt template: {}/CMakeLists.template".format(dirname))
+    print("CMakeLists.txt generated from template: {}/CMakeLists.template".format(dirname))
     cnt = fp.read()
     s = Template(cnt)
     cmake = s.substitute(d)
