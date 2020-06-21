@@ -137,3 +137,23 @@ end
     pl = placeholder(0.1)
     @test run(sess, pl, pl=>4.0) ≈ 4.0
 end
+
+@testset "@cpu @gpu" begin
+    @cpu 2 begin 
+        global a = constant(rand(10,10))
+    end
+    @gpu 2 begin 
+        global b = constant(rand(10,10))
+    end
+    @test a.device == "/device:CPU:2"
+    @test b.device == "/device:GPU:2"
+
+    @cpu begin 
+        global a = constant(rand(10,10))
+    end
+    @gpu begin 
+        global b = constant(rand(10,10))
+    end
+    @test a.device == "/device:CPU:0"
+    @test b.device == "/device:GPU:0"
+end

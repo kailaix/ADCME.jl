@@ -1,8 +1,15 @@
 # Parallel Computing
 
-The ADCME backend, TensorFlow, treats each operator as the smallest computation unit. Users are allowed to manually assign each operator to a specific device (GPU, CPU, or TPU). This is usually done with the `@pywith tf.device("/cpu:0")` syntax. For example, if we want to create a variable `a` and compute $\sin(a)$ on `GPU:0` we can write
+The ADCME backend, TensorFlow, treats each operator as the smallest computation unit. Users are allowed to manually assign each operator to a specific device (GPU, CPU, or TPU). This is usually done with the `@cpu device_id expr` or `@gpu device_id expr` syntax, where `device_id` is the index of devices you want to place all operators and variables in `expr`. For example, if we want to create a variable `a` and compute $\sin(a)$ on `GPU:0` we can write
 ```julia
-@pywith tf.device("/GPU:0") begin
+@cpu 0 begin
+    global a = Variable(1.0)
+    global b = sin(a)
+end
+```
+If the `device_id` is missing, 0 is treated as default. 
+```julia
+@cpu begin
     global a = Variable(1.0)
     global b = sin(a)
 end

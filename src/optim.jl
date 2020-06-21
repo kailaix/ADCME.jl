@@ -771,7 +771,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
 
     @info "Optimization starts..."
     res = Main.Optim.optimize(f, g!, x0, method, Main.Optim.Options(
-        store_trace = false, 
+        ; store_trace = false, 
         show_trace = false, 
         callback=callback1,
         iterations = max_iter,

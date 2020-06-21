@@ -174,3 +174,13 @@ end
     @test ndims(constant(rand(3,3)))==2
     @test ndims(constant(rand(4,4,4)))==3
 end
+
+@testset "gradients_colocate" begin
+    @cpu 1 begin
+        global a = constant(rand(10,10))
+        global b = 2a 
+    end
+    loss = sum(b)
+    g = gradients_colocate(loss, a)
+    @test g.device == "/device:CPU:1"
+end

@@ -26,7 +26,8 @@ hessian_vector,
 TensorArray,
 gradient_checkpointing,
 zeros_like,
-ones_like
+ones_like,
+gradients_colocate
 
 """
     constant(value; kwargs...)
@@ -351,6 +352,27 @@ function gradients11(ys::PyObject, xs::PyObject; kwargs...)
     i = constant(1, dtype=Int32)
     _, ta = while_loop(condition, body, [i,ta],parallel_iterations=10)
     stack(ta)
+end
+
+"""
+    gradients_colocate(loss::PyObject, xs::Union{PyObject, Array{PyObject}}, args...;use_locking::Bool = true, kwargs...)
+
+Computes the gradients of a **scalar** loss function `loss` with respect to `xs`. The gradients are colocated with respect to the forward pass. 
+This function is usually in distributed computing. 
+"""
+function gradients_colocate(loss::PyObject, xs::Union{PyObject, Array{PyObject}}, args...;use_locking::Bool = true, kwargs...)
+    flag = false
+    if isa(xs, PyObject)
+        xs = [xs]
+        flag = true
+    end
+    opt = tf.train.Optimizer(use_locking, "default_optimizer_"*randstring(8))
+    grads_and_vars = opt.compute_gradients(
+        loss, var_list=xs,
+        colocate_gradients_with_ops=true)
+    grads = [x[1] for x in grads_and_vars]
+    flag && (grads = grads[1])
+    return grads
 end
 
 function hessian_vector(f, xs, v; kwargs...)

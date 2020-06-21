@@ -12,7 +12,8 @@ register,
 debug,
 doctor,
 nnuq,
-compile
+compile,
+list_physical_devices
 
 """
     xavier_init(size, dtype=Float64)
@@ -339,6 +340,22 @@ function use_gpu(i::Union{Nothing,Int64}=nothing)
     end
     local_device_protos = dl.list_local_devices()
     return [x.name for x in local_device_protos if x.device_type == "GPU"]
+end
+
+function list_physical_devices(cpu_or_gpu::String = "all")
+    dl = pyimport("tensorflow.python.client.device_lib")
+    local_device_protos = dl.list_local_devices()
+    CPU = [x.name for x in local_device_protos if x.device_type == "CPU"]
+    GPU = [x.name for x in local_device_protos if x.device_type == "GPU"]
+    if cpu_or_gpu == "all"
+        return [CPU;GPU]
+    elseif cpu_or_gpu == "GPU"
+        return GPU 
+    elseif cpu_or_gpu == "CPU"
+        return CPU 
+    else
+        error(ArgumentError("$cpu_or_gpu is not a valid input. Expected: all, CPU, or GPU"))
+    end
 end
 
 

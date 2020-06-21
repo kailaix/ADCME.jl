@@ -45,3 +45,8 @@ end
 
     @test run(sess, gradients(sum(y), θ))≈0.08333333333333333*ones(5)
 end
+
+@testset "list_physical_devices" begin 
+    devices = list_physical_devices()   
+    @test length(devices)>0
+end

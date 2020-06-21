@@ -9,7 +9,9 @@ if_else,
 stop_gradient,
 independent,
 tensor,
-tensorname
+tensorname,
+@cpu, 
+@gpu 
 
 # only for eager eager execution
 enable_eager_execution() = tf.enable_eager_execution()
@@ -266,3 +268,38 @@ function stop_gradient(o::PyObject, args...;kwargs...)
     tf.stop_gradient(o, args...;kwargs...)
 end
 
+macro cpu(device_id, expr)
+    device = "/cpu:"*string(device_id)
+    quote  
+        @pywith tf.device($device) begin 
+            $(esc(expr))
+        end
+    end
+end
+
+macro cpu(expr)
+    device = "/cpu:0"
+    quote  
+        @pywith tf.device($device) begin 
+            $(esc(expr))
+        end
+    end
+end
+
+macro gpu(device_id, expr)
+    device = "/gpu:"*string(device_id)
+    quote  
+        @pywith tf.device($device) begin 
+            $(esc(expr))
+        end
+    end
+end
+
+macro gpu(expr)
+    device = "/gpu:0"
+    quote  
+        @pywith tf.device($device) begin 
+            $(esc(expr))
+        end
+    end
+end
