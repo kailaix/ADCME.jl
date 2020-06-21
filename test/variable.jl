@@ -183,4 +183,15 @@ end
     loss = sum(b)
     g = gradients_colocate(loss, a)
     @test g.device == "/device:CPU:1"
+@testset "indexing for rank 3 tensors" begin 
+    a = rand(100,10,20)
+    i1 = 3:8
+    i2 = [1;3;4]
+    V = a[i1,i2,:]
+    P = constant(a)[i1,i2,:]
+    @test run(sess, P)≈V
+    P = constant(a)[2,i2,:]
+    @test run(sess, P)≈a[2,i2,:]
+    P = constant(a)[2,i2,5]
+    @test run(sess, P)≈a[2,i2,5]
 end

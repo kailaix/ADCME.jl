@@ -300,29 +300,30 @@ end
 
 
 """
-    customop(simple::Bool=false)
+    customop()
 
-Create a new custom operator. If `simple=true`, the custom operator only supports CPU and does not have gradients. 
+Create a new custom operator. Typically users call `customop` twice: the first call generates a `customop.txt`, 
+users edit the content in the file; the second all generates C++ source code, CMakeLists.txt, and gradtest.jl from `customop.txt`.
 
 # Example
-
 ```julia-repl
 julia> customop() # create an editable `customop.txt` file
 [ Info: Edit custom_op.txt for custom operators
 julia> customop() # after editing `customop.txt`, call it again to generate interface files.
 ```
 """
-function customop(simple::Bool=false)
+function customop()
     # install_custom_op_dependency()
-    py_dir = "$(@__DIR__)/../examples/custom_op/template"
+    py_dir = "$(@__DIR__)/../deps/CustomOpsTemplate"
     if !("custom_op.txt" in readdir("."))
         cp("$(py_dir)/custom_op.example", "custom_op.txt")
         @info "Edit custom_op.txt for custom operators"
         return
     else
         python = PyCall.python
-        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $simple`)
+        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir false`)
     end
+    nothing
 end
 
 

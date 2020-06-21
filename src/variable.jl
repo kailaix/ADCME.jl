@@ -502,6 +502,50 @@ function getindex(o::PyObject, i1::Union{Int64, Colon, Array{Bool,1},BitArray{1}
     end
 end
 
+function getindex(o::PyObject, i1, i2, i3)
+    sdims = Int64[]
+    if isa(i1, Int64)
+         push!(sdims, 1)
+         i1 = i1:i1
+    end
+    if isa(i2, Int64)
+        push!(sdims, 2)
+        i2 = i2:i2
+   end
+    if isa(i3, Int64)
+        push!(sdims, 3)
+        i3 = i3:i3
+    end
+    res = getindex(o, i1, i2, i3)
+    squeeze(res, dims=sdims)
+end
+
+function getindex(o::PyObject, 
+    i1::Union{Colon, Array{Bool,1},BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}}, 
+    i2::Union{Colon, Array{Bool,1},BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}}, 
+    i3::Union{Colon, Array{Bool,1},BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}})
+    if length(size(o))!=3
+        error(DimensionMismatch("input tensor is $(length(size(o))) dimensional, but expected 3"))
+    end
+    i1 = _to_range_array(o, i1, 1)
+    i2 = _to_range_array(o, i2, 2)
+    i3 = _to_range_array(o, i3, 3)
+    idx = Int64[]
+    for i = 1:length(i1)
+        for j = 1:length(i2)
+            for k = 1:length(i3)
+                ii = i3[k] + (i2[j]-1)*size(o,3) + (i1[i]-1)*size(o,2)*size(o,3)
+                push!(idx, ii)
+            end
+        end
+    end
+    p = reshape(o, (-1,))[idx]
+    reshape(p, (length(i1), length(i2), length(i3)))
+end
+
+
+
+
 function Base.:getindex(o::PyObject, i::PyObject, j::Union{Int64, Colon, Array{Bool,1},BitArray{1}, Array{Int64,1},UnitRange{Int64}, StepRange{Int64, Int64}})
     flag = false
     if isa(j, Colon) 
