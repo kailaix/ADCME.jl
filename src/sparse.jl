@@ -22,6 +22,17 @@ mutable struct SparseTensor
     end
 end
 
+promote_(x::SparseMatrixCSC, y::SparseTensor) = 
+        (constant(x), y)
+promote_(y::SparseTensor, x::SparseMatrixCSC) = 
+        (y, constant(x))
++(x::SparseMatrixCSC, y::SparseTensor) = +(promote_(x,y)...)
+-(x::SparseMatrixCSC, y::SparseTensor) = -(promote_(x,y)...)
+*(x::SparseMatrixCSC, y::SparseTensor) = *(promote_(x,y)...)
++(x::SparseTensor, y::SparseMatrixCSC) = +(promote_(x,y)...)
+-(x::SparseTensor, y::SparseMatrixCSC) = +(promote_(x,y)...)
+*(x::SparseTensor, y::SparseMatrixCSC) = +(promote_(x,y)...)
+
 
 function Base.:values(o::SparseTensor)
     o.o.values

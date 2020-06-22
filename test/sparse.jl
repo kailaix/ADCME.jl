@@ -337,3 +337,14 @@ end
     b = A\rand(10)
     @test_throws PyCall.PyError run(sess, b)
 end
+
+@test "sparse promote" begin 
+    a = sprand(10,10,0.3)
+    b = spdiag(constant(rand(10)))
+    @test_nowarn a+b
+    @test_nowarn a*b
+    @test_nowarn a-b
+    @test_nowarn b+a
+    @test_nowarn b-a
+    @test_nowarn b*a
+end
