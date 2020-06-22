@@ -30,8 +30,8 @@ promote_(y::SparseTensor, x::SparseMatrixCSC) =
 -(x::SparseMatrixCSC, y::SparseTensor) = -(promote_(x,y)...)
 *(x::SparseMatrixCSC, y::SparseTensor) = *(promote_(x,y)...)
 +(x::SparseTensor, y::SparseMatrixCSC) = +(promote_(x,y)...)
--(x::SparseTensor, y::SparseMatrixCSC) = +(promote_(x,y)...)
-*(x::SparseTensor, y::SparseMatrixCSC) = +(promote_(x,y)...)
+-(x::SparseTensor, y::SparseMatrixCSC) = -(promote_(x,y)...)
+*(x::SparseTensor, y::SparseMatrixCSC) = *(promote_(x,y)...)
 
 
 function Base.:values(o::SparseTensor)
