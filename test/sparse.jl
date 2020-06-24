@@ -338,7 +338,7 @@ end
     @test_throws PyCall.PyError run(sess, b)
 end
 
-@test "sparse promote" begin 
+@testset "sparse promote" begin 
     a = sprand(10,10,0.3)
     b = spdiag(constant(rand(10)))
     @test_nowarn a+b
