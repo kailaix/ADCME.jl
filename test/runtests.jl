@@ -8,11 +8,17 @@ using SparseArrays
 using Test
 using Random
 
+
+
+
 if has_gpu()
     use_gpu(0)
 end
 doctor()
 sess = Session()
+
+
+
 
 include("layers.jl")
 include("sparse.jl")
