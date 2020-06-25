@@ -1,4 +1,7 @@
 @testset "*" begin
+# reset graph here.
+    reset_default_graph()
+    global sess = Session()
     A = Array{Any}(undef, 6)
     A[1] = rand(Float32,10,10)
     A[2] = rand(Float32,10)
