@@ -13,7 +13,10 @@ debug,
 doctor,
 nnuq,
 compile,
-list_physical_devices
+list_physical_devices,
+MCMCSimple,
+simulate,
+diagnose
 
 """
     xavier_init(size, dtype=Float64)
@@ -868,4 +871,99 @@ function nnuq(H::Array{Float64,2}, invR::Union{Float64, Array{Float64,2}}, invQ:
     end
     Σ = inv(H' * invR * H + invQ)
     (Σ + Σ')/2
+end
+
+
+
+mutable struct MCMCSimple
+    logf::Function
+    proposal::Function
+    θ0::Array{Float64, 1}
+    ub::Float64
+    lb::Float64 
+    L::Array{Float64, 1}
+    AC::Array{Float64, 1}
+end
+
+@doc raw"""
+    MCMCSimple(obs::Array{Float64, 1}, h::Function, 
+    σ::Float64, θ0::Array{Float64,1}, lb::Float64, ub::Float64)
+
+A very simple yet useful interface for MCMC simulation in many scientific computing problems. 
+
+- `obs`: Observations
+- `h`: Forward computation function
+- `σ`: Noise standard deviation for the observed data 
+- `ub`, `lb`: upper and lower bound
+- `θ0`: Initial guess 
+
+The mathematical model is 
+
+```math
+y_{obs} = h(\theta)
+```
+
+and we have a hard constraint `lb\leq \theta \leq ub`. 
+"""
+function MCMCSimple(obs::Array{Float64, 1}, h::Function, 
+        σ::Float64, θ0::Array{Float64,1}, lb::Float64, ub::Float64,
+        δ::Union{Missing, Float64}=missing)
+    τ = (ub-lb)/6
+    δ = coalesce(δ, (ub-lb)/100)
+    function logf(x)
+        -sum((obs - h(x)).^2/2σ^2) - sum((x-θ0).^2)/2τ^2
+    end
+    function proposal(x)
+        x + (rand(length(x)) .- 0.5)*2 * δ
+    end
+    MCMCSimple(logf, proposal, θ0, ub, lb, zeros(0), zeros(0))
+end
+
+function simulate(ms::MCMCSimple, N::Int64, burnin::Union{Int64, Missing} = missing)
+    burnin = coalesce(burnin, Int64(round(N*0.2)))
+    sim = zeros(N, length(ms.θ0))
+    sim[1,:] = ms.θ0
+    L = zeros(N)
+    AC = ones(N)
+    AC[1] = NaN
+    L[1] = ms.logf(ms.θ0)
+    k = 1
+    for i = 2:N 
+        sim[i,:], L[i], k_ = _MCMCSimple_simulate(ms, sim[i-1,:])
+        k += k_ 
+        AC[i] = k/i
+    end
+    ms.AC = AC
+    ms.L = L 
+    return sim
+end
+
+function diagnose(ms::MCMCSimple)
+    if !isdefined(Main, :PyPlot)
+        error("Package PyPlot.jl must be imported in the main module using `import PyPlot` or `using PyPlot`")
+    end
+    Main.PyPlot.figure(figsize = (10, 4))
+    Main.PyPlot.subplot(121)
+    Main.PyPlot.title("Acceptance Rate")
+    Main.PyPlot.plot(ms.AC)
+    Main.PyPlot.ylim(0,1.05)
+    Main.PyPlot.subplot(122)
+    Main.PyPlot.title("Log Likelihood")
+    Main.PyPlot.plot(ms.L)
+end
+
+function _MCMCSimple_simulate(ms::MCMCSimple, x::Array{Float64})
+    local x_star
+    while true
+        x_star = ms.proposal(x)
+        if all(x_star.<=ms.ub) && all(x_star.>=ms.lb)
+            break
+        end
+    end
+    Δ =  ms.logf(x_star) - ms.logf(x)
+    if log(rand())<Δ
+        return x_star, ms.logf(x_star), 1
+    else 
+        return x, ms.logf(x), 0
+    end
 end

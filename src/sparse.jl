@@ -527,6 +527,8 @@ function spdiag(o::PyObject)
     SparseTensor(ii, ii, o, length(o), length(o), is_diag=true)
 end
 
+spdiag(o::Array{Float64, 1}) = spdiag(constant(o))
+
 """
     spzero(m::Int64, n::Union{Missing, Int64}=missing)
 
