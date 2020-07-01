@@ -12,6 +12,7 @@ pages = Any[
     "Resources" => ["newton_raphson.md", "parallel.md", "optimizers.md", "ode.md", "global.md", 
             "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md", "customopt.md",
             "options.md", "smt.md", "mcmc.md"],
+    "Physics Informed Machine Learning" => ["fdtd.md"],
     "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md"],
     "Developer Guide" => ["designpattern.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
