@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.5)
+project(MPI)
+find_package(MPI)
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+add_library(mtest SHARED mpitest.cpp)
+target_link_libraries(mtest ${MPI_C_LIBRARIES})
