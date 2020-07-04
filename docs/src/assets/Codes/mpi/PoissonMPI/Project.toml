@@ -1,0 +1,11 @@
+name = "PoissonMPI"
+uuid = "92c890b5-a413-4f88-bf2b-9b51b4209220"
+authors = ["Kailai Xu <kailaix@hotmail.com>"]
+version = "0.1.0"
+
+[deps]
+ADCME = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"

@@ -1,8 +1,9 @@
 #include "mpi.h"
 #include <iostream> 
-
+#include <thread>
 
 void forward(double *c,  const double *a){
+  std::cout << "BASIS thread "<<std::this_thread::get_id() << std::endl;
     MPI_Comm comm = MPI_COMM_WORLD;
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);

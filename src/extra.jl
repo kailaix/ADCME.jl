@@ -73,6 +73,36 @@ function make()
     end
 end
 
+"""
+    make_library(Libdir::String)
+
+Make shared library in `Libdir`. The structure of the source codes files are 
+
+```
+- Libdir 
+  - *.cpp 
+  - *.h 
+  - CMakeLists
+  - build (Optional)
+```
+"""
+function make_library(Libdir::String)
+   if !isdir(Libdir)
+    error("$Libdir is not a valid directory.")
+   end
+   PWD = pwd()
+   cd(Libdir)
+   if !isdir("build")
+    mkdir("build")
+   end
+   cd("build")
+   if !isfile("Makefile")
+    ADCME.cmake()
+   end
+   ADCME.make()
+   cd(PWD)
+end
+
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 

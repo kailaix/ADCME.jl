@@ -1,8 +1,9 @@
 #include "mpi.h"
-
+#include <thread>
 
 void forward(double *b, const double *a){
    MPI_Comm comm = MPI_COMM_WORLD;
+   std::cout << "MSUM thread "<<std::this_thread::get_id() << std::endl;
     MPI_Reduce( a , b , 1 , MPI_DOUBLE , MPI_SUM , 0 , comm);
 }
 
