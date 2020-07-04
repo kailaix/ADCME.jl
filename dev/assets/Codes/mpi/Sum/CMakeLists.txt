@@ -11,8 +11,11 @@ ENDIF()
 
 execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
 find_package(MPI)
-include_directories(SYSTEM ${MPI_INCLUDE_PATH})
-
+if (MPI_FOUND)
+else()
+set(MPI_INCLUDE_PATH /usr/lib64/mpich2/include)
+set(MPI_C_LIBRARIES /usr/lib64/openmpi/lib/libmpi.so)
+endif (MPI_FOUND)
 
 list(GET JL_OUT 0 BINDIR)
 list(GET JL_OUT 1 LIBDIR)
@@ -57,31 +60,15 @@ if(MSVC)
   add_definitions(-DNOMINMAX)
 endif()
 
-include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
-link_directories(${LIBDIR})
+include_directories(${TF_INC} ${EIGEN_INC} ${MPI_INCLUDE_PATH})
 
-#find_package(CUDA QUIET REQUIRED)
-#set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-#set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
-#set(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
-#set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
-#SET(CUDA_PROPAGATE_HOST_FLAGS ON)
-
-#find_program(_nvidia_smi "nvidia-smi")
-#if (_nvidia_smi)
-#  add_definitions(-DGOOGLE_CUDA)
-#  message("Compiling GPU-compatible custom operator!")
-#  cuda_add_library(MSum SHARED MSum.cpp MSum.cu)
-#else()
-  add_library(MSum SHARED MSum.cpp)
-#endif()
+add_library(MSum SHARED MSum.cpp)
 
 set_property(TARGET MSum PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(MSum ${TF_LIB_FILE})
 target_link_libraries(MSum ${MPI_C_LIBRARIES})
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set_target_properties(MSum PROPERTIES 
-                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
-                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
-                ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)
+LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
+RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
+ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)

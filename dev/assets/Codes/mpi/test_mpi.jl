@@ -17,7 +17,7 @@ end
 
 MPI.Init()
 
-a = constant(2.0)
+a = Variable(2.0)
 b = basis(a)
 c = m_sum(b)
 g = gradients(c, a)
@@ -32,3 +32,10 @@ if MPI.Comm_rank(MPI.COMM_WORLD)==0
 end
 
 
+BFGS!(sess, c^2)
+
+if MPI.Comm_rank(MPI.COMM_WORLD)==0
+    @info run(sess, a)
+end
+
+MPI.Finalize()
