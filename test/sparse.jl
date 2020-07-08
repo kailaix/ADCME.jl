@@ -328,8 +328,8 @@ end
     v1 = Afac\rhs1
     v2 = Afac\rhs2
 
-    @test norm(run(sess, v1) - A\rhs1)<1e-10
-    @test norm(run(sess, v2) - A\rhs2)<1e-10
+    @test norm(run(sess, v1) - A\rhs1)<1e-8
+    @test norm(run(sess, v2) - A\rhs2)<1e-8
 end
 
 @testset "sparse solver warning" begin 
