@@ -69,7 +69,7 @@ function make()
         end 
         run(`cmd /c $CMAKE  --build . -j --target ALL_BUILD --config Release`)
     else
-        run(setenv(`$MAKE -j`, ENV_))
+        run(setenv(`$MAKE -j $(Sys.CPU_THREADS)`, ENV_))
     end
 end
 
