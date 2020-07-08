@@ -12,6 +12,11 @@ ENDIF()
 execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
 
 find_package(MPI)
+if (MPI_FOUND)
+else()
+set(MPI_INCLUDE_PATH /usr/lib64/mpich2/include)
+set(MPI_C_LIBRARIES /usr/lib64/openmpi/lib/libmpi.so)
+endif (MPI_FOUND)
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 list(GET JL_OUT 0 BINDIR)
