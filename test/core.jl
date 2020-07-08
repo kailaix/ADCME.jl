@@ -1,3 +1,4 @@
+reset_default_graph(); sess = Session()
 # not testable
 # # this must be the test
 # @testset "Eager evaluation" begin   

@@ -1,3 +1,4 @@
+reset_default_graph(); sess = Session()
 @testset "indexing for rank 3 tensors" begin 
     a = rand(100,10,20)
     i1 = 3:8

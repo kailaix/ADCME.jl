@@ -1,3 +1,4 @@
+reset_default_graph(); sess = Session()
 @testset "customop" begin
     if isdir("temp")
         rm("temp", force=true, recursive=true)

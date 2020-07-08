@@ -159,8 +159,19 @@ function Base.:run(o::PyObject, S::SparseTensor, args...; kwargs...)
     sparse(indices[:,1].+1, indices[:,2].+1, value, shape...)
 end
 
-function Base.:Array(S::SparseTensor, args...;kwargs...)
-    tf.sparse.to_dense(S.o)
+"""
+    Array(A::SparseTensor)
+
+Converts a sparse tensor `A` to dense matrix. 
+"""
+function Base.:Array(A::SparseTensor)
+    ij = A.o.indices
+    vv = values(A)
+    m, n = size(A)
+    sparse_to_dense_ = load_system_op("sparse_to_dense_ad",multiple=false)
+    m_, n_ = convert_to_tensor(Any[m,n], [Int64,Int64])
+    out = sparse_to_dense_(ij, vv, m_,n_)
+    set_shape(out, (m, n))
 end
 
 function Base.:size(s::SparseTensor)

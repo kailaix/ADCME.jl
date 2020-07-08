@@ -1,3 +1,4 @@
+reset_default_graph(); sess = Session()
 function test_flow(sess, flows, dim)
     prior = ADCME.MultivariateNormalDiag(loc=zeros(dim))
     model = NormalizingFlowModel(prior, flows)

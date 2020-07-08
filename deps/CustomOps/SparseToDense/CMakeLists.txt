@@ -58,15 +58,27 @@ endif()
 include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
 link_directories(${LIBDIR})
 
-add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp 
-  SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp SparseConcate/SparseConcate.cpp SparseFactorizationSolve/Factorization/SparseFactorization.cpp SparseFactorizationSolve/Solve/Solve.cpp SparseFactorizationSolve/lru_cache.cpp SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp SparseMatMul/SparseMatMul.cpp 
-  SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp
-  SparseToDense/SparseToDense.cpp)
+#find_package(CUDA QUIET REQUIRED)
+#set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
+#SET(CUDA_PROPAGATE_HOST_FLAGS ON)
 
-set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(adcme ${TF_LIB_FILE})
+#find_program(_nvidia_smi "nvidia-smi")
+#if (_nvidia_smi)
+#  add_definitions(-DGOOGLE_CUDA)
+#  message("Compiling GPU-compatible custom operator!")
+#  cuda_add_library(SparseToDense SHARED SparseToDense.cpp SparseToDense.cu)
+#else()
+  add_library(SparseToDense SHARED SparseToDense.cpp)
+#endif()
+
+set_property(TARGET SparseToDense PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(SparseToDense ${TF_LIB_FILE})
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(adcme PROPERTIES 
+set_target_properties(SparseToDense PROPERTIES 
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
                 RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
                 ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)
