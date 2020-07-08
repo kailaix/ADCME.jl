@@ -89,8 +89,7 @@ $$\texttt{basis}(\theta) = 1, \theta, \theta^2, \theta^3, \ldots, \theta^n$$
 
 and `m_sum`
 
-$$\texttt{m_sum}(a_1, a_2, \ldots, a_n) = a_1 + a_2 + \ldots +a_n$$
-
+$$\texttt{m\_sum}(a_1, a_2, \ldots, a_n) = a_1 + a_2 + \ldots +a_n$$
 
 Here $n$ is the number of processors. 
 
