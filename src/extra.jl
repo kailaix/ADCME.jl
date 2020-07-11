@@ -113,6 +113,7 @@ load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 Loads the operator `opname` from library `oplibpath`.
 """
 function load_op(oplibpath::String, opname::String; verbose::Bool = true)
+    is_system_op = oplibpath == LIBADCME
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
         if length(b)>=3 && b[1:3]=="lib"
@@ -134,10 +135,17 @@ function load_op(oplibpath::String, opname::String; verbose::Bool = true)
     end
     fn_name = opname*randstring(8)
 try 
+    if is_system_op
+py"""
+import tensorflow as tf
+lib$$fn_name = $libadcme
+"""
+    else 
 py"""
 import tensorflow as tf
 lib$$fn_name = tf.load_op_library($oplibpath)
 """
+    end
 catch(e)
     printstyled("Failed to open $oplibpath. Error Message from the TensorFlow backend\n$(string(e))\n", color=:red)
     Libdl.dlopen(oplibpath)
@@ -155,7 +163,9 @@ end
 Loads the operator `opname` from library `oplibpath`; gradients are also imported. 
 If `multiple` is true, the operator is assumed to have multiple outputs. 
 """
-function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false, verbose::Bool = true)
+function load_op_and_grad(oplibpath::String, opname::String; 
+        multiple::Bool=false, verbose::Bool = true)
+    is_system_op = oplibpath == LIBADCME
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
         if length(b) >=3 && b[1:3]=="lib"
@@ -168,9 +178,9 @@ function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=fals
                         ".so" : Sys.isapple() ? ".dylib" : ".dll")
     end
     oplibpath = abspath(oplibpath)
-    if haskey(load_op_grad_dict, (oplibpath,opname))
-        return load_op_grad_dict[(oplibpath,opname)]
-    end
+    # if haskey(load_op_grad_dict, (oplibpath,opname))
+    #     return load_op_grad_dict[(oplibpath,opname)]
+    # end
     if !isfile(oplibpath)
         error("File $oplibpath does not exist. Instruction:\nRunning `compile(oplibpath)` to compile the library first.")
     end
@@ -178,10 +188,19 @@ function load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=fals
     opname_grad = opname*"_grad"
     fn_name = opname*randstring(8)
     try
-if !multiple
+        if is_system_op
+py"""
+import tensorflow as tf
+lib$$fn_name = $libadcme
+"""
+        else 
 py"""
 import tensorflow as tf
 lib$$fn_name = tf.load_op_library($oplibpath)
+"""
+        end
+if !multiple
+py"""
 @tf.custom_gradient
 def $$fn_name(*args):
     u = lib$$fn_name.$$opname(*args)
@@ -191,8 +210,6 @@ def $$fn_name(*args):
 """
 else
 py"""
-import tensorflow as tf
-lib$$fn_name = tf.load_op_library($oplibpath)
 @tf.custom_gradient
 def $$fn_name(*args):
     u = lib$$fn_name.$$opname(*args)

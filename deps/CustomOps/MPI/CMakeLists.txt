@@ -58,28 +58,29 @@ endif()
 include_directories(${TF_INC} ${EIGEN_INC} ${CUDA_INC})
 link_directories(${LIBDIR})
 
-# Compile MPI programs
-IF(DEFINED ENV{MPI_INCLUDE_PATH})
+IF(DEFINED $ENV{MPI_INCLUDE_PATH})
   set(MPI_INCLUDE_PATH $ENV{MPI_INCLUDE_PATH})
   set(MPI_C_LIBRARIES $ENV{MPI_C_LIBRARIES})
-  message("MPI_INCLUDE_PATH = ${MPI_INCLUDE_PATH}")
-  message("MPI_C_LIBRARIES = ${MPI_C_LIBRARIES}")
   include_directories(${MPI_INCLUDE_PATH})
-  set(MPI_OPS MPI/MPIBCAST.cpp MPI/MPIRECV.cpp MPI/MPISEND.cpp MPI/MPISUM.cpp MPI/MPI_Utils.cpp)
 ELSE()
-  message("MPI_INCLUDE_PATH and/or MPI_C_LIBRARIES is not set. MPI operators are not compiled.")
+  message(FATAL_ERROR "MPI_INCLUDE_PATH and/or MPI_C_LIBRARIES is not set. MPI operators are not compiled.")
 ENDIF()
 
 
-add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp 
-  SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp SparseConcate/SparseConcate.cpp SparseFactorizationSolve/Factorization/SparseFactorization.cpp SparseFactorizationSolve/Solve/Solve.cpp SparseFactorizationSolve/lru_cache.cpp SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp SparseMatMul/SparseMatMul.cpp 
-  SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp
-  SparseToDense/SparseToDense.cpp ${MPI_OPS})
 
-set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(adcme ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(adcme PROPERTIES 
+add_library(mpiop SHARED MPIBCAST.cpp MPISUM.cpp MPISEND.cpp MPIRECV.cpp)
+set_property(TARGET mpiop PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(mpiop ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
+set_target_properties(mpiop PROPERTIES 
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
+                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
+                ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)
+
+                
+add_library(mpiutils SHARED MPI_Utils.cpp)
+set_property(TARGET mpiutils PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(mpiutils ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
+set_target_properties(mpiutils PROPERTIES 
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
                 RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
                 ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)

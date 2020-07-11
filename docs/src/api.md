@@ -85,6 +85,13 @@ Modules = [ADCME]
 Pages   = ["ot.jl"]
 ```
 
+## MPI
+
+```@autodocs
+Modules = [ADCME]
+Pages   = ["mpi.jl"]
+```
+
 ## Misc
 
 ```@autodocs

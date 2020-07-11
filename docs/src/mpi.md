@@ -1,4 +1,4 @@
-# Using MPI with ADCME
+# Distributed Scientific Machine Learning using MPI 
 
 
 Many large-scale scientific computing involves parallel computing. Among many parallel computing models, the MPI  is one of the most popular models. In this section, we describe how ADCME can work with MPI for solving inverse modeling. Specifically, we describe how gradients can be back-propagated via MPI function calls.  
@@ -6,7 +6,7 @@ Many large-scale scientific computing involves parallel computing. Among many pa
 !!! info 
     Message Passing Interface (MPI) is an interface for parallel computing based on message passing models. In the message passing model, a master process assigns work to workers by passing them a message that describes the work. The message may be data or meta information (e.g., operations to perform). A consensus was reached around 1992 and the MPI standard was born. MPI is a definition of interface, and the implementations are left to hardware venders. 
 
-## A First Example
+## Interoperability: Julia, C++, and TensorFlow (Python)
 
 We will utilize the [MPI.jl](https://github.com/JuliaParallel/MPI.jl) package, which is a Julia interface to many MPI implementations (MPICH, MSMPI, etc.). Because MPI.jl is essentially a wrapper of MPI C language implementations, we can freely interact shared library with MPI.jl. For example, in [this directory](docs/src/assets/Codes/mpi), we have a C++ code 
 
@@ -68,7 +68,7 @@ Hello world from processor LAPTOP-92GNG3GT.stanford.edu, rank 3 out of 4 process
 
 The first three numbers are junk because they are on the worker processors. 
 
-## Custom Operators with MPI
+## Implementing Custom Operators using MPI
 
 We can also make custom operators with MPI. Let us consider computing
 
@@ -196,11 +196,93 @@ We obtain the outputs as expected:
 [ Info: (15.0, 17.0)
 ```
 
-## MPI Configuration in CMakeLists.txt
+## ADCME Solutions for Distributed Computing
 
-To configure MPI in `CMakeLists.txt`, we can simply add the following commands
-```cmakelists
-find_package(MPI)
-include_directories(SYSTEM ${MPI_INCLUDE_PATH})
-target_link_libraries(mylib ${MPI_C_LIBRARIES})
+Implementing custom operators with MPI enables us to write distributed computing codes. However, it also requires programmers have a decent knowledge of writing MPI C++ codes. ADCME provides multiple MPI APIs for scientific machine learning, such as [`mpi_init`](@ref), [`mpi_finalize`](@ref), [`mpi_bcast`](@ref), [`mpi_sum`](@ref), [`mpi_send`](@ref), [`mpi_recv`](@ref), etc. Therefore, users can write simulation codes in ADCME, treating these MPI operators as common operators, without resorting to implementing their own custom operators with MPI. This provides much flexibility and also reduce the development effort for users. 
+
+The added value to traditional MPI APIs is that ADCME MPI custom operators allows gradient back-propagation. Hence, once the forward simulation is implemented, the inverse modeling can be readily performed using a gradient based optimization technique. 
+
+
+To enable MPI in ADCME, you need to build ADCME with the following environment variable:
+
+* `MPI_C_LIBRARIES`: the MPI shared library, for example, `C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib`.
+* `MPI_INCLUDE_PATH`: the directory where `mpi.h` is located, for example, `C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Include`.
+
+You can either add these environment variables to the system path (e.g., via `export` in Linux), or in Julia
+
+```julia-repl
+julia> ENV["MPI_C_LIBRARIES"] = ...
+julia> ENV["MPI_INCLUDE_PATH"] = ...
+pkg> build ADCME
 ```
+
+Once ADCME is successfully built with these environment variables, you will be able to use ADCME MPI features. 
+
+## ADCME MPI Examples
+
+The ADCME MPI provides a set of commonly used MPI utilities for scientific computing. The following figure illustrates the usage of these operators:
+
+
+### Reduce Sum
+
+```julia
+using ADCME
+
+mpi_init()
+r = mpi_rank()
+a = constant(Float64.(Array(1:10) * r))
+b = mpi_sum(a)
+
+L = sum(b)
+g = gradients(L, a)
+sess = Session(); init(sess)
+v, G = run(sess, [b,g])
+```
+
+### Broadcast
+
+```julia
+using ADCME
+
+mpi_init()
+r = mpi_rank()
+a = constant(ones(10) * r)
+b = mpi_bcast(a, 3)
+L = sum(b^2)
+L = mpi_sum(L)
+g = gradients(L, a)
+
+sess = Session(); init(sess)
+v, G = run(sess, [b, G])
+```
+
+### Send and Receive
+```julia
+# mpiexec.exe -n 4 julia .\mpisum.jl
+using ADCME
+
+mpi_init()
+r = mpi_rank()
+a = constant(ones(10) * r)
+a = mpi_sendrecv(a, 0, 2)
+
+L = sum(a^2)
+g = gradients(L, a)
+
+sess = Session(); init(sess)
+v, G = run(sess, [a,g])
+```
+
+[`mpi_sendrecv`](@ref) is a lightweight wrapper for [`mpi_send`](@ref) followed by [`mpi_recv`](@ref). Equivalently, we have
+
+```julia
+if r==2
+    global a
+    a = mpi_send(a, 0)
+end
+if r==0
+    global a
+    a = mpi_recv(a,2)
+end
+```
+

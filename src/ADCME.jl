@@ -18,6 +18,7 @@ module ADCME
 
     tf = PyNULL()
     tfp = PyNULL()
+    libadcme = PyNULL()
 
     #------------------------------------------------------------------------------------------
     # Global Storage 
@@ -46,7 +47,7 @@ module ADCME
     STORAGE = Dict{String, Any}()
         
     function __init__()
-        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE
+        global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, libadcme
         copy!(tf, pyimport("tensorflow"))
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         copy!(tfp, pyimport("tensorflow_probability"))
@@ -84,6 +85,12 @@ module ADCME
 =============================================================================
 $e"""
         end
+
+        try 
+            libadcme = tf.load_op_library(LIBADCME)
+        catch 
+            @warn "Cannot load $LIBADCME. Please recompile the shared library by `ADCME.precompile()` for using custom operators."
+        end
     end
 
     
@@ -103,5 +110,6 @@ $e"""
     include("ode.jl")
     include("flow.jl")
     include("options.jl")
+    include("mpi.jl")
 end
 
