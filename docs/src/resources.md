@@ -16,6 +16,7 @@ Do you know...
 
 * [Inverse modeling](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Inverse.pdf)
 
+* [Subsurface Inverse Modeling with Physics Based Machine Learning](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Subsurface.pdf)
 
 
 ## Videos
