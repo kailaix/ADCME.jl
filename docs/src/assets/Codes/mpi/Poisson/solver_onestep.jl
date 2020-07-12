@@ -16,12 +16,12 @@ J = r%M
 n, m = size(Us[1,1])
 h = 1/(m*M+1)
 f = constant(Fs[I+1, J+1])
-u = poisson_solver(f, 100)
+u = constant(Us[I+1, J+1])
+o = Ss[I+1, J+1]
+
+out = update_u(u, f)
 
 sess = Session(); init(sess)
-@info "Start running..."
-result = run(sess, u[end])
-
-@save "solution$I$J.jld2" result
+@info mpi_rank(), run(sess, out)-o
 
 mpi_finalize()

@@ -220,7 +220,7 @@ def $$fn_name(*args):
 """
 end
 catch(e)
-    printstyled("Failed to open $oplibpath. Error Message from the TensorFlow backend\n$(string(e))\n", color=:red)
+    printstyled("Failed load $oplibpath or its symbols. Error Message from the TensorFlow backend\n$(string(e))\n", color=:red)
     Libdl.dlopen(oplibpath)
 end
         s = py"$$fn_name"
@@ -419,6 +419,9 @@ Testing the gradients of a vector function `f`:
 `y, J = f(x)` where `y` is a vector output and `J` is the Jacobian.
 """
 function test_jacobian(f::Function, x0::Array{Float64}; scale::Float64 = 1.0)
+    if !isdefined(Main, :PyPlot)
+        error("You must load PyPlot to use `test_jacobian`, e.g., `using PyPlot` or `import PyPlot`")
+    end
     v0 = rand(Float64,size(x0))
     γs = scale ./10 .^(1:5)
     err2 = []
@@ -433,12 +436,12 @@ function test_jacobian(f::Function, x0::Array{Float64}; scale::Float64 = 1.0)
         # #@show "test ", f1, f2, f1-f2
     end
     close("all")
-    loglog(γs, err2, label="Automatic Differentiation")
-    loglog(γs, err1, label="Finite Difference")
-    loglog(γs, γs.^2 * 0.5*abs(err2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
-    loglog(γs, γs * 0.5*abs(err1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
-    plt.gca().invert_xaxis()
-    legend()
+    Main.PyPlot.loglog(γs, err2, label="Automatic Differentiation")
+    Main.PyPlot.loglog(γs, err1, label="Finite Difference")
+    Main.PyPlot.loglog(γs, γs.^2 * 0.5*abs(err2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
+    Main.PyPlot.loglog(γs, γs * 0.5*abs(err1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
+    Main.PyPlot.plt.gca().invert_xaxis()
+    Main.PyPlot.legend()
     println("Finite difference: $err1")
     println("Automatic differentiation: $err2")
     return err1, err2

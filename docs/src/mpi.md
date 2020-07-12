@@ -222,6 +222,10 @@ Once ADCME is successfully built with these environment variables, you will be a
 
 The ADCME MPI provides a set of commonly used MPI utilities for scientific computing. The following figure illustrates the usage of these operators:
 
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi1.PNG?raw=true)
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi2.PNG?raw=true)
+
 
 ### Reduce Sum
 

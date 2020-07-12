@@ -32,7 +32,8 @@ Returns the rank of current MPI process (rank 0 based).
 """
 function mpi_rank()
     mpi_check()
-    @eval ccall((:mpi_rank, $LIBADCME), Cint, ())
+    out = @eval ccall((:mpi_rank, $LIBADCME), Cint, ())
+    Int64(out)
 end
 
 """
@@ -235,6 +236,7 @@ A convenient wrapper for `mpi_send` followed by `mpi_recv`.
 """
 function mpi_sendrecv(a::Union{Array{Float64}, Float64, PyObject}, dest::Int64, src::Int64, tag::Int64=0)
     r = mpi_rank()
+    @assert src != dest
     if r==src 
         a = mpi_send(a, dest, tag)
     elseif r==dest 

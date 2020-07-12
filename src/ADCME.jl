@@ -18,7 +18,7 @@ module ADCME
 
     tf = PyNULL()
     tfp = PyNULL()
-    libadcme = PyNULL()
+    libadcme = missing
 
     #------------------------------------------------------------------------------------------
     # Global Storage 
