@@ -18,7 +18,7 @@ Do you know...
 
 * [Subsurface Inverse Modeling with Physics Based Machine Learning](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Subsurface.pdf)
 
-* [Calibrating Multi-variate L\'evy Processes with Neural Networks](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/MSML2020.pdf)
+* [Calibrating Multivariate Lévy Processes with Neural Networks](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/MSML2020.pdf)
 
 MSML2020.pdf
 
