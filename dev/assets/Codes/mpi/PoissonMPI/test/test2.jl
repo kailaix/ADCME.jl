@@ -1,1 +1,0 @@
-U = test_poisson(20,20)
