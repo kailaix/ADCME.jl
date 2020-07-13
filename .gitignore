@@ -27,3 +27,15 @@ docs/src/assets/Slide/figures
 data.txt
 docs\src\assets\Codes\Optimizer
 *.jld2
+docs/src/assets/*.png
+docs/src/assets/*.PNG
+docs/src/assets/*.pdf
+docs/src/assets/*.jpeg
+docs/src/assets/*.gif
+docs/src/assets/*.jpg
+docs/src/assets/*.svg
+docs/src/assets/*.ipe
+docs/src/assets/Optimizers
+docs/src/assets/Slide/*.snm
+docs/src/assets/Slide/*.toc
+docs/src/assets/mcmc

@@ -17,6 +17,7 @@ void MPIBCAST_backward(
   MPI_Comm comm = MPI_COMM_WORLD;
   int rank;
   MPI_Comm_rank( comm , &rank);
+  // printf("I am rank %d, I hold a gradient %f\n", rank, grad_out[0]);
   MPI_Reduce( grad_out , grad_a , m , MPI_DOUBLE , MPI_SUM , root , comm);
 }
 

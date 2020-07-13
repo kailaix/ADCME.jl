@@ -1,5 +1,0 @@
-PoissonOp
-double u(?,?)
-double f(?,?)
-double h()
-double ut(?,?) -> output

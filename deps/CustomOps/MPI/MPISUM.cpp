@@ -11,8 +11,12 @@ void MPISUM_backward(
   const double *out, const double *a, int n, int root
 ){
   MPI_Comm comm = MPI_COMM_WORLD;
+  int rank;
+  MPI_Comm_rank( comm , &rank);
   for(int i =0;i<n;i++) grad_a[i] = grad_out[i];
   MPI_Bcast( grad_a , n , MPI_DOUBLE , root , comm );
+  // printf("[MPISUM] I am rank %d, I hold a gradient %f\n", rank, grad_a[0]);
+
 }
 
 REGISTER_OP("MPISUM")
