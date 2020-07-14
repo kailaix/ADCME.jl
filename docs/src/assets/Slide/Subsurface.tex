@@ -178,7 +178,7 @@
 
 \title[Physics Constrained Learning]{Subsurface Inverse Modeling with Physics Based Machine Learning} % The short title appears at the bottom of every slide, the full title is only on the title page
 
-\author[Kailai Xu, et al.]{Kailai Xu and Dongzhuo Li\\ Jerry M. Harris,  Eric Darve}% Your name
+\author[Kailai Xu (\texttt{kailaix@stanford.edu}), et al.]{Kailai Xu and Dongzhuo Li\\ Jerry M. Harris,  Eric Darve}% Your name
 %\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
 %{
 %%ICME, Stanford University \\ % Your institution for the title page
@@ -244,7 +244,7 @@
 	 
 	 	\begin{figure}
 	 	\centering
-	 	\includegraphics[width=0.9\textwidth]{../inverse_types}
+	 	\includegraphics[width=1.0\textwidth]{../inverse_types}
 	 \end{figure}
 
 \begin{center}
@@ -439,7 +439,7 @@ $||$
 	\begin{minipage}[t]{0.49\textwidth}
 	\vspace{-3cm}
 \begin{itemize}
-	\item Most AD frameworks only deal with \textcolor{red}{explicit operators}, i.e., the functions that has analytical derivatives that are easy to implement.  
+	\item Most AD frameworks only deal with \textcolor{red}{explicit operators}, i.e., the functions with analytical derivatives that are easy to implement.  
 	\item Many scientific computing algorithms are \textcolor{red}{iterative} or \textcolor{red}{implicit} in nature.
 \end{itemize}
 \end{minipage}~
@@ -567,6 +567,8 @@ If not using the cubic formula for finding the roots, the forward computation co
 
 	\end{itemize}
 
+{\tiny Kailai Xu and Eric Darve, \textit{Physics Constrained Learning for Data-driven Inverse Modeling from Sparse Observations}}
+
 \end{frame}
 
 
@@ -631,7 +633,7 @@ $$}
 
 \begin{frame}
 	\frametitle{Coupled Inversion vs. Decoupled Inversion}
-	We found that \textcolor{red}{by coupled inversion reduces the artifacts from FWI significantly and yields a substantially better results}. 
+	We found that \textcolor{red}{coupled inversion reduces the artifacts from FWI significantly and yields a substantially better results}. 
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.6\textwidth]{../coupled2}
