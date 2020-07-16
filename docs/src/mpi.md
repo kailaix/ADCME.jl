@@ -6,67 +6,49 @@ Many large-scale scientific computing involves parallel computing. Among many pa
 !!! info 
     Message Passing Interface (MPI) is an interface for parallel computing based on message passing models. In the message passing model, a master process assigns work to workers by passing them a message that describes the work. The message may be data or meta information (e.g., operations to perform). A consensus was reached around 1992 and the MPI standard was born. MPI is a definition of interface, and the implementations are left to hardware venders. 
 
-## Interoperability: Julia, C++, and TensorFlow (Python)
+## MPI Support in ADCME
 
-We will utilize the [MPI.jl](https://github.com/JuliaParallel/MPI.jl) package, which is a Julia interface to many MPI implementations (MPICH, MSMPI, etc.). Because MPI.jl is essentially a wrapper of MPI C language implementations, we can freely interact shared library with MPI.jl. For example, in [this directory](docs/src/assets/Codes/mpi), we have a C++ code 
+The ADCME solution to distributed computing for scientific machine learning is to provide a set of "data communication" nodes in the computational graph. Each machine (MPI processor) runs an identical computational graph. The computational nodes are executed independently on each processor, and the data communication nodes need to synchronize among different processors. 
 
-```c++
-#include <mpi.h>
-#include <iostream>
-
-#ifdef _WIN32
-#define EXPORTED __declspec(dllexport)
-#else
-#define EXPORTED
-#endif 
-
-extern "C" EXPORTED int printinfo(){
-    MPI_Comm comm = MPI_COMM_WORLD;
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    char processor_name[1000];
-    int name_len;
-    MPI_Get_processor_name( processor_name , &name_len);
-    printf("Hello world from processor %s, rank %d out of %d processors\n",
-        processor_name, world_rank, world_size);
-    int result;
-    MPI_Reduce( &world_rank , &result , 1 , MPI_INT , MPI_SUM , 0 , comm);
-    return result;
-}
-```
-
-After we compile it into a shared library, we can write Julia codes that mix the C++ kernel and MPI.jl
-
+These data communication nodes are implemented using MPI APIs. They are not necessarily blocking operations, but because ADCME respects the data dependency of computation, they act like blocking operations and the child operators are executed only when data communication is finished. For example, in the following example,
 ```julia
-using MPI 
-
-MPI.Init()
-
-v = ccall((:printinfo, "./build/debug/mtest.dll"), Cint, ())
-print(v)
+b = mpi_op(a)
+c = custom_op(b)
 ```
+even though `mpi_op` and `custom_op` can overlap, ADCME still sequentially execute these two operations. 
 
-For example, in the shell we type 
-```bash
-mpiexec.exe -n 4 julia test.jl
-```
+This blocking behavior simplifies the synchronization logic as well as the implementation of gradient back-propagation while harming little performance. 
 
-We have the following output 
-```
-13296304
-13296304
-13296304
-6
-Hello world from processor LAPTOP-92GNG3GT.stanford.edu, rank 1 out of 4 processors
-Hello world from processor LAPTOP-92GNG3GT.stanford.edu, rank 2 out of 4 processors
-Hello world from processor LAPTOP-92GNG3GT.stanford.edu, rank 0 out of 4 processors
-Hello world from processor LAPTOP-92GNG3GT.stanford.edu, rank 3 out of 4 processors
-```
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi1.PNG?raw=true)
 
-The first three numbers are junk because they are on the worker processors. 
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi2.PNG?raw=true)
+
+ADCME provides a set of commonly used MPI operators. See [MPI Operators](https://kailaix.github.io/ADCME.jl/dev/api/#MPI). Basically, they are
+
+* [`mpi_init`](@ref), [`mpi_finalize`](@ref): Initialize and finalize MPI session. 
+* [`mpi_rank`](@ref), [`mpi_size`](@ref): Get the MPI rank and size.
+* [`mpi_sum`](@ref), [`mpi_bcast`](@ref): Sum and broadcast tensors in different processors. 
+* [`mpi_send`](@ref), [`mpi_recv`](@ref): Send and receive operators. 
+
+The above two set of operators support automatic differentiation. They were implemented with MPI adjoint methods, which have existed in academia for decades. 
+
+## Limitations 
+
+Despite that the provided `mpi_*` operations meet most needs,  some sophisticated data communication operations may not be easily expressed using these APIs. For example, when solving the Poisson's equation on a uniform grid, we may decompose the domain into many squares, and two adjacent squares exchange data in each iteration. A sequence of `mpi_send`, `mpi_recv` will likely cause deadlock. 
+
+Just like when it is difficult to use automatic differentiation to implement a forward computation and its gradient back-propagation, we resort to custom operators, it is the same case for MPI. We can design a specialized custom operator for data communication. To resolve the deadlock problem, we found the asynchronous sending, followed by asynchronous receiving, and then followed by waiting, a very general and convenient way to implement custom operators. 
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpiadjoint.png?raw=true)
+
+Another limitation for ADCME is that currently, for performance, we need to set the total number of threads per MPI process to be 1
+```julia
+config = tf.ConfigProto(inter_op_parallelism_threads=1)
+sess = Session(config = config)
+```
+Otherwise, there will be significant cost for synchronization between different threads for the MPI operation kernel. Setting `inter_op_parallelism_threads=1` limits ADCME to execute one kernel at a time, although each kernel can still utilize multiple threads. One solution is to use a specialized executed policy for MPI kernels---they should always executed by one thread. Nevertheless, the optimal policy is application dependent and the current model fits a broad range of applications. 
+
+
+
 
 ## Implementing Custom Operators using MPI
 
@@ -83,124 +65,69 @@ where $f_i(\theta) = \theta^{i-1}$.
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi.png?raw=true)
 
-We make two custom operators: `basis` 
 
-$$\texttt{basis}(\theta) = 1, \theta, \theta^2, \theta^3, \ldots, \theta^n$$
-
-and `m_sum`
-
-$$\texttt{m\_sum}(a_1, a_2, \ldots, a_n) = a_1 + a_2 + \ldots +a_n$$
-
-Here $n$ is the number of processors. 
-
-To implement `basis`, we need to broadcast $\theta$ at processor 0 to $n$ processors (`MPI_Bcast`). For back-propagating the gradients, for each processor, we need to back-propagate the gradient, respectively, and then aggregate the gradients on processor 0 (`MPI_Reduce`). This leads to the following forward and backward implementation:
-
-```c++
-#include "mpi.h"
-#include <iostream> 
-
-
-void forward(double *c,  const double *a){
-    MPI_Comm comm = MPI_COMM_WORLD;
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if(world_rank==0)
-      c[0] = a[0];
-    MPI_Barrier( comm);
-    MPI_Bcast( c , 1 , MPI_DOUBLE , 0 , comm);
-    c[0] = pow(c[0], world_rank);
-}
-
-void backward(
-  double *grad_a,
-  const double *grad_c,
-  const double *c, const double *a){
-    MPI_Comm comm = MPI_COMM_WORLD;
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if(world_rank==0)
-      grad_a[0] = 0.0;
-    else
-      grad_a[0] = grad_c[0] * world_rank * pow(a[0], world_rank-1);
-    double ga;
-    MPI_Reduce( grad_a , &ga , 1 , MPI_DOUBLE , MPI_SUM , 0 , comm);
-    if(world_rank==0){
-      grad_a[0] = ga;
-    }
-      
-}
-```
-
-For implementing `m_sum`, the forward is obvious an `MPI_Reduce` function call. For the backward, we need to back-propagate the scalar gradient to each input, and this procedure requires an `MPI_Bcast` function call. 
-
-```c++
-#include "mpi.h"
-
-
-void forward(double *b, const double *a){
-   MPI_Comm comm = MPI_COMM_WORLD;
-    MPI_Reduce( a , b , 1 , MPI_DOUBLE , MPI_SUM , 0 , comm);
-}
-
-void backward(
-    double *grad_a, const double *grad_b){
-    MPI_Comm comm = MPI_COMM_WORLD;
-    grad_a[0] = grad_b[0];
-    MPI_Bcast( grad_a , 1 , MPI_DOUBLE , 0 , comm);
-}
-```
-
-The custom operators are elegantly integrated with ADCME.jl and MPI.jl:
-
+Using the ADCME MPI API, we have the following code (`test_simple.jl`)
 ```julia
-using MPI 
 using ADCME
 
-# interfaces to custom operators 
-function basis(a)
-    basis_ = load_op_and_grad("./Basis/build/libBasis","basis")
-    a = convert_to_tensor(Any[a], [Float64]); a = a[1]
-    basis_(a)
-end
-
-function m_sum(a)
-    m_sum_ = load_op_and_grad("./Sum/build/libMSum","m_sum")
-    a = convert_to_tensor(Any[a], [Float64]); a = a[1]
-    m_sum_(a)
-end
-
-MPI.Init()
-a = constant(2.0)
-b = basis(a)
-c = m_sum(b)
-g = gradients(c, a)
-
+mpi_init()
+θ = placeholder(1.0)
+fθ = mpi_bcast(θ)
+l = fθ^mpi_rank()
+L = mpi_sum(l)
+g = gradients(L, θ)
 sess = Session(); init(sess)
-result = run(sess, c)
-grad = run(sess, g)
+L_, g_ = run(sess, [L, g])
 
-
-if MPI.Comm_rank(MPI.COMM_WORLD)==0
-    @info result, grad
+if mpi_rank()==0
+    @info L_, g_ 
 end
+
+mpi_finalize()
 ```
 
-To run the code, in the shell, we type
+We run the program with 4 processors
+
 ```bash
-mpiexec.exe -n 4 julia test_mpi.jl
+mpirun -n 4 julia test_simple.jl
 ```
 
-We obtain the outputs as expected:
 
+## Optimization 
+
+For solving inverse problems using distributed computing, an MPI-capable optimizer is required. The ADCME solution to distributed optimization is that the master machine holds, distributes and updates the optimizable variables. The gradients are calculated in the same device where the corresponding forward computation is done. Therefore, for a given serial optimizer, we can refactor it to a distributed one by letting worker nodes wait for instructions from the master node to compute either the objective function or the gradient.
+
+This idea is implemented in the [`ADOPT.jl`](https://github.com/kailaix/ADOPT.jl) package, a customized version of [`Optim.jl`](https://github.com/JuliaNLSolvers/Optim.jl). 
+
+
+In the following, we try to solve 
+
+$$1+\theta +\theta^2+\theta^3 = 2$$
+
+using MPI-enabled LBFGS optimizer. 
+
+```julia
+using ADCME
+
+mpi_init()
+θ = placeholder(ones(1))
+fθ = mpi_bcast(θ)
+l = fθ^mpi_rank()
+L = (sum(mpi_sum(l))-2)^2
+g = gradients(L, fθ)
+sess = Session(); init(sess)
+
+f = x->run(sess, L, θ=>x)
+g!= (G, x)->(G[:] = run(sess, g, θ=>x))
+results = mpi_optimize(f, g!, run(sess, θ), ADOPT.LBFGS())
+if mpi_rank()==0
+    @info results.minimizer, results.minimum 
+end
+mpi_finalize()
 ```
-[ Info: (15.0, 17.0)
-```
 
-## ADCME Solutions for Distributed Computing
+## Configure MPI for ADCME
 
-Implementing custom operators with MPI enables us to write distributed computing codes. However, it also requires programmers have a decent knowledge of writing MPI C++ codes. ADCME provides multiple MPI APIs for scientific machine learning, such as [`mpi_init`](@ref), [`mpi_finalize`](@ref), [`mpi_bcast`](@ref), [`mpi_sum`](@ref), [`mpi_send`](@ref), [`mpi_recv`](@ref), etc. Therefore, users can write simulation codes in ADCME, treating these MPI operators as common operators, without resorting to implementing their own custom operators with MPI. This provides much flexibility and also reduce the development effort for users. 
-
-The added value to traditional MPI APIs is that ADCME MPI custom operators allows gradient back-propagation. Hence, once the forward simulation is implemented, the inverse modeling can be readily performed using a gradient based optimization technique. 
 
 
 To enable MPI in ADCME, you need to build ADCME with the following environment variable:
@@ -216,15 +143,8 @@ julia> ENV["MPI_INCLUDE_PATH"] = ...
 pkg> build ADCME
 ```
 
-Once ADCME is successfully built with these environment variables, you will be able to use ADCME MPI features. 
+Once ADCME is successfully built with these environment variables, you will be able to use ADCME MPI features. The following are examples of using ADCME APIs
 
-## ADCME MPI Examples
-
-The ADCME MPI provides a set of commonly used MPI utilities for scientific computing. The following figure illustrates the usage of these operators:
-
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi1.PNG?raw=true)
-
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi2.PNG?raw=true)
 
 
 ### Reduce Sum
@@ -289,4 +209,6 @@ if r==0
     a = mpi_recv(a,2)
 end
 ```
+
+## Solving the Poisson Equation
 
