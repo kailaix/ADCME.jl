@@ -319,8 +319,13 @@ function Base.:precompile(force::Bool=false)
         files = readdir("$(@__DIR__)/../deps/CustomOps/build")
         if "adcme.dll" in files || "libadcme.so" in files || "libadcme.dylib" in files 
             cd(PWD)
-        else
+        elseif "Makefile" in files 
             cd("build")
+            ADCME.make()
+            cd(PWD)
+        else 
+            cd("build")
+            ADCME.cmake()
             ADCME.make()
             cd(PWD)
         end
