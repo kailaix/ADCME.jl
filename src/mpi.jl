@@ -1,6 +1,6 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
     mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized,
-    mpi_finalized, mpi_rank, mpi_size
+    mpi_finalized, mpi_rank, mpi_size, mpi_sync!
 
 """
     mpi_init()
@@ -68,9 +68,19 @@ function mpi_initialized()
     Bool(@eval ccall((:mpi_initialized, $LIBADCME), Cuchar, ()))
 end
 
+"""
+    mpi_sync!(message::Array{Int64,1}, root::Int64 = 0)
+
+Sync `message` across all MPI processors.
+"""
+function mpi_sync!(message::Array{Int64,1}, root::Int64 = 0)
+    mpi_check()
+    @eval ccall((:mpi_sync, $LIBADCME), Cvoid, (Ptr{Clonglong}, Cint, Cint), $message, Int32(length($message)), Int32($root))
+end
+
 function mpi_check()
     if !mpi_initialized()
-        error("MPI has not been initialized.")
+        error("MPI has not been initialized. Run `mpi_init()` to initialize MPI first.")
     end 
     if mpi_finalized()
         error("MPI has been finalized.")
@@ -244,3 +254,4 @@ function mpi_sendrecv(a::Union{Array{Float64}, Float64, PyObject}, dest::Int64, 
     end
     a 
 end
+

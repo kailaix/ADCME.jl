@@ -43,3 +43,8 @@ extern "C" EXPORTED bool mpi_initialized(){
   MPI_Initialized(&flag);
   return flag;
 }
+
+extern "C" EXPORTED void mpi_sync(long long* value, int n, int root){
+  MPI_Comm comm = MPI_COMM_WORLD;
+  MPI_Bcast( value , n , MPI_LONG_LONG_INT , root , comm);
+}

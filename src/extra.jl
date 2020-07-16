@@ -305,18 +305,27 @@ function compile(s::String; force::Bool=false, customdir::Bool = false)
 end
 
 """
-    precompile(force::Bool=true)
+    precompile(force::Bool=false)
 
-Compiles all the operators in `formulas.txt`. 
+Precompile the built-in custom operators. 
 """
-function Base.:precompile(force::Bool=true)
+function Base.:precompile(force::Bool=false)
     PWD = pwd()
-    if (!force) && isdir("$(@__DIR__)/../deps/CustomOps/build")
+    cd("$(@__DIR__)/../deps/CustomOps")
+    if force
+        rm("build", force=true, recursive=true)
+    end
+    if isdir("$(@__DIR__)/../deps/CustomOps/build")
+        files = readdir("$(@__DIR__)/../deps/CustomOps/build")
+        if "adcme.dll" in files || "libadcme.so" in files || "libadcme.dylib" in files 
+            cd(PWD)
+        else
+            cd("build")
+            ADCME.make()
+            cd(PWD)
+        end
         return 
     end
-    @info "Compiling ADCME built-in custom operators..."
-    cd("$(@__DIR__)/../deps/CustomOps")
-    rm("build", force=true, recursive=true)
     mkdir("build")
     cd("build")
     ADCME.cmake()
