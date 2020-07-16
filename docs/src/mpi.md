@@ -99,6 +99,8 @@ For solving inverse problems using distributed computing, an MPI-capable optimiz
 
 This idea is implemented in the [`ADOPT.jl`](https://github.com/kailaix/ADOPT.jl) package, a customized version of [`Optim.jl`](https://github.com/JuliaNLSolvers/Optim.jl). 
 
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpiopt.png?raw=true)
+
 
 In the following, we try to solve 
 
