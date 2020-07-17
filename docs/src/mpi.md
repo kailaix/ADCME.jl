@@ -71,18 +71,18 @@ Using the ADCME MPI API, we have the following code (`test_simple.jl`)
 using ADCME
 
 mpi_init()
-θ = placeholder(1.0)
+θ = placeholder(ones(1))
 fθ = mpi_bcast(θ)
 l = fθ^mpi_rank()
-L = mpi_sum(l)
+L = sum(mpi_sum(l))
 g = gradients(L, θ)
 sess = Session(); init(sess)
-L_, g_ = run(sess, [L, g])
+L_ = run(sess, L, θ=>ones(1)*2.0)
+g_ = run(sess, g, θ=>ones(1)*2.0)
 
 if mpi_rank()==0
-    @info L_, g_ 
+    @info  L_, g_ 
 end
-
 mpi_finalize()
 ```
 
@@ -90,6 +90,12 @@ We run the program with 4 processors
 
 ```bash
 mpirun -n 4 julia test_simple.jl
+```
+
+We have the results:
+
+```bash
+[ Info: (15.0, [17.0])
 ```
 
 
@@ -110,22 +116,47 @@ using MPI-enabled LBFGS optimizer.
 
 ```julia
 using ADCME
-
+using ADOPT
 mpi_init()
 θ = placeholder(ones(1))
 fθ = mpi_bcast(θ)
 l = fθ^mpi_rank()
-L = (sum(mpi_sum(l))-2)^2
-g = gradients(L, fθ)
+L = (sum(mpi_sum(l)) - 2.0)^2
 sess = Session(); init(sess)
 
 f = x->run(sess, L, θ=>x)
-g!= (G, x)->(G[:] = run(sess, g, θ=>x))
-results = mpi_optimize(f, g!, run(sess, θ), ADOPT.LBFGS())
+g! = (G, x)->(G[:] = run(sess, g, θ=>x))
+
+options = Options()
 if mpi_rank()==0
-    @info results.minimizer, results.minimum 
+    options.show_trace = true 
 end
+mpi_optimize(f, g!, ones(1), ADOPT.LBFGS(), options)
+if mpi_rank()==0
+    @info  result.minimizer, result.minimum
+end
+
 mpi_finalize()
+```
+
+The expected output is 
+```
+Iter     Function value   Gradient norm
+     0     4.000000e+00     2.400000e+01
+ * time: 0.00012421607971191406
+     1     6.660012e-01     7.040518e+00
+ * time: 1.128843069076538
+     2     7.050686e-02     1.322515e+00
+ * time: 1.210536003112793
+     3     2.254820e-03     2.744374e-01
+ * time: 1.2910940647125244
+     4     4.319834e-07     3.908046e-03
+ * time: 1.3442070484161377
+     5     2.894433e-16     1.011994e-07
+ * time: 1.3975300788879395
+     6     0.000000e+00     0.000000e+00
+ * time: 1.4507441520690918
+[ Info: ([0.5436890126920764], 0.0)
 ```
 
 ## Configure MPI for ADCME
@@ -163,6 +194,7 @@ L = sum(b)
 g = gradients(L, a)
 sess = Session(); init(sess)
 v, G = run(sess, [b,g])
+mpi_finalize()
 ```
 
 ### Broadcast
@@ -180,6 +212,7 @@ g = gradients(L, a)
 
 sess = Session(); init(sess)
 v, G = run(sess, [b, G])
+mpi_finalize()
 ```
 
 ### Send and Receive
@@ -197,6 +230,7 @@ g = gradients(L, a)
 
 sess = Session(); init(sess)
 v, G = run(sess, [a,g])
+mpi_finalize()
 ```
 
 [`mpi_sendrecv`](@ref) is a lightweight wrapper for [`mpi_send`](@ref) followed by [`mpi_recv`](@ref). Equivalently, we have
@@ -212,5 +246,84 @@ if r==0
 end
 ```
 
-## Solving the Poisson Equation
+## Solving the Heat Equation
+
+In this section, we consider solving the Poisson equation 
+
+$$\frac{\partial u(x,y)}{\partial t} =\kappa(x,y) \Delta u(x,y) \quad (x,y) \in [0,1]^2$$
+
+We discretize the above PDE with an explicit finite difference scheme
+
+$$\frac{u_{ij}^{n+1} - u^n_{ij}}{\Delta t} = \kappa_{ij} \frac{u_{i+1,j}^n + u_{i,j+1}^n + u_{i,j-1}^n + u_{i-1,j}^n - 4u_{ij}^n}{h^2} \tag{1}$$
+
+To mitigate the computational and memory requirement, we use MPI APIs to implement a domain decomposition solver for the heat equation. The mesh is divided into $N\times M$ rectangle patches. We implemented two operation:
+
+1. `heat_op`, which updates $u_{ij}^{n+1}$ using Equation 1 for a specific patch, with state variables $u_{ij}^n$ in the current rectangle patch and on the boundary (from adjacent patches). 
+
+2. `data_exchange`, which is a data communication operator that sends the boundary data to adjacent patches and receives boundary data from other patches. 
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/dataexchange.png?raw=true)
+
+Then the time marching scheme can be implemented with the following code:
+
+```julia
+function heat_update_u(u, kv, f)
+    r = mpi_rank()
+    I = div(r, M)
+    J = r%M
+
+    up_ = constant(zeros(m))
+    down_ = constant(zeros(m))
+    left_ = constant(zeros(n))
+    right_ = constant(zeros(n))
+
+
+    up = constant(zeros(m))
+    down = constant(zeros(m))
+    left = constant(zeros(n))
+    right = constant(zeros(n))
+
+    (I>0) && (up = u[1,:])
+    (I<N-1) && (down = u[end,:])
+    (J>0) && (left = u[:,1])
+    (J<M-1) && (right = u[:,end])
+
+    left_, right_, up_, down_ = data_exchange(left, right, up, down)
+
+    u = heat(u, kv, up_, down_, left_, right_, f, h, Δt)
+end
+```
+
+An MPI-capable heat equation time integrator can be implemented with 
+
+```julia
+function heat_solver(u0, kv, f, NT=10)
+    f = constant(f)
+    function condition(i, u_arr)
+        i<=NT
+    end
+    function body(i, u_arr)
+        u = read(u_arr, i)
+        u_new = heat_update_u(u, kv, f[i])
+        # op = tf.print(r, i)
+        # u_new = bind(u_new, op)
+        i+1, write(u_arr, i+1, u_new)
+    end
+    i = constant(1, dtype =Int32)
+    u_arr = TensorArray(NT+1)
+    u_arr = write(u_arr, 1, u0)
+    _, u = while_loop(condition, body, [i, u_arr])
+    reshape(stack(u), (NT+1, n, m))
+end
+```
+
+For example, we can implement the heat solver with diffusivity coefficient $K_0$ and initial condition $u_0$ with the following code:
+
+```julia
+K = placeholder(K0)
+a_ = mpi_bcast(K)
+sol = heat_solver(u0, K_, F, NT)
+```
+
+
 
