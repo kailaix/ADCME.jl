@@ -7,9 +7,6 @@
 using std::string;
 using namespace tensorflow;
 #include "julia.h"
-#include "Python.h"
-// If you want to use the PyTorch feature, uncomment the following line
-// #include "la.h" 
 #include "DoItOp.h"
 
 #include <thread>
