@@ -7,11 +7,13 @@
 #endif 
 
 extern "C" EXPORTED void mpi_init(){
-  int argc;
-  char **argv;
+  int argc = 0;
+  //char **argv;
   int provided;
-  MPI_Init_thread( &argc , &argv , MPI_THREAD_FUNNELED , &provided);
-  // MPI_Init(&argc, &argv);
+  char**argv = {NULL};
+
+  MPI_Init_thread( &argc , &argv , MPI_THREAD_FUNNELED, &provided);
+  //MPI_Init(&argc, &argv);
 }
 
 extern "C" EXPORTED void mpi_finalize(){
