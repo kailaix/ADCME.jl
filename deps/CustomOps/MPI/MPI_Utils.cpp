@@ -46,23 +46,24 @@ extern "C" EXPORTED bool mpi_initialized(){
   return flag;
 }
 
-extern "C" EXPORTED void mpi_sync(long long* value, int n, int root){
+extern "C" EXPORTED void mpi_sync(long long* data, int count, int root){
+  MPI_Comm comm = MPI_COMM_WORLD;
   int world_rank;
-  MPI_Comm_rank(communicator, &world_rank);
+  MPI_Comm_rank(comm, &world_rank);
   int world_size;
-  MPI_Comm_size(communicator, &world_size);
+  MPI_Comm_size(comm, &world_size);
 
   if (world_rank == root) {
     // If we are the root process, send our data to everyone
     int i;
     for (i = 0; i < world_size; i++) {
       if (i != world_rank) {
-        MPI_Send(data, count, datatype, i, 888, communicator);
+        MPI_Send(data, count, MPI_LONG_LONG, i, 888, comm);
       }
     }
   } else {
     // If we are a receiver process, receive the data from the root
-    MPI_Recv(data, count, datatype, root, 888, communicator,
+    MPI_Recv(data, count, MPI_LONG_LONG, root, 888, comm,
              MPI_STATUS_IGNORE);
   }
 }
