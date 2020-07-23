@@ -110,7 +110,7 @@ function mpi_sum(a::Union{Array{Float64}, Float64, PyObject}, root::Int64 = 0)
         a = reshape(a, (1,))
         out = _mpi_sum(a, root)
         return squeeze(out)
-    elseif length(size(a))==0
+    elseif length(size(a))==1
         return _mpi_sum(a, root)
     elseif nothing in size(a)
         error("The shape of 1st input $(size(a)) contains nothing. mpi_sum is not able to determine
@@ -146,7 +146,7 @@ function mpi_bcast(a::Union{Array{Float64}, Float64, PyObject}, root::Int64 = 0)
         a = reshape(a, (1,))
         out = _mpi_bcast(a, root)
         return squeeze(out)
-    elseif length(size(a))==0
+    elseif length(size(a))==1
         return _mpi_bcast(a, root)
     elseif nothing in size(a)
         error("The shape of 1st input $(size(a)) contains nothing. mpi_bcast is not able to determine
@@ -181,7 +181,7 @@ function mpi_send(a::Union{Array{Float64}, Float64, PyObject}, dest::Int64,root:
         a = reshape(a, (1,))
         out = _mpi_send(a,dest, root)
         return squeeze(out)
-    elseif length(size(a))==0
+    elseif length(size(a))==1
         return _mpi_send(a, dest, root)
     elseif nothing in size(a)
         error("The shape of 1st input $(size(a)) contains nothing. mpi_send is not able to determine
@@ -226,7 +226,7 @@ function mpi_recv(a::Union{Array{Float64}, Float64, PyObject}, src::Int64, tag::
         a = reshape(a, (1,))
         out = _mpi_recv(a, src, tag)
         return squeeze(out)
-    elseif length(size(a))==0
+    elseif length(size(a))==1
         return _mpi_recv(a, src, tag)
     elseif nothing in size(a)
         error("The shape of 1st input $(size(a)) contains nothing. mpi_recv is not able to determine
