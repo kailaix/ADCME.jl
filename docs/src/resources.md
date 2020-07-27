@@ -36,11 +36,13 @@ MSML2020.pdf
 
 ### Inverse Modeling
 
+* [Data-Driven Inverse Modeling with Incomplete Observations](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
+
 ### 
 
 ### Others
 
-* [Data-Driven Inverse Modeling with Incomplete Observations](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
 
+* [SPD-NN Poster](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/NNFEM_poster.pdf)
 
 
