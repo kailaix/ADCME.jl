@@ -264,7 +264,7 @@ if Sys.iswindows()
 else
     adding("NINJA", joinpath(BINDIR, "ninja"))
 end
-adding("INCDIR", joinpath(PREFIXDIR, "include"))
+adding("INCDIR", abspath(joinpath(BINDIR, "..", "include")))
 
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"
