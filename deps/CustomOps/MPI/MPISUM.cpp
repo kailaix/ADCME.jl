@@ -3,7 +3,12 @@
 
 void MPISUM_forward(double *out, const double *a, int n, int root){
   MPI_Comm comm = MPI_COMM_WORLD;
-  MPI_Reduce( a , out , n , MPI_DOUBLE , MPI_SUM , root, comm);
+  MPI_Request request;
+  MPI_Status status; 
+  int rank;
+  MPI_Comm_rank( comm , &rank);
+  MPI_Ireduce( a , out , n , MPI_DOUBLE , MPI_SUM , root , comm , &request);
+  MPI_Wait( &request , &status);
 }
 
 void MPISUM_backward(
@@ -14,8 +19,10 @@ void MPISUM_backward(
   int rank;
   MPI_Comm_rank( comm , &rank);
   for(int i =0;i<n;i++) grad_a[i] = grad_out[i];
-  MPI_Bcast( grad_a , n , MPI_DOUBLE , root , comm );
-  // printf("[MPISUM] I am rank %d, I hold a gradient %f\n", rank, grad_a[0]);
+  MPI_Request request;
+  MPI_Status status; 
+  MPI_Ibcast(grad_a, n, MPI_DOUBLE, root, comm, &request);
+  MPI_Wait( &request , &status);
 
 }
 

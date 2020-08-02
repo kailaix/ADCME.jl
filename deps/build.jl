@@ -237,7 +237,7 @@ else
 end
 adding("TF_INC", TF_INC)
 adding("TF_ABI", TF_ABI)
-adding("EIGEN_INC", LIBDIR)
+adding("PREFIXDIR", LIBDIR)
 if Sys.isapple()
     adding("CC", joinpath(BINDIR, "clang"))
     adding("CXX", joinpath(BINDIR, "clang++"))
@@ -259,6 +259,12 @@ adding("PYTHON", PyCall.python)
 adding("TF_LIB_FILE", TF_LIB_FILE)
 adding("LIBCUDA", LIBCUDA)
 adding("CUDA_INC", CUDA_INC)
+if Sys.iswindows()
+    adding("NINJA", "")
+else
+    adding("NINJA", joinpath(BINDIR, "ninja"))
+end
+adding("INCDIR", joinpath(PREFIXDIR, "include"))
 
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"

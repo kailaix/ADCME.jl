@@ -103,6 +103,7 @@ $e"""
     include("ops.jl")
     include("layers.jl")
     include("extra.jl")
+    include("install.jl")
     include("sparse.jl")
     include("random.jl")
     include("gan.jl")

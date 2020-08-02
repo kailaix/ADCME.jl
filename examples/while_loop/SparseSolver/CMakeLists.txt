@@ -4,7 +4,7 @@ project(TFApp)
 ##  For PyTorch
 # execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch\"))|>print" OUTPUT_VARIABLE PREFIX)
 # execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../examples/custom_op/headers\"))|>print" OUTPUT_VARIABLE HEADERS)
-execute_process(COMMAND ${JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
+execute_process(COMMAND ${JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE PREFIXDIR)
 # execute_process(COMMAND ${JULIA} -e "abspath(joinpath(Base.find_package(\"ADCME\"), \"../../deps/Libraries/libtorch/include\"))|>print" OUTPUT_VARIABLE TORCH_INC)
 # set(CMAKE_PREFIX_PATH ${PREFIX})
 # find_package(Torch REQUIRED)
@@ -24,7 +24,7 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION
   set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
 
-include_directories(${TF_INC} ${EIGEN_INC}/../../include ${EIGEN_INC} ${TORCH_INC})
+include_directories(${TF_INC} ${PREFIXDIR}/../../include ${PREFIXDIR} ${TORCH_INC})
 link_directories(${TF_LIB})
 
 add_library(SparseSolver SHARED SparseSolver.cpp)

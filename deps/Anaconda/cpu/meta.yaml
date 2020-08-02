@@ -8,6 +8,7 @@ build:
     
 requirements:
   run:
+    - ninja                              [not win]
     - mkl-service                        [win]
     - make                               [not win]
     - unzip                              [not win]

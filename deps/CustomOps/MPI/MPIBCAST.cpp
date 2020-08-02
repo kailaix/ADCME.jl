@@ -7,7 +7,11 @@ void MPIBCAST_forward(double *out, const double *a, int m, int root){
   if (rank==root){
     memcpy(out, a, sizeof(double)*m);
   }
-  MPI_Bcast( out , m , MPI_DOUBLE , root , comm);
+  MPI_Request request;
+  MPI_Status status; 
+  MPI_Ibcast(out, m, MPI_DOUBLE, root, comm, &request);
+  MPI_Wait( &request , &status);
+  
 }
 
 void MPIBCAST_backward(
@@ -17,8 +21,10 @@ void MPIBCAST_backward(
   MPI_Comm comm = MPI_COMM_WORLD;
   int rank;
   MPI_Comm_rank( comm , &rank);
-  // printf("I am rank %d, I hold a gradient %f\n", rank, grad_out[0]);
-  MPI_Reduce( grad_out , grad_a , m , MPI_DOUBLE , MPI_SUM , root , comm);
+  MPI_Request request;
+  MPI_Status status; 
+  MPI_Ireduce( grad_out , grad_a , m , MPI_DOUBLE , MPI_SUM , root , comm , &request);
+  MPI_Wait( &request , &status);
 }
 
 REGISTER_OP("MPIBCAST")
