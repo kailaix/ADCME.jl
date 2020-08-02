@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(TF_CUSTOM_OP)
 set (CMAKE_CXX_STANDARD 11)
 
-execute_process(COMMAND ${JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE EIGEN_INC)
+execute_process(COMMAND ${JULIA} -e "using Conda; print(joinpath(Conda.LIBDIR, \"Libraries\"))" OUTPUT_VARIABLE PREFIXDIR)
 execute_process(COMMAND ${JULIA} -e "using Conda; print(joinpath(Conda.PYTHONDIR, \"python\"))" OUTPUT_VARIABLE PYTHON)
 execute_process(COMMAND ${PYTHON} -c "import tensorflow as tf; import sys; \
                                        TF_INC = tf.sysconfig.get_compile_flags()[0][2:];\
@@ -17,7 +17,7 @@ list(GET PY_OUT 2 TF_ABI)
 list(GET PY_OUT 3 TF_LIB_FILE)
 
 message("Python path=${PYTHON}")
-message("EIGEN_INC=${EIGEN_INC}")
+message("PREFIXDIR=${PREFIXDIR}")
 message("TF_INC=${TF_INC}")
 message("TF_LIB=${TF_LIB}")
 message("TF_ABI=${TF_ABI}")
@@ -34,7 +34,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
 else()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 endif()
-include_directories(${TF_INC} ${EIGEN_INC}/../../include ${EIGEN_INC} ${TORCH_INC})
+include_directories(${TF_INC} ${PREFIXDIR}/../../include ${PREFIXDIR} ${TORCH_INC})
 link_directories(${TF_LIB})
 
 add_library(TestResourceManager SHARED TestResourceManager.cpp)
