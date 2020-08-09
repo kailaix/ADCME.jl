@@ -1,6 +1,6 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
     mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized,
-    mpi_finalized, mpi_rank, mpi_size, mpi_sync!
+    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather
 
 """
     mpi_init()
@@ -253,5 +253,18 @@ function mpi_sendrecv(a::Union{Array{Float64}, Float64, PyObject}, dest::Int64, 
         a = mpi_recv(a, src, tag)
     end
     a 
+end
+
+"""
+    mpi_gather(u::Union{Array{Float64, 1}, PyObject})
+
+Gathers all the vectors from different processes to the root process. The function returns 
+a long vector which concatenates of local vectors in the order of process IDs. 
+"""
+function mpi_gather(u::Union{Array{Float64, 1}, PyObject})
+    mpigather_ = load_system_op("mpigather")
+    u = convert_to_tensor(Any[u], [Float64]); u = u[1]
+    out = mpigather_(u)
+    set_shape(out, (mpi_size()*length(u)))
 end
 

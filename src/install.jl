@@ -1,5 +1,5 @@
 
-export install_adept, install_blas, install_openmpi
+export install_adept, install_blas
 
 function install_blas(blas_binary)
     if Sys.iswindows()
@@ -111,31 +111,4 @@ function maybe_tar_gz(file)
     else
         run(`tar zxvf $file`)
     end
-end
-
-function install_openmpi()
-    if Sys.iswindows()
-        @warn "OpenMPI is not fully supported on Windows. Please install Microsoft MPI: https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi"
-    end
-    PWD = pwd()
-    cd(PREFIXDIR)
-    file = maybe_download("https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz")
-    maybe_tar_gz(file)
-    cd("openmpi-4.0.4")
-    if !isdir("build")
-        mkdir("build")
-    end
-    cd("build")
-    run(`../configure CC=$CC CXX=$CXX --enable-mpi-thread-multiple --prefix=$CONDA_ROOT --enable-mpirun-prefix-by-default --with-mpi-param-check=always`)
-    run(`$MAKE -j all`)
-    run(`$MAKE install`)
-    printstyled("""Please add MPI_INCLUDE_PATH and MPI_C_LIBRARIES to your environment path
-Linux:
-export MPI_INCLUDE_PATH=$INCDIR
-export MPI_C_LIBRARIES=$(joinpath(LIBDIR, "libmpi.so"))
-MacOS:
-export MPI_INCLUDE_PATH=$INCDIR
-export MPI_C_LIBRARIES=$(joinpath(LIBDIR, "libmpi.dylib"))
-""", color=:green)
-    cd(PWD)
 end

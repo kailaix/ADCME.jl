@@ -26,9 +26,9 @@ provides(SimpleBuild,
         `$cmake -L ..`
         MakeTargets(".", ["all"])
         MakeTargets(".", ["install"])
-        FileRule(joinpath(ADCME.LIBDIR, "libhypre.so"),
+        FileRule(joinpath(ADCME.LIBDIR, "libHYPRE.so"),
             @build_steps begin
-                `cp $(CONDA_ROOT)/lib64/libHYPRE.so $(ADCME.LIBDIR)/libhypre.so`
+                `ln -s $(CONDA_ROOT)/lib64/libHYPRE.so $(ADCME.LIBDIR)/libHYPRE.so`
             end
         )
     end

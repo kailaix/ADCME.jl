@@ -50,7 +50,10 @@ module ADCME
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, libadcme
         copy!(tf, pyimport("tensorflow"))
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-        copy!(tfp, pyimport("tensorflow_probability"))
+        try
+            copy!(tfp, pyimport("tensorflow_probability"))
+        catch
+        end
 
         DTYPE = Dict(Float64=>tf.float64,
             Float32=>tf.float32,

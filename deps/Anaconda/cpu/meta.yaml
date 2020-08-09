@@ -8,16 +8,20 @@ build:
     
 requirements:
   run:
+    - matplotlib
+    - pandas 1.1.0 
+    - bazel 0.26.1
+    - numpy 1.18.5
     - ninja                              [not win]
     - mkl-service                        [win]
     - make                               [not win]
     - unzip                              [not win]
-    - lapack                             [not win]
-    - hdf5                               [not linux]
+    - lapack 3.6.1                       [not win]
+    - hdf5   2.10.0                      [not linux]
     - nomkl                              [osx]
     - tensorflow 1.15.* *py37*
     - tensorflow-probability 0.8
-    - openblas                           [not win]
+    - openblas   0.3.10                  [not win]
     - blas                               [win]               
     - _libgcc_mutex 0.1 main             [linux]
     - gcc_linux-64 5.4.0 h98af8de_24     [linux]

@@ -55,21 +55,18 @@ VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALL
 
 @info " --------------- (1/6) Install Tensorflow Dependencies  --------------- "
 
-if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"]=="1" 
-    @info " --------------- Remove Existing ADCME Environment  --------------- "
-    if Sys.iswindows()
-        isdir(ENVDIR) && run(`cmd /c rd /s /q $ENVDIR`)
-    else
-        mv(ENVDIR, joinpath(ENVDIR,"../trash"), force=true)
-    end
+if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"] in [1, "1"] 
+    @info " --------------- Install ADCME by force  --------------- "
+    include("install_conda.jl")
 end
 
 if !("adcme" in Conda._installed_packages())
     try
         Conda.add("adcme", channel="kailaix")
     catch 
-        error("""Error encountered when trying `Conda.add("adcme", channel="kailaix")`.
->>> Set `ENV["FORCE_REINSTALL_ADCME"]=1` and rebuild ADCME.""")
+        @info " --------------- Retry with a fresh new environment  --------------- "
+        include("install_conda.jl")
+        Conda.add("adcme", channel="kailaix")
     end
 end
 
