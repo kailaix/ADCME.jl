@@ -1,5 +1,5 @@
 installer = ""
-if Sys.islinux()
+if Sys.islinux() 
     installer = "Miniconda3-py37_4.8.3-Linux-x86_64.sh"
 elseif Sys.isapple()
     installer = "Miniconda3-py37_4.8.3-MacOSX-x86_64.sh"

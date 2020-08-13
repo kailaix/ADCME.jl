@@ -67,6 +67,8 @@ function make()
             sln_file = sln_file[1]
         end 
         run(`cmd /c $CMAKE  --build . -j --target ALL_BUILD --config Release`)
+    elseif Sys.isapple()
+        run(setenv(`$MAKE -j20`, ENV_))
     else
         run(setenv(`$NINJA -j20`, ENV_))
     end
