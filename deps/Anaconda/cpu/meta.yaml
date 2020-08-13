@@ -10,14 +10,14 @@ requirements:
   run:
     - matplotlib
     - pandas 1.1.0 
-    - bazel 0.26.1
+    - bazel 0.26.11                      [not win]
     - numpy 1.18.5
     - ninja                              [not win]
     - mkl-service                        [win]
     - make                               [not win]
     - unzip                              [not win]
     - lapack 3.6.1                       [not win]
-    - hdf5   2.10.0                      [not linux]
+    - hdf5   2.10.0                      [osx]
     - nomkl                              [osx]
     - tensorflow 1.15.* *py37*
     - tensorflow-probability 0.8

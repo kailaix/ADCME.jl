@@ -39,8 +39,6 @@ if length(LIBCUDA)>0
     @warn("We detect once you have installed ADCME-GPU, we will keep using the corresponding CUDA and CUDA library path as default.")
 end 
 
-
-
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
