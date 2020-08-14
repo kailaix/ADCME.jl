@@ -41,16 +41,14 @@ else
 
     if Sys.iswindows()
         run(`$CONDA config --add channels conda-forge`)
-        run(`$CONDA install -y
-            ninja=1.10  tensorflow=1.15 tensorflow-probability=0.8 
-            blas=1.0`)
+        run(`$CONDA install --freeze-installed -y tensorflow=1.15 tensorflow-probability=0.8 tensorflow-estimator=1.15 blas=1.0`)
     elseif Sys.islinux()
         run(`$CONDA config --add channels conda-forge`)
-        run(`$CONDA install -y ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
-            gcc_linux-64=5.4.0 gxx_linux-64=5.4.0`)
+        run(`$CONDA install --freeze-installed -y ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
+            gcc_linux-64=5.4.0 gxx_linux-64=5.4.0 libgcc-ng=9.1.0 libstdcxx-ng=9.1.0`)
     else 
         run(`$CONDA config --add channels conda-forge`)
-        run(`$CONDA install -y ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
-            clang=4.0.1 clangxx=4.0.1`)
+        run(`$CONDA install --freeze-installed -y ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
+            clang=4.0.1 clangxx=4.0.1 libcxx=4.0.1 clang_osx-64=4.0.1 libcxxabi=4.0.1`)
     end
 end
