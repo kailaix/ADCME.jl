@@ -1,10 +1,10 @@
 installer = ""
 if Sys.islinux() 
-    installer = "Miniconda3-py37_4.8.2-Linux-x86_64.sh"
+    installer = "Miniconda3-py37_4.8.3-Linux-x86_64.sh"
 elseif Sys.isapple()
-    installer = "Miniconda3-py37_4.8.2-MacOSX-x86_64.sh"
+    installer = "Miniconda3-py37_4.8.3-MacOSX-x86_64.sh"
 else 
-    installer = "Miniconda3-py37_4.8.2-Windows-x86_64.exe"
+    installer = "Miniconda3-py37_4.8.3-Windows-x86_64.exe"
 end
 
 if isdir("$(homedir())/.julia/conda/")
