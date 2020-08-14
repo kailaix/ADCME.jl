@@ -68,7 +68,11 @@ function make()
         end 
         run(`cmd /c $CMAKE  --build . -j --target ALL_BUILD --config Release`)
     else
-        run(setenv(`$NINJA -j20`, ENV_))
+        if haskey(ENV, "TRAVIS_BRANCH")
+            run(setenv(`$NINJA -j1`, ENV_))
+        else
+            run(setenv(`$NINJA -j20`, ENV_))
+        end
     end
 end
 
