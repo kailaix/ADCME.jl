@@ -39,15 +39,18 @@ else
     end
     cd(PWD)
 
+    ENV_ = copy(ENV)
     if Sys.iswindows()
         platform = "windows"
+        ENV_["PATH"] = "$(homedir())/.julia/conda/3/Scripts;$(homedir())/.julia/conda/3/Library/bin;$(homedir())/.julia/conda/3/" * ENV_["PATH"]
     elseif Sys.islinux()
         platform = "linux"
     else
         platform = "osx"
     end
+    
+    
     run(`$CONDA config --add channels conda-forge`)
-    run(`$CONDA config --set ssl_verify no`)
-    run(`$CONDA env update -n base --file $platform.yml`)
+    run(setenv(`$CONDA env update -n base --file $platform.yml`, ENV_))
     
 end
