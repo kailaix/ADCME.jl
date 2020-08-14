@@ -50,7 +50,7 @@ else
             gcc_linux-64=5.4.0 gxx_linux-64=5.4.0`)
     else 
         run(`$CONDA config --add channels conda-forge`)
-        run(`$CONDA install -y bazel=0.26.1 ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
+        run(`$CONDA install -y ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
             clang=4.0.1 clangxx=4.0.1`)
     end
 end
