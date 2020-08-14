@@ -39,8 +39,6 @@ if length(LIBCUDA)>0
     @warn("We detect once you have installed ADCME-GPU, we will keep using the corresponding CUDA and CUDA library path as default.")
 end 
 
-
-
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using Conda
@@ -54,21 +52,8 @@ VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALL
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
 
 @info " --------------- (1/6) Install Tensorflow Dependencies  --------------- "
-
-if haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"] in [1, "1"] 
-    @info " --------------- Install ADCME by force  --------------- "
-    include("install_conda.jl")
-end
-
-if !("adcme" in Conda._installed_packages())
-    try
-        Conda.add("adcme", channel="kailaix")
-    catch 
-        @info " --------------- Retry with a fresh new environment  --------------- "
-        include("install_conda.jl")
-        Conda.add("adcme", channel="kailaix")
-    end
-end
+FORCE_REINSTALL_ADCME = haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"] in [1, "1"]
+include("install_adcme.jl")
 
 BINDIR = Sys.iswindows() ? abspath("$ENVDIR/Scripts") : abspath("$ENVDIR/bin")  
 

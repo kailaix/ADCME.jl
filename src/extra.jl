@@ -45,7 +45,7 @@ function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
         # @info "Do remember to add ADD_DEFINITIONS(-DNOMINMAX) to your CMakeLists.txt" maxlog=1
         run(setenv(`$CMAKE -G"Visual Studio 15" -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -A x64 $CMAKE_ARGS $DIR`, ENV_)) # very important, x64
     else
-        run(setenv(`$CMAKE -G Ninja -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
+        run(setenv(`$CMAKE -G Ninja -DCMAKE_MAKE_PROGRAM=$NINJA -DJULIA="$(joinpath(Sys.BINDIR, "julia"))" -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX $CMAKE_ARGS $DIR`, ENV_))
     end
 end
 
@@ -68,7 +68,11 @@ function make()
         end 
         run(`cmd /c $CMAKE  --build . -j --target ALL_BUILD --config Release`)
     else
-        run(setenv(`$NINJA -j20`, ENV_))
+        if haskey(ENV, "TRAVIS_BRANCH")
+            run(setenv(`$NINJA -j1`, ENV_))
+        else
+            run(setenv(`$NINJA -j20`, ENV_))
+        end
     end
 end
 
