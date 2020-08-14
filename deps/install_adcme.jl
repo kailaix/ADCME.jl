@@ -41,7 +41,7 @@ else
 
     if Sys.iswindows()
         run(`$CONDA config --add channels conda-forge`)
-        run(`$CONDA install -y matplotlib=3.3.0 pandas=1.1.0 bazel=0.26.1 
+        run(`$CONDA install -y matplotlib=3.3.0 pandas=1.1.0
             numpy=1.18.5 ninja=1.10  tensorflow=1.15 tensorflow-probability=0.8 
             blas=1.0`)
     elseif Sys.islinux()
@@ -53,7 +53,6 @@ else
         run(`$CONDA config --add channels conda-forge`)
         run(`$CONDA install -y matplotlib=3.3.0 pandas=1.1.0 bazel=0.26.1 
             numpy=1.18.5 ninja=1.10 make=4.3 lapack=3.6.1 unzip=6.0 tensorflow=1.15 tensorflow-probability=0.8 openblas=0.3.10 
-            cctools=895 clang=4.0.1 clang_osx-64=4.0.1 clangxx=4.0.1 clangxx_osx-64=4.0.1 compiler-rt=4.0.1 
-            ld64=274.2 libcxx=4.0.1 libcxxabi=4.0.1 llvm=4.0.1 llvm-lto-tapi=4.0.1`)
+            clang=4.0.1 clangxx=4.0.1`)
     end
 end
