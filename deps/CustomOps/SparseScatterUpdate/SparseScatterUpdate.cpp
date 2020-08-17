@@ -159,7 +159,7 @@ public:
 
     int on = ii1_shape.dim_size(0), un = ii2_shape.dim_size(0), m = *m1_tensor, n = *n1_tensor;
     int ni = ii_shape.dim_size(0), nj = jj_shape.dim_size(0);
-    IJV ijv;
+    IJV_SparseScatterUpdate ijv;
     forward(ii1_tensor, jj1_tensor, vv1_tensor, on, 
           ii2_tensor, jj2_tensor, vv2_tensor, un, m, n, ii_tensor, jj_tensor, ni, nj, ijv);
 

@@ -2,11 +2,11 @@
 #include <set>
 
 
-class IJV{
+class IJV_SparseScatterUpdate{
 public:
   std::vector<int64> ii,jj;
   std::vector<double> vv;
-  IJV() = default;
+  IJV_SparseScatterUpdate() = default;
   void insert(int64 i, int64 j, double v){
     ii.push_back(i);
     jj.push_back(j);
@@ -19,7 +19,7 @@ public:
 // however, ii, jj must not have repeated index
 void forward(const int64*oii, const int64*ojj, const double *ovv, int on,
             const int64*uii, const int64*ujj, const double *uvv, int un, int m, int n,
-            const int64*ii, const int64*jj, int ni, int nj, IJV& ijv){
+            const int64*ii, const int64*jj, int ni, int nj, IJV_SparseScatterUpdate& ijv){
     std::set<int64> iset, jset;
     for(int i=0;i<ni;i++) iset.insert(ii[i]);
     for(int i=0;i<nj;i++) jset.insert(jj[i]);

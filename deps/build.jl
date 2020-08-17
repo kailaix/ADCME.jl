@@ -202,7 +202,7 @@ else
     @info " --------------- (5/6) Skipped: Installing GPU Dependencies  --------------- "
 end
 
-@info """ -------------- (6/6) Write Dependency Files  --------------- """
+@info """ --------------- (6/6) Write Dependency Files  --------------- """
 
 s = ""
 t = []

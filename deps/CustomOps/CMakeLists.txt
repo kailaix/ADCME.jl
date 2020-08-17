@@ -72,7 +72,11 @@ ENDIF()
 
 
 add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp 
-  SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp SparseConcate/SparseConcate.cpp SparseFactorizationSolve/Factorization/SparseFactorization.cpp SparseFactorizationSolve/Solve/Solve.cpp SparseFactorizationSolve/lru_cache.cpp SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp SparseMatMul/SparseMatMul.cpp 
+  SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp 
+  SparseConcate/SparseConcate.cpp SparseFactorizationSolve/Factorization/SparseFactorization.cpp 
+  SparseFactorizationSolve/Solve/Solve.cpp SparseFactorizationSolve/lru_cache.cpp 
+  SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp 
+  SparseMatMul/SparseMatMul.cpp 
   SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp
   SparseToDense/SparseToDense.cpp ${MPI_OPS})
 
