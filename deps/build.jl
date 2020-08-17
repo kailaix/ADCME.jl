@@ -41,12 +41,11 @@ end
 
 push!(LOAD_PATH, "@stdlib")
 using Pkg
-using Conda
 using CMake
 using LibGit2
 
 
-ENVDIR = abspath(Conda.ROOTENV)
+ENVDIR = joinpath(homedir(), ".julia", "conda", "3")
 
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
@@ -153,12 +152,8 @@ Make sure `nvcc` is available.""")
     if ver[1:4]!="10.0"
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
-
-    if !("adcme-gpu" in Conda._installed_packages())
-        Conda.add("adcme-gpu", channel="kailaix")
-    end
     
-    pkg_dir = joinpath(Conda.ROOTENV, "pkgs/")
+    pkg_dir = joinpath(ROOTENV, "pkgs/")
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
