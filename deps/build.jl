@@ -117,6 +117,14 @@ if !isdir("$LIBDIR/eigen3")
     mv("$LIBDIR/eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
 end
 
+
+CONDA = ""
+if Sys.iswindows()
+    CONDA = "$(homedir())/.julia/conda/3/Scripts/conda.exe"
+else 
+    CONDA = "$(homedir())/.julia/conda/3/bin/conda"
+end
+
 # If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
 # ENV["GPU"] = 1
 if !haskey(ENV, "GPU")
@@ -152,6 +160,8 @@ Make sure `nvcc` is available.""")
     if ver[1:4]!="10.0"
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
+
+    run(`$CONDA install -y -c kailaix adcme-gpu`)
     
     pkg_dir = joinpath(ROOTENV, "pkgs/")
     files = readdir(pkg_dir)
