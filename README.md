@@ -50,14 +50,14 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 
 🎉 Support Matrix
 
-|         |  Julia 1.3 | Julia 1.4 | GPU | Custom Operator |
-|---------| ----- |-------|-----|-----------------|
-| Linux   |✔ | ✔  | ✔   | ✔               |
-| MacOS   |✔ |  ✕  | ✕   | ✔               |
-| Windows | ✔ | ✔  | ✔   | ✔               |
+|         |  Julia≧1.3 | GPU | Custom Operator |
+|---------| ----- |-----|-----------------|
+| Linux   |✔ |  ✔   | ✔               |
+| MacOS   |✔ |  ✕   | ✔               |
+| Windows | ✔ | ✔   | ✔               |
 
 
-2. Install `ADCME`
+1. Install `ADCME`
 ```
 using Pkg
 Pkg.add("ADCME")

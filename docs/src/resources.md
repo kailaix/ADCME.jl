@@ -10,39 +10,29 @@ Do you know...
 
 ## Slides
 
-* [Inverse modeling with ADCME](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/ADCME.pdf)
+* [Physics Based Machine Learning for Inverse Problems](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/ADCME.pdf)
 
-* [Automatic Differentiation](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/AD.pdf)
+* [Automatic Differentiation for Scientific Computing](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/AD.pdf)
 
-* [Inverse modeling](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Inverse.pdf)
+* [Deep Neural Networks and Inverse Modeling](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Inverse.pdf)
 
 * [Subsurface Inverse Modeling with Physics Based Machine Learning](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Subsurface.pdf)
 
 * [Calibrating Multivariate Lévy Processes with Neural Networks](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/MSML2020.pdf)
 
-MSML2020.pdf
 
-## Videos
+## Instruction on Installing ADCME 
 
-
-### Tutorial 
-
-1. [Installing ADCME (MacOS)](https://youtu.be/nz1g-f-1s9Y)
-2. [Installing ADCME (Linux)](https://youtu.be/fH0QrqgzUeo)
-3. [Getting Started with ADCME](https://youtu.be/ZQyczBYZjQw)
-
-### Automatic Differentiation
+1. [Installing ADCME (Windows)](https://www.youtube.com/watch?v=Vsc_dpyOD6k)
+2. [Installing ADCME (MacOS)](https://youtu.be/nz1g-f-1s9Y)
+3. [Installing ADCME (Linux)](https://youtu.be/fH0QrqgzUeo)
+4. [Getting Started with ADCME](https://youtu.be/ZQyczBYZjQw)
 
 
-### Inverse Modeling
 
-* [Data-Driven Inverse Modeling with Incomplete Observations](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
-
-### 
-
-### Others
+## Others
 
 
 * [SPD-NN Poster](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/NNFEM_poster.pdf)
-
+* [Data-Driven Inverse Modeling with Incomplete Observations](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
 
