@@ -269,8 +269,10 @@ function mpi_gather(u::Union{Array{Float64, 1}, PyObject})
 end
 
 function load_plugin_MPITensor()
-    scriptpath = joinpath(@__DIR__, "..", "deps", "install_hypre.jl")
-    include(scriptpath)
+    if !isfile("$(ADCME.LIBDIR)/libHYPRE.so")
+        scriptpath = joinpath(@__DIR__, "..", "deps", "install_hypre.jl")
+        include(scriptpath)
+    end
     if Sys.isapple()
         oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPITensor", "build", "libMPITensor.dylib")
     elseif Sys.iswindows()
@@ -313,7 +315,46 @@ function mpi_tensor_solve(oplibpath, rows,ncols,cols,values,rhs,ilower,iupper,so
     mpi_tensor_solve_(rows,ncols,cols,values,rhs,ilower,iupper,solver,printlevel)
 end
 
+@doc raw"""
+    mutable struct mpi_SparseTensor
+        rows::PyObject 
+        ncols::PyObject
+        cols::PyObject 
+        values::PyObject 
+        ilower::Int64 
+        iupper::Int64 
+        N::Int64
+        oplibpath::String
+    end
 
+A structure to hold local data of a sparse matrix. The global matrix is assumed to be a $M\times N$ square matrix. 
+The current processor owns rows from `ilower` to `iupper` (inclusive). The data is specified by 
+
+- `rows`: the row indices that the local matrix owns. Each index should appear only once. 
+- `ncols`: for each row index, the number of nonzero entries in this row 
+- `cols`: the column indices 
+- `values`: the nonzero entries corresponding to `cols`
+- `oplibpath`: the backend library (returned by `ADCME.load_plugin_MPITensor`)
+
+All data structure are 0-based. Note if we work with a linear solver, $M=N$.
+
+For example, consider the sparse matrix 
+
+```
+[  1 0 0 1  ]
+[  0 1 2 1  ]
+```
+
+We have 
+
+```julia
+rows = Int32[0;1]
+ncols = Int32[2;3]
+cols = Int32[0;3;5;6;7]
+values = [1.;1.;1.;2.;1.]
+iupper = ilower + 2
+```
+"""
 mutable struct mpi_SparseTensor
     rows::PyObject 
     ncols::PyObject
@@ -343,6 +384,13 @@ function mpi_SparseTensor(indices::PyObject, values::PyObject, ilower::Int64, iu
     mpi_SparseTensor(rows, ncols, cols, out, ilower, iupper, N, oplibpath)
 end 
 
+"""
+    mpi_SparseTensor(sp::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}}, 
+        ilower::Union{Int64, Missing} = missing,
+        iupper::Union{Int64, Missing} = missing)
+
+Constructing `mpi_SparseTensor` from a `SparseTensor` or a sparse Array.
+"""
 function mpi_SparseTensor(sp::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}}, 
     ilower::Union{Int64, Missing} = missing,
     iupper::Union{Int64, Missing} = missing)
