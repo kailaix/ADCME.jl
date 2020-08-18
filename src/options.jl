@@ -51,6 +51,12 @@ mutable struct OptionsTraining
     OptionsTraining() = new(placeholder(false), true)
 end
 
+mutable struct OptionsMPI
+    solver::String 
+    printlevel::Int64
+    OptionsMPI() = new("BoomerAMG", 2)
+end
+
 ######################################################
 """
     Options
@@ -61,7 +67,8 @@ mutable struct Options
     sparse::OptionsSparse
     newton_raphson::OptionsNewtonRaphson
     training::OptionsTraining
-    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining())
+    mpi::OptionsMPI
+    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining(), OptionsMPI())
 end
 
 

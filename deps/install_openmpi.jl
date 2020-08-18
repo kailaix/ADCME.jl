@@ -18,7 +18,7 @@ provides(SimpleBuild, (@build_steps begin
     CreateDirectory(cmakebuilddir)
     @build_steps begin
         ChangeDirectory(cmakebuilddir)
-        # `../configure CC=$cc CXX=$cxx --enable-mpi-thread-multiple --prefix=$CONDA_ROOT --enable-mpirun-prefix-by-default --with-mpi-param-check=always`
+        `../configure CC=$cc CXX=$cxx --enable-mpi-thread-multiple --prefix=$CONDA_ROOT --enable-mpirun-prefix-by-default --with-mpi-param-check=always`
         `make -j all`
         `make install`
     end

@@ -1,6 +1,6 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
     mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized,
-    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather
+    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor
 
 """
     mpi_init()
@@ -268,3 +268,103 @@ function mpi_gather(u::Union{Array{Float64, 1}, PyObject})
     set_shape(out, (mpi_size()*length(u)))
 end
 
+function load_plugin_MPITensor()
+    scriptpath = joinpath(@__DIR__, "..", "deps", "install_hypre.jl")
+    include(scriptpath)
+    if Sys.isapple()
+        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPITensor", "build", "libMPITensor.dylib")
+    elseif Sys.iswindows()
+        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPITensor", "build", "MPITensor.dll")
+    else 
+        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPITensor", "build", "libMPITensor.so")
+    end
+    if !isfile(oplibpath)
+        PWD = pwd()
+        cd(joinpath(@__DIR__, "..", "deps", "Plugin", "MPITensor"))
+        if !isdir("build")
+        mkdir("build")
+        end
+        cd("build")
+        cmake()
+        make()
+        cd(PWD)
+    end
+    oplibpath
+end
+
+
+function mpi_create_matrix(oplibpath, indices,values,ilower,iupper)
+    mpi_create_matrix_ = load_op_and_grad(oplibpath,"mpi_create_matrix", multiple=true)
+    indices,values,ilower,iupper = convert_to_tensor(Any[indices,values,ilower,iupper], [Int64,Float64,Int64,Int64])
+    mpi_create_matrix_(indices,values,ilower,iupper)
+end
+
+function mpi_get_matrix(oplibpath, rows,ncols,cols,ilower,iupper,values, N)
+    mpi_get_matrix_ = load_op_and_grad(oplibpath,"mpi_get_matrix", multiple=true)
+    rows,ncols,cols,ilower_,iupper_,values = convert_to_tensor(Any[rows,ncols,cols,ilower,iupper,values], [Int32,Int32,Int32,Int64,Int64,Float64])
+    indices, vals = mpi_get_matrix_(rows,ncols,cols,ilower_,iupper_,values)
+    SparseTensor(tf.SparseTensor(indices, vals, (iupper-ilower+1, N)), false)
+end
+
+
+function mpi_tensor_solve(oplibpath, rows,ncols,cols,values,rhs,ilower,iupper,solver = "BoomerAMG",printlevel = 2)
+    mpi_tensor_solve_ = load_op_and_grad(oplibpath,"mpi_tensor_solve")
+    rows,ncols,cols,values,rhs,ilower,iupper,printlevel = convert_to_tensor(Any[rows,ncols,cols,values,rhs,ilower,iupper,printlevel], [Int32,Int32,Int32,Float64,Float64,Int64,Int64,Int64])
+    mpi_tensor_solve_(rows,ncols,cols,values,rhs,ilower,iupper,solver,printlevel)
+end
+
+
+mutable struct mpi_SparseTensor
+    rows::PyObject 
+    ncols::PyObject
+    cols::PyObject 
+    values::PyObject 
+    ilower::Int64 
+    iupper::Int64 
+    N::Int64
+    oplibpath::String
+end
+
+function Base.:show(io::IO, sp::mpi_SparseTensor)
+    if isnothing(length(sp.values))
+        len = "?"
+    else 
+        len = length(sp.values)
+    end
+    print("mpi_SparseTensor($(sp.iupper - sp.ilower + 1), $(sp.N)), range = [$(sp.ilower), $(sp.iupper)], nnz = $(len)")
+end
+
+function mpi_SparseTensor(indices::PyObject, values::PyObject, ilower::Int64, iupper::Int64, N::Int64)
+    @assert ilower >=0
+    @assert ilower <= iupper 
+    @assert iupper <= N
+    oplibpath = load_plugin_MPITensor()
+    rows, ncols, cols, out = mpi_create_matrix(oplibpath, indices,values,ilower,iupper)
+    mpi_SparseTensor(rows, ncols, cols, out, ilower, iupper, N, oplibpath)
+end 
+
+function mpi_SparseTensor(sp::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}}, 
+    ilower::Union{Int64, Missing} = missing,
+    iupper::Union{Int64, Missing} = missing)
+    sp = constant(sp)
+    ilower = coalesce(ilower, 0)
+    iupper = coalesce(iupper, size(sp, 1)-1)
+    N = size(sp, 2)
+    mpi_SparseTensor(sp.o.indices, sp.o.values, ilower, iupper, N)
+end
+
+function LinearAlgebra.:\(sp::mpi_SparseTensor, b::Union{Array{Float64, 1}, PyObject})
+    b = constant(b)
+    out = mpi_tensor_solve(sp.oplibpath, sp.rows,sp.ncols,
+                sp.cols,sp.values,b,
+                sp.ilower,sp.iupper,options.mpi.solver, options.mpi.printlevel)
+    set_shape(out, (length(b),))
+end
+
+function SparseTensor(sp::mpi_SparseTensor)
+    mpi_get_matrix(sp.oplibpath, sp.rows,sp.ncols,sp.cols,sp.ilower,sp.iupper,sp.values, sp.N)
+end
+
+function Base.:run(sess::PyObject, sp::mpi_SparseTensor)
+    run(sess, SparseTensor(sp))
+end
