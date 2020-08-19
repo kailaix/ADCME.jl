@@ -235,7 +235,11 @@ else
     adding("CC", "")
     adding("CXX", "")
 end
-adding("CMAKE", cmake)
+if Sys.islinux()
+    adding("CMAKE", joinpath(BINDIR, "cmake"))
+else
+    adding("CMAKE", cmake)
+end
 if Sys.iswindows()
     adding("MAKE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild")
 else 

@@ -185,7 +185,7 @@ function load_op_and_grad(oplibpath::String, opname::String;
     #     return load_op_grad_dict[(oplibpath,opname)]
     # end
     if !isfile(oplibpath)
-        error("File $oplibpath does not exist. Instruction:\nRunning `compile(oplibpath)` to compile the library first.")
+        error("Library $oplibpath does not exist.")
     end
     
     opname_grad = opname*"_grad"

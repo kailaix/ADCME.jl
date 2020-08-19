@@ -309,7 +309,7 @@ function mpi_get_matrix(oplibpath, rows,ncols,cols,ilower,iupper,values, N)
 end
 
 
-function mpi_tensor_solve(oplibpath, rows,ncols,cols,values,rhs,ilower,iupper,solver = "BoomerAMG",printlevel = 2)
+function mpi_tensor_solve(oplibpath, rows,ncols,cols,values,rhs,ilower,iupper,solver,printlevel)
     mpi_tensor_solve_ = load_op_and_grad(oplibpath,"mpi_tensor_solve")
     rows,ncols,cols,values,rhs,ilower,iupper,printlevel = convert_to_tensor(Any[rows,ncols,cols,values,rhs,ilower,iupper,printlevel], [Int32,Int32,Int32,Float64,Float64,Int64,Int64,Int64])
     mpi_tensor_solve_(rows,ncols,cols,values,rhs,ilower,iupper,solver,printlevel)
@@ -383,6 +383,15 @@ function mpi_SparseTensor(indices::PyObject, values::PyObject, ilower::Int64, iu
     rows, ncols, cols, out = mpi_create_matrix(oplibpath, indices,values,ilower,iupper)
     mpi_SparseTensor(rows, ncols, cols, out, ilower, iupper, N, oplibpath)
 end 
+
+function mpi_SparseTensor(rows::Union{Array{Int32,1}, PyObject}, ncols::Union{Array{Int32,1}, PyObject}, cols::Union{Array{Int32,1}, PyObject},
+     vals::Union{Array{Float64,1}, PyObject}, ilower::Int64, iupper::Int64, N::Int64)
+    @assert ilower >=0
+    @assert ilower <= iupper 
+    @assert iupper <= N
+    oplibpath = load_plugin_MPITensor()
+    mpi_SparseTensor(rows, ncols, cols, vals, ilower, iupper, N, oplibpath)
+end
 
 """
     mpi_SparseTensor(sp::Union{SparseTensor, SparseMatrixCSC{Float64,Int64}}, 
