@@ -1,6 +1,5 @@
 using BinDeps
 using ADCME
-using CMake
 
 @BinDeps.setup 
 
@@ -22,8 +21,8 @@ provides(SimpleBuild,
     CreateDirectory(cmakedir)
     @build_steps begin
         ChangeDirectory(cmakedir)
-        `$cmake -DHYPRE_SHARED:BOOL=ON -DHYPRE_INSTALL_PREFIX:PATH=$CONDA_ROOT -DCMAKE_C_COMPILER:FILEPATH=$(cc) -DCMAKE_CXX_COMPILER:FILEPATH=$(cxx) ..`
-        `$cmake -L ..`
+        `$(ADCME.CMAKE) -DHYPRE_SHARED:BOOL=ON -DHYPRE_INSTALL_PREFIX:PATH=$CONDA_ROOT -DCMAKE_C_COMPILER:FILEPATH=$(cc) -DCMAKE_CXX_COMPILER:FILEPATH=$(cxx) ..`
+        `$(ADCME.CMAKE) -L ..`
         MakeTargets(".", ["all"])
         MakeTargets(".", ["install"])
         FileRule(joinpath(ADCME.LIBDIR, "libHYPRE.so"),
