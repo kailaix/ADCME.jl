@@ -29,7 +29,10 @@ else
         download("https://repo.anaconda.com/miniconda/"*installer, installer)
     end
     if isdir("3")
-        mv("3", "trash", force=true)
+        try
+            mv("3", "trash", force=true)
+        catch 
+        end
     end
     @info "Installing miniconda..."
     if Sys.iswindows()

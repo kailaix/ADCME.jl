@@ -102,7 +102,7 @@ if !isdir(LIBDIR)
 end
 
 if !isfile("$LIBDIR/eigen.zip")
-    download("http://bitbucket.org/eigen/eigen/get/3.3.7.zip","$LIBDIR/eigen.zip")
+    download("https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip","$LIBDIR/eigen.zip")
 end
 
 if !isdir("$LIBDIR/eigen3")    
