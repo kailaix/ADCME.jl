@@ -1,5 +1,5 @@
 
-export install_adept, install_blas
+export install_adept, install_blas, install_openmpi, install_hypre
 
 function install_blas(blas_binary)
     if Sys.iswindows()
@@ -92,23 +92,12 @@ message("LIBOPENBLAS=\${LIBOPENBLAS}")
 end
 
 
-
-CONDA_ROOT = abspath(joinpath(LIBDIR, ".."))
-function maybe_download(URL)
-    filename = splitdir(URL)[2]
-    file = joinpath(PREFIXDIR, filename)
-    if ispath(file)
-        return file
-    end
-    download(URL, file)
-    return file 
+function install_openmpi()
+    filepath = joinpath(@__DIR__, "..", "deps", "install_openmpi.jl")
+    include(filepath)
 end
 
-function maybe_tar_gz(file)
-    filename = file[1:end-7]
-    if isdir(filename)
-        return 
-    else
-        run(`tar zxvf $file`)
-    end
+function install_hypre()
+    filepath = joinpath(@__DIR__, "..", "deps", "install_hypre.jl")
+    include(filepath)
 end

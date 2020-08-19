@@ -13,13 +13,11 @@ using namespace tensorflow;
 #include "MPITensor.h"
 
 double MPITensor_Solve_Timer;
-int MPITensor_Solve_Count;
 extern "C" void MPITensor_Solve_Timer_SetZero(){
   MPITensor_Solve_Timer = 0.0;
-  MPITensor_Solve_Count = 0;
 }
 extern "C" double MPITensor_Solve_Timer_Get(){
-  return MPITensor_Solve_Timer/MPITensor_Solve_Count;
+  return MPITensor_Solve_Timer;
 }
 
 REGISTER_OP("MPICreateMatrix")
@@ -590,7 +588,6 @@ public:
         *printlevel_tensor, solver_tensor);
     t0 = MPI_Wtime() - t0;
     MPITensor_Solve_Timer += t0;
-    MPITensor_Solve_Count ++;
   }
 };
 REGISTER_KERNEL_BUILDER(Name("MPITensorSolve").Device(DEVICE_CPU), MPITensorSolveOp);
