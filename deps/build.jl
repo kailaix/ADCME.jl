@@ -114,7 +114,7 @@ if !isdir("$LIBDIR/eigen3")
         UNZIP =  joinpath(LIBDIR, "unzip.exe")
     end 
     run(`$UNZIP -qq $LIBDIR/eigen.zip -d $LIBDIR`)
-    mv("$LIBDIR/eigen-eigen-323c052e1731", "$LIBDIR/eigen3", force=true)
+    mv("$LIBDIR/eigen-3.3.7", "$LIBDIR/eigen3", force=true)
 end
 
 

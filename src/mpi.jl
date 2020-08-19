@@ -415,7 +415,7 @@ function LinearAlgebra.:\(sp::mpi_SparseTensor, b::Union{Array{Float64, 1}, PyOb
     out = mpi_tensor_solve(sp.oplibpath, sp.rows,sp.ncols,
                 sp.cols,sp.values,b,
                 sp.ilower,sp.iupper,options.mpi.solver, options.mpi.printlevel)
-    set_shape(out, (length(b),))
+    set_shape(out, (sp.iupper-sp.ilower+1,))
 end
 
 function SparseTensor(sp::mpi_SparseTensor)
