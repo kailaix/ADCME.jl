@@ -15,7 +15,8 @@ compile,
 list_physical_devices,
 MCMCSimple,
 simulate,
-diagnose
+diagnose,
+get_placement
 
 """
     xavier_init(size, dtype=Float64)
@@ -959,4 +960,23 @@ function _MCMCSimple_simulate(ms::MCMCSimple, x::Array{Float64})
     else 
         return x, ms.logf(x), 0
     end
+end
+
+
+
+"""
+    get_placement()
+
+Returns the operation placements.
+"""
+function get_placement()
+    sess = Session(config=tf.ConfigProto(log_device_placement=true))
+    originalSTDOUT = stdout
+    (outRead, outWrite) = redirect_stdout()
+    init(sess)
+    close(outWrite)
+    data = readavailable(outRead)
+    close(outRead)
+    redirect_stdout(originalSTDOUT)
+    lines = split(String(data), '\n')[1:end-1]
 end
