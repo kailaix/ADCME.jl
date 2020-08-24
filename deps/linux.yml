@@ -1,7 +1,7 @@
 name: base
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
   - _libgcc_mutex=0.1=main
   - _tflow_select=2.3.0=mkl
