@@ -116,7 +116,8 @@ load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
 Loads the operator `opname` from library `oplibpath`.
 """
-function load_op(oplibpath::String, opname::String; verbose::Bool = true)
+function load_op(oplibpath::String, opname::String; verbose::Union{Missing, Bool} = missing)
+    verbose = coalesce(verbose, options.customop.verbose)
     is_system_op = oplibpath == LIBADCME
     if Sys.iswindows()
         a, b = splitdir(oplibpath)
@@ -168,7 +169,8 @@ Loads the operator `opname` from library `oplibpath`; gradients are also importe
 If `multiple` is true, the operator is assumed to have multiple outputs. 
 """
 function load_op_and_grad(oplibpath::String, opname::String; 
-        multiple::Bool=false, verbose::Bool = true)
+        multiple::Bool=false, verbose::Union{Missing, Bool} = missing)
+    verbose = coalesce(verbose, options.customop.verbose)
     is_system_op = oplibpath == LIBADCME
     if Sys.iswindows()
         a, b = splitdir(oplibpath)

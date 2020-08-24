@@ -57,6 +57,10 @@ mutable struct OptionsMPI
     OptionsMPI() = new("BoomerAMG", 2)
 end
 
+mutable struct OptionsCustomOp
+    verbose::Bool
+    OptionsCustomOp() = new(true)
+end
 ######################################################
 """
     Options
@@ -68,7 +72,8 @@ mutable struct Options
     newton_raphson::OptionsNewtonRaphson
     training::OptionsTraining
     mpi::OptionsMPI
-    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining(), OptionsMPI())
+    customop::OptionsCustomOp
+    Options() = new(OptionsSparse(), OptionsNewtonRaphson(), OptionsTraining(), OptionsMPI(), OptionsCustomOp())
 end
 
 

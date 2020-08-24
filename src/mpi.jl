@@ -70,12 +70,18 @@ end
 
 """
     mpi_sync!(message::Array{Int64,1}, root::Int64 = 0)
+    mpi_sync!(message::Array{Float64,1}, root::Int64 = 0)
 
 Sync `message` across all MPI processors.
 """
 function mpi_sync!(message::Array{Int64,1}, root::Int64 = 0)
     mpi_check()
     @eval ccall((:mpi_sync, $LIBADCME), Cvoid, (Ptr{Clonglong}, Cint, Cint), $message, Int32(length($message)), Int32($root))
+end
+
+function mpi_sync!(message::Array{Float64,1}, root::Int64 = 0)
+    mpi_check()
+    @eval ccall((:mpi_sync_double, $LIBADCME), Cvoid, (Ptr{Cdouble}, Cint, Cint), $message, Int32(length($message)), Int32($root))
 end
 
 function mpi_check()
