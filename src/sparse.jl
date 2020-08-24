@@ -3,7 +3,7 @@ import Base: accumulate
 import LinearAlgebra: factorize
 export SparseTensor, SparseAssembler, 
 spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols,
-factorize, solve
+factorize, solve, trisolve
 
 """
     SparseTensor
@@ -679,3 +679,43 @@ end
 A convenient overload for [`solve`](@ref). See [`factorize`](@ref).
 """
 Base.:\(A_factorized::Tuple{SparseTensor, PyObject}, rhs::Union{Array{Float64,1}, PyObject}) = solve(A_factorized, rhs)
+
+
+@doc raw"""
+    trisolve(a::Union{PyObject, Array{Float64,1}},b::Union{PyObject, Array{Float64,1}},
+        c::Union{PyObject, Array{Float64,1}},d::Union{PyObject, Array{Float64,1}})
+
+Solves a tridiagonal matrix linear system. The equation is as follows
+
+$$a_i x_{i-1} + b_i x_i + c_i x_{i+1} = d_i$$
+
+In the matrix format, 
+
+```math 
+\begin{bmatrix}
+b_1 & c_1 & &0 \\ 
+a_2 & b_2 & c_2 & \\ 
+   & a_3 & b_3 & &\\ 
+   &     &     & & c_{n-1}\\ 
+0 & & &a_n & b_n  
+\end{bmatrix}\begin{bmatrix}
+x_1\\
+x_2\\
+\vdots \\
+x_n 
+\end{bmatrix} = \begin{bmatrix}
+d_1\\
+d_2\\
+\vdots\\
+d_n\end{bmatrix}
+```
+"""
+function trisolve(a::Union{PyObject, Array{Float64,1}},b::Union{PyObject, Array{Float64,1}},
+        c::Union{PyObject, Array{Float64,1}},d::Union{PyObject, Array{Float64,1}})
+    n = length(b)
+    @assert length(b) == length(d) == length(a)+1 == length(c)+1
+    tri_solve_ = load_system_op("tri_solve"; multiple=false)
+    a,b,c,d = convert_to_tensor(Any[a,b,c,d], [Float64,Float64,Float64,Float64])
+    out = tri_solve_(a,b,c,d)
+    set_shape(out, (n,))
+end

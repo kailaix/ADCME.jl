@@ -70,6 +70,8 @@ ELSE()
   message("MPI_INCLUDE_PATH and/or MPI_C_LIBRARIES is not set. MPI operators are not compiled.")
 ENDIF()
 
+find_package(OpenMP)
+
 
 add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp 
   SolveBatchedRhs/SolveBatchedRhs.cpp SparseAccumulate/Impl.cpp SparseAccumulate/SparseAccumulator.cpp 
@@ -78,12 +80,12 @@ add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp
   SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp 
   SparseMatMul/SparseMatMul.cpp 
   SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp
-  SparseToDense/SparseToDense.cpp ${MPI_OPS})
+  SparseToDense/SparseToDense.cpp TriSolve/TriSolve.cpp ${MPI_OPS})
 
 set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(adcme ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(adcme PROPERTIES 
-                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
-                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
-                ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)
+if(OpenMP_CXX_FOUND)
+    message("OPENMP Found")
+    target_link_libraries(adcme OpenMP::OpenMP_CXX)
+    target_compile_options(adcme PRIVATE -fopenmp)
+endif()
