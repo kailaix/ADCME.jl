@@ -1,4 +1,11 @@
-# check if ADCME is installed
+if Sys.islinux() && haskey(ENV, "GPU") 
+    try 
+        run(`which nvcc`)
+    catch 
+        error("You specified GPU=1 but NVCC is not available. Please include `nvcc` in your system path.")
+    end
+end
+
 CONDA = ""
 if Sys.iswindows()
     CONDA = "$(homedir())/.julia/conda/3/Scripts/conda.exe"
