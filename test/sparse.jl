@@ -348,3 +348,17 @@ end
     @test_nowarn b-a
     @test_nowarn b*a
 end
+
+@testset "trisolve" begin 
+    n = 10
+    a = rand(n-1)
+    b = rand(n).+10
+    c = rand(n-1)
+    d = rand(n)
+
+    A = diagm(0=>b, -1=>a, 1=>c)
+    x = A\d
+
+    u = trisolve(a,b,c,d)
+    @test norm(run(sess, u)-x)<1e-3
+end
