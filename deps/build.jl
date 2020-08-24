@@ -143,7 +143,7 @@ end
 if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
     @info " --------------- (5/6) Installing GPU Dependencies --------------- "
     
-    NVCC_COMPILER = readlines(pipeline(`which nvcc`))[1]
+    NVCC = readlines(pipeline(`which nvcc`))[1]
     s = join(readlines(pipeline(`nvcc --version`)), " ")
     ver = match(r"V(\d+\.\d)", s)[1]
     if ver[1:2]!="10"

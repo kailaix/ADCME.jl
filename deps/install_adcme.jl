@@ -45,7 +45,7 @@ else
     if Sys.iswindows()
         run(`cmd /c start /wait "" $installer /InstallationType=JustMe /RegisterPython=0 /S /D=$(homedir())\\.julia\\conda\\3`)
     else
-        run(`bash $installer -b -p 3`)
+        run(`bash $installer -f -b -p 3`)
     end
     cd(PWD)
 
@@ -63,8 +63,6 @@ else
         platform = "osx"
     end
     
-    
-    run(`$CONDA config --add channels conda-forge`)
     run(setenv(`$CONDA env update -n base --file $platform.yml`, ENV_))
     
 end
