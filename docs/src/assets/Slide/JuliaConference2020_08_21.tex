@@ -205,7 +205,7 @@
 
 \title[Physics Based Machine Learning]{ADCME.jl \\ {Physics Based Machine Learning for Inverse Problems}} % The short title appears at the bottom of every slide, the full title is only on the title page
 
-\author[ADCME]{Speaker: Kailai Xu\\\url{https://github.com/kailaix/ADCME.jl}} % Your name
+\author[ADCME]{Kailai Xu (许开来)\\\url{https://github.com/kailaix/ADCME.jl}} % Your name
 %\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
 %{
 %%ICME, Stanford University \\ % Your institution for the title page
@@ -241,7 +241,7 @@
 	This work (ADCME.jl and its ecosystem) is a result of collective efforts of many of my Ph.D. collaborators together with our faculty advisors. In \textcolor{red}{chronological order} they are:
 	
 	\begin{itemize}
-		\item Ph.D. collaborators: Daniel (Zhenyu) Huang, Dongzhuo Li, Weiqiang Zhu, and Tiffany (Li) Fan. 
+		\item Ph.D. collaborators: Daniel (Zhengyu) Huang, Dongzhuo Li, Weiqiang Zhu, and Tiffany (Li) Fan. 
 		\item Faculty supervisors: Eric Darve, Charbel Farhat, Jerry M. Harris, and Gregory C. Beroza. 
 		\item Many other fellow researchers from Julia language and scientific computing communities, who provide valuable inputs. 
 	\end{itemize}
@@ -318,6 +318,264 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
   \includegraphics[width=0.75\textwidth]{figures/physics_based_machine_learning.png}
 \end{figure}
 \end{frame}
+
+
+\section{Methodology}
+
+
+\begin{frame}
+	\frametitle{Gradient Based Optimization}
+	\begin{equation}\label{equ:opt}
+	\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+	\end{equation}
+	
+	\begin{itemize}
+		\item We can now apply a gradient-based optimization method to (\ref{equ:opt}).
+		\item The key is to \textcolor{red}{calculate the gradient descent direction} $g^k$
+		$$\theta^{k+1} \gets \theta^k - \alpha g^k$$ 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.6\textwidth]{figures/im.pdf}
+	\end{figure}
+	
+\end{frame}
+
+
+
+
+\begin{frame}
+	\frametitle{Automatic Differentiation}
+	The fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
+	\begin{itemize}
+		\item Deep learning (and many other machine learning techniques) and numerical schemes share the same computational model: composition of individual operators. 
+	\end{itemize}
+	
+	
+	\begin{minipage}[t]{0.4\textwidth}
+		
+		\
+		
+		
+		
+		\begin{center}
+			\textcolor{red}{Mathematical Fact}
+			
+			\
+			
+			Back-propagation 
+			
+			$||$
+			
+			Reverse-mode
+			
+			Automatic Differentiation 
+			
+			$||$
+			
+			Discrete 
+			
+			Adjoint-State Method
+		\end{center}
+	\end{minipage}~
+	\begin{minipage}[t]{0.6\textwidth}
+		\begin{figure}[hbt]
+			\includegraphics[width=0.8\textwidth]{figures/compare-NN-PDE.png}
+		\end{figure}
+	\end{minipage}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Computational Graph for Numerical Schemes}
+	
+	\begin{itemize}
+		\item To leverage automatic differentiation for inverse modeling, we need to express the numerical schemes in the ``AD language'': computational graph. 
+		\item No matter how complicated a numerical scheme is, it can be decomposed into a collection of operators that are interlinked via state variable dependencies. 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/cgnum}
+	\end{figure}
+	
+	
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{ADCME: Computational-Graph-based Numerical Simulation}
+	
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/custom}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Automatic Differentiation: Forward-mode and Reverse-mode}
+	\begin{figure}
+		\centering
+		\includegraphics[width=1.0\textwidth]{figures/forwardreverse}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{What is the Appropriate Model for Inverse Problems?}
+	
+	\begin{itemize}
+		\item In general, for a function $f:\RR^n \rightarrow \RR^m$
+		% Please add the following required packages to your document preamble:
+		% \usepackage{booktabs}
+		\begin{table}[]
+			\centering
+			\begin{tabular}{@{}llll@{}}
+				\toprule
+				Mode & Suitable for ... & Complexity\footnote{$\mathrm{OPS}$ is a metric for complexity in terms of fused-multiply adds.} & Application \\ \midrule
+				Forward & $m\gg n$ & $\leq 2.5\;\mathrm{OPS}(f(x))$ & UQ \\
+				Reverse & $m\ll n$ & $\leq 4\;\mathrm{OPS}(f(x))$ & Inverse Modeling \\ \bottomrule
+			\end{tabular}
+		\end{table}
+		
+		
+		\item There are also many other interesting topics
+		\begin{itemize}
+			\item Mixed mode AD: many-to-many mappings.
+			\item Computing sparse Jacobian matrices using AD by exploiting sparse structures. 
+		\end{itemize}
+	\end{itemize}
+	{\scriptsize Margossian CC. A review of automatic differentiation and its efficient implementation. Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery. 2019 Jul;9(4):e1305.} 
+\end{frame}
+
+
+
+\begin{frame}
+	
+	
+	\frametitle{Challenges in AD}
+	
+	
+	\begin{minipage}[t]{0.49\textwidth}
+		\vspace{-3cm}
+		\begin{itemize}
+			\item Most AD frameworks only deal with explicit operators, i.e., the functions that has analytical derivatives, or composition of these functions. 
+			\item Many scientific computing algorithms are \textcolor{red}{iterative} or \textcolor{red}{implicit} in nature $\Rightarrow$ Physics Constrained Learning (PCL)
+		\end{itemize}
+	\end{minipage}~
+	\begin{minipage}[t]{0.49\textwidth}
+		\includegraphics[width=1.0\textwidth]{figures/sim.png}
+	\end{minipage}
+	
+	% Please add the following required packages to your document preamble:
+	% \usepackage{booktabs}
+	\begin{table}[]
+		\begin{tabular}{@{}lll@{}}
+			\toprule
+			Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
+			Linear           & Explicit          & $y=Ax$       \\
+			Nonlinear        & Explicit          & $y = F(x)$   \\
+			\textbf{Linear}           & \textbf{Implicit}          & $Ay = x$     \\
+			\textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
+		\end{tabular}
+	\end{table}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Example}
+	
+	\begin{itemize}
+		\item Consider a function $f:x\rightarrow y$, which is implicitly defined by 
+		$$F(x,y) = x^3 - (y^3+y) = 0$$
+		If not using the cubic formula for finding the roots, the forward computation consists of iterative algorithms, such as the Newton's method and bisection method
+	\end{itemize}
+	
+	
+	
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\begin{algorithmic}
+			\State $y^0 \gets 0$
+			\State $k \gets 0$
+			\While {$|F(x, y^k)|>\epsilon$}
+			\State $\delta^k \gets F(x, y^k)/F'_y(x,y^k)$
+			\State $y^{k+1}\gets y^k - \delta^k$
+			\State $k \gets k+1$
+			\EndWhile
+			\State \textbf{Return} $y^k$
+		\end{algorithmic}
+	\end{minipage}~
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\begin{algorithmic}
+			\State $l \gets -M$, $r\gets M$, $m\gets 0$
+			\While {$|F(x, m)|>\epsilon$}
+			\State $c \gets \frac{a+b}{2}$
+			\If{$F(x, m)>0$}
+			\State $a\gets m$
+			\Else
+			\State $b\gets m$
+			\EndIf
+			\EndWhile
+			\State \textbf{Return} $c$
+		\end{algorithmic}
+		
+	\end{minipage}	
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Example}
+	
+	\begin{itemize}
+		%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel PeyrÃ¯Â¿Âœ, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
+		%		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
+		\item An efficient way to do automatic differentiation is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$; treat $y$ as a function of $x$ and take the derivative on both sides
+		$$3x^2 - 3y(x)^2y'(x)-y'(x)=0\Rightarrow y'(x) = \frac{3x^2}{3y^2+1}$$
+		The above gradient is \textcolor{red}{exact}.
+	\end{itemize}
+	\begin{center}
+		\textbf{Can we apply the same idea to inverse modeling?}
+	\end{center}
+	
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Physics Constrained Learning}
+	$${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
+	\begin{itemize}
+		\item Assume that we solve for $u_h=G_h(\theta)$ with $F_h(\theta, u_h)=0$, and then
+		$${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
+		\item Applying the \textcolor{red}{implicit function theorem}
+		{  \scriptsize
+			\begin{equation*}
+			\frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}
+			\textcolor{red}{\frac{\partial G_h(\theta)}{\partial \theta}}
+			= 0 \Rightarrow
+			\textcolor{red}{\frac{\partial G_h(\theta)}{\partial \theta}} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
+			\end{equation*}
+		}
+		\item Finally we have
+		{\scriptsize
+			\begin{equation*}
+			\boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }}
+				= \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}=
+				- \textcolor{red}{ \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} } \;
+				\textcolor{blue}{ \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} } \;
+				\textcolor{ForestGreen}{ \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )} }
+			}
+			\end{equation*}
+		}
+		
+	\end{itemize}
+	
+\end{frame}
+
+
 
 
 \begin{frame}
@@ -663,7 +921,7 @@ L_{2211}  & L_{2222} & &   & &\\
 
 
 \begin{frame}
-	\frametitle{PoreFlow.jl: FEM/FVM on Structure Grids}
+	\frametitle{PoreFlow.jl: FEM/FVM on Structured Grids}
 	\begin{itemize}
 		\item Steady-state Navier-Stokes equation
 		\begin{equation*}
@@ -713,220 +971,6 @@ L_{2211}  & L_{2222} & &   & &\\
   \includegraphics[width=1.0\textwidth]{figures/ns_result}~
 \end{figure}
   \end{frame}
-
-\section{Methodology}
-
-
-\begin{frame}
-	\frametitle{Gradient Based Optimization}
-	\begin{equation}\label{equ:opt}
-		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
-		\end{equation}
-	
-	\begin{itemize}
-		\item We can now apply a gradient-based optimization method to (\ref{equ:opt}).
-		\item The key is to \textcolor{red}{calculate the gradient descent direction} $g^k$
-		$$\theta^{k+1} \gets \theta^k - \alpha g^k$$ 
-	\end{itemize}
-	
-	\begin{figure}[hbt]
-	\centering
-  \includegraphics[width=0.6\textwidth]{figures/im.pdf}
-\end{figure}
-
-\end{frame}
-
-
-
-
-\begin{frame}
-	\frametitle{Automatic Differentiation}
-The fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
-	\begin{itemize}
-		\item Deep learning (and many other machine learning techniques) and numerical schemes share the same computational model: composition of individual operators. 
-	\end{itemize}
-	
-
-\begin{minipage}[t]{0.4\textwidth}
-
-\
-
-
-
-\begin{center}
-			\textcolor{red}{Mathematical Fact}
-
-			\
-			
-	Back-propagation 
-
-$||$
-
-Reverse-mode
-
- Automatic Differentiation 
-
-$||$
- 
- Discrete 
- 
- Adjoint-State Method
-\end{center}
-\end{minipage}~
-\begin{minipage}[t]{0.6\textwidth}
-\begin{figure}[hbt]
-  \includegraphics[width=0.8\textwidth]{figures/compare-NN-PDE.png}
-\end{figure}
-\end{minipage}
-
-\end{frame}
-
-\begin{frame}
-	\frametitle{Computational Graph for Numerical Schemes}
-	
-	\begin{itemize}
-		\item To leverage automatic differentiation for inverse modeling, we need to express the numerical schemes in the ``AD language'': computational graph. 
-		\item No matter how complicated a numerical scheme is, it can be decomposed into a collection of operators that are interlinked via state variable dependencies. 
-	\end{itemize}
-	
-	\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{figures/cgnum}
-\end{figure}
-
-	
-	
-\end{frame}
-
-
-\begin{frame}
-	\frametitle{ADCME: Computational-Graph-based Numerical Simulation}
-
-		\begin{figure}[hbt]
-  \includegraphics[width=1.0\textwidth]{figures/custom}
-\end{figure}
-\end{frame}
-
-
-\begin{frame}
-	\frametitle{Automatic Differentiation: Forward-mode and Reverse-mode}
-	\begin{figure}
-		\centering
-		\includegraphics[width=1.0\textwidth]{figures/forwardreverse}
-	\end{figure}
-\end{frame}
-
-
-\begin{frame}
-	\frametitle{What is the Appropriate Model for Inverse Problems?}
-	
-	\begin{itemize}
-		\item In general, for a function $f:\RR^n \rightarrow \RR^m$
-		 % Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
-\begin{table}[]
-\centering
-\begin{tabular}{@{}llll@{}}
-\toprule
-Mode & Suitable for ... & Complexity\footnote{$\mathrm{OPS}$ is a metric for complexity in terms of fused-multiply adds.} & Application \\ \midrule
-Forward & $m\gg n$ & $\leq 2.5\;\mathrm{OPS}(f(x))$ & UQ \\
-Reverse & $m\ll n$ & $\leq 4\;\mathrm{OPS}(f(x))$ & Inverse Modeling \\ \bottomrule
-\end{tabular}
-\end{table}
-	
-		
-		\item There are also many other interesting topics
-		\begin{itemize}
-		\item Mixed mode AD: many-to-many mappings.
-		\item Computing sparse Jacobian matrices using AD by exploiting sparse structures. 
-		\end{itemize}
-	\end{itemize}
-	{\scriptsize Margossian CC. A review of automatic differentiation and its efficient implementation. Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery. 2019 Jul;9(4):e1305.} 
-\end{frame}
-
-
-
-\begin{frame}
-
-
-	\frametitle{Challenges in AD}
-	
-	
-	\begin{minipage}[t]{0.49\textwidth}
-	\vspace{-3cm}
-\begin{itemize}
-	\item Most AD frameworks only deal with explicit operators, i.e., the functions that has analytical derivatives, or composition of these functions. 
-	\item Many scientific computing algorithms are \textcolor{red}{iterative} or \textcolor{red}{implicit} in nature $\Rightarrow$ Physics Constrained Learning (PCL)
-\end{itemize}
-\end{minipage}~
-\begin{minipage}[t]{0.49\textwidth}
-  \includegraphics[width=1.0\textwidth]{figures/sim.png}
-\end{minipage}
-
-	% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
-\begin{table}[]
-\begin{tabular}{@{}lll@{}}
-\toprule
-Linear/Nonlinear & Explicit/Implicit & Expression   \\ \midrule
-Linear           & Explicit          & $y=Ax$       \\
-Nonlinear        & Explicit          & $y = F(x)$   \\
-\textbf{Linear}           & \textbf{Implicit}          & $Ay = x$     \\
-\textbf{Nonlinear}        & \textbf{Implicit}          & $F(x,y) = 0$ \\ \bottomrule
-\end{tabular}
-\end{table}
-\end{frame}
-
-
-
-\begin{frame}
-	\frametitle{Example}
-
-	\begin{itemize}
-		%		\item A simple approach is to save part or all intermediate steps, and ``back-propagate''. This approach is expensive in both computation and memory\footnote{Ablin, Pierre, Gabriel PeyrÃ¯Â¿Âœ, and Thomas Moreau. ``Super-efficiency of automatic differentiation for functions defined as a minimum.''}.
-		%		\item Nevertheless, the simple approach works in some scenarios where accuracy or cost is not an issue, e.g., automatic differetiation of soft-DTW and Sinkhorn distance. 
-		\item An efficient way to do automatic differentiation is to apply the \textcolor{red}{implicit function theorem}. For our example, $F(x,y)=x^3-(y^3+y)=0$; treat $y$ as a function of $x$ and take the derivative on both sides
-		      $$3x^2 - 3y(x)^2y'(x)-y'(x)=0\Rightarrow y'(x) = \frac{3x^2}{3y^2+1}$$
-		      The above gradient is \textcolor{red}{exact}.
-	\end{itemize}
-	\begin{center}
-		\textbf{Can we apply the same idea to inverse modeling?}
-	\end{center}
-
-\end{frame}
-
-
-
-\begin{frame}
-	\frametitle{Physics Constrained Learning}
-	$${\small    \min_{\theta}\; L_h(u_h) \quad \mathrm{s.t.}\;\; F_h(\theta, u_h) = 0}$$
-	\begin{itemize}
-		\item Assume that we solve for $u_h=G_h(\theta)$ with $F_h(\theta, u_h)=0$, and then
-		      $${\small\tilde L_h(\theta)  = L_h(G_h(\theta))}$$
-		\item Applying the \textcolor{red}{implicit function theorem}
-		      {  \scriptsize
-			      \begin{equation*}
-				      \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }} + {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}}
-				      \textcolor{red}{\frac{\partial G_h(\theta)}{\partial \theta}}
-				      = 0 \Rightarrow
-				      \textcolor{red}{\frac{\partial G_h(\theta)}{\partial \theta}} =  -\Big( \frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}} \Big)^{ - 1} \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}
-			      \end{equation*}
-		      }
-		\item Finally we have
-			      {\scriptsize
-				      \begin{equation*}
-					      \boxed{\frac{{\partial {{\tilde L}_h}(\theta )}}{{\partial \theta }}
-					      = \frac{\partial {{ L}_h}(u_h )}{\partial u_h}\frac{\partial G_h(\theta)}{\partial \theta}=
-					      - \textcolor{red}{ \frac{{\partial {L_h}({u_h})}}{{\partial {u_h}}} } \;
-					      \textcolor{blue}{ \Big( {\frac{{\partial {F_h(\theta, u_h)}}}{{\partial {u_h}}}\Big|_{u_h = {G_h}(\theta )}} \Big)^{ - 1} } \;
-					      \textcolor{ForestGreen}{ \frac{{\partial {F_h(\theta, u_h)}}}{{\partial \theta }}\Big|_{u_h = {G_h}(\theta )} }
-					      }
-				      \end{equation*}
-			      }
-
-	\end{itemize}
-
-\end{frame}
-
 
 
 

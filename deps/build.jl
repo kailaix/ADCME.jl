@@ -140,19 +140,11 @@ if !haskey(ENV, "GPU")
     end
 end 
 
-if haskey(ENV, "GPU") && ENV["GPU"]=="1" && !(Sys.isapple())
+if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
     @info " --------------- (5/6) Installing GPU Dependencies --------------- "
-    try 
-        if Sys.iswindows()
-            run(`cmd /c nvcc --version`)
-        else
-            run(`which nvcc`)
-        end
-    catch
-        error("""You specified ENV["GPU"]=1 but nvcc cannot be found.
-Make sure `nvcc` is available.""")
-    end
-    s = Sys.iswindows() ? join(readlines(pipeline(`cmd /c nvcc --version`)), " ") : join(readlines(pipeline(`nvcc --version`)), " ")
+    
+    NVCC_COMPILER = readlines(pipeline(`which nvcc`))[1]
+    s = join(readlines(pipeline(`nvcc --version`)), " ")
     ver = match(r"V(\d+\.\d)", s)[1]
     if ver[1:2]!="10"
         error("TensorFlow backend of ADCME requires CUDA 10.0. But you have CUDA $ver")
@@ -160,10 +152,8 @@ Make sure `nvcc` is available.""")
     if ver[1:4]!="10.0"
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
-
-    run(`$CONDA install -y -c kailaix adcme-gpu`)
     
-    pkg_dir = joinpath(ROOTENV, "pkgs/")
+    pkg_dir = "$(homedir())/.julia/conda/3/pkgs/"
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
@@ -171,32 +161,27 @@ Make sure `nvcc` is available.""")
     elseif length(libpath)>1
         @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
     end
-
+    
     if length(libpath)>=1
         LIBCUDA = abspath(joinpath(pkg_dir, libpath[1], "lib"))
     end
     
-
-    libpath = filter(x->startswith(x, "cudnn") && isdir(joinpath(pkg_dir,x)), files)
-    if length(libpath)==0
+    
+    libcudatoolkit_path = filter(x->startswith(x, "cudnn") && isdir(joinpath(pkg_dir,x)), files)
+    if length(libcudatoolkit_path)==0
         @warn "cudnn* not found in $pkg_dir"
-    elseif length(libpath)>1
+    elseif length(libcudatoolkit_path)>1
         @warn "more than 1 cudatoolkit found, use $(libpath[1]) by default"
     end
-
-    if length(libpath)>=1
-        LIBCUDA = LIBCUDA* (Sys.iswindows() ? ";" : ":") *abspath(joinpath(pkg_dir, libpath[1], "lib"))
+    
+    if length(libcudatoolkit_path)>=1
+        LIBCUDA = LIBCUDA*":"*abspath(joinpath(pkg_dir, libcudatoolkit_path[1], "lib"))
         @info " --------------- CUDA include headers  --------------- "
-        cudnn = Sys.iswindows() ?
-            joinpath(pkg_dir, libpath[1], "Library/include", "cudnn.h") :
-            joinpath(pkg_dir, libpath[1], "include", "cudnn.h")
+        cudnn = joinpath(pkg_dir, libcudatoolkit_path[1], "include", "cudnn.h")
         cp(cudnn, joinpath(TF_INC, "cudnn.h"), force=true)
     end
-
-    NVCC = Sys.iswindows() ?
-            strip(String(read(`cmd /c where nvcc`))) :
-             readlines(pipeline(`which nvcc`))[1]
-    CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")
+    
+    CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")    
 
 else
     @info " --------------- (5/6) Skipped: Installing GPU Dependencies  --------------- "

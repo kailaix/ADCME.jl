@@ -47,7 +47,11 @@ else
         platform = "windows"
         ENV_["PATH"] = "$(homedir())/.julia/conda/3/Scripts;$(homedir())/.julia/conda/3/Library/bin;$(homedir())/.julia/conda/3/" * ENV_["PATH"]
     elseif Sys.islinux()
-        platform = "linux"
+        if haskey(ENV, "GPU") && ENV["GPU"] in [1, "1"]
+            platform = "linux-gpu"
+        else
+            platform = "linux"
+        end
     else
         platform = "osx"
     end
