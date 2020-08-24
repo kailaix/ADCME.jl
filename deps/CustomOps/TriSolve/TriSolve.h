@@ -7,7 +7,6 @@ void TriSolve_forward(double *X, const double *A,
     memcpy(D, d, sizeof(double)*n);
 #pragma omp parallel for
     for (int i=1;i<n;i++){
-        omp_set_num_threads(24);
         double w = A[i-1]/B[i-1];
         B[i] = B[i] - w * C[i-1];
         D[i] = D[i] - w * D[i-1];
@@ -26,9 +25,7 @@ void TriSolve_backward(
     const double *X, const double *A, 
     const double *B, const double *C, const double *D,
     int n){
-    TriSolve_forward(grad_D, C, B, A, grad_X, n);
-    // omp_set_dynamic(0);
-    
+    TriSolve_forward(grad_D, C, B, A, grad_X, n);    
 #pragma omp parallel for
     for(int i = 0; i<n; i++){
         if(i>0) grad_A[i-1] = -grad_D[i] * X[i-1];
