@@ -78,16 +78,10 @@ Install a gfortran compiler if it does not exist.
 """
 function require_gfortran()
     global GFORTRAN
-    if isnothing(GFORTRAN)
-        CONDA = joinpath(BINDIR, "conda")
-        require_file(joinpath(BINDIR, "gfortran")) do 
-            if Sys.islinux()
-                run(`$CONDA install --no-update-dependencies -y -c anaconda gfortran_linux-64`)
-            elseif Sys.isapple()
-                run(`$CONDA install --no-update-dependencies -y -c anaconda gfortran_osx-64`)
-            end
-        end
-        GFORTRAN = joinpath(BINDIR, "gfortran")
+    try 
+        GFORTRAN = split(String(read(`which gfortran`)))[1]
+    catch
+        error("gfortran is not in the path.")
     end
 end
 
@@ -97,4 +91,15 @@ function link_file(target::AbstractString, link::AbstractString)
     else
         symlink(target, link)
     end
+end
+
+function make_directory(directory::AbstractString)
+    require_file(directory) do 
+        mkdir(directory)
+    end
+end
+
+function change_directory(directory::AbstractString)
+    make_directory(directory)
+    cd(directory)
 end
