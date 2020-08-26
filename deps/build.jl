@@ -10,40 +10,32 @@ To this end, you need to create a dependency file
 $(joinpath(@__DIR__, "deps.jl"))
 and populate it with appropriate binary locations. 
 --------------------------------------------------------------------------------------------
-BINDIR = ""
-LIBDIR = ""
-TF_INC = ""
-TF_ABI = ""
-EIGEN_INC = ""
-CC = ""
-CXX = ""
-CMAKE = ""
-MAKE = ""
-GIT = ""
-PYTHON = ""
-TF_LIB_FILE = ""
-LIBCUDA = ""
-CUDA_INC = ""
-__STR__ = join([BINDIR,LIBDIR,TF_INC,TF_ABI,EIGEN_INC,CC,CXX,CMAKE,MAKE,GIT,PYTHON,TF_LIB_FILE,LIBCUDA,CUDA_INC], ";")
+BINDIR = 
+LIBDIR = 
+TF_INC = 
+TF_ABI = 
+PREFIXDIR = 
+CC = 
+CXX = 
+CMAKE = 
+MAKE = 
+GIT = 
+PYTHON = 
+TF_LIB_FILE = 
+LIBCUDA = 
+CUDA_INC = 
+NINJA = 
+INCDIR = 
+__STR__ = join([BINDIR,LIBDIR,TF_INC,TF_ABI,PREFIXDIR,CC,CXX,CMAKE,MAKE,GIT,PYTHON,TF_LIB_FILE,LIBCUDA,CUDA_INC,NINJA,INCDIR], ";")
 --------------------------------------------------------------------------------------------
 """)
 end
 
-LIBCUDA = ""
-CUDA_INC = ""
-if isfile(joinpath(@__DIR__, "deps.jl"))
-    include(joinpath(@__DIR__, "deps.jl"))
-end
-
-if length(LIBCUDA)>0 
-    @warn("We detect once you have installed ADCME-GPU, we will keep using the corresponding CUDA and CUDA library path as default.")
-end 
 
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using CMake
 using LibGit2
-
 
 ENVDIR = joinpath(homedir(), ".julia", "conda", "3")
 
@@ -244,6 +236,7 @@ adding("INCDIR", abspath(joinpath(BINDIR, "..", "include")))
 
 t = "join(["*join(t, ",")*"], \";\")"
 s *= "__STR__ = $t"
+
 open("deps.jl", "w") do io 
     write(io, s)
 end

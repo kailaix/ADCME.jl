@@ -6,6 +6,8 @@ if Sys.islinux() && haskey(ENV, "GPU")
     end
 end
 
+INSTALL_GPU = Sys.islinux() && haskey(ENV, "GPU") 
+
 CONDA = ""
 if Sys.iswindows()
     CONDA = "$(homedir())/.julia/conda/3/Scripts/conda.exe"
@@ -13,7 +15,10 @@ else
     CONDA = "$(homedir())/.julia/conda/3/bin/conda"
 end
 
-if (!FORCE_REINSTALL_ADCME) && isfile(CONDA) && occursin("4.8.4", read(`$CONDA --version`, String)) && occursin("tensorflow", read(`$CONDA list`, String))
+
+if (!FORCE_REINSTALL_ADCME) && isfile(CONDA) && occursin("4.8.4", read(`$CONDA --version`, String)) && 
+    (occursin("tensorflow-gpu", read(`$CONDA list`, String)) || 
+        (!INSTALL_GPU && occursin("tensorflow", read(`$CONDA list`, String))))
     @info "ADCME dependencies have already been installed"
 else
     installer = ""
