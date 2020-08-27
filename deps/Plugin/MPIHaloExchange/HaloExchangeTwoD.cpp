@@ -177,6 +177,7 @@ public:
 
     // TODO:
     int n0 = u_shape.dim_size(0);
+    grad_u->flat<double>().setZero();
     HaloExchnageTwoD_backward(
       grad_u_tensor, grad_uext_tensor,
       uext_tensor, u_tensor, *fill_value_tensor, *n_tensor, *m_tensor, n0);

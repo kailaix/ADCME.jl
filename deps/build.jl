@@ -132,6 +132,8 @@ if !haskey(ENV, "GPU")
     end
 end 
 
+LIBCUDA = ""
+CUDA_INC = ""
 if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
     @info " --------------- (5/6) Installing GPU Dependencies --------------- "
     
