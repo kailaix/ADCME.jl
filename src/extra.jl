@@ -584,16 +584,19 @@ except Exception:
 end
 
 """
-    debug()
+    debug(libfile::String = "")
 
 Loading custom operator shared library. If the loading fails, detailed error message is printed.
 """
-function debug()
+function debug(libfile::String = "")
+    if libfile==""
+        libfile = LIBADCME
+    end
 py"""
 import tensorflow as tf
 import traceback
 try:
-    tf.load_op_library($LIBADCME)
+    tf.load_op_library($libfile)
 except Exception:
     print(traceback.format_exc())
 """

@@ -1,4 +1,6 @@
+!MPITensor
+!MPIHaloExchange
 *
 !.gitignore
 !CMakeLists.txt
-!MPITensor
+*.png 

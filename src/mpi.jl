@@ -1,5 +1,5 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
-    mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized,
+    mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized, mpi_halo_exchange,
     mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor
 
 """
@@ -300,6 +300,34 @@ function load_plugin_MPITensor()
     oplibpath
 end
 
+function load_plugin_MPIHaloExchange()
+    if Sys.isapple()
+        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange", "build", "libHaloExchangeTwoD.dylib")
+    elseif Sys.iswindows()
+        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange", "build", "HaloExchangeTwoD.dll")
+    else 
+        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange", "build", "libHaloExchangeTwoD.so")
+    end
+    if !isfile(oplibpath)
+        PWD = pwd()
+        cd(joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange"))
+        if !isdir("build")
+        mkdir("build")
+        end
+        cd("build")
+        cmake()
+        make()
+        cd(PWD)
+    end
+    oplibpath
+end
+
+function mpi_halo_exchange_(oplibpath, u,fill_value,m,n)
+    halo_exchange_two_d_ = load_op_and_grad(oplibpath,"halo_exchange_two_d")
+    u,fill_value,m,n = convert_to_tensor(Any[u,fill_value,m,n], [Float64,Float64,Int64,Int64])
+    out = halo_exchange_two_d_(u,fill_value,m,n)
+    set_shape(out, (size(u,1)+2, size(u,2)+2))
+end
 
 function mpi_create_matrix(oplibpath, indices,values,ilower,iupper)
     mpi_create_matrix_ = load_op_and_grad(oplibpath,"mpi_create_matrix", multiple=true)
@@ -430,4 +458,16 @@ end
 
 function Base.:run(sess::PyObject, sp::mpi_SparseTensor)
     run(sess, SparseTensor(sp))
+end
+
+
+@doc raw"""
+    mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; fill_value::Float64 = 0.0)
+
+Perform Halo exchnage on `u` (a $k \times k$ matrix). The output has a shape $(k+2)\times (k+2)$
+"""
+function mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; fill_value::Float64 = 0.0)
+    @assert size(u,1)==size(u,2)
+    oplibpath = load_plugin_MPIHaloExchange()
+    mpi_halo_exchange_(oplibpath, u, fill_value, m, n)
 end
