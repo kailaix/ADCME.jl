@@ -21,6 +21,8 @@ Do you know...
 * [Calibrating Multivariate Lévy Processes with Neural Networks](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/MSML2020.pdf)
 
 
+* [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (JuliaCN 2020)](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/JuliaConference2020_08_21.pdf)
+
 ## Instruction on Installing ADCME 
 
 1. [Installing ADCME (Windows)](https://www.youtube.com/watch?v=Vsc_dpyOD6k)
@@ -30,9 +32,12 @@ Do you know...
 
 
 
-## Others
+## Posters
 
 
 * [SPD-NN Poster](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/NNFEM_poster.pdf)
+
+## Videos
+* [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (中文)](https://www.bilibili.com/video/BV1va4y177fe)
 * [Data-Driven Inverse Modeling with Incomplete Observations](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
 
