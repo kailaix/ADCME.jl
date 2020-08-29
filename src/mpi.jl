@@ -322,10 +322,11 @@ function load_plugin_MPIHaloExchange()
     oplibpath
 end
 
-function mpi_halo_exchange_(oplibpath, u,fill_value,m,n)
+function mpi_halo_exchange_(oplibpath, u,fill_value,m,n, tag, deps)
     halo_exchange_two_d_ = load_op_and_grad(oplibpath,"halo_exchange_two_d")
-    u,fill_value,m,n = convert_to_tensor(Any[u,fill_value,m,n], [Float64,Float64,Int64,Int64])
-    out = halo_exchange_two_d_(u,fill_value,m,n)
+    u,fill_value,m,n,tag = convert_to_tensor(Any[u,fill_value,m,n,tag], [Float64,Float64,Int64,Int64,Int64])
+    deps = coalesce(deps, u[1,1])
+    out = halo_exchange_two_d_(u,fill_value,m,n,tag, deps)
     set_shape(out, (size(u,1)+2, size(u,2)+2))
 end
 
@@ -466,8 +467,9 @@ end
 
 Perform Halo exchnage on `u` (a $k \times k$ matrix). The output has a shape $(k+2)\times (k+2)$
 """
-function mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; fill_value::Float64 = 0.0)
+function mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; deps::Union{Missing, PyObject} = missing,
+    fill_value::Float64 = 0.0, tag::Union{PyObject, Int64} = 0)
     @assert size(u,1)==size(u,2)
     oplibpath = load_plugin_MPIHaloExchange()
-    mpi_halo_exchange_(oplibpath, u, fill_value, m, n)
+    mpi_halo_exchange_(oplibpath, u, fill_value, m, n, tag, deps)
 end
