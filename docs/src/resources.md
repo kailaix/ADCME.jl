@@ -20,8 +20,9 @@ Do you know...
 
 * [Calibrating Multivariate Lévy Processes with Neural Networks](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/MSML2020.pdf)
 
-
 * [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (JuliaCN 2020)](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/JuliaConference2020_08_21.pdf)
+
+* [ADCME -- Machine Learning for Computational Engineering (Berkeley/Stanford CompFest)](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/CompFest2020.pdf)
 
 ## Instruction on Installing ADCME 
 
