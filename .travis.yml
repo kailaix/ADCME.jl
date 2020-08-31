@@ -14,6 +14,7 @@ notifications:
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install visualstudio2017community; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install visualstudio2017-workload-nativedesktop; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then powershell -Command "$env:Path += \";C:\Users\travis\.julia\adcme\Scripts;C:\Users\travis\.julia\adcme\Library/bin;C:\Users\travis\.julia\adcme\\""; fi
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
 cache:
