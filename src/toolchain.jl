@@ -19,8 +19,9 @@ BINDIR
 LIBDIR
 PREFIXDIR
 =#
-export http_file, http_archive, git_repository, require_file, 
-    link_file, make_directory, change_directory, require_library, get_library
+export http_file, uncompress, git_repository, require_file, 
+    link_file, make_directory, change_directory, require_library, get_library,
+    run_with_env
 
 GFORTRAN = nothing
 
@@ -37,24 +38,36 @@ function http_file(url::AbstractString, file::AbstractString)
     end
 end
 
-function http_archive(url::AbstractString, file::AbstractString)
-    file = abspath(file)
-    d, _ = splitdir(file)
-    _, e = splitext(url)
-    if !(e in [".zip", ".tar", ".tar.gz", "tar.bz2"])
-        error("The extension of the archive $e not understood")
+"""
+    uncompress(zipfile::AbstractString, file::AbstractString)
+
+Uncompress a zip file `zipfile` to `file` (a directory). Note this function does not check that the 
+uncompressed content has the name `file`. Users may use `mv uncompress_file file` to enforce the consistency.
+"""
+function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString}=missing)
+    zipfile = abspath(zipfile)
+    if ismissing(file)
+        d = "."
+    else
+        file = abspath(file)
+        d = splitdir(file)
     end
-    zipname = splitdir(url)[2]
-    zipname = joinpath(d, zipname)
-    require_file(file) do 
-        require_file(zipname) do 
-            download(url, zipname)
+    uncompress_ = ()->begin
+        if length(zipfile)>4 && zipfile[end-3:end]==".zip"
+            run(`unzip $zipfile -d $d`)
+        elseif length(zipfile)>4 && zipfile[end-3:end]==".tar"
+            run(`tar -xvf $zipfile -C $d`)
+        elseif length(zipfile)>7 && zipfile[end-6:end]==".tar.gz"
+            run(`tar -xvzf $zipfile -C $d`)
+        else 
+            error("ADCME doesn't know how to uncompress $zipfile")
         end
-        if e==".zip"
-            run(`unzip `)
-        elseif e==".tar"
-        elseif e==".tar.gz"
-        elseif e=="tar.bz2"
+    end
+    if ismissing(file)
+        uncompress_()
+    else 
+        require_file(file) do 
+            uncompress_()
         end
     end
 end
@@ -181,4 +194,23 @@ function require_library(func::Function, filename::AbstractString)
     if !(isfile(filename) && islink(filename))
         func()
     end
+end
+
+"""
+    run_with_env(cmd::Cmd, env::Union{Missing, Dict} = missing)
+
+Running the command with the default environment and an extra environment variables `env`
+"""
+function run_with_env(cmd::Cmd, env::Union{Missing, Dict} = missing)
+    ENV_ = copy(ENV)
+    LD_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
+    if haskey(ENV_, LD_PATH)
+        ENV_[LD_PATH] = ENV[LD_PATH]*":$LIBDIR"
+    else
+        ENV_[LD_PATH] = LIBDIR
+    end
+    if !ismissing(env)
+        ENV_ = merge(env, ENV_)
+    end
+    run(setenv(cmd, ENV_))
 end

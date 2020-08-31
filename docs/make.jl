@@ -14,7 +14,7 @@ pages = Any[
             "options.md", "smt.md", "mcmc.md", "mpi.md"],
     "Physics Informed Machine Learning" => ["fdtd.md"],
     "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md"],
-    "Developer Guide" => ["designpattern.md", "toolchain.md"],
+    "Developer Guide" => ["designpattern.md", "toolchain.md", "installmpi.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
             "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md", "apps_nnfem.md"],
     "api.md"

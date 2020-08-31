@@ -1,27 +1,17 @@
-using BinDeps
 using ADCME
 
-@BinDeps.setup 
-
-libmpi = library_dependency("libmpi")
-provides(Sources, 
-    URI("https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz"),
-    libmpi)
-libmpi.context.dir = ADCME.PREFIXDIR
-CONDA_ROOT = joinpath(ADCME.BINDIR, "..")
-cmakebuilddir = joinpath(srcdir(libmpi), "openmpi-4.0.4", "build")
-cc = ADCME.CC
-cxx = ADCME.CXX
-CONDA_ROOT = joinpath(ADCME.BINDIR, "..")
-provides(SimpleBuild, (@build_steps begin
-    GetSources(libmpi)
-    CreateDirectory(cmakebuilddir)
-    @build_steps begin
-        ChangeDirectory(cmakebuilddir)
-        `../configure CC=$cc CXX=$cxx --enable-mpi-thread-multiple --prefix=$CONDA_ROOT --enable-mpirun-prefix-by-default --with-mpi-param-check=always`
-        `make -j all`
-        `make install`
-    end
-end),
-libmpi, os=:Unix)
-BinDeps.execute(libmpi, BinDeps.SimpleBuild)
+CONDA_ROOT = abspath(joinpath(ADCME.LIBDIR, ".."))
+change_directory(ADCME.PREFIXDIR)
+http_file("https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz", "openmpi.tar.gz")
+uncompress("openmpi.tar.gz", "openmpi-4.0.4")
+change_directory(joinpath("openmpi-4.0.4", "build"))
+require_file("Makefile") do
+    run_with_env(`../configure CC=$(ADCME.CC) CXX=$(ADCME.CXX) --enable-mpi-thread-multiple --prefix=$(CONDA_ROOT) 
+                    --enable-mpirun-prefix-by-default --enable-mpi-fortran=no --with-mpi-param-check=always`, Dict("LDFLAGS"=>"-L"*ADCME.LIBDIR))
+end
+require_file() do 
+    run_with_env(`make -j all`)
+end
+require_library(joinpath(ADCME.LIBDIR, "libmpi")) do 
+    run_with_env(`make install`)
+end

@@ -32,6 +32,8 @@ ADCME provides a set of commonly used MPI operators. See [MPI Operators](https:/
 
 The above two set of operators support automatic differentiation. They were implemented with MPI adjoint methods, which have existed in academia for decades. 
 
+[This section](./installmpi.md) shows how to configure MPI for distributed computing in ADCME. 
+
 ## Limitations 
 
 Despite that the provided `mpi_*` operations meet most needs,  some sophisticated data communication operations may not be easily expressed using these APIs. For example, when solving the Poisson's equation on a uniform grid, we may decompose the domain into many squares, and two adjacent squares exchange data in each iteration. A sequence of `mpi_send`, `mpi_recv` will likely cause deadlock. 
@@ -158,26 +160,6 @@ Iter     Function value   Gradient norm
  * time: 1.4507441520690918
 [ Info: ([0.5436890126920764], 0.0)
 ```
-
-## Configure MPI for ADCME
-
-
-
-To enable MPI in ADCME, you need to build ADCME with the following environment variable:
-
-* `MPI_C_LIBRARIES`: the MPI shared library, for example, `C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib`.
-* `MPI_INCLUDE_PATH`: the directory where `mpi.h` is located, for example, `C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Include`.
-
-You can either add these environment variables to the system path (e.g., via `export` in Linux), or in Julia
-
-```julia-repl
-julia> ENV["MPI_C_LIBRARIES"] = ...
-julia> ENV["MPI_INCLUDE_PATH"] = ...
-pkg> build ADCME
-```
-
-Once ADCME is successfully built with these environment variables, you will be able to use ADCME MPI features. The following are examples of using ADCME APIs
-
 
 
 ### Reduce Sum
