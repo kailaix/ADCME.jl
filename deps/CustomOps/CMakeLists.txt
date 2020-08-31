@@ -89,3 +89,8 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(adcme OpenMP::OpenMP_CXX)
     target_compile_options(adcme PRIVATE -fopenmp)
 endif()
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set_target_properties(adcme PROPERTIES 
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
+                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
+                ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)

@@ -23,11 +23,11 @@ module ADCME
     #------------------------------------------------------------------------------------------
     # Global Storage 
     DTYPE = Dict{Type, PyObject}()
-    LIBADCME = joinpath("$(@__DIR__)", "../deps/CustomOps/build", "libadcme.$dlext")
+    LIBADCME = abspath(joinpath("$(@__DIR__)", "../deps/CustomOps/build", "libadcme.$dlext"))
     if Sys.iswindows()
-        LIBADCME = joinpath("$(@__DIR__)", "../deps/CustomOps/build", "adcme.dll")
+        LIBADCME = abspath(joinpath("$(@__DIR__)", "../deps/CustomOps/build", "adcme.dll"))
     end
-    LIBPLUGIN = joinpath("$(@__DIR__)", "../deps/Plugin")
+    LIBPLUGIN = abspath(joinpath("$(@__DIR__)", "../deps/Plugin"))
     
     if isfile("$(@__DIR__)/../deps/deps.jl")
         include("$(@__DIR__)/../deps/deps.jl")

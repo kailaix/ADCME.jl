@@ -348,6 +348,7 @@ function Base.:precompile(force::Bool=false)
     ADCME.cmake()
     ADCME.make()
     cd(PWD)
+    global libadcme = tf.load_op_library(LIBADCME)
 end
 
 """
