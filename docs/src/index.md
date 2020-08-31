@@ -26,13 +26,27 @@ Read more about methodology, philosophy, and insights about ADCME: [slides](http
 
 ## Installation
 
-If you use Windows OS, you need to install Microsoft Visual Studio 15 (2017) first. If you do not have the compiler yet, you can download and install the compiler from [here](https://visualstudio.microsoft.com/vs/older-downloads/). A free community version is available. 
-
 It is recommended to install ADCME via
 ```julia
 using Pkg
 Pkg.add("ADCME")
 ```
+
+!!! Guide for Windows
+    If you use Windows OS, you need to install Microsoft Visual Studio 15 (2017) first. If you do not have the compiler yet, you can download and install the compiler from [here](https://visualstudio.microsoft.com/vs/older-downloads/). A free community version is available. 
+
+    For Windows, you also need to set an extra set of PATH environment variables. Please add the following environment variables to your system path (my user name is `kaila`; please replace it with yours!)
+
+    ```
+    C:\Users\kaila\.julia\adcme\Scripts
+    C:\Users\kaila\.julia\adcme\Library\bin
+    C:\Users\kaila\.julia\adcme\
+    ```
+
+    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/windows_install.png?raw=true)
+
+
+
 
 !!! info 
     In some cases, you may want to install the package and configure the environment manually. 
@@ -44,17 +58,10 @@ Pkg.add("ADCME")
     julia> Pkg.depots()
     ```
 
-    The files will contain all the dependencies. 
+    The files will contain all the dependencies.
 
-    Step 2: Build `ADCME` mannually. 
-
-    ```julia
-    using Pkg;
-    ENV["manual"] = 1
-    Pkg.build("ADCME")
-    ```
-
-    However, in this case you are responsible for configuring the environment by modifying the file
+    Step 2: 
+    Copy the `deps.jl` file from your built ADCME and modify it for your local repository. 
 
     ```julia
     using ADCME; 
