@@ -319,7 +319,13 @@ function Base.:precompile(force::Bool=false)
     PWD = pwd()
     cd("$(@__DIR__)/../deps/CustomOps")
     if force
-        rm("build", force=true, recursive=true)
+        try
+            rm("build", force=true, recursive=true)
+        catch 
+            error("""Failed to remove build directory. Follow the following steps and try again:
+1. Quit ALL julia processes that use ADCME;
+2. Remove $(joinpath(pwd(), "build")) manually.""")
+        end
     end
     if isdir("$(@__DIR__)/../deps/CustomOps/build")
         files = readdir("$(@__DIR__)/../deps/CustomOps/build")
@@ -370,7 +376,7 @@ end
 
 
 """
-    customop()
+    customop(;with_mpi::Bool = false)
 
 Create a new custom operator. Typically users call `customop` twice: the first call generates a `customop.txt`, 
 users edit the content in the file; the second all generates C++ source code, CMakeLists.txt, and gradtest.jl from `customop.txt`.
@@ -381,8 +387,11 @@ julia> customop() # create an editable `customop.txt` file
 [ Info: Edit custom_op.txt for custom operators
 julia> customop() # after editing `customop.txt`, call it again to generate interface files.
 ```
+
+# Options 
+- `with_mpi`: Whether the custom operator uses MPI
 """
-function customop()
+function customop(;with_mpi::Bool = false)
     # install_custom_op_dependency()
     py_dir = "$(@__DIR__)/../deps/CustomOpsTemplate"
     if !("custom_op.txt" in readdir("."))
@@ -391,7 +400,7 @@ function customop()
         return
     else
         python = PyCall.python
-        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir false`)
+        run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $with_mpi`)
     end
     nothing
 end

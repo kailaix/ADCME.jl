@@ -365,10 +365,10 @@ end
 A structure to hold local data of a sparse matrix. The global matrix is assumed to be a $M\times N$ square matrix. 
 The current processor owns rows from `ilower` to `iupper` (inclusive). The data is specified by 
 
-- `rows`: the row indices that the local matrix owns. Each index should appear only once. 
-- `ncols`: for each row index, the number of nonzero entries in this row 
-- `cols`: the column indices 
-- `values`: the nonzero entries corresponding to `cols`
+- `rows`: an array indicating the rows that contain nonzero values. Note `rows ≥ ilower`. 
+- `ncols`: an array indicating the number of nonzero values for each row in `rows`. 
+- `cols`: the column indices for nonzero values. Its length is $\sum_{i=1}^{\mathrm{ncols}} \mathrm{ncols}_i$
+- `vals`: the nonzero values corresponding to each column index in `cols`
 - `oplibpath`: the backend library (returned by `ADCME.load_plugin_MPITensor`)
 
 All data structure are 0-based. Note if we work with a linear solver, $M=N$.
@@ -477,9 +477,14 @@ end
 
 
 @doc raw"""
-    mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; fill_value::Float64 = 0.0)
+    mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; deps::Union{Missing, PyObject} = missing,
+    fill_value::Float64 = 0.0, tag::Union{PyObject, Int64} = 0)
 
 Perform Halo exchnage on `u` (a $k \times k$ matrix). The output has a shape $(k+2)\times (k+2)$
+
+- `fill_value`: value used for the boundaries
+- `tag`: message tag
+- `deps`: a **scalar** tensor; it can be used to serialize the MPI calls 
 """
 function mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; deps::Union{Missing, PyObject} = missing,
     fill_value::Float64 = 0.0, tag::Union{PyObject, Int64} = 0)

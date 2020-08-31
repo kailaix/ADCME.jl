@@ -92,6 +92,14 @@ Modules = [ADCME]
 Pages   = ["mpi.jl"]
 ```
 
+## Toolchain
+
+```@autodocs
+Modules = [ADCME]
+Pages   = ["toolchain.jl"]
+```
+
+
 ## Misc
 
 ```@autodocs

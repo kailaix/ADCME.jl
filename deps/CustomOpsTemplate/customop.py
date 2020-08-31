@@ -376,7 +376,7 @@ def has_string():
 
 filename = sys.argv[1]
 dirname = sys.argv[2]
-simple_or_not = sys.argv[3]
+with_mpi = sys.argv[3]
 
 if filename not in os.listdir("."):
     print("ERROR: file {} does not exist".format(filename))
@@ -440,8 +440,7 @@ d = {"OperatorName": op,
     "GetAttr": GetAttr(),
     "STRING": STRING_INC}
 
-simple_or_not = "" if simple_or_not=="false" else "_simple"
-with open("{}/custom_op{}.template".format(dirname, simple_or_not),"r") as fp:
+with open("{}/custom_op.template".format(dirname),"r") as fp:
     cnt = fp.read()
     s = Template(cnt)
     cpp = s.substitute(d)
@@ -449,10 +448,13 @@ with open("{}/custom_op{}.template".format(dirname, simple_or_not),"r") as fp:
 with open("{}.cpp".format(op), "w") as fp:
     fp.write(cpp)
 
-d = {"OperatorName": op,
-    "USEGPU": "" if simple_or_not=="false" else "#"}
-with open("{}/CMakeLists.template".format(dirname),"r") as fp:
-    print("CMakeLists.txt generated from template: {}/CMakeLists.template".format(dirname))
+d = {"OperatorName": op}
+if with_mpi:
+    CMakeLists = "CMakeLists-MPI.template"
+else:
+    CMakeLists = "CMakeLists.template"
+with open("{}/{}".format(dirname, CMakeLists),"r") as fp:
+    print("CMakeLists.txt generated from template: {}/{}".format(dirname, CMakeLists))
     cnt = fp.read()
     s = Template(cnt)
     cmake = s.substitute(d)

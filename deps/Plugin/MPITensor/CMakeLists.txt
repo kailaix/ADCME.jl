@@ -55,7 +55,7 @@ if(MSVC)
   add_definitions(-DNOMINMAX)
 endif()
 
-include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
+include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC} ${PREFIXDIR}/deps/src/hypre-2.19.0/src/hypre/include/)
 link_directories(${LIBDIR})
 
 
