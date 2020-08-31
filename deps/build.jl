@@ -37,7 +37,7 @@ using Pkg
 using CMake
 using LibGit2
 
-ENVDIR = joinpath(homedir(), ".julia", "conda", "3")
+ENVDIR = joinpath(homedir(), ".julia", "adcme")
 
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
@@ -112,9 +112,9 @@ end
 
 CONDA = ""
 if Sys.iswindows()
-    CONDA = "$(homedir())/.julia/conda/3/Scripts/conda.exe"
+    CONDA = "$(homedir())/.julia/adcme/Scripts/conda.exe"
 else 
-    CONDA = "$(homedir())/.julia/conda/3/bin/conda"
+    CONDA = "$(homedir())/.julia/adcme/bin/conda"
 end
 
 # If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
@@ -147,7 +147,7 @@ if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
     
-    pkg_dir = "$(homedir())/.julia/conda/3/pkgs/"
+    pkg_dir = "$(homedir())/.julia/adcme/pkgs/"
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0

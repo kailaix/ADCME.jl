@@ -10,9 +10,9 @@ INSTALL_GPU = Sys.islinux() && haskey(ENV, "GPU")
 
 CONDA = ""
 if Sys.iswindows()
-    CONDA = "$(homedir())/.julia/conda/3/Scripts/conda.exe"
+    CONDA = "$(homedir())/.julia/adcme/Scripts/conda.exe"
 else 
-    CONDA = "$(homedir())/.julia/conda/3/bin/conda"
+    CONDA = "$(homedir())/.julia/adcme/bin/conda"
 end
 
 
@@ -30,34 +30,29 @@ else
         installer = "Miniconda3-py37_4.8.3-Windows-x86_64.exe"
     end
 
-    if !isdir("$(homedir())/.julia/conda/")
-        mkpath("$(homedir())/.julia/conda/")
-    end 
-
     PWD = pwd()
-    cd("$(homedir())/.julia/conda/")
+    cd("$(homedir())/.julia/")
     if !(installer in readdir("."))
         @info "Downloading miniconda installer..."
         download("https://repo.anaconda.com/miniconda/"*installer, installer)
     end
-    if isdir("3")
-        try
-            mv("3", "trash", force=true)
-        catch 
-        end
+
+    if isdir("adcme")
+        error("""$(joinpath(pwd(), "adcme")) already exists. Please quit Julia, remove the path and try again.""")
     end
+
     @info "Installing miniconda..."
     if Sys.iswindows()
-        run(`cmd /c start /wait "" $installer /InstallationType=JustMe /RegisterPython=0 /S /D=$(homedir())\\.julia\\conda\\3`)
+        run(`cmd /c start /wait "" $installer /InstallationType=JustMe /RegisterPython=0 /S /D=$(homedir())\\.julia\\adcme`)
     else
-        run(`bash $installer -f -b -p 3`)
+        run(`bash $installer -f -b -p adcme`)
     end
     cd(PWD)
 
     ENV_ = copy(ENV)
     if Sys.iswindows()
         platform = "windows"
-        ENV_["PATH"] = "$(homedir())/.julia/conda/3/Scripts;$(homedir())/.julia/conda/3/Library/bin;$(homedir())/.julia/conda/3/" * ENV_["PATH"]
+        ENV_["PATH"] = "$(homedir())/.julia/adcme/Scripts;$(homedir())/.julia/adcme/Library/bin;$(homedir())/.julia/adcme/" * ENV_["PATH"]
     elseif Sys.islinux()
         if haskey(ENV, "GPU") && ENV["GPU"] in [1, "1"]
             platform = "linux-gpu"

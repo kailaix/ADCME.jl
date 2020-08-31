@@ -18,4 +18,4 @@ after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
 cache:
   directories:
-    - /home/travis/.julia/conda/3
+    - /home/travis/.julia/adcme
