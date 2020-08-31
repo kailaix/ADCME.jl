@@ -6,8 +6,17 @@ This section will cover how to configure ADCME for MPI functionalities.
 
 The first step is to configure your MPI backend. There are many choices depending on your operation system. For example, Windows have Microsoft MPI. There are also OpenMPI and Intel MPI available on most Linux distributions. If you want to use your own MPI backend, you need to locate the MPI libraries, header files, and executable (e.g., `mpirun`). You need to build ADCME with the following environment variable:
 
-* `MPI_C_LIBRARIES`: the MPI shared library, for example, on Windows, it may be `C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib`. On Unix systems, it may be `/opt/ohpc/pub/compiler/intel-18/compilers_and_libraries_2018.2.199/linux/mpi/intel64/lib/release/libmpi.so`. Note that you must include **the shared library** in the variable. 
-* `MPI_INCLUDE_PATH`: the directory where `mpi.h` is located, for example, `C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Include`. Or in a Unix system, we have `/opt/ohpc/pub/compiler/intel-18/compilers_and_libraries_2018.2.199/linux/mpi/intel64/include/`. 
+* `MPI_C_LIBRARIES`: the MPI shared library, for example, on Windows, it may be 
+```
+C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Lib\\x64\\msmpi.lib
+```
+On Unix systems, it may be 
+```/opt/ohpc/pub/compiler/intel-18/compilers_and_libraries_2018.2.199/linux/mpi/intel64/lib/release/libmpi.so```
+Note that you must include **the shared library** in the variable. 
+* `MPI_INCLUDE_PATH`: the directory where `mpi.h` is located, for example,
+```C:\\Program Files (x86)\\Microsoft SDKs\\MPI\\Include```
+Or in a Unix system, we have 
+```/opt/ohpc/pub/compiler/intel-18/compilers_and_libraries_2018.2.199/linux/mpi/intel64/include/```
 
 The simplest way is to add these variables in the environment variables. For example, in Linux, we can add the following lines in the `~/.bashrc` file. 
 ```bash
