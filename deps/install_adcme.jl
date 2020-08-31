@@ -37,7 +37,7 @@ else
         download("https://repo.anaconda.com/miniconda/"*installer, installer)
     end
 
-    if isdir("adcme")
+    if isdir("adcme") && FORCE_REINSTALL_ADCME
         error("""$(joinpath(pwd(), "adcme")) already exists. Please quit Julia, remove the path and try again.""")
     end
 
