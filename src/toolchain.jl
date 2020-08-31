@@ -146,11 +146,14 @@ function make_directory(directory::AbstractString)
 end
 
 """
-    change_directory(directory::AbstractString)
+    change_directory(directory::Union{Missing, AbstractString})
 
 Change the current working directory to `directory`. If `directory` does not exist, it is made. 
+
+If `directory` is missing, the default is `ADCME.PREFIXDIR`.
 """
-function change_directory(directory::AbstractString)
+function change_directory(directory::Union{Missing, AbstractString}=missing)
+    directory = coalesce(directory, ADCME.PREFIXDIR)
     if !isdir(directory)
         make_directory(directory)
     end

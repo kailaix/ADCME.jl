@@ -1,40 +1,16 @@
-using BinDeps
 using ADCME
 
-@BinDeps.setup 
-
-const libhypre = library_dependency("libhypre", aliases=["libhypre", "libHYPRE"])
-const hyprever = "2.19.0"
-provides(Sources, 
-    URI("https://github.com/kailaix/hypre/archive/v$hyprever.tar.gz"),
-    libhypre, unpacked_dir = "hypre-$hyprever")
-
-libhypre.context.dir = ADCME.PREFIXDIR
-cmakedir = joinpath(srcdir(libhypre), "hypre-$hyprever", "src", "build")
-cc = ADCME.CC
-cxx = ADCME.CXX
-CONDA_ROOT = joinpath(ADCME.BINDIR, "..")
-
-provides(SimpleBuild,
-(@build_steps begin
-    GetSources(libhypre)
-    CreateDirectory(cmakedir)
-    @build_steps begin
-        ChangeDirectory(cmakedir)
-        `$(ADCME.CMAKE) -DHYPRE_SHARED:BOOL=ON -DHYPRE_INSTALL_PREFIX:PATH=$CONDA_ROOT -DCMAKE_C_COMPILER:FILEPATH=$(cc) -DCMAKE_CXX_COMPILER:FILEPATH=$(cxx) ..`
-        `$(ADCME.CMAKE) -L ..`
-        MakeTargets(".", ["all"])
-        MakeTargets(".", ["install"])
-        FileRule(joinpath(ADCME.LIBDIR, "libHYPRE.so"),
-            @build_steps begin
-                `ln -s $(CONDA_ROOT)/lib64/libHYPRE.so $(ADCME.LIBDIR)/libHYPRE.so`
-            end
-        )
-    end
-end),
-libhypre,
-os = :Linux)
-
-BinDeps.execute(libhypre, BinDeps.SimpleBuild)
-
-
+PWD = pwd()
+change_directory()
+http_file("https://github.com/kailaix/hypre/archive/v2.19.0.tar.gz", "v2.19.0.tar.gz")
+uncompress("v2.19.0.tar.gz", "hypre-2.19.0")
+change_directory("hypre-2.19.0/src/build")
+ROOT = joinpath(ADCME.BINDIR, "..")
+run_with_env(`$(ADCME.CMAKE) -G Ninja -DCMAKE_MAKE_PROGRAM=$(ADCME.NINJA)
+            -DHYPRE_SHARED:BOOL=ON -DHYPRE_INSTALL_PREFIX:PATH=$ROOT 
+            -DCMAKE_C_COMPILER:FILEPATH=$(ADCME.CC) -DCMAKE_CXX_COMPILER:FILEPATH=$(ADCME.CXX) ..`)
+run_with_env(`$(ADCME.CMAKE) -G Ninja -DCMAKE_MAKE_PROGRAM=$(ADCME.NINJA) -L ..`)
+ADCME.make()
+run_with_env(`$(ADCME.NINJA) install`)
+run_with_env(`mv $(ROOT)/lib64/libHYPRE.so $(ADCME.LIBDIR)/libHYPRE.so`)
+cd(PWD)
