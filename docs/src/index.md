@@ -32,7 +32,7 @@ using Pkg
 Pkg.add("ADCME")
 ```
 
-!!! Guide for Windows
+!!! info
     If you use Windows OS, you need to install Microsoft Visual Studio 15 (2017) first. If you do not have the compiler yet, you can download and install the compiler from [here](https://visualstudio.microsoft.com/vs/older-downloads/). A free community version is available. 
 
     For Windows, you also need to set an extra set of PATH environment variables. Please add the following environment variables to your system path (my user name is `kaila`; please replace it with yours!)
