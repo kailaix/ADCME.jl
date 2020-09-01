@@ -376,7 +376,7 @@ def has_string():
 
 filename = sys.argv[1]
 dirname = sys.argv[2]
-with_mpi = sys.argv[3]
+with_mpi = True if sys.argv[3]=="1" else 0
 
 if filename not in os.listdir("."):
     print("ERROR: file {} does not exist".format(filename))
