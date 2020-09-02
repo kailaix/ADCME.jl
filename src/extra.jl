@@ -190,7 +190,6 @@ function load_op_and_grad(oplibpath::String, opname::String;
     if !isfile(oplibpath)
         error("Library $oplibpath does not exist.")
     end
-    
     opname_grad = opname*"_grad"
     fn_name = opname*randstring(8)
     try

@@ -8,7 +8,8 @@ writepb,
 psave,
 pload,
 activate,
-logging
+logging,
+print_tensor
 
 
 pybytes(b) = PyObject(
@@ -228,3 +229,16 @@ function logging(file::Union{Nothing,String}, o::PyObject...; summarize::Int64 =
 end
 
 logging(o::PyObject...; summarize::Int64 = 3, sep::String = " ") = logging(nothing, summarize=summarize, sep=sep)
+
+"""
+    print_tensor(in::Union{PyObject, Array{Float64,2}})
+
+Prints the tensor `in`
+"""
+function print_tensor(in::Union{PyObject, Array{Float64,2}}, info::AbstractString = "")
+    @assert length(size(in))==2
+    print_tensor_ = load_system_op("print_tensor")
+    in = convert_to_tensor(Any[in], [Float64]); in = in[1]
+    info = tf.constant(info)
+    out = print_tensor_(in, info)
+end

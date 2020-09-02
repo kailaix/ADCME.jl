@@ -80,7 +80,8 @@ add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp
   SparseIndexing/SparseIndexing.cpp SparseLeastSquare/SparseLeastSquare.cpp 
   SparseMatMul/SparseMatMul.cpp 
   SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp
-  SparseToDense/SparseToDense.cpp TriSolve/TriSolve.cpp ${MPI_OPS})
+  SparseToDense/SparseToDense.cpp TriSolve/TriSolve.cpp PrintTensor/PrintTensor.cpp
+  ${MPI_OPS})
 
 set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(adcme ${TF_LIB_FILE} ${MPI_C_LIBRARIES})

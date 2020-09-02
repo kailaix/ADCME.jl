@@ -82,9 +82,9 @@ void HaloExchangeNeighborTwo_forward(double *U_OUT, const double *U_IN, double f
     for(int i = 0; i< 2*n; i++) jlower.get()[i] = fill_value;
   }
 
-  if (n_request>0)
+  if (n_request>0){
     MPI_Waitall( n_request , request , status);
-
+  }
   for(int k = 0; k<n; k++){
     U_OUT(0, k+2) = iupper.get()[k];
     U_OUT(1, k+2) = iupper.get()[n + k];
@@ -181,8 +181,10 @@ void HaloExchangeNeighborTwo_backward(
     for(int i = 0; i< 2*n; i++) jlower.get()[i] = 0.0;
   }
 
-  if (n_request>0)
+  if (n_request>0){
     MPI_Waitall( n_request , request , status);
+  }
+    
 
   for(int k = 0; k<n; k++){
     GRAD_U_IN(0, k) += iupper.get()[k];
