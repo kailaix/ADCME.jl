@@ -1,5 +1,5 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
-    mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized, mpi_halo_exchange,
+    mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized, mpi_halo_exchange, mpi_halo_exchange2,
     mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor
 
 """
@@ -300,17 +300,24 @@ function load_plugin_MPITensor()
     oplibpath
 end
 
-function load_plugin_MPIHaloExchange()
+function load_plugin_MPIHaloExchange(reach::Int64=1)
+    if reach==1
+        DIR = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange")
+        LIB = "HaloExchangeTwoD"
+    elseif reach==2
+        DIR = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange2")
+        LIB = "HaloExchangeNeighborTwo"
+    end
     if Sys.isapple()
-        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange", "build", "libHaloExchangeTwoD.dylib")
+        oplibpath = joinpath(DIR, "build", "lib$LIB.dylib")
     elseif Sys.iswindows()
-        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange", "build", "HaloExchangeTwoD.dll")
+        oplibpath = joinpath(DIR, "build", "$LIB.dll")
     else 
-        oplibpath = joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange", "build", "libHaloExchangeTwoD.so")
+        oplibpath = joinpath(DIR, "build", "lib$LIB.so")
     end
     if !isfile(oplibpath)
         PWD = pwd()
-        cd(joinpath(@__DIR__, "..", "deps", "Plugin", "MPIHaloExchange"))
+        cd(DIR)
         if !isdir("build")
         mkdir("build")
         end
@@ -329,6 +336,15 @@ function mpi_halo_exchange_(oplibpath, u,fill_value,m,n, tag, deps)
     out = halo_exchange_two_d_(u,fill_value,m,n,tag, deps)
     set_shape(out, (size(u,1)+2, size(u,2)+2))
 end
+
+function mpi_halo_exchange2_(oplibpath, u,fill_value,m,n,tag,w)
+    halo_exchange_neighbor_two_ = load_op_and_grad(oplibpath,"halo_exchange_neighbor_two")
+    w = coalesce(w, u[1,1])
+    u,fill_value,m,n,tag,w = convert_to_tensor(Any[u,fill_value,m,n,tag,w], [Float64,Float64,Int64,Int64,Int64,Float64])
+    out = halo_exchange_neighbor_two_(u,fill_value,m,n,tag,w)
+    set_shape(out, (size(u,1)+4, size(u,2)+4))
+end
+
 
 function mpi_create_matrix(oplibpath, indices,values,ilower,iupper)
     mpi_create_matrix_ = load_op_and_grad(oplibpath,"mpi_create_matrix", multiple=true)
@@ -491,4 +507,19 @@ function mpi_halo_exchange(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int
     @assert size(u,1)==size(u,2)
     oplibpath = load_plugin_MPIHaloExchange()
     mpi_halo_exchange_(oplibpath, u, fill_value, m, n, tag, deps)
+end
+
+
+@doc raw"""
+    mpi_halo_exchange2(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; deps::Union{Missing, PyObject} = missing,
+    fill_value::Float64 = 0.0, tag::Union{PyObject, Int64} = 0)
+
+Similar to [`mpi_halo_exchange`](@ref), but the reach is 2, i.e., for a $N\times N$ matrix $u$, the output will be a 
+$(N+4)\times (N+4)$ matrix. 
+"""
+function mpi_halo_exchange2(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::Int64; deps::Union{Missing, PyObject} = missing,
+    fill_value::Float64 = 0.0, tag::Union{PyObject, Int64} = 0)
+    @assert size(u,1)==size(u,2)
+    oplibpath = load_plugin_MPIHaloExchange(2)
+    mpi_halo_exchange2_(oplibpath, u, fill_value, m, n, tag, deps)
 end
