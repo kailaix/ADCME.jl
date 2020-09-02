@@ -57,7 +57,7 @@ function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString
             run(`unzip $zipfile -d $d`)
         elseif length(zipfile)>4 && zipfile[end-3:end]==".tar"
             run(`tar -xvf $zipfile -C $d`)
-        elseif length(zipfile)>7 && zipfile[end-6:end]==".tar.gz"
+        elseif length(zipfile)>7 && (zipfile[end-6:end]==".tar.gz" || zipfile[end-3:end]==".tgz")
             run(`tar -xvzf $zipfile -C $d`)
         else 
             error("ADCME doesn't know how to uncompress $zipfile")
@@ -193,9 +193,11 @@ end
 If the library file `filename` does not exist, `func` is executed.
 """
 function require_library(func::Function, filename::AbstractString)
-    filenmae = get_library(filename)
+    filename = get_library(filename)
     if !(isfile(filename) && islink(filename))
         func()
+    else
+        @info "Library $filename exists"
     end
 end
 

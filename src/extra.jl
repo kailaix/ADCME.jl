@@ -30,7 +30,22 @@ function xavier_init(size, dtype=Float64)
 end
 
 ############### custom operators ##################
-function cmake(DIR::String=".."; CMAKE_ARGS::String = "")
+"""
+    cmake(DIR::String=".."; CMAKE_ARGS::Union{Array{String}, String} = "")
+
+The built-in Cmake command for building C/C++ libraries. If extra Cmake arguments are needed, please specify it through `CMAKE_ARGS`.
+
+# Example 
+```
+ADCME.cmake(CMAKE_ARGS=["SHARED=YES", "STAITC=NO"])
+```
+
+The executed command might be:
+```
+/home/darve/kailaix/.julia/adcme/bin/cmake -G Ninja -DCMAKE_MAKE_PROGRAM=/home/darve/kailaix/.julia/adcme/bin/ninja -DJULIA=/home/darve/kailaix/julia-1.3.1/bin/julia -DCMAKE_C_COMPILER=/home/darve/kailaix/.julia/adcme/bin/x86_64-conda_cos6-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/home/darve/kailaix/.julia/adcme/bin/x86_64-conda_cos6-linux-gnu-g++ SHARED=YES STATIC=NO ..
+```
+"""
+function cmake(DIR::String=".."; CMAKE_ARGS::Union{Array{String}, String} = "")
     ENV_ = copy(ENV)
     LD_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
     if haskey(ENV_, LD_PATH)
