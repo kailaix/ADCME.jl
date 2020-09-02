@@ -153,6 +153,8 @@ Finally, you could use `gradtest.jl` to test the operator and its gradients (spe
     If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile `libtensorflow_framework.{so,dylib}`. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.
 
 
+Please see [this repository](https://github.com/kailaix/ADCME-CustomOp-Example) for an extra example. 
+
 ## Build GPU Custom Operators
 
 ### Install GPU-enabled TensorFlow (Linux and Windows)
