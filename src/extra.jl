@@ -401,6 +401,7 @@ function customop(;with_mpi::Bool = false)
         return
     else
         python = PyCall.python
+        with_mpi = with_mpi ? 1 : 0
         run(`$python $(py_dir)/customop.py custom_op.txt $py_dir $with_mpi`)
     end
     nothing
