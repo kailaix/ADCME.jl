@@ -212,6 +212,9 @@ public:
 
     // TODO:
     int n_ = u_shape.dim_size(0);
+    grad_w->flat<double>().setZero();
+    grad_u->flat<double>().setZero();
+     grad_fill_value->flat<double>().setZero();
     HaloExchangeNeighborTwo_backward(
       grad_u_tensor, grad_uext_tensor, uext_tensor, u_tensor, *fill_value_tensor,
       *m_tensor, *n_tensor, n_, *tag_tensor);

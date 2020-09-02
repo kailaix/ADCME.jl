@@ -21,10 +21,10 @@ PREFIXDIR
 =#
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
-    run_with_env
+    run_with_env, get_conda, read_with_env
 
 GFORTRAN = nothing
-
+CONDA = nothing
 """
     http_file(url::AbstractString, file::AbstractString)
 
@@ -106,17 +106,18 @@ function require_file(f::Function, file::Union{String, Array{String}})
 end
 
 """
-    require_gfortran()
+    get_gfortran()
 
 Install a gfortran compiler if it does not exist.
 """
-function require_gfortran()
+function get_gfortran()
     global GFORTRAN
     try 
         GFORTRAN = split(String(read(`which gfortran`)))[1]
     catch
         error("gfortran is not in the path.")
     end
+    GFORTRAN
 end
 
 """
@@ -188,6 +189,16 @@ function get_library(filename::AbstractString)
 end
 
 """
+    get_conda()
+
+Returns the conda executable location.
+"""
+function get_conda()
+    global CONDA = joinpath(ADCME.BINDIR, "conda")
+    CONDA
+end
+
+"""
     require_library(func::Function, filename::AbstractString)
 
 If the library file `filename` does not exist, `func` is executed.
@@ -218,4 +229,23 @@ function run_with_env(cmd::Cmd, env::Union{Missing, Dict} = missing)
         ENV_ = merge(env, ENV_)
     end
     run(setenv(cmd, ENV_))
+end
+
+"""
+    read_with_env(cmd::Cmd, env::Union{Missing, Dict} = missing)
+
+Similar to [`run_with_env`](@ref), but returns a string containing the output. 
+"""
+function read_with_env(cmd::Cmd, env::Union{Missing, Dict} = missing)
+    ENV_ = copy(ENV)
+    LD_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
+    if haskey(ENV_, LD_PATH)
+        ENV_[LD_PATH] = ENV[LD_PATH]*":$LIBDIR"
+    else
+        ENV_[LD_PATH] = LIBDIR
+    end
+    if !ismissing(env)
+        ENV_ = merge(env, ENV_)
+    end
+    String(read(setenv(cmd, ENV_)))
 end
