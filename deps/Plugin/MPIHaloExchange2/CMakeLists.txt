@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(TF_CUSTOM_OP)
-set (CMAKE_CXX_STANDARD 11)
+SET (CMAKE_CXX_STANDARD 11)
 
 message("JULIA=${JULIA}")
 
@@ -35,29 +35,21 @@ message("TF_LIB_FILE=${TF_LIB_FILE}")
 
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
-  set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
 
-set(CMAKE_BUILD_TYPE Release)
-
-if(MSVC)
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
-else()
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-endif()
-
+SET(CMAKE_BUILD_TYPE Release)
 if(MSVC)
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W0" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
   endif()
   add_definitions(-DNOMINMAX)
+  SET(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
+else()
+  SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 endif()
-
-include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC} ${LIBDIR}/../include)
-link_directories(${LIBDIR})
-
 
 # Compile MPI programs
 IF(DEFINED ENV{MPI_INCLUDE_PATH})
@@ -66,20 +58,32 @@ IF(DEFINED ENV{MPI_INCLUDE_PATH})
   message("MPI_INCLUDE_PATH = ${MPI_INCLUDE_PATH}")
   message("MPI_C_LIBRARIES = ${MPI_C_LIBRARIES}")
   include_directories(${MPI_INCLUDE_PATH})
-  set(MPI_OPS MPI/MPIBCAST.cpp MPI/MPIRECV.cpp MPI/MPISEND.cpp MPI/MPISUM.cpp MPI/MPI_Utils.cpp MPI/MPIGATHER.cpp)
 ELSE()
   message("MPI_INCLUDE_PATH and/or MPI_C_LIBRARIES is not set. MPI operators are not compiled.")
 ENDIF()
 
-find_library(hypre HYPRE HINTS ${LIBDIR})
-message("hypre: ${hypre}")
+include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
 
-add_library(MPITensor SHARED MPITensor.cpp)
+find_program(_nvidia_smi "nvidia-smi")
+if (_nvidia_smi)
+  find_package(CUDA QUIET REQUIRED)
+  SET(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
+  SET(CUDA_PROPAGATE_HOST_FLAGS ON)
+  add_definitions(-DGOOGLE_CUDA)
+  message("Compiling GPU-compatible custom operator!")
+  cuda_add_library(HaloExchangeNeighborTwo SHARED HaloExchangeNeighborTwo.cpp HaloExchangeNeighborTwo.cu)
+else()
+  add_library(HaloExchangeNeighborTwo SHARED HaloExchangeNeighborTwo.cpp)
+endif()
 
-set_property(TARGET MPITensor PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(MPITensor ${TF_LIB_FILE} ${hypre})
+set_property(TARGET HaloExchangeNeighborTwo PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(HaloExchangeNeighborTwo ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(MPITensor PROPERTIES 
+set_target_properties(HaloExchangeNeighborTwo PROPERTIES 
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build 
                 RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build
                 ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)
