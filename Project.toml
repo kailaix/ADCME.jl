@@ -1,7 +1,7 @@
 name = "ADCME"
 uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
 authors = ["Kailai Xu <kailaix@hotmail.com>"]
-version = "0.5.10"
+version = "0.5.11"
 
 [deps]
 CMake = "631607c0-34d2-5d66-819e-eb0f9aa2061a"
