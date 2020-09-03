@@ -1,0 +1,4 @@
+MyAssign
+double u(?)
+double v(?)
+double w(?) -> output
