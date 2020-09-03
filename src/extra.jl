@@ -178,33 +178,37 @@ end
 end
 
 @doc """
-    load_op_and_grad(oplibpath::String, opname::String; multiple::Bool=false)
+    load_op_and_grad(oplibpath::Union{PyObject, String}, opname::String; multiple::Bool=false)
 
 Loads the operator `opname` from library `oplibpath`; gradients are also imported. 
 If `multiple` is true, the operator is assumed to have multiple outputs. 
 """
-function load_op_and_grad(oplibpath::String, opname::String; 
+function load_op_and_grad(oplibpath::Union{PyObject, String}, opname::String; 
         multiple::Bool=false, verbose::Union{Missing, Bool} = missing)
     verbose = coalesce(verbose, options.customop.verbose)
     is_system_op = oplibpath == LIBADCME
-    if Sys.iswindows()
-        a, b = splitdir(oplibpath)
-        if length(b) >=3 && b[1:3]=="lib"
-            b = b[4:end]
+
+    if isa(oplibpath, String)
+        if Sys.iswindows()
+            a, b = splitdir(oplibpath)
+            if length(b) >=3 && b[1:3]=="lib"
+                b = b[4:end]
+            end
+            oplibpath = joinpath(a, b)
         end
-        oplibpath = joinpath(a, b)
+        if splitext(oplibpath)[2]==""
+            oplibpath = oplibpath * (Sys.islinux() ? 
+                            ".so" : Sys.isapple() ? ".dylib" : ".dll")
+        end
+        oplibpath = abspath(oplibpath)
+        # if haskey(load_op_grad_dict, (oplibpath,opname))
+        #     return load_op_grad_dict[(oplibpath,opname)]
+        # end
+        if !isfile(oplibpath)
+            error("Library $oplibpath does not exist.")
+        end
     end
-    if splitext(oplibpath)[2]==""
-        oplibpath = oplibpath * (Sys.islinux() ? 
-                        ".so" : Sys.isapple() ? ".dylib" : ".dll")
-    end
-    oplibpath = abspath(oplibpath)
-    # if haskey(load_op_grad_dict, (oplibpath,opname))
-    #     return load_op_grad_dict[(oplibpath,opname)]
-    # end
-    if !isfile(oplibpath)
-        error("Library $oplibpath does not exist.")
-    end
+
     opname_grad = opname*"_grad"
     fn_name = opname*randstring(8)
     try
@@ -213,10 +217,15 @@ py"""
 import tensorflow as tf
 lib$$fn_name = $libadcme
 """
-        else 
+        elseif isa(oplibpath, String)
 py"""
 import tensorflow as tf
 lib$$fn_name = tf.load_op_library($oplibpath)
+"""
+        else 
+py"""
+import tensorflow as tf
+lib$$fn_name = $oplibpath
 """
         end
 if !multiple
@@ -244,8 +253,10 @@ catch(e)
     Libdl.dlopen(oplibpath)
 end
         s = py"$$fn_name"
-        load_op_grad_dict[(oplibpath,opname)] = s
-        verbose && printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
+        if isa(oplibpath, String)
+            load_op_grad_dict[(oplibpath,opname)] = s
+            verbose && printstyled("Load library operator (with gradient, multiple outputs = $multiple): $oplibpath ==> $opname\n", color=:green)
+        end
         return s
 end
 

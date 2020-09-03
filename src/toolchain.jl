@@ -21,7 +21,7 @@ PREFIXDIR
 =#
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
-    run_with_env, get_conda, read_with_env
+    run_with_env, get_conda, read_with_env, get_library_name
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -205,11 +205,39 @@ If the library file `filename` does not exist, `func` is executed.
 """
 function require_library(func::Function, filename::AbstractString)
     filename = get_library(filename)
-    if !(isfile(filename) && islink(filename))
+    if !(isfile(filename) || islink(filename))
         func()
     else
         @info "Library $filename exists"
     end
+end
+
+"""
+    get_library_name(filename::AbstractString)
+
+Returns the OS-dependent library name 
+
+# Example
+```
+get_library_name("mylibrary")
+```
+- Windows: `mylibrary.dll`
+- MacOS: `libmylibrary.dylib`
+- Linux: `libmylibrary.so`
+"""
+function get_library_name(filename::AbstractString)
+    if length(filename)>3 && filename[1:3]=="lib"
+        @warn "No prefix `lib` is need. Removed."
+        filename = filename[4:end]
+    end
+    if Sys.iswindows()
+        filename = filename * ".dll"
+    elseif Sys.isapple()
+        filename = "lib" * filename * ".dylib"
+    else
+        filename = "lib" * filename * ".so"
+    end
+    filename 
 end
 
 """

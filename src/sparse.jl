@@ -3,7 +3,7 @@ import Base: accumulate
 import LinearAlgebra: factorize
 export SparseTensor, SparseAssembler, 
 spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols,
-factorize, solve, trisolve
+factorize, solve, trisolve, RawSparseTensor
 
 """
     SparseTensor
@@ -113,6 +113,24 @@ function SparseTensor_(indices::Union{PyObject,Array{T,2}}, value::Union{PyObjec
     value = convert_to_tensor(value, dtype=Float64)
     shape = convert_to_tensor(shape, dtype=Int64)
     sp = tf.SparseTensor(indices-1, value, shape)
+    options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
+    SparseTensor(sp, is_diag)
+end
+
+"""
+    RawSparseTensor(indices::Union{PyObject,Array{T,2}}, value::Union{PyObject,Array{Float64,1}},
+        m::Union{PyObject,Int64}, n::Union{PyObject,Int64}; is_diag::Bool=false) where T<:Integer
+
+A convenient wrapper for making custom operators. Here `indices` is 0-based. 
+"""
+function RawSparseTensor(indices::Union{PyObject,Array{T,2}}, value::Union{PyObject,Array{Float64,1}},
+    m::Union{PyObject,Int64}, n::Union{PyObject,Int64}; is_diag::Bool=false) where T<:Integer
+    indices = convert_to_tensor(indices, dtype=Int64)
+    value = convert_to_tensor(value, dtype=Float64)
+    m = convert_to_tensor(m, dtype = Int64)
+    n = convert_to_tensor(n, dtype = Int64)
+    shape = [m;n]
+    sp = tf.SparseTensor(indices, value, shape)
     options.sparse.auto_reorder && (sp = tf.sparse.reorder(sp)) 
     SparseTensor(sp, is_diag)
 end
