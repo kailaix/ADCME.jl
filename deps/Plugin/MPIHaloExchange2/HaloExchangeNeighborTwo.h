@@ -136,14 +136,14 @@ void HaloExchangeNeighborTwo_backward(
   int n_request = 0;
 
   for(int k = 0; k<n; k++){
-    iupper_in.get()[k] = GRAD_U_OUT(0+2, k+2);
-    iupper_in.get()[n + k] = GRAD_U_OUT(1+2, k+2);
+    iupper_in.get()[k] = GRAD_U_OUT(0, k+2);
+    iupper_in.get()[n + k] = GRAD_U_OUT(1, k+2);
 
     ilower_in.get()[k] = GRAD_U_OUT(n-2+4, k+2);
     ilower_in.get()[n + k] = GRAD_U_OUT(n-1+4, k+2);
     
-    jupper_in.get()[k] = GRAD_U_OUT(k+2, 0+2);
-    jupper_in.get()[n + k] = GRAD_U_OUT(k+2, 1+2);
+    jupper_in.get()[k] = GRAD_U_OUT(k+2, 0);
+    jupper_in.get()[n + k] = GRAD_U_OUT(k+2, 1);
     
     jlower_in.get()[k] = GRAD_U_OUT(k+2, n-2+4);
     jlower_in.get()[n + k] = GRAD_U_OUT(k+2, n-1+4);
