@@ -12,6 +12,9 @@ conda = get_conda()
 run_with_env(`$conda install -y -c anaconda matplotlib`)
 using PyPlot
 
+if Sys.iswindows()
+    matplotlib.use("MACOSX")
+end
 
 if has_gpu()
     use_gpu(0)
