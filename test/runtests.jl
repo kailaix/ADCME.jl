@@ -7,6 +7,9 @@ using PyCall
 using SparseArrays
 using Test
 using Random
+
+conda = get_conda()
+run_with_env(`$conda install -c anaconda matplotlib`)
 using PyPlot
 
 
