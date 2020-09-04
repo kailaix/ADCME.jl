@@ -122,15 +122,15 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 
 **Step 3: Compile**
 
-It is recommended that you use the `cmake`, `make` and `gcc` provided by `ADCME`. The binary locations can be found via
+You should always compile your custom operator using the built-in toolchain `ADCME.make` and `ADCME.cmake` to ensure compatability such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:
 
 | Variable      | Description                           |
 | ------------- | ------------------------------------- |
 | `ADCME.CXX`   | C++ Compiler                          |
 | `ADCME.CC`    | C Compiler                            |
-| `ADCME.TFLIB` | `libtensorflow_framework.so` location |
+| `ADCME.TF_LIB_FILE` | `libtensorflow_framework.so` location |
 | `ADCME.CMAKE` | Cmake binary location                 |
-| `ADCME.MAKE`  | Make binary location                  |
+| `ADCME.MAKE`  | Make (Ninja for Unix systems) binary location                  |
 
 ADCME will properly handle the environment variable for you. So we always recommend you to compile custom operators using ADCME functions:
 
@@ -260,18 +260,12 @@ public:
   }
 };
 REGISTER_KERNEL_BUILDER(Name("GpuTest").Device(DEVICE_GPU), GpuTestOpGPU);
-
 ```
 
 **GpuTest.cu**
 
 ```c++
-#define GOOGLE_CUDA 1
-#define EIGEN_USE_GPU
-
-#include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/framework/tensor_types.h"
-#include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "cuda.h"
 
 __global__ void return_double_(int n, double *b, const double*a){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -352,8 +346,7 @@ set_target_properties(GpuTest PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURREN
 We can then compile the operator on a system where `nvcc` is available:
 
 ```julia
-mkdir("build")
-cd("build")
+change_directory("build")
 ADCME.cmake()
 ADCME.make()
 ```
@@ -425,6 +418,10 @@ foreach(IDX RANGE 0 ${LIBLENGTH})
   target_link_libraries(${_LIB_NAME} ${TF_LIB_FILE})
 endforeach(IDX)
 ```
+
+## Loading Order
+
+To ensure that TensorFlow can find all the registered symbols, it is recommended that you should always load the shared libraries first if you also run `ccall` on the shared library. This can be done with [`load_op_and_grad`](@ref) or [`load_op`](@ref) by passing the loaded shared library (via `tf.load_op_library`) handle. 
 
 
 ## Error Handling
