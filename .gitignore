@@ -40,3 +40,5 @@ docs/src/assets/Slide/*.snm
 docs/src/assets/Slide/*.toc
 docs/src/assets/mcmc
 !deps/build.jl
+test/*.gif
+test/*.png

@@ -116,5 +116,6 @@ $e"""
     include("options.jl")
     include("mpi.jl")
     include("toolchain.jl")
+    include("kit.jl")
 end
 

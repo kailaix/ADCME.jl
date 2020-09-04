@@ -7,8 +7,7 @@ using PyCall
 using SparseArrays
 using Test
 using Random
-
-
+using PyPlot
 
 
 if has_gpu()
@@ -16,9 +15,6 @@ if has_gpu()
 end
 doctor()
 sess = Session()
-
-
-
 
 include("layers.jl")
 include("sparse.jl")
@@ -36,3 +32,4 @@ include("ode.jl")
 include("flow.jl")
 include("mpi.jl")
 include("toolchain.jl")
+include("kit.jl")
