@@ -12,7 +12,7 @@ conda = get_conda()
 run_with_env(`$conda install -y -c anaconda matplotlib`)
 using PyPlot
 
-if Sys.iswindows()
+if Sys.isapple()
     matplotlib.use("MACOSX")
 end
 
