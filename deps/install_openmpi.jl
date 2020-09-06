@@ -9,7 +9,7 @@ require_file("Makefile") do
     run_with_env(`../configure CC=$(ADCME.CC) CXX=$(ADCME.CXX) --enable-mpi-thread-multiple --prefix=$(CONDA_ROOT) 
                     --enable-mpirun-prefix-by-default --enable-mpi-fortran=no --with-mpi-param-check=always`, Dict("LDFLAGS"=>"-L"*ADCME.LIBDIR))
 end
-require_file() do 
+require_library("mpi") do 
     run_with_env(`make -j all`)
 end
 require_library(joinpath(ADCME.LIBDIR, "libmpi")) do 
