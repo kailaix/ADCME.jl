@@ -12,9 +12,6 @@ conda = get_conda()
 run_with_env(`$conda install -y -c anaconda matplotlib`)
 using PyPlot
 
-if Sys.isapple()
-    matplotlib.use("MACOSX")
-end
 
 if has_gpu()
     use_gpu(0)
@@ -38,4 +35,8 @@ include("ode.jl")
 include("flow.jl")
 include("mpi.jl")
 include("toolchain.jl")
-include("kit.jl")
+
+# The default matplotlib backend does not work for MacOSX
+if !Sys.isapple()
+    include("kit.jl")
+end
