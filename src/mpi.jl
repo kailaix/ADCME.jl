@@ -1,6 +1,6 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
     mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized, mpi_halo_exchange, mpi_halo_exchange2,
-    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor
+    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor, require_mpi
 
 """
     mpi_init()
@@ -46,6 +46,17 @@ function mpi_size()
     @eval ccall((:mpi_size, $LIBADCME), Cint, ())
 end
 
+"""
+    require_mpi()
+
+Throws an error if `mpi_init()` has not been called. 
+"""
+function require_mpi()
+    if !mpi_initialized()
+        error("MPI has not been initialized. Run `mpi_init()` to initialize MPI first.")
+    end 
+end
+
 
 """
     mpi_finalized()
@@ -53,9 +64,7 @@ end
 Returns a boolean indicating whether the current MPI session is finalized.
 """
 function mpi_finalized()
-    if !mpi_initialized()
-        error("MPI has not been initialized.")
-    end 
+    require_mpi()
     Bool(@eval ccall((:mpi_finalized, $LIBADCME), Cuchar, ()))
 end
 
@@ -85,9 +94,7 @@ function mpi_sync!(message::Array{Float64,1}, root::Int64 = 0)
 end
 
 function mpi_check()
-    if !mpi_initialized()
-        error("MPI has not been initialized. Run `mpi_init()` to initialize MPI first.")
-    end 
+    require_mpi()
     if mpi_finalized()
         error("MPI has been finalized.")
     end
@@ -522,4 +529,26 @@ function mpi_halo_exchange2(u::Union{Array{Float64, 2}, PyObject},m::Int64,n::In
     @assert size(u,1)==size(u,2)
     oplibpath = load_plugin_MPIHaloExchange(2)
     mpi_halo_exchange2_(oplibpath, u, fill_value, m, n, tag, deps)
+end
+
+
+function mpi_tensor_transpose(oplibpath, row,col,ncol,val,n,rank,nt)
+    require_mpi()
+    mpi_tensor_transpose_ = load_op_and_grad(oplibpath,"mpi_tensor_transpose", multiple=true)
+    row,col,ncol,val,n,rank,nt = convert_to_tensor(Any[row,col,ncol,val,n,rank,nt], [Int32,Int32,Int32,Float64,Int64,Int64,Int64])
+    indices, vals = mpi_tensor_transpose_(row,col,ncol,val,n,rank,nt)
+end
+
+
+"""
+    adjoint(A::mpi_SparseTensor)
+
+Returns the adjoint of `A`, i.e., `A'`. Each MPI rank owns the same number of rows.
+"""
+function Base.:adjoint(A::mpi_SparseTensor)
+    oplibpath = load_plugin_MPITensor()
+    n = A.iupper - A.ilower + 1
+    indices, vals = mpi_tensor_transpose(oplibpath, A.rows, A.cols, A.ncols, A.values, n, mpi_rank(), A.N)
+    sp = RawSparseTensor(indices, vals, n, A.N)
+    mpi_SparseTensor(sp, A.ilower, A.iupper)
 end

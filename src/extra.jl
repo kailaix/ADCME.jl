@@ -200,9 +200,9 @@ function load_op_and_grad(oplibpath::Union{PyObject, String}, opname::String;
                             ".so" : Sys.isapple() ? ".dylib" : ".dll")
         end
         oplibpath = abspath(oplibpath)
-        # if haskey(load_op_grad_dict, (oplibpath,opname))
-        #     return load_op_grad_dict[(oplibpath,opname)]
-        # end
+        if haskey(load_op_grad_dict, (oplibpath,opname))
+            return load_op_grad_dict[(oplibpath,opname)]
+        end
         if !isfile(oplibpath)
             error("Library $oplibpath does not exist.")
         end

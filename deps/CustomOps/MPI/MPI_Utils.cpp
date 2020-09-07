@@ -52,7 +52,7 @@ extern "C" EXPORTED void mpi_sync(long long* data, int count, int root){
   MPI_Comm_size(comm, &world_size);
   MPI_Request request;
   MPI_Status status; 
-  MPI_Ibcast(data, count, MPI_INTEGER8, root, comm, &request);
+  MPI_Ibcast(data, count, MPI_LONG_LONG, root, comm, &request);
   MPI_Wait( &request , &status);  
 }
 
