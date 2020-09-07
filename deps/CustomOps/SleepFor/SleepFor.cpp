@@ -128,11 +128,12 @@ public:
 
     // implement your forward function here 
 
-    time_t timer;
-    time(&timer);
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto ms = time_point_cast<milliseconds>(now).time_since_epoch().count();
 
     // TODO:
-    *t_tensor = timer;
+    *t_tensor = ms/1000.0;
 
   }
 };
