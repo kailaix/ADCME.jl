@@ -52,3 +52,16 @@ end
     devices = list_physical_devices()   
     @test length(devices)>0
 end
+
+@testset "timestamp" begin 
+    @test begin     
+        a = constant(1.0)
+        t0 = timestamp(a)
+        sleep_time = sleep_for(a)
+        t1 = timestamp(sleep_time)
+        sess = Session(); init(sess)
+        t0_, t1_ = run(sess, [t0, t1])
+        time = t1_ - t0_
+        true
+    end
+end

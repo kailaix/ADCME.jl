@@ -135,7 +135,8 @@ end
 """
     bind(op::PyObject, ops...)
 
-Adding operations `ops` to the dependencies of `op`. The function is useful when we want to execute `ops` but `ops` is not 
+Adding operations `ops` to the dependencies of `op`. `ops` are guaranteed to be executed **before** `op`.
+The function is useful when we want to execute `ops` but `ops` is not 
 in the dependency of the final output. For example, if we want to print `i` each time `i` is evaluated
 ```julia
 i = constant(1.0)

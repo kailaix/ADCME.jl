@@ -15,7 +15,9 @@ list_physical_devices,
 MCMCSimple,
 simulate,
 diagnose,
-get_placement
+get_placement,
+timestamp,
+sleep_for
 
 """
     xavier_init(size, dtype=Float64)
@@ -982,4 +984,39 @@ function get_placement()
     close(outRead)
     redirect_stdout(originalSTDOUT)
     lines = split(String(data), '\n')[1:end-1]
+end
+
+"""
+    sleep_for(t::Union{PyObject, <:Real})
+
+Sleeps for `t` seconds. 
+"""
+function sleep_for(t::Union{PyObject, <:Real})
+    sleep_for_ = load_system_op("sleep_for", false)
+    sleep_for_(convert_to_tensor(t, dtype=Float64))
+end
+
+"""
+    timestamp(deps::Union{PyObject, <:Real, Missing}=missing)
+
+These functions are usually used with [`bind`](@ref) for profiling. 
+Note the timing is not very accurate in a multithreaded environment.
+
+- `deps`: `deps` is always executed before returning the timestamp.
+# Example 
+```julia
+a = constant(3.0)
+t0 = timestamp(a)
+sleep_time = sleep_for(a)
+t1 = timestamp(sleep_time)
+sess = Session(); init(sess)
+t0_, t1_ = run(sess, [t0, t1])
+time = t1_ - t0_
+```
+"""
+function timestamp(deps::Union{PyObject, <:Real, Missing}=missing)
+    deps = coalesce(deps, 0.0)
+    deps = convert_to_tensor(deps, dtype = Float64)
+    timer_ = load_system_op("timer", false)
+    timer_(deps)
 end
