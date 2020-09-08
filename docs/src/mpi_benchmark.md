@@ -26,7 +26,7 @@ This example presents the overhead of ADCME MPI operators when the main computat
 
 $$\nabla \cdot (\kappa(x, y) \nabla u(x,y)) = f(x, y), (x,y) \in \Omega \quad u(x,y) = 0, (x,y) \in \partial \Omega$$
 
-$\kappa(x, y)$ is approximated by a neural network $\kappa_\theta(x,y) = \mathcal{NN}_\theta(x,y)$, and the weights and biases $\theta$ are broadcasted from the root processor. We express the numerical scheme as a computational graph is:
+Here $\kappa(x, y)$ is approximated by a neural network $\kappa_\theta(x,y) = \mathcal{NN}_\theta(x,y)$, and the weights and biases $\theta$ are broadcasted from the root processor. We express the numerical scheme as a computational graph is:
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/poisson_cg.png?raw=true) 
 
@@ -40,7 +40,7 @@ We first consider the weak scaling. The following plots shows the runtime for fo
 
 | Speedup | Efficiency |
 |----------------|--------------|
-|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/time_core1.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/efficiency_core14.png?raw=true)        |
+|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/speedup_core14.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/efficiency_core14.png?raw=true)        |
 
 There are several important observations:
 
@@ -51,7 +51,7 @@ Additionally, we show the overhead, which is defined as the difference between t
 
 | 1 Core | 4 Cores |
 |----------------|--------------|
-|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/speedup_core14.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/overhead_core4.png?raw=true)        |
+|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/overhead_core1.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/overhead_core4.png?raw=true)        |
 
 We see that the overhead is quite small compared to the total time, especially when the problem size is large. This indicates that the ADCME MPI implementation is very effective. 
 
