@@ -11,7 +11,7 @@ pages = Any[
         "tu_inv.md", "tu_recipe.md", "tu_nn.md", "tu_implicit.md", "tu_customop.md","tu_debug.md", "exercise.md"],
     "Resources" => ["newton_raphson.md", "parallel.md", "optimizers.md", "ode.md", "global.md", 
             "julia_customop.md", "nn.md", "ot.md", "resource_manager.md", "alphascheme.md", "factorization.md", "customopt.md",
-            "options.md", "mcmc.md", "mpi.md"],
+            "options.md", "mcmc.md", "mpi.md", "mpi_benchmark.md"],
     "Physics Informed Machine Learning" => ["fdtd.md"],
     "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md"],
     "Developer Guide" => ["designpattern.md", "toolchain.md", "installmpi.md"],
