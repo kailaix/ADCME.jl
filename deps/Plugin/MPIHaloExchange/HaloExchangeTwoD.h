@@ -58,7 +58,9 @@ void HaloExchnageTwoD_forward(double *kappa, const double *kappa_in, double fill
       for(int j=2;j<=n+1;j++)
          kappa(j, n+2) = fill_value;
    }
+   // printf("Rank %d, tag %d, send...\n", r, tag);
    MPI_Waitall( n_requests, requests , status);
+   // printf("Rank %d, tag %d, finish...\n", r, tag);
    
    if (J>1){
       for(int i = 2; i<=n+1; i++) kappa(i, 1) = left[i-2];
@@ -81,6 +83,7 @@ void HaloExchnageTwoD_backward(
    double *grad_kappa_in, 
    const double *grad_kappa_, 
    const double *kappa, const double *kappa_in, double fill_value, int N, int M, int n, int tag){
+   tag += 1e8;
    int r;
    MPI_Comm comm = MPI_COMM_WORLD;
    MPI_Comm_rank(MPI_COMM_WORLD, &r);
@@ -119,7 +122,9 @@ void HaloExchnageTwoD_backward(
       n_requests += 2;
    }
 
+   // printf("BACKWORD Rank %d, tag %d, send...\n", r, tag);   
    MPI_Waitall( n_requests, requests , status);
+   // printf("BACKWORD Rank %d, tag %d, finish...\n", r, tag);
 
    if (I>1){
       for (int i = 0; i<n;i++) grad_kappa_in[i] += up_in[i];
