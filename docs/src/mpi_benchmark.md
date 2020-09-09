@@ -78,7 +78,25 @@ We can see that the 4 cores have smaller runtime compared to 1 core.
 
 ## Acoustic Seismic Inversion
 
+
+| Strong Scaling | Weak Scaling |
+|----------------|--------------|
+|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/acoustic_time_forward_and_backward.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/acoustic_weak.png?raw=true)        |
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/acoustic_speedup_and_efficiency.png?raw=true) 
+
+
 ## Elastic Seismic Inversion
+
+100 x 100 2000
+1000 x 1000 100
+
+| Strong Scaling | Weak Scaling |
+|----------------|--------------|
+|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/elastic_time_forward_and_backward.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/elastic_weak.png?raw=true)        |
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/elastic_speedup_and_efficiency.png?raw=true) 
+
 
 
 
