@@ -92,11 +92,15 @@ We can see that the 4 cores have smaller runtime compared to 1 core.
 ## Acoustic Seismic Inversion
 
 In this example, we consider the acoustic wave equation with perfectly matched layer (PML). The governing equation for the acoustic equation is
+
 $$\frac{\partial^2 u}{\partial t^2} = \nabla \cdot (c^2 \nabla u)$$
+
 where $u$ is the displacement, $f$ is the source term, and $c$ is the spatially varying acoustic velocity. 
 
 In the inverse problem, only the wavefield $u$ on the surface is observable, and we want to use this information to estimate $c$. The problem is usually ill-posed, so regularization techniques are usually used to constrain $c$. One approach is to represent $c$ by a deep neural network
+
 $$c(x,y) = \mathcal{NN}_\theta(x,y)$$
+
 where $\theta$ is the neural network weights and biases. The loss function is formulated by the square loss for the wavefield on the surface. 
 
 To implement an MPI version of the acoustic wave equation propagator, we use [`mpi_halo_exchange`](@ref), which is implemented using MPI and performs the halo exchange mentioned in the last example for both wavefields and axilliary fields. This function communicates the boundary information for each block of the mesh. 
@@ -118,14 +122,18 @@ We also show the speedup and efficiency for the strong scaling case. We can achi
 ## Elastic Seismic Inversion
 
 In the last example, we consider the elastic wave equation
+
 $$\begin{aligned}
 \rho \frac{\partial v_i}{\partial t} &= \sigma_{ij,j} + \rho f_i \\ 
 \frac{\partial \sigma_{ij}}{\partial t} &= \lambda v_{k, k} + \mu (v_{i,j}+v_{j,i})
 \end{aligned}\tag{2}$$
+
 where $v$ is the velocity, $\sigma$ is the stress tensor, $\rho$ is the density, and $\lambda$ and $\mu$ are the Lamé constants. Similar to the acoustic equation, we use the PML boundary conditions and have observations on the surface. However, the inversion parameters are now spatially varying $\rho$, $\lambda$ and $\mu$. 
 
 As an example, we approximate $\lambda$ by a deep neural network
+
 $$\lambda(x,y) = \mathcal{NN}_\theta(x,y)$$
+
 and the other two parameters are kept fixed. 
 
 We use the same geometry settings as the acoustic wave equation case. Note that elastic wave equation has more state variables as well as auxilliary fields, and thus is more memory demanding. The huge memory cost calls for a  distributed framework, especially for large-scale problems. 
