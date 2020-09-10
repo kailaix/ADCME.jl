@@ -109,7 +109,13 @@ $$c(x,y) = \mathcal{NN}_\theta(x,y)$$
 
 where $\theta$ is the neural network weights and biases. The loss function is formulated by the square loss for the wavefield on the surface. 
 
-To implement an MPI version of the acoustic wave equation propagator, we use [`mpi_halo_exchange`](@ref), which is implemented using MPI and performs the halo exchange mentioned in the last example for both wavefields and axilliary fields. This function communicates the boundary information for each block of the mesh. 
+| Model $c$ | Wavefield |
+|----------------|--------------|
+|    ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/acoustic_model.png?raw=true)            |      ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/acoustic_wavefield.gif?raw=true)        |
+
+To implement an MPI version of the acoustic wave equation propagator, we use [`mpi_halo_exchange`](@ref), which is implemented using MPI and performs the halo exchange mentioned in the last example for both wavefields and axilliary fields. This function communicates the boundary information for each block of the mesh. The following plot shows the computational graph for the numerical simulation of the acoustic wave equation
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/wave.png?raw=true)
 
 The following plot shows the strong scaling and weak scaling of our implementation. Each processor consists of 32 processors, which are used at the discretion of ADCME's backend, i.e., TensorFlow. The strong scaling result is obtained by using a $1000\times 1000$ grid and 100 times steps. For the weak scaling result, each MPI processor owns a $100\times 100$ grid, and the total number of steps is 2000.
 It is remarkable that even though we increase the number of processors from 1 to 100, the total time only increases 2 times in the weak scaling. 
@@ -135,6 +141,8 @@ $$\begin{aligned}
 \end{aligned}\tag{2}$$
 
 where $v$ is the velocity, $\sigma$ is the stress tensor, $\rho$ is the density, and $\lambda$ and $\mu$ are the Lamé constants. Similar to the acoustic equation, we use the PML boundary conditions and have observations on the surface. However, the inversion parameters are now spatially varying $\rho$, $\lambda$ and $\mu$. 
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/elastic_wavefield.gif?raw=true)
 
 As an example, we approximate $\lambda$ by a deep neural network
 
