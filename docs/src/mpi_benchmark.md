@@ -12,11 +12,17 @@ The MPI programs are verified with serial programs. Note that ADCME uses hybrid 
 ## Transposition
 
 Matrix transposition is an operator that are common in gradient back-propagation. For example, assume the forward computation is ($x$ is the input, $y$ is the output, and $A$ is a matrix) 
+
 $$y(\theta) = Ax(\theta) \tag{1}$$
+
 Given a loss function $L(y)$, we have
+
 $$\frac{\partial L(y(x))}{\partial x} = \frac{\partial L(y)}{\partial y}\frac{\partial y(x)}{\partial x} = \frac{\partial L(y)}{\partial y} A$$
+
 Note that $\frac{\partial L(y)}{\partial y}$ is a row vector, and therefore, 
+
 $$\left(\frac{\partial L(y(x))}{\partial x}\right)^T = A^T \left(\frac{\partial L(y)}{\partial y} \right)^T$$
+
 requires a matrix vector multiplication, where the matrix is $A^T$. 
 
 Given that Equation 1 is ubiquitous in numerical PDE schemes, a distributed implementation of parallel transposition is very important. 
