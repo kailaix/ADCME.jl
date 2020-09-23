@@ -24,6 +24,9 @@ Do you know...
 
 * [ADCME -- Machine Learning for Computational Engineering (Berkeley/Stanford CompFest)](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/CompFest2020.pdf)
 
+* [Presentation on 09/23/2020](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/InversePoreFlow2020_09_23.pdf)
+
+
 ## Instruction on Installing ADCME 
 
 1. [Installing ADCME (Windows)](https://www.youtube.com/watch?v=Vsc_dpyOD6k)
