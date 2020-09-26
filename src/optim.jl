@@ -436,7 +436,7 @@ function newton_raphson(func::Function,
                 tol = read(ta_r, i-1)
                 rel_tol = read(ta_r, i-2)
                 if verbose
-                    op = tf.print("ITER ", i-1, ">>> Error =", tol, "| Relative Error =", rel_tol, summarize=-1)
+                    op = tf.print("Newton iteration ", i-2, ": r (abs) =", tol, " r (rel) =", rel_tol, summarize=-1)
                     tol = bind(tol, op)
                 end
                 return tf.math.logical_and(
