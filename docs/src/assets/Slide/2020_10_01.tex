@@ -221,7 +221,7 @@
 	\end{itemize}
 	\begin{figure}[hbt]
 		\centering
-		\includegraphics[width=0.8\textwidth]{../inverse2}
+		\includegraphics[width=0.8\textwidth]{figures/inverse2}
 	\end{figure}
 \end{frame}
 
@@ -377,12 +377,20 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 	\frametitle{Distributed Optimization}
 	\begin{itemize}
 		\item ADCME also supports MPI-based distributed computing. The parallel model is designed specially for scientific computing. 
-	\end{itemize}
+
 	\begin{figure}[hbt]
 		\centering
-		\includegraphics[width=0.49\textwidth]{figures/distributed1}~
-		\includegraphics[width=0.49\textwidth]{figures/distributed2}
+		\includegraphics[width=0.48\textwidth]{figures/distributed1}~
+		\includegraphics[width=0.48\textwidth]{figures/distributed2}
 	\end{figure}
+
+\item Key idea: \textcolor{red}{Everything is an operator}. Computation and communications are converters of data streams (tensors) through the computational graph. 
+
+\begin{center}
+\texttt{mpi\_bcast}, \texttt{mpi\_sum}, \texttt{mpi\_send}, \texttt{mpi\_recv}, \texttt{mpi\_halo\_exchange}, ...
+\end{center}
+
+	\end{itemize}
 \end{frame}
 
 
@@ -476,25 +484,25 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 	\frametitle{Inverse Modeling of the Stokes Equation}
 	
 	\begin{minted}[escapeinside=||,fontsize=\small]{julia}
-	|\textbf{\colorbox{green}{nu = \texttt{Variable(0.5)}}}|
-	K = nu*constant(|\underline{\texttt{compute\_fem\_laplace\_matrix}}|(m, n, h))
-	B = constant(|\underline{\texttt{compute\_interaction\_matrix}}|(m, n, h))
-	Z = [K -B'
-	-B spdiag(zeros(size(B,1)))]
-	
-	# Impose boundary conditions
-	bd = bcnode("all", m, n, h)
-	bd = [bd; bd .+ (m+1)*(n+1); ((1:m) .+ 2(m+1)*(n+1))]
-	Z, _ = |\underline{\texttt{fem\_impose\_Dirichlet\_boundary\_condition1}}|(Z, bd, m, n, h)
-	
-	# Calculate the source term 
-	F1 = |\underline{\texttt{eval\_f\_on\_gauss\_pts}}|(f1func, m, n, h)
-	F2 = |\underline{\texttt{eval\_f\_on\_gauss\_pts}}|(f2func, m, n, h)
-	F = |\underline{\texttt{compute\_fem\_source\_term}}|(F1, F2, m, n, h)
-	rhs = [F;zeros(m*n)]
-	rhs[bd] .= 0.0
-	
-	sol = Z\rhs 
+|\textbf{\colorbox{green}{nu = \texttt{Variable(0.5)}}}|
+K = nu*constant(|\underline{\texttt{compute\_fem\_laplace\_matrix}}|(m, n, h))
+B = constant(|\underline{\texttt{compute\_interaction\_matrix}}|(m, n, h))
+Z = [K -B'
+-B spdiag(zeros(size(B,1)))]
+
+# Impose boundary conditions
+bd = bcnode("all", m, n, h)
+bd = [bd; bd .+ (m+1)*(n+1); ((1:m) .+ 2(m+1)*(n+1))]
+Z, _ = |\underline{\texttt{fem\_impose\_Dirichlet\_boundary\_condition1}}|(Z, bd, m, n, h)
+
+# Calculate the source term 
+F1 = |\underline{\texttt{eval\_f\_on\_gauss\_pts}}|(f1func, m, n, h)
+F2 = |\underline{\texttt{eval\_f\_on\_gauss\_pts}}|(f2func, m, n, h)
+F = |\underline{\texttt{compute\_fem\_source\_term}}|(F1, F2, m, n, h)
+rhs = [F;zeros(m*n)]
+rhs[bd] .= 0.0
+
+sol = Z\rhs 
 	\end{minted}
 	
 	
@@ -508,12 +516,12 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 	\begin{itemize}
 		\item The distinguished feature compared to traditional forward simulation programs: \textcolor{red}{the model output is differentiable with respect to model parameters}!
 		\begin{minted}[escapeinside=||,fontsize=\small]{julia}
-		loss = sum((sol[idx] - observation[idx])^2)
-		g = gradients(loss, nu)
+	loss = sum((sol[idx] - observation[idx])^2)
+	g = gradients(loss, nu)
 		\end{minted}
 		\item Optimization with a one-liner:
 		\begin{minted}[escapeinside=||,fontsize=\small]{julia}
-		BFGS!(sess, loss)
+	BFGS!(sess, loss)
 		\end{minted}	 
 	\end{itemize}
 	
@@ -523,6 +531,7 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 	\end{figure}
 	
 \end{frame}
+
 
 
 
@@ -605,7 +614,8 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 \begin{frame}
 	\frametitle{ADSeismic.jl: Performance Benchmark}
 	\begin{itemize}
-		\item ADCME makes enables us to utilize heterogeneous (CPUs, GPUs, and TPUs) and distributed (CPU clusters) computation 
+		\item Performance is a key focus of ADCME.  
+		\item ADCME enables us to utilize heterogeneous (CPUs, GPUs, and TPUs) and distributed (CPU clusters) computing environments.
 		
 		{\small Fortran: {open-source Fortran90 programs SEISMIC\_CPML}}
 	\end{itemize}
@@ -650,8 +660,8 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 	\end{itemize}		
 	\begin{figure}[hbt]	
 		\centering
-		\includegraphics[width=0.5\textwidth]{../ip}~
-		\includegraphics[width=0.3\textwidth]{../cell}
+		\includegraphics[width=0.5\textwidth]{figures/ip}~
+		\includegraphics[width=0.3\textwidth]{figures/cell}
 	\end{figure}
 	
 \end{frame}
@@ -667,7 +677,7 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 		\end{equation*}
 	\end{itemize}
 	\begin{figure}[hbt]
-		\includegraphics[width=1.0\textwidth]{../visco1}
+		\includegraphics[width=1.0\textwidth]{figures/visco1}
 	\end{figure}
 	
 \end{frame}
@@ -675,7 +685,7 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 \begin{frame}
 	\frametitle{Viscoelasticity}
 	\begin{figure}[hbt]
-		\includegraphics[width=0.7\textwidth]{../visco2}
+		\includegraphics[width=0.7\textwidth]{figures/visco2}
 	\end{figure}
 	
 \end{frame}
@@ -732,6 +742,36 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 		\includegraphics[width=1.0\textwidth]{figures/ns_result}~
 	\end{figure}
 \end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{A Paradigm for Inverse Modeling}
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{itemize}
+	\item Most inverse modeling problems can be classified into 4 categories. To be more concrete, consider the PDE for describing physics
+	\begin{equation}
+		\nabla \cdot (\textcolor{red}{\theta} \nabla u(x)) = 0\quad \mathcal{B}\mathcal{C}(u(x)) = 0
+	\end{equation}
+	We observe some quantities depending on the solution $u$ and want to estimate $\theta$.
+\end{itemize}
+{
+	\tiny
+	\begin{table}[]
+		\begin{tabular}{@{}cccc@{}}
+			\toprule
+			Expression                                       & Description                & ADCME Solution                         & Note                                     \\ \midrule
+			$\nabla \cdot (\textcolor{red}{c} \nabla u(x)) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & \makecell{$c$ is the minimizer of\\ the error functional }                     \\ \hline
+			$\nabla \cdot (\textcolor{red}{f(x)} \nabla u(x)) = 0$ & Function Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx \mathcal{NN}_{w}(x)$             \\ \hline
+			$\nabla \cdot (\textcolor{red}{f(u)} \nabla u(x)) = 0$ & Relation Inverse Problem   & \makecell{Residual Learning\\ Physics Constrained Learning (PCL)}        & $f(u) \approx \mathcal{NN}_{w}(u)$             \\ \hline
+			$\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Problem & \makecell{Physical Generative Neural Networks \\ (PhysGNN)}         & $\varpi = \mathcal{NN}_w(v_{\mathrm{latent}})$ \\ \bottomrule
+		\end{tabular}
+	\end{table}
+}
+\end{frame}
+
 
 \begin{frame}
 	\frametitle{A General Approach to Inverse Modeling}
