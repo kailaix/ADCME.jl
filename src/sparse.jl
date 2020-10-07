@@ -737,3 +737,8 @@ function trisolve(a::Union{PyObject, Array{Float64,1}},b::Union{PyObject, Array{
     out = tri_solve_(a,b,c,d)
     set_shape(out, (n,))
 end
+
+
+function Base.:bind(op::SparseTensor, ops...)
+    bind(op.o.values, ops...)
+end
