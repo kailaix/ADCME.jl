@@ -994,16 +994,17 @@ Load custom operator libraries. If used with
 """
 function load_library(filename::String)
     filename = get_library(filename)
-    if haskey(STORAGE, "custom_op_library_"*filename)
-        return STORAGE[filename]
+    keyname = "custom_op_library_"*filename
+    if haskey(STORAGE, keyname)
+        return STORAGE[keyname]
     end
     if !isfile(filename)
         error("File $filename not found. If you intend to load a library by absolute path, try `tf.load_op_library(filename)`.")
     end
     try
-        STORAGE["custom_op_library_"*filename] =  tf.load_op_library(filename)
+        STORAGE[keyname] =  tf.load_op_library(filename)
     catch e 
         error("Failed to load library: $filename. Original error message:\n$e")
     end
-    return STORAGE[filename] 
+    return STORAGE[keyname] 
 end
