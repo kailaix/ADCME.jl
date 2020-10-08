@@ -32,6 +32,27 @@ reset_default_graph(); sess = Session()
     @test run(sess, b_)≈2.0
 
 
+    a = Variable(ones(10))
+    b = Variable(ones(10))
+    for i = 1:10
+        control_dependencies(a) do
+            a = scatter_add(a, i, b[i])
+        end
+    end
+
+    a_ = spdiag(ones(10))
+    b_ = Variable(0.0)
+    op = assign(b_, 2.0)
+    a_ = a_*2
+    a_ = bind(a_, op)
+
+
+    init(sess)
+    run(sess, a_)
+    @test run(sess, a)≈ones(10)*2
+    @test run(sess, b_)≈2.0
+
+
 end
 
 @testset "while loop" begin

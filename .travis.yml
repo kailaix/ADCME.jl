@@ -17,6 +17,3 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then export PATH=$PATH:/C/Users/travis/.julia/adcme/Scripts:/C/Users/travis/.julia/adcme/Library/bin:/C/Users/travis/.julia/adcme/; fi
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
-cache:
-  directories:
-    - /home/travis/.julia/adcme

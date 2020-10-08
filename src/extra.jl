@@ -17,6 +17,7 @@ simulate,
 diagnose,
 get_placement,
 timestamp,
+load_library,
 sleep_for
 
 """
@@ -126,53 +127,18 @@ end
 load_op_dict = Dict{Tuple{String, String}, PyObject}()
 load_op_grad_dict = Dict{Tuple{String, String}, PyObject}()
 
-
 @doc """
-    load_op(oplibpath::String, opname::String)
+    load_op(oplibpath::Union{PyObject, String}, opname::String; verbose::Union{Missing, Bool} = missing)
 
 Loads the operator `opname` from library `oplibpath`.
 """
-function load_op(oplibpath::String, opname::String; verbose::Union{Missing, Bool} = missing)
+function load_op(oplibpath::Union{PyObject, String}, opname::String; verbose::Union{Missing, Bool} = missing)
     verbose = coalesce(verbose, options.customop.verbose)
-    is_system_op = oplibpath == LIBADCME
-    if Sys.iswindows()
-        a, b = splitdir(oplibpath)
-        if length(b)>=3 && b[1:3]=="lib"
-            b = b[4:end]
-        end
-        oplibpath = joinpath(a, b)
-    end
-    if splitext(oplibpath)[2]==""
-        oplibpath = abspath(oplibpath * (Sys.islinux() ? 
-                        ".so" : Sys.isapple() ? ".dylib" : ".dll"))
-    end
-    oplibpath = abspath(oplibpath)
+    oplibpath = get_library(oplibpath)
     if haskey(load_op_dict, (oplibpath,opname))
         return load_op_dict[(oplibpath,opname)]
     end
-
-    if !isfile(oplibpath)
-        error("File $oplibpath does not exist. Instruction:\nRunning `compile(oplibpath)` to compile the library first.")
-    end
-    fn_name = opname*randstring(8)
-try 
-    if is_system_op
-py"""
-import tensorflow as tf
-lib$$fn_name = $libadcme
-"""
-    else 
-py"""
-import tensorflow as tf
-lib$$fn_name = tf.load_op_library($oplibpath)
-"""
-    end
-catch(e)
-    printstyled("Failed to open $oplibpath. Error Message from the TensorFlow backend\n$(string(e))\n", color=:red)
-    Libdl.dlopen(oplibpath)
-end
-    lib = py"lib$$fn_name"
-    s = getproperty(lib, opname)
+    s = getproperty(load_library(oplibpath), opname)
     load_op_dict[(oplibpath,opname)] = s
     verbose && printstyled("Load library operator: $oplibpath ==> $opname\n", color=:green)
     return s
@@ -1019,4 +985,26 @@ function timestamp(deps::Union{PyObject, <:Real, Missing}=missing)
     deps = convert_to_tensor(deps, dtype = Float64)
     timer_ = load_system_op("timer", false)
     timer_(deps)
+end
+
+"""
+    load_library(filename::String)
+
+Load custom operator libraries. If used with 
+"""
+function load_library(filename::String)
+    filename = get_library(filename)
+    keyname = "custom_op_library_"*filename
+    if haskey(STORAGE, keyname)
+        return STORAGE[keyname]
+    end
+    if !isfile(filename)
+        error("File $filename not found. If you intend to load a library by absolute path, try `tf.load_op_library(filename)`.")
+    end
+    try
+        STORAGE[keyname] =  tf.load_op_library(filename)
+    catch e 
+        error("Failed to load library: $filename. Original error message:\n$e")
+    end
+    return STORAGE[keyname] 
 end
