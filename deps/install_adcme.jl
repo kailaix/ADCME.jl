@@ -10,9 +10,9 @@ INSTALL_GPU = Sys.islinux() && haskey(ENV, "GPU")
 
 CONDA = ""
 if Sys.iswindows()
-    CONDA = "$(homedir())/.julia/adcme/Scripts/conda.exe"
+    CONDA = "$(JULIA_ADCME_DIR)/.julia/adcme/Scripts/conda.exe"
 else 
-    CONDA = "$(homedir())/.julia/adcme/bin/conda"
+    CONDA = "$(JULIA_ADCME_DIR)/.julia/adcme/bin/conda"
 end
 
 
@@ -31,7 +31,7 @@ else
     end
 
     PWD = pwd()
-    cd("$(homedir())/.julia/")
+    cd("$(JULIA_ADCME_DIR)/.julia/")
     if !(installer in readdir("."))
         @info "Downloading miniconda installer..."
         download("https://repo.anaconda.com/miniconda/"*installer, installer)
@@ -43,7 +43,7 @@ else
 
     @info "Installing miniconda..."
     if Sys.iswindows()
-        run(`cmd /c start /wait "" $installer /InstallationType=JustMe /RegisterPython=0 /S /D=$(homedir())\\.julia\\adcme`)
+        run(`cmd /c start /wait "" $installer /InstallationType=JustMe /RegisterPython=0 /S /D=$(JULIA_ADCME_DIR)\\.julia\\adcme`)
     else
         run(`bash $installer -f -b -p adcme`)
     end
@@ -52,7 +52,7 @@ else
     ENV_ = copy(ENV)
     if Sys.iswindows()
         platform = "windows"
-        ENV_["PATH"] = "$(homedir())/.julia/adcme/Scripts;$(homedir())/.julia/adcme/Library/bin;$(homedir())/.julia/adcme/" * ENV_["PATH"]
+        ENV_["PATH"] = "$(JULIA_ADCME_DIR)/.julia/adcme/Scripts;$(JULIA_ADCME_DIR)/.julia/adcme/Library/bin;$(JULIA_ADCME_DIR)/.julia/adcme/" * ENV_["PATH"]
     elseif Sys.islinux()
         if haskey(ENV, "GPU") && ENV["GPU"] in [1, "1"]
             platform = "linux-gpu"

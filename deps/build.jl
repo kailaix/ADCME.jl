@@ -31,13 +31,21 @@ __STR__ = join([BINDIR,LIBDIR,TF_INC,TF_ABI,PREFIXDIR,CC,CXX,CMAKE,MAKE,GIT,PYTH
 """)
 end
 
+JULIA_ADCME_DIR = homedir()
+if haskey(ENV, "JULIA_ADCME_DIR")
+    JULIA_ADCME_DIR = abspath(ENV["JULIA_ADCME_DIR"])
+    @info "Found JULIA_ADCME_DIR=$JULIA_ADCME_DIR in environment variables. ADCME will install the dependencies to JULIA_ADCME_DIR."
+    if !ispath(joinpath(JULIA_ADCME_DIR, ".julia"))
+        mkpath(joinpath(JULIA_ADCME_DIR, ".julia"))
+    end
+end
 
 push!(LOAD_PATH, "@stdlib")
 using Pkg
 using CMake
 using LibGit2
 
-ENVDIR = joinpath(homedir(), ".julia", "adcme")
+ENVDIR = joinpath(JULIA_ADCME_DIR, ".julia", "adcme")
 
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
@@ -112,9 +120,9 @@ end
 
 CONDA = ""
 if Sys.iswindows()
-    CONDA = "$(homedir())/.julia/adcme/Scripts/conda.exe"
+    CONDA = "$(JULIA_ADCME_DIR)/.julia/adcme/Scripts/conda.exe"
 else 
-    CONDA = "$(homedir())/.julia/adcme/bin/conda"
+    CONDA = "$(JULIA_ADCME_DIR)/.julia/adcme/bin/conda"
 end
 
 # If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
@@ -147,7 +155,7 @@ if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
         @warn("TensorFlow is compiled using CUDA 10.0, but you have CUDA $ver. This might cause some problems.")
     end
     
-    pkg_dir = "$(homedir())/.julia/adcme/pkgs/"
+    pkg_dir = "$(JULIA_ADCME_DIR)/.julia/adcme/pkgs/"
     files = readdir(pkg_dir)
     libpath = filter(x->startswith(x, "cudatoolkit") && isdir(joinpath(pkg_dir,x)), files)
     if length(libpath)==0
