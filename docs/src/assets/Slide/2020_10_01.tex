@@ -519,11 +519,12 @@ sol = Z\rhs
 	loss = sum((sol[idx] - observation[idx])^2)
 	g = gradients(loss, nu)
 		\end{minted}
-		\item Optimization with a one-liner:
-		\begin{minted}[escapeinside=||,fontsize=\small]{julia}
-	BFGS!(sess, loss)
-		\end{minted}	 
+		\item Optimization with a one-liner:	 
 	\end{itemize}
+
+\begin{minted}{julia}
+	    BFGS!(sess, loss)
+\end{minted}
 	
 	\begin{figure}[hbt]
 		\centering
@@ -551,6 +552,161 @@ sol = Z\rhs
 
 
 \section{Applications}
+
+
+\begin{frame}
+	\frametitle{Learning spatially-varying physical parameters using deep neural networks}
+	\begin{itemize}
+		\item It is easy to adopt ADCME for modeling spatially-varying physical parameters using deep neural networks with a PDE solver.
+		
+		$$\boxed{\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{PDE}} + \text{\textcolor{green}{Data}} = \text{Physics Constrained Data-driven Modeling}}$$ 
+	\end{itemize}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/spatially_varying}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Linear Elasticity}
+
+		$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Linear Elasticity}} + \text{\textcolor{green}{Displacement Data}}$$ 
+	\begin{equation*}
+		\boxed{\begin{aligned}
+			& \sigma_{ij,j}  +  b_i = 0, \ x\in \Omega\\
+			&\varepsilon_{ij} = \frac{1}{2}(\textcolor{green}{u}_{j,i}+\textcolor{green}{u}_{i,j}), \ x\in \Omega\\
+			& \sigma_{ij} = \lambda\delta_{ij} \varepsilon_{kk} + \mu(\varepsilon_{ij}+ \varepsilon_{ji}), \ x\in \Omega\\
+			&\sigma_{ij}n_j = t_j, \ x\in \Gamma_N; \quad 	\textcolor{green}{u}_i = (u_0)_i, \ x\in \Gamma_D\\
+			&	\lambda = \frac{\textcolor{blue}{E}\nu}{(1+\nu)(1-2\nu)}\quad
+			\mu = \frac{\textcolor{blue}{E}\nu}{1-\nu^2}
+		\end{aligned}}
+	\end{equation*}
+	\begin{figure}[hbt]
+	\includegraphics[width=1.0\textwidth]{figures/linear_elasticity.png}
+\end{figure}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+	\frametitle{Stokes' Problem}
+
+		$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Stokes' Problem}} + \text{\textcolor{green}{Pressure Data}}$$ 
+	\begin{equation*}
+	\boxed{\begin{aligned}
+		- \nabla \cdot (\textcolor{blue}{\nu} \nabla u) + \nabla \textcolor{green}{p} &= f && \text{in } \Omega \\ 
+		\nabla \cdot u &= 0 && \text{in } \Omega \\ 
+		u &= 0 &&\text{on }\partial \Omega
+	\end{aligned}}
+\end{equation*}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/stokes_problem.png}
+	\end{figure}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Hyperelasticity}
+	
+	$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Hyperelasticity}} + \text{\textcolor{green}{Displacement Data}}$$ 
+	\begin{equation*}
+		\boxed{\begin{aligned}
+				\min_u \psi =&\; \frac{\mu}{2}(I_c - 2) - \frac{\mu}{2}\log(J) + \frac{\lambda}{8}\log(J)^2\\
+				F =& I + \nabla \textcolor{green}{u}, \ C = F^TF, \ J = \text{det}(C), \ I_c = \text{trace}(C)\\
+				\lambda =& \frac{\textcolor{red}{E}\nu}{(1+\nu)(1-2\nu)}, \quad \mu = \frac{\textcolor{red}{E}}{2(1+\nu)}
+		\end{aligned}}
+	\end{equation*}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/hyperelasticity.png}
+	\end{figure}
+	
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Burgers' Equation}
+	
+	$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Burgers' Equation}} + \text{\textcolor{green}{Velocity Data}}$$ 
+	
+	\newcommand{\gu}{\textcolor{green}{u}}
+		\newcommand{\gv}{\textcolor{green}{v}}
+	\begin{equation*}
+		\boxed{
+				\begin{aligned}
+					\frac{\partial \gu}{\partial t} + \gu\frac{\partial \gu}{\partial x} + \gv \frac{\partial \gu}{\partial y} = \nabla\cdot(\textcolor{red}{\nu} \nabla \gu)\\
+					\frac{\partial \gv}{\partial t} + \gu\frac{\partial \gv}{\partial x} + \gv \frac{\partial \gv}{\partial y} = \nabla\cdot(\textcolor{red}{\nu} \nabla \gv)\\ 
+					(x,y) \in \Omega, t\in (0, T) &
+				\end{aligned}}
+	\end{equation*}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/burgers.png}
+	\end{figure}
+	
+\end{frame}
+
+
+
+
+\begin{frame}
+	\frametitle{Navier-Stokes Equation}
+	\begin{itemize}
+		\item Steady-state Navier-Stokes equation
+		\begin{equation*}
+			\begin{aligned}
+				(\mathbf{u} \cdot \nabla) \mathbf{u} &=
+				-\frac{1}{\rho} \nabla p + \nabla\cdot (\textcolor{red}{\nu} \nabla \mathbf{u}) + \mathbf{g}\\
+				\nabla \cdot \mathbf{u} &= 0
+			\end{aligned}
+		\end{equation*}
+		
+		\item Inverse problem are ubiquitous in fluid dynamics:
+		
+		\begin{figure}[hbt]
+			\centering
+			\includegraphics[width=0.4\textwidth]{figures/icepack}~
+			\includegraphics[width=0.4\textwidth]{figures/covid}
+			\caption{Left: electronic cooling; right: nasal drug delivery.}
+		\end{figure}
+		
+	\end{itemize}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Navier-Stokes Equation}
+	
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.49\textwidth]{figures/advertisement}~
+		\includegraphics[width=0.49\textwidth]{figures/computational_graph}
+	\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Navier-Stokes Equation}
+	\begin{itemize}
+		\item Data: $(u, v)$
+		\item Unknown: $\nu(\mathbf{x})$ (represented by a deep neural network)
+		\item Prediction: $p$ (absent in the training data) 
+		\item The DNN provides regularization, which generalizes the estimation better!
+	\end{itemize}
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=1.0\textwidth]{figures/ns_result}~
+	\end{figure}
+\end{frame}
+
+
+
+
+
 
 
 
@@ -643,7 +799,7 @@ sol = Z\rhs
 
 \begin{frame}
 
-	\frametitle{Viscoelasticity}
+	\frametitle{Poroelasticity}
 	%	
 	\begin{itemize}
 		\item Multi-physics Interaction of Coupled Geomechanics and Multi-Phase Flow Equations 
@@ -668,7 +824,7 @@ sol = Z\rhs
 
 
 \begin{frame}
-	\frametitle{Viscoelasticity}
+	\frametitle{Poroelasticity}
 	
 	\begin{itemize}
 		\item Comparison with space varying linear elasticity approximation
@@ -683,67 +839,12 @@ sol = Z\rhs
 \end{frame}
 
 \begin{frame}
-	\frametitle{Viscoelasticity}
+	\frametitle{Poroelasticity}
 	\begin{figure}[hbt]
 		\includegraphics[width=0.7\textwidth]{figures/visco2}
 	\end{figure}
 	
 \end{frame}
-
-
-\begin{frame}
-	\frametitle{Navier-Stokes Equation}
-	\begin{itemize}
-		\item Steady-state Navier-Stokes equation
-		\begin{equation*}
-		\begin{aligned}
-		(\mathbf{u} \cdot \nabla) \mathbf{u} &=
-		-\frac{1}{\rho} \nabla p + \nabla\cdot (\textcolor{red}{\nu} \nabla \mathbf{u}) + \mathbf{g}\\
-		\nabla \cdot \mathbf{u} &= 0
-		\end{aligned}
-		\end{equation*}
-		
-		\item Inverse problem are ubiquitous in fluid dynamics:
-		
-		\begin{figure}[hbt]
-			\centering
-			\includegraphics[width=0.4\textwidth]{figures/icepack}~
-			\includegraphics[width=0.4\textwidth]{figures/covid}
-			\caption{Left: electronic cooling; right: nasal drug delivery.}
-		\end{figure}
-		
-	\end{itemize}
-	
-\end{frame}
-
-
-\begin{frame}
-	\frametitle{Navier-Stokes Equation}
-	
-	\begin{figure}[hbt]
-		\centering
-		\includegraphics[width=0.49\textwidth]{figures/advertisement}~
-		\includegraphics[width=0.49\textwidth]{figures/computational_graph}
-	\end{figure}
-\end{frame}
-
-
-
-\begin{frame}
-	\frametitle{Navier-Stokes Equation}
-	\begin{itemize}
-		\item Data: $(u, v)$
-		\item Unknown: $\nu(\mathbf{x})$ (represented by a deep neural network)
-		\item Prediction: $p$ (absent in the training data) 
-		\item The DNN provides regularization, which generalizes the estimation better!
-	\end{itemize}
-	\begin{figure}[hbt]
-		\centering
-		\includegraphics[width=1.0\textwidth]{figures/ns_result}~
-	\end{figure}
-\end{frame}
-
-
 
 
 \begin{frame}
@@ -778,6 +879,35 @@ sol = Z\rhs
 	\begin{figure}[hbt]
 		\includegraphics[width=1.0\textwidth]{figures/summary.png}
 	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Reference}
+
+\begin{itemize}
+	\item Methodology and Implementation:
+	
+	\begin{itemize}
+			\item Physics Constrained Learning for Data-driven Inverse Modeling from Sparse Observations (\textcolor{red}{Core techniques!})
+			\item A General Approach to Seismic Inversion with Automatic Differentiation
+			\item Time-lapse Full-waveform Inversion for Subsurface Flow Problems with Intrusive Automatic Differentiation
+	\end{itemize}
+
+	
+	\item Consistutive Modeling:
+	\begin{itemize}
+		\item Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks
+		\item Learning Constitutive Relations using Symmetric Positive Definite Neural Networks
+		\item Inverse Modeling of Viscoelasticity Materials using Physics Constrained Learning
+	\end{itemize}
+	
+	\item Learning Spatially-varying Fields:
+	\begin{itemize}
+		\item Solving Inverse Problems in Steady State Navier-Stokes Equations using Deep Neural Networks
+	\end{itemize}
+	
+\end{itemize}
+
 \end{frame}
 
 
