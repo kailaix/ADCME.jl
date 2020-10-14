@@ -1,4 +1,4 @@
-export ode45, rk4, αscheme, αscheme_time, αscheme_atime
+export ode45, rk4, αscheme, αscheme_time, αscheme_atime, TR_BDF2
 
 function runge_kutta_one_step(f::Function, t::PyObject, y::PyObject, Δt::PyObject, θ::Union{PyObject, Missing})
     k1 = Δt*f(t, y, θ)
@@ -250,4 +250,133 @@ function αscheme_time(Δt::Array{Float64}; ρ::Float64 = 1.0)
         tc += Δt[i]
     end
     return tcf
+end
+
+@doc raw"""
+    TR_BDF2(D0::Union{SparseTensor, SparseMatrixCSC}, 
+        D1::Union{SparseTensor, SparseMatrixCSC}, 
+        Δt::Float64)
+
+Constructs a TR-BDF2 (the Trapezoidal Rule with Second Order Backward Difference Formula) handler for 
+the DAE 
+
+$$D_1 \dot y + D_0 y = f$$
+
+The struct is a functor, which performs one step simulation 
+
+```
+(tr::TR_BDF2)(y::Union{PyObject, Array{Float64, 1}}, 
+    f1::Union{PyObject, Array{Float64, 1}}, 
+    f2::Union{PyObject, Array{Float64, 1}}, 
+    f3::Union{PyObject, Array{Float64, 1}})
+```
+Here `f1`, `f2`, and `f3` correspond to the right hand side at time step $n$, $n+\frac12$, and $n+1$.
+
+Or we can pass a batched `F` defined as a `(2NT+1) × DOF` array
+
+```
+(tr::TR_BDF2)(y0::Union{PyObject, Array{Float64, 1}}, 
+    F::Union{PyObject, Array{Float64, 2}})
+```
+
+The output will be the entire solution of size `(NT+1) × DOF`.
+
+
+!!! info 
+    The scheme takes the following form for n = 0, 1, ...
+    $$\begin{aligned} D_1(y^{n+\frac12}-y^n) = \frac12\frac{\Delta t}{2}\left(f^{n+\frac12} + f^n - D_0 \left(y^{n+\frac12} + y^n\right)\right)\\ \left(\frac{\Delta t}{2}\right)^{-1} D_1 \left(\frac32y^{n+1} - 2y^{n+\frac12} + \frac12 y^n\right) + D_0 y^{n+1} = f^{n+1}\end{aligned}$$
+"""
+struct TR_BDF2
+    D0::Union{SparseTensor, SparseMatrixCSC} 
+    D1::Union{SparseTensor, SparseMatrixCSC}  
+    Δt::Float64
+    _D0::Union{SparseTensor, SparseMatrixCSC} 
+    _D1::Union{SparseTensor, SparseMatrixCSC}
+    symbolic::Bool 
+    function TR_BDF2(D0::Union{SparseTensor, SparseMatrixCSC}, 
+            D1::Union{SparseTensor, SparseMatrixCSC}, 
+            Δt::Float64)
+        if isa(D0, SparseTensor) || isa(D1, SparseTensor)
+            symbolic = true 
+            D0 = constant(D0)
+            D1 = constant(D1)
+        else 
+            symbolic = false 
+        end
+        @assert size(D0, 1)==size(D0,2)==size(D1,1)==size(D1,2)
+        _D0 = D1 + Δt/4 * D0 
+        _D1 = 1/(Δt/2) * 3/2 * D1  + D0 
+        new(D0, D1, Δt, _D0, _D1, symbolic)
+    end
+end
+
+"""
+    constant(tr::TR_BDF2)
+
+Converts `tr` to a symbolic solver. 
+"""
+function constant(tr::TR_BDF2)
+    TR_BDF2(constant(tr.D0), constant(tr.D1), tr.Δt)
+end
+
+function Base.:show(io::IO, tr::TR_BDF2)
+    print("""TR_BDF2 (DOF = $(size(tr.D0, 1)), Δt = $(tr.Δt)$(tr.symbolic ? ", symbolic" : ""))""")
+end
+
+function (tr::TR_BDF2)(y::Union{PyObject, Array{Float64, 1}}, 
+    f1::Union{PyObject, Array{Float64, 1}}, 
+    f2::Union{PyObject, Array{Float64, 1}}, 
+    f3::Union{PyObject, Array{Float64, 1}})
+    y, f1, f2, f3 = convert_to_tensor([y, f1, f2, f3], [Float64, Float64, Float64, Float64])
+    r1 = tr.Δt/4 * (f2 + f1) - tr.Δt/4 * (tr.D0 * y) + tr.D1 * y
+    yn = tr._D0\r1
+    r2 = f3 + 1/(tr.Δt/2)*(tr.D1* (2*yn - 0.5*y))
+    tr._D1\r2
+end
+
+function (tr::TR_BDF2)(y0::Union{PyObject, Array{Float64, 1}}, 
+    F::Union{PyObject, Array{Float64, 2}})
+    @assert size(F, 2)==size(tr.D0, 1) && mod(size(F, 1), 2)==1
+    y0, F = convert_to_tensor([y0, F], [Float64, Float64])
+    NT = size(F, 1)÷2
+    y_arr = TensorArray(NT+1)
+    y_arr = write(y_arr, 1, y0)
+    function condition(i, y_arr)
+        i<=NT
+    end
+    function body(i, y_arr)
+        y = read(y_arr, i)
+        f1, f2, f3 = F[2*i-1], F[2*i], F[2*i+1]
+        yn = tr(y, f1, f2, f3)
+        i+1, write(y_arr, i+1, yn)
+    end
+    i = constant(1, dtype = Int32)
+    _, ya = while_loop(condition, body, [i, y_arr])
+    set_shape(stack(ya), (NT+1, length(y0)))
+end
+
+function (tr::TR_BDF2)(y::Array{Float64, 1}, 
+    f1::Array{Float64, 1}, 
+    f2::Array{Float64, 1}, 
+    f3::Array{Float64, 1})
+    if tr.symbolic
+        return tr(constant(y), f1, f2, f3)
+    end
+    r1 = tr.Δt/4 * (f2 + f1) - tr.Δt/4 * (tr.D0 * y) + tr.D1 * y
+    yn = tr._D0\r1
+    r2 = f3 + 1/(tr.Δt/2)*(tr.D1* (2*yn - 0.5*y))
+    tr._D1\r2
+end
+
+function (tr::TR_BDF2)(y0::Array{Float64,1}, F::Array{Float64, 2})
+    if tr.symbolic
+        return tr(constant(y0), F)
+    end
+    @assert size(F, 2)==size(tr.D0, 1) && mod(size(F, 1), 2)==1
+    y = zeros(size(F, 1)÷2+1, 2)
+    y[1,:] = y0
+    for i = 1:size(F, 1)÷2
+        y[i+1,:] = tr(y[i,:], F[2*i-1,:], F[2*i,:], F[2*i+1,:])
+    end
+    y
 end

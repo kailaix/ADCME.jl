@@ -179,7 +179,7 @@
 
 \title[ML for Computational Engineering]{Machine Learning for Inverse Problems in Computational Engineering} % The short title appears at the bottom of every slide, the full title is only on the title page
 
-\author[ADCME]{Kailai Xu, and Eric Darve \\ \url{https://github.com/kailaix/ADCME.jl}} % Your name
+\author[ADCME]{Kailai Xu and Eric Darve \\ \url{https://github.com/kailaix/ADCME.jl}} % Your name
 %\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
 %{
 %%ICME, Stanford University \\ % Your institution for the title page
@@ -415,6 +415,16 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 \end{frame}
 
 \begin{frame}
+	\frametitle{Parallel Computing}
+	\begin{itemize}
+		\item Parallel computing is essential for accelerating simulation and satisfying demanding memory requirements.
+	\end{itemize}
+	\begin{figure}[hbt]
+		\includegraphics[width=0.8\textwidth]{figures/parallel}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
 	\frametitle{Distributed Optimization}
 	\begin{itemize}
 		\item ADCME also supports MPI-based distributed computing. The parallel model is designed specially for scientific computing. 
@@ -435,18 +445,17 @@ The candidate solution space is \textcolor{red}{infinite dimensional}.
 \end{frame}
 
 
-
-
-
-
-
 \begin{frame}
 	\frametitle{Granularity of Automatic Differentiation}
+	
+	\begin{itemize}
+		\item Coarser granularity gives researchers more control over gradient back-propagation. 
+	\end{itemize}
 	
 	
 	\begin{figure}[hbt]
 		\centering
-		\includegraphics[width=0.8\textwidth]{figures/adlevel}
+		\includegraphics[width=0.75\textwidth]{figures/adlevel}
 	\end{figure}
 	
 	
@@ -732,7 +741,7 @@ Here $(P_1, P_2)$ is the stress tensor.
 
 \begin{frame}
 	
-	\frametitle{Viscoelasticity}
+	\frametitle{Poroelasticity}
 	%	
 	\begin{itemize}
 		\item Multi-physics Interaction of Coupled Geomechanics and Multi-Phase Flow Equations 
@@ -756,7 +765,7 @@ Here $(P_1, P_2)$ is the stress tensor.
 \end{frame}
 
 \begin{frame}
-	\frametitle{Viscoelasticity}
+	\frametitle{Poroelasticity}
 	
 	\begin{itemize}
 		\item Comparison with space varying linear elasticity approximation
@@ -771,7 +780,7 @@ Here $(P_1, P_2)$ is the stress tensor.
 \end{frame}
 
 \begin{frame}
-	\frametitle{Viscoelasticity}
+	\frametitle{Poroelasticity}
 	\begin{figure}[hbt]
 		\includegraphics[width=0.7\textwidth]{figures/visco2}
 	\end{figure}

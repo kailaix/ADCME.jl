@@ -49,3 +49,35 @@ end
     @test norm(d_[1:end-1,1] - sin.(2tspan))<1e-3
     @test norm(d_[1:end-1,2] - sin.(3tspan))<1e-3
 end 
+
+@testset "tr_bdf2" begin 
+    D0 = sparse([1.0 0.0;1.0 1.0])
+    D1 = sparse([2.0 0.0; 0.0 1.0])
+    ts = collect(LinRange(0, 1, 100))
+    Δt = ts[2]-ts[1]
+    F = zeros(199, 2)
+    for i = 1:100
+        t = ts[i]
+        F[2*i-1, :] = [
+           t^2 + 5t + 2 
+           t^2 + 2t + 1
+        ]
+        if i<100
+            t = t + Δt/2
+            F[2*i, :] = [
+                t^2 + 5t + 2 
+                t^2 + 2t + 1
+            ]
+        end
+    end
+    td = TR_BDF2(D0, D1, Δt)
+    @test td.symbolic == false 
+    u = td(zeros(2), F)
+    
+    @test abs(u[end, 1]-2.0)<1e-5
+    @test abs(u[end, 2]-1.0)<1e-5
+
+    td = constant(td)
+    ua = td(zeros(2), F)
+    @test run(sess, ua)≈u
+end
