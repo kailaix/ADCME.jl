@@ -78,6 +78,11 @@ Modules = [ADCME]
 Pages   = ["ode.jl"]
 ```
 
+## RBF
+```
+RBF2D
+```
+
 ## Optimal Transport
 
 ```@autodocs

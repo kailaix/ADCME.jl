@@ -13,8 +13,8 @@
     O = zeros(5)
     for i = 1:5
         for j = 1:10
-            d = sqrt((x[i]-xc[j])^2 + (y[i]-yc[j])^2)
-            O[i] += c[j] * exp(-(e[j]*d)^2)
+            dist = sqrt((x[i]-xc[j])^2 + (y[i]-yc[j])^2)
+            O[i] += c[j] * exp(-(e[j]*dist)^2)
         end
         O[i] += d[1] + d[2] * x[i] + d[3] * y[i]
     end
