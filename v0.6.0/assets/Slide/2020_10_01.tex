@@ -1,0 +1,924 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%    PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass[usenames,dvipsnames]{beamer}
+\usepackage{animate}
+\usepackage{float}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{extarrows}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{minted}
+
+\newcommand{\ChoL}{\mathsf{L}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\bxi}{\bm{\xi}}
+\newcommand{\bmu}{\bm{\mu}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bJ}{\mathbf{J}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bM}{\mathbf{M}}
+
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bw}{\mathbf{w}}
+
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\sign}{\mathrm{sign}}
+\newcommand{\bt}[0]{\bm{\theta}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bzero}{\mathbf{0}}
+\renewcommand{\bf}{\mathbf{f}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bv}[0]{\mathbf{v}}
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage{soul}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+%
+%\usepackage{graphicx} % Allows including images
+%\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+%
+%
+%\usepackage{amsthm}
+%
+%\usepackage{todonotes}
+%\usepackage{floatrow}
+%
+%\usepackage{pgfplots,algorithmic,algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+%\usepackage[toc,page]{appendix}
+%\usepackage{float}
+%\usepackage{booktabs}
+%\usepackage{bm}
+%
+%\theoremstyle{definition}
+%
+\newcommand{\RR}[0]{\mathbb{R}}
+%
+%\newcommand{\bx}{\mathbf{x}}
+%\newcommand{\ii}{\mathrm{i}}
+%\newcommand{\bxi}{\bm{\xi}}
+%\newcommand{\bmu}{\bm{\mu}}
+%\newcommand{\bb}{\mathbf{b}}
+%\newcommand{\bA}{\mathbf{A}}
+%\newcommand{\bJ}{\mathbf{J}}
+%\newcommand{\bB}{\mathbf{B}}
+%\newcommand{\bM}{\mathbf{M}}
+%\newcommand{\bF}{\mathbf{F}}
+%
+%\newcommand{\by}{\mathbf{y}}
+%\newcommand{\bw}{\mathbf{w}}
+%\newcommand{\bn}{\mathbf{n}}
+%
+%\newcommand{\bX}{\mathbf{X}}
+%\newcommand{\bY}{\mathbf{Y}}
+%\newcommand{\bs}{\mathbf{s}}
+%\newcommand{\sign}{\mathrm{sign}}
+%\newcommand{\bt}[0]{\bm{\theta}}
+%\newcommand{\bc}{\mathbf{c}}
+%\newcommand{\bzero}{\mathbf{0}}
+%\renewcommand{\bf}{\mathbf{f}}
+%\newcommand{\bu}{\mathbf{u}}
+%\newcommand{\bv}[0]{\mathbf{v}}
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       \tableofcontents[currentsection]
+   \end{frame}
+}
+
+%----------------------------------------------------------------------------------------
+%    TITLE PAGE
+%----------------------------------------------------------------------------------------
+\usepackage{bm}
+\newcommand*{\TakeFourierOrnament}[1]{{%
+\fontencoding{U}\fontfamily{futs}\selectfont\char#1}}
+\newcommand*{\danger}{\TakeFourierOrnament{66}}
+
+\title[ML for Computational Engineering]{Machine Learning for Inverse Problems in Computational Engineering} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author[ADCME]{Kailai Xu, and Eric Darve \\ \url{https://github.com/kailaix/ADCME.jl}} % Your name
+%\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+%{
+%%ICME, Stanford University \\ % Your institution for the title page
+%%\medskip
+%%\textit{kailaix@stanford.edu}\quad \textit{darve@stanford.edu} % Your email address
+%}
+\date{}% Date, can be changed to a custom date
+% Mathematics of PDEs
+
+
+\begin{document}
+
+\usebackgroundtemplate{%
+\begin{picture}(0,250)
+\centering
+	{{\includegraphics[width=1.0\paperwidth]{figures/background}}}
+\end{picture}
+  } 
+%\usebackgroundtemplate{%
+%  \includegraphics[width=\paperwidth,height=\paperheight]{figures/back}} 
+\begin{frame}
+
+\titlepage % Print the title page as the first slide
+
+%dfa
+\end{frame}
+\usebackgroundtemplate{}
+
+\section{Inverse Modeling}
+
+
+
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	\begin{itemize}
+		\item \textbf{Inverse modeling} identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement.
+		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.t
+	\end{itemize}
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.8\textwidth]{figures/inverse2}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	\begin{figure}
+	\centering
+  \includegraphics[width=1.0\textwidth]{figures/inverse3}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Inverse Modeling}
+	We can formulate inverse modeling as a PDE-constrained optimization problem 
+	\begin{equation*}
+		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+	\end{equation*}
+	\begin{itemize}
+		\item The \textcolor{red}{loss function} $L_h$ measures the discrepancy between the prediction $u_h$ and the observation $u_{\mathrm{obs}}$, e.g., $L_h(u_h) = \|u_h - u_{\mathrm{obs}}\|_2^2$. 
+		\item $\theta$ is the \textcolor{red}{model parameter} to be calibrated. 
+		\item The \textcolor{red}{physics constraints} $F_h(\theta, u_h)=0$ are described by a system of partial differential equations. Solving for $u_h$ may require solving linear systems or applying an iterative algorithm such as the Newton-Raphson method. 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Function Inverse Problem}
+	
+	\begin{equation*}
+		\min_{\textcolor{red}{f}} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\textcolor{red}{f}, u_h) = 0
+	\end{equation*}
+	
+	What if the unknown is a \textcolor{red}{function} instead of a set of parameters?
+\begin{itemize}
+	\item Koopman operator in dynamical systems.
+	\item Constitutive relations in solid mechanics. 
+	\item Turbulent closure relations in fluid mechanics.
+	\item ...
+\end{itemize}
+
+The candidate solution space is \textcolor{red}{infinite dimensional}.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Machine Learning for Computational Engineering}
+	$$\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\;F_h(\textcolor{red}{NN_\theta}, u_h) = 0$$
+	\vspace{-0.5cm}
+	\begin{itemize}
+		\item Deep neural networks exhibit capability of approximating high dimensional and complicated functions. 
+		\item \textbf{Machine Learning for Computational Engineering}: \textcolor{red}{the unknown function is approximated by a deep neural network, and the physical constraints are enforced by numerical schemes}.
+		\item \textcolor{red}{Satisfy the physics to the largest extent}.
+	\end{itemize}
+	\begin{figure}[hbt]
+  \includegraphics[width=0.75\textwidth]{figures/physics_based_machine_learning.png}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Gradient Based Optimization}
+	\begin{equation}\label{equ:opt}
+		\min_{\theta} L_h(u_h) \quad \mathrm{s.t.}\; F_h(\theta, u_h) = 0
+		\end{equation}
+	
+	\begin{itemize}
+		\item We can now apply a gradient-based optimization method to (\ref{equ:opt}).
+		\item The key is to \textcolor{red}{calculate the gradient descent direction} $g^k$
+		$$\theta^{k+1} \gets \theta^k - \alpha g^k$$ 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+	\centering
+  \includegraphics[width=0.6\textwidth]{figures/im.pdf}
+\end{figure}
+
+\end{frame}
+
+
+
+\section{Automatic Differentiation}
+
+
+\begin{frame}
+	\frametitle{Automatic Differentiation}
+	The fact that bridges the \textcolor{red}{technical} gap between machine learning and inverse modeling:
+	\begin{itemize}
+		\item Deep learning (and many other machine learning techniques) and numerical schemes share the same computational model: composition of individual operators. 
+	\end{itemize}
+	
+	
+	\begin{minipage}[t]{0.4\textwidth}
+		
+		\
+		
+		
+		
+		\begin{center}
+			\textcolor{red}{Mathematical Fact}
+			
+			\
+			
+			Back-propagation 
+			
+			$||$
+			
+			Reverse-mode
+			
+			Automatic Differentiation 
+			
+			$||$
+			
+			Discrete 
+			
+			Adjoint-State Method
+		\end{center}
+	\end{minipage}~
+	\begin{minipage}[t]{0.6\textwidth}
+		\begin{figure}[hbt]
+			\includegraphics[width=0.8\textwidth]{figures/compare-NN-PDE.png}
+		\end{figure}
+	\end{minipage}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Computational Graph for Numerical Schemes}
+	
+	\begin{itemize}
+		\item To leverage automatic differentiation for inverse modeling, we need to express the numerical schemes in the ``AD language'': computational graph. 
+		\item No matter how complicated a numerical scheme is, it can be decomposed into a collection of operators that are interlinked via state variable dependencies. 
+	\end{itemize}
+	
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/cgnum}
+	\end{figure}
+	
+	
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{ADCME: Computational-Graph-based Numerical Simulation}
+	
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/custom}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Distributed Optimization}
+	\begin{itemize}
+		\item ADCME also supports MPI-based distributed computing. The parallel model is designed specially for scientific computing. 
+
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.48\textwidth]{figures/distributed1}~
+		\includegraphics[width=0.48\textwidth]{figures/distributed2}
+	\end{figure}
+
+\item Key idea: \textcolor{red}{Everything is an operator}. Computation and communications are converters of data streams (tensors) through the computational graph. 
+
+\begin{center}
+\texttt{mpi\_bcast}, \texttt{mpi\_sum}, \texttt{mpi\_send}, \texttt{mpi\_recv}, \texttt{mpi\_halo\_exchange}, ...
+\end{center}
+
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Automatic Differentiation: Forward-mode and Reverse-mode}
+	\begin{figure}
+		\centering
+		\includegraphics[width=1.0\textwidth]{figures/forwardreverse}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{What is the Appropriate Model for Inverse Problems?}
+	
+	\begin{itemize}
+		\item In general, for a function $f:\RR^n \rightarrow \RR^m$
+		% Please add the following required packages to your document preamble:
+		% \usepackage{booktabs}
+		\begin{table}[]
+			\centering
+			\begin{tabular}{@{}llll@{}}
+				\toprule
+				Mode & Suitable for ... & Complexity\footnote{$\mathrm{OPS}$ is a metric for complexity in terms of fused-multiply adds.} & Application \\ \midrule
+				Forward & $m\gg n$ & $\leq 2.5\;\mathrm{OPS}(f(x))$ & UQ \\
+				Reverse & $m\ll n$ & $\leq 4\;\mathrm{OPS}(f(x))$ & Inverse Modeling \\ \bottomrule
+			\end{tabular}
+		\end{table}
+		
+		
+		\item There are also many other interesting topics
+		\begin{itemize}
+			\item Mixed mode AD: many-to-many mappings.
+			\item Computing sparse Jacobian matrices using AD by exploiting sparse structures. 
+		\end{itemize}
+	\end{itemize}
+	{\scriptsize Margossian CC. A review of automatic differentiation and its efficient implementation. Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery. 2019 Jul;9(4):e1305.} 
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+	\frametitle{Granularity of Automatic Differentiation}
+	
+	
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.8\textwidth]{figures/adlevel}
+	\end{figure}
+	
+	
+	
+\end{frame}
+
+
+\section{Code Example}
+
+
+\begin{frame}
+	\frametitle{Inverse Modeling of the Stokes Equation}
+	
+	\begin{itemize}
+		\item The governing equation for the Stokes problem
+		$$\begin{aligned} -\textcolor{red}{\nu}\Delta \mathbf{u} + \nabla p &= \mathbf{f} & \text{ in } \Omega \\ \nabla \cdot \mathbf{u} &= 0 & \text{ in } \Omega \\ \mathbf{u} &= \mathbf{0} & \text{ on } \partial \Omega \end{aligned}$$
+	\end{itemize}
+	
+	
+	\begin{minipage}[c]{0.7\textwidth}
+		\begin{itemize}
+			\item The weak form is given by 
+			\begin{equation*}
+			\begin{aligned}
+			(\textcolor{red}{\nu} \nabla u, \nabla v) &- (p, \nabla \cdot v) &&= (f, v)\\
+			(\nabla \cdot u, q) & &&= 0
+			\end{aligned}
+			\end{equation*}
+		\end{itemize}
+	\end{minipage}~
+	\begin{minipage}[c]{0.29\textwidth}
+		\includegraphics[width=1.0\textwidth]{figures/stokesuvp}
+	\end{minipage}
+	
+	
+\end{frame}
+
+
+\begin{frame}[fragile]{}
+	\frametitle{Inverse Modeling of the Stokes Equation}
+	
+	\begin{minted}[escapeinside=||,fontsize=\small]{julia}
+|\textbf{\colorbox{green}{nu = \texttt{Variable(0.5)}}}|
+K = nu*constant(|\underline{\texttt{compute\_fem\_laplace\_matrix}}|(m, n, h))
+B = constant(|\underline{\texttt{compute\_interaction\_matrix}}|(m, n, h))
+Z = [K -B'
+-B spdiag(zeros(size(B,1)))]
+
+# Impose boundary conditions
+bd = bcnode("all", m, n, h)
+bd = [bd; bd .+ (m+1)*(n+1); ((1:m) .+ 2(m+1)*(n+1))]
+Z, _ = |\underline{\texttt{fem\_impose\_Dirichlet\_boundary\_condition1}}|(Z, bd, m, n, h)
+
+# Calculate the source term 
+F1 = |\underline{\texttt{eval\_f\_on\_gauss\_pts}}|(f1func, m, n, h)
+F2 = |\underline{\texttt{eval\_f\_on\_gauss\_pts}}|(f2func, m, n, h)
+F = |\underline{\texttt{compute\_fem\_source\_term}}|(F1, F2, m, n, h)
+rhs = [F;zeros(m*n)]
+rhs[bd] .= 0.0
+
+sol = Z\rhs 
+	\end{minted}
+	
+	
+\end{frame}
+
+
+
+\begin{frame}[fragile]{}
+	\frametitle{Inverse Modeling of the Stokes Equation}
+	
+	\begin{itemize}
+		\item The distinguished feature compared to traditional forward simulation programs: \textcolor{red}{the model output is differentiable with respect to model parameters}!
+		\begin{minted}[escapeinside=||,fontsize=\small]{julia}
+	loss = sum((sol[idx] - observation[idx])^2)
+	g = gradients(loss, nu)
+		\end{minted}
+		\item Optimization with a one-liner:	 
+	\end{itemize}
+
+\begin{minted}{julia}
+	    BFGS!(sess, loss)
+\end{minted}
+	
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.8\textwidth]{figures/lego}
+	\end{figure}
+	
+\end{frame}
+
+
+
+
+
+%\begin{frame}
+%	\frametitle{Code Example}
+%	\begin{itemize}
+%		\item  Find $b$ such that $u(0.5)=1.0$ and
+%		$$-bu''(x)+u(x) = 8 + 4x - 4x^2, x\in[0,1], u(0)=u(1)=0$$
+%	\end{itemize}
+%	\begin{figure}[hbt]
+%  \includegraphics[width=0.8\textwidth]{figures/code.png}
+%\end{figure}
+%\end{frame}
+
+
+
+
+\section{Applications}
+
+
+\begin{frame}
+	\frametitle{Learning spatially-varying physical parameters using deep neural networks}
+	\begin{itemize}
+		\item It is easy to adopt ADCME for modeling spatially-varying physical parameters using deep neural networks with a PDE solver.
+		
+		$$\boxed{\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{PDE}} + \text{\textcolor{green}{Data}} = \text{Physics Constrained Data-driven Modeling}}$$ 
+	\end{itemize}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/spatially_varying}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Linear Elasticity}
+
+		$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Linear Elasticity}} + \text{\textcolor{green}{Displacement Data}}$$ 
+	\begin{equation*}
+		\boxed{\begin{aligned}
+			& \sigma_{ij,j}  +  b_i = 0, \ x\in \Omega\\
+			&\varepsilon_{ij} = \frac{1}{2}(\textcolor{green}{u}_{j,i}+\textcolor{green}{u}_{i,j}), \ x\in \Omega\\
+			& \sigma_{ij} = \lambda\delta_{ij} \varepsilon_{kk} + \mu(\varepsilon_{ij}+ \varepsilon_{ji}), \ x\in \Omega\\
+			&\sigma_{ij}n_j = t_j, \ x\in \Gamma_N; \quad 	\textcolor{green}{u}_i = (u_0)_i, \ x\in \Gamma_D\\
+			&	\lambda = \frac{\textcolor{blue}{E}\nu}{(1+\nu)(1-2\nu)}\quad
+			\mu = \frac{\textcolor{blue}{E}\nu}{1-\nu^2}
+		\end{aligned}}
+	\end{equation*}
+	\begin{figure}[hbt]
+	\includegraphics[width=1.0\textwidth]{figures/linear_elasticity.png}
+\end{figure}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+	\frametitle{Stokes' Problem}
+
+		$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Stokes' Problem}} + \text{\textcolor{green}{Pressure Data}}$$ 
+	\begin{equation*}
+	\boxed{\begin{aligned}
+		- \nabla \cdot (\textcolor{blue}{\nu} \nabla u) + \nabla \textcolor{green}{p} &= f && \text{in } \Omega \\ 
+		\nabla \cdot u &= 0 && \text{in } \Omega \\ 
+		u &= 0 &&\text{on }\partial \Omega
+	\end{aligned}}
+\end{equation*}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/stokes_problem.png}
+	\end{figure}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Hyperelasticity}
+	
+	$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Hyperelasticity}} + \text{\textcolor{green}{Displacement Data}}$$ 
+	\begin{equation*}
+		\boxed{\begin{aligned}
+				\min_u \psi =&\; \frac{\mu}{2}(I_c - 2) - \frac{\mu}{2}\log(J) + \frac{\lambda}{8}\log(J)^2\\
+				F =& I + \nabla \textcolor{green}{u}, \ C = F^TF, \ J = \text{det}(C), \ I_c = \text{trace}(C)\\
+				\lambda =& \frac{\textcolor{red}{E}\nu}{(1+\nu)(1-2\nu)}, \quad \mu = \frac{\textcolor{red}{E}}{2(1+\nu)}
+		\end{aligned}}
+	\end{equation*}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/hyperelasticity.png}
+	\end{figure}
+	
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Burgers' Equation}
+	
+	$$\text{\textcolor{blue}{DNN}} + \text{\textcolor{red}{Burgers' Equation}} + \text{\textcolor{green}{Velocity Data}}$$ 
+	
+	\newcommand{\gu}{\textcolor{green}{u}}
+		\newcommand{\gv}{\textcolor{green}{v}}
+	\begin{equation*}
+		\boxed{
+				\begin{aligned}
+					\frac{\partial \gu}{\partial t} + \gu\frac{\partial \gu}{\partial x} + \gv \frac{\partial \gu}{\partial y} = \nabla\cdot(\textcolor{red}{\nu} \nabla \gu)\\
+					\frac{\partial \gv}{\partial t} + \gu\frac{\partial \gv}{\partial x} + \gv \frac{\partial \gv}{\partial y} = \nabla\cdot(\textcolor{red}{\nu} \nabla \gv)\\ 
+					(x,y) \in \Omega, t\in (0, T) &
+				\end{aligned}}
+	\end{equation*}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/burgers.png}
+	\end{figure}
+	
+\end{frame}
+
+
+
+
+\begin{frame}
+	\frametitle{Navier-Stokes Equation}
+	\begin{itemize}
+		\item Steady-state Navier-Stokes equation
+		\begin{equation*}
+			\begin{aligned}
+				(\mathbf{u} \cdot \nabla) \mathbf{u} &=
+				-\frac{1}{\rho} \nabla p + \nabla\cdot (\textcolor{red}{\nu} \nabla \mathbf{u}) + \mathbf{g}\\
+				\nabla \cdot \mathbf{u} &= 0
+			\end{aligned}
+		\end{equation*}
+		
+		\item Inverse problem are ubiquitous in fluid dynamics:
+		
+		\begin{figure}[hbt]
+			\centering
+			\includegraphics[width=0.4\textwidth]{figures/icepack}~
+			\includegraphics[width=0.4\textwidth]{figures/covid}
+			\caption{Left: electronic cooling; right: nasal drug delivery.}
+		\end{figure}
+		
+	\end{itemize}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Navier-Stokes Equation}
+	
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=0.49\textwidth]{figures/advertisement}~
+		\includegraphics[width=0.49\textwidth]{figures/computational_graph}
+	\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Navier-Stokes Equation}
+	\begin{itemize}
+		\item Data: $(u, v)$
+		\item Unknown: $\nu(\mathbf{x})$ (represented by a deep neural network)
+		\item Prediction: $p$ (absent in the training data) 
+		\item The DNN provides regularization, which generalizes the estimation better!
+	\end{itemize}
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=1.0\textwidth]{figures/ns_result}~
+	\end{figure}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}
+	\frametitle{ADSeismic.jl: A General Approach to Seismic Inversion}
+	\begin{itemize}
+		\item Many seismic inversion problems can be solved within a unified framework. 
+	\end{itemize}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/adseimic.jpeg}
+	\end{figure}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{NNFWI: Neural-network-based Full-Waveform Inversion}
+	
+	\begin{itemize}
+		\item Estimate velocity models from seismic observations. 
+	\end{itemize}
+	\begin{minipage}[t]{0.3\textwidth}
+		\begin{equation*}
+		\qquad\frac{\partial^2 u}{\partial t^2} = \nabla \cdot (\textcolor{red}{m}^2 \nabla u) + f
+		\end{equation*}
+	\end{minipage}~
+	\begin{minipage}[t]{0.69\textwidth}
+		\begin{figure}[hbt]
+			\centering
+			\includegraphics[width=0.7\textwidth]{figures/bp}
+		\end{figure}
+	\end{minipage}
+	
+	
+	
+	\begin{figure}[hbt]
+		\includegraphics[width=0.6\textwidth]{figures/fwi}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{NNFWI: Neural-network-based Full-Waveform Inversion}
+	
+	\begin{itemize}
+		\item Inversion results with a noise level $\sigma = \sigma_0$
+		\begin{figure}[hbt]
+			\centering
+			\includegraphics[width=0.8\textwidth]{figures/bp_results}
+		\end{figure}
+		
+		\item Inversion results for the same loss function value:
+		\begin{figure}[hbt]
+			\centering
+			\includegraphics[width=0.8\textwidth]{figures/bp_results_2}
+		\end{figure}
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{ADSeismic.jl: Performance Benchmark}
+	\begin{itemize}
+		\item Performance is a key focus of ADCME.  
+		\item ADCME enables us to utilize heterogeneous (CPUs, GPUs, and TPUs) and distributed (CPU clusters) computing environments.
+		
+		{\small Fortran: {open-source Fortran90 programs SEISMIC\_CPML}}
+	\end{itemize}
+	\begin{figure}[hbt]
+		\includegraphics[width=0.6\textwidth]{figures/adsesimic_mpi}
+	\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Constitutive Modeling}
+	
+	\begin{figure}[hbt]
+		\centering
+		\includegraphics[width=1.0\textwidth]{figures/ad_constitutive_modeling}
+	\end{figure}
+\end{frame}
+
+
+
+\newcommand{\bsigma}[0]{\bm{\sigma}}
+\newcommand{\bepsilon}[0]{\bm{\epsilon}}
+
+
+\begin{frame}
+
+	\frametitle{Poroelasticity}
+	%	
+	\begin{itemize}
+		\item Multi-physics Interaction of Coupled Geomechanics and Multi-Phase Flow Equations 
+		{\small
+			\begin{align*}
+			\mathrm{div}\bsigma(\bu) - b \nabla p &= 0\\
+			\frac{1}{M} \frac{\partial p}{\partial t} + b\frac{\partial \epsilon_v(\bu)}{\partial t} - \nabla\cdot\left(\frac{k}{B_f\mu}\nabla p\right) &= f(x,t)	\\
+			\bsigma &= \bsigma(\bepsilon, \dot\bepsilon)
+			\end{align*}
+		}
+		\item Approximate the constitutive relation by a neural network
+		{\small
+			$$\bsigma^{n+1} = \mathcal{NN}_{\bt} (\bsigma^n, \bepsilon^n) + H\bepsilon^{n+1}$$}
+	\end{itemize}		
+	\begin{figure}[hbt]	
+		\centering
+		\includegraphics[width=0.5\textwidth]{figures/ip}~
+		\includegraphics[width=0.3\textwidth]{figures/cell}
+	\end{figure}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Poroelasticity}
+	
+	\begin{itemize}
+		\item Comparison with space varying linear elasticity approximation
+		\begin{equation*}
+		\bsigma = H(x, y) \bepsilon
+		\end{equation*}
+	\end{itemize}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/visco1}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Poroelasticity}
+	\begin{figure}[hbt]
+		\includegraphics[width=0.7\textwidth]{figures/visco2}
+	\end{figure}
+	
+\end{frame}
+
+
+\begin{frame}
+\frametitle{A Paradigm for Inverse Modeling}
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{itemize}
+	\item Most inverse modeling problems can be classified into 4 categories. To be more concrete, consider the PDE for describing physics
+	\begin{equation}
+		\nabla \cdot (\textcolor{red}{\theta} \nabla u(x)) = 0\quad \mathcal{B}\mathcal{C}(u(x)) = 0
+	\end{equation}
+	We observe some quantities depending on the solution $u$ and want to estimate $\theta$.
+\end{itemize}
+{
+	\tiny
+	\begin{table}[]
+		\begin{tabular}{@{}cccc@{}}
+			\toprule
+			Expression                                       & Description                & ADCME Solution                         & Note                                     \\ \midrule
+			$\nabla \cdot (\textcolor{red}{c} \nabla u(x)) = 0$ & Parameter Inverse Problem  & \makecell{Discrete Adjoint\\ State Method}          & \makecell{$c$ is the minimizer of\\ the error functional }                     \\ \hline
+			$\nabla \cdot (\textcolor{red}{f(x)} \nabla u(x)) = 0$ & Function Inverse Problem & \makecell{Neural Network \\ Functional Approximator} & $f(x) \approx \mathcal{NN}_{w}(x)$             \\ \hline
+			$\nabla \cdot (\textcolor{red}{f(u)} \nabla u(x)) = 0$ & Relation Inverse Problem   & \makecell{Residual Learning\\ Physics Constrained Learning (PCL)}        & $f(u) \approx \mathcal{NN}_{w}(u)$             \\ \hline
+			$\nabla \cdot (\textcolor{red}{\varpi} \nabla u(x)) = 0$ & Stochastic Inverse Problem & \makecell{Physical Generative Neural Networks \\ (PhysGNN)}         & $\varpi = \mathcal{NN}_w(v_{\mathrm{latent}})$ \\ \bottomrule
+		\end{tabular}
+	\end{table}
+}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{A General Approach to Inverse Modeling}
+	\begin{figure}[hbt]
+		\includegraphics[width=1.0\textwidth]{figures/summary.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Reference}
+
+\begin{itemize}
+	\item Methodology and Implementation:
+	
+	\begin{itemize}
+			\item Physics Constrained Learning for Data-driven Inverse Modeling from Sparse Observations (\textcolor{red}{Core techniques!})
+			\item A General Approach to Seismic Inversion with Automatic Differentiation
+			\item Time-lapse Full-waveform Inversion for Subsurface Flow Problems with Intrusive Automatic Differentiation
+	\end{itemize}
+
+	
+	\item Consistutive Modeling:
+	\begin{itemize}
+		\item Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks
+		\item Learning Constitutive Relations using Symmetric Positive Definite Neural Networks
+		\item Inverse Modeling of Viscoelasticity Materials using Physics Constrained Learning
+	\end{itemize}
+	
+	\item Learning Spatially-varying Fields:
+	\begin{itemize}
+		\item Solving Inverse Problems in Steady State Navier-Stokes Equations using Deep Neural Networks
+	\end{itemize}
+	
+\end{itemize}
+
+\end{frame}
+
+
+%}
+%\usebackgroundtemplate{}
+%----------------------------------------------------------------------------------------
+%    PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+
+
+
+\end{document} 

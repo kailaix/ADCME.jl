@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>PDE/ODE Solvers · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../resources/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li class="is-active"><a class="tocitem" href>PDE/ODE Solvers</a><ul class="internal"><li><a class="tocitem" href="#Runge-Kutta-Method"><span>Runge Kutta Method</span></a></li></ul></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Resources</a></li><li class="is-active"><a href>PDE/ODE Solvers</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>PDE/ODE Solvers</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/ode.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="PDE/ODE-Solvers"><a class="docs-heading-anchor" href="#PDE/ODE-Solvers">PDE/ODE Solvers</a><a id="PDE/ODE-Solvers-1"></a><a class="docs-heading-anchor-permalink" href="#PDE/ODE-Solvers" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>The PDE/ODE solver features are currently under heavy development. We aim to provide a complete set of built-in PDE/ODE solvers.</p></div></div><h2 id="Runge-Kutta-Method"><a class="docs-heading-anchor" href="#Runge-Kutta-Method">Runge Kutta Method</a><a id="Runge-Kutta-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Runge-Kutta-Method" title="Permalink"></a></h2><p>The Runge Kutta method is one of the workhorses for solving ODEs. The method is a higher order interpolation to the derivatives. The system of ODE has the form</p><div>\[\frac{dy}{dt} = f(y, t, \theta)\]</div><p>where <span>$t$</span> denotes time, <span>$y$</span> denotes states and <span>$\theta$</span> denotes parameters. </p><p>The Runge-Kutta method is defined as</p><div>\[\begin{aligned}
+k_1 &amp;= \Delta t f(t_n, y_n, \theta)\\
+k_2 &amp;= \Delta t f(t_n+\Delta t/2, y_n + k_1/2, \theta)\\
+k_3 &amp;= \Delta t f(t_n+\Delta t/2, y_n + k_2/2, \theta)\\
+k_4 &amp;= \Delta t f(t_n+\Delta t, y_n + k_3, \theta)\\
+y_{n+1} &amp;= y_n + \frac{k_1}{6} +\frac{k_2}{3} +\frac{k_3}{3} +\frac{k_4}{6}
+\end{aligned}\]</div><p>ADCME provides a built-in Runge Kutta solver <a href="../api/#ADCME.rk4-Tuple"><code>rk4</code></a> and <a href="../api/#ADCME.ode45-Tuple"><code>ode45</code></a>. Consider an example: the Lorentz equation</p><div>\[\begin{aligned}
+\frac{dx}{dt} &amp;= 10(y-x)\\ 
+\frac{dy}{dt} &amp;= x(27-z)-y\\ 
+\frac{dz}{dt} &amp;= xy -\frac{8}{3}z
+\end{aligned}\]</div><p>Let the initial condition be <span>$x_0 = [1,0,0]$</span>, the following code snippets solves the Lorentz equation with ADCME</p><pre><code class="language-julia">function f(t, y, θ)
+    [10*(y[2]-y[1]);y[1]*(27-y[3])-y[2];y[1]*y[2]-8/3*y[3]]
+end
+x0 = [1.;0.;0.]
+rk4(f, 30.0, 10000, x0)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/lorentz.png?raw=true" alt/></p><p>We can also solve three body problem with the Runge-Kutta method. The full script is </p><pre><code class="language-julia"># 
+# adapted from 
+# https://github.com/pjpmarques/Julia-Modeling-the-World/
+# 
+using Revise
+using ADCME
+using PyPlot
+using Printf
+
+function f(t, y, θ)
+    # Extract the position and velocity vectors from the g array
+    r0, v0 = y[1:2], y[3:4]
+    r1, v1 = y[5:6], y[7:8]
+    r2, v2 = y[9:10], y[11:12]
+    
+    # The derivatives of the position are simply the velocities
+    dr0 = v0
+    dr1 = v1
+    dr2 = v2
+    
+    # Now calculate the the derivatives of the velocities, which are the accelarations
+    # Start by calculating the distance vectors between the bodies (assumes m0, m1 and m2 are global variables)
+    # Slightly rewriten the expressions dv0, dv1 and dv2 comprared to the normal equations so we can reuse d0, d1 and d2
+    d0  = (r2 - r1) / ( norm(r2 - r1)^3.0 )
+    d1  = (r0 - r2) / ( norm(r0 - r2)^3.0 )
+    d2  = (r1 - r0) / ( norm(r1 - r0)^3.0 )    
+    
+    dv0 = m1*d2 - m2*d1
+    dv1 = m2*d0 - m0*d2
+    dv2 = m0*d1 - m1*d0
+    
+    # Reconstruct the derivative vector
+    [dr0; dv0; dr1; dv1; dr2; dv2]
+end
+
+function plot_trajectory(t1, t2)
+
+    t1i = round(Int,NT * t1/T) + 1
+    t2i = round(Int,NT * t2/T) + 1
+    
+    # Plot the initial and final positions
+    # In these vectors, the first coordinate will be X and the second Y
+    X = 1
+    Y = 2
+    
+    # figure(figsize=(6,6))
+    plot(r0[t1i,X], r0[t1i,Y], &quot;ro&quot;)
+    plot(r0[t2i,X], r0[t2i,Y], &quot;rs&quot;)
+    plot(r1[t1i,X], r1[t1i,Y], &quot;go&quot;)
+    plot(r1[t2i,X], r1[t2i,Y], &quot;gs&quot;)
+    plot(r2[t1i,X], r2[t1i,Y], &quot;bo&quot;)
+    plot(r2[t2i,X], r2[t2i,Y], &quot;bs&quot;)
+    
+    # Plot the trajectories
+    plot(r0[t1i:t2i,X], r0[t1i:t2i,Y], &quot;r-&quot;)
+    plot(r1[t1i:t2i,X], r1[t1i:t2i,Y], &quot;g-&quot;)
+    plot(r2[t1i:t2i,X], r2[t1i:t2i,Y], &quot;b-&quot;)
+    
+    # Plot cente of mass
+    # plot(cx[t1i:t2i], cy[t1i:t2i], &quot;kx&quot;)
+    
+    # Setup the axis and titles
+    xmin = minimum([r0[t1i:t2i,X]; r1[t1i:t2i,X]; r2[t1i:t2i,X]]) * 1.10
+    xmax = maximum([r0[t1i:t2i,X]; r1[t1i:t2i,X]; r2[t1i:t2i,X]]) * 1.10
+    ymin = minimum([r0[t1i:t2i,Y]; r1[t1i:t2i,Y]; r2[t1i:t2i,Y]]) * 1.10
+    ymax = maximum([r0[t1i:t2i,Y]; r1[t1i:t2i,Y]; r2[t1i:t2i,Y]]) * 1.10
+    
+    axis([xmin, xmax, ymin, ymax])
+    title(@sprintf &quot;3-body simulation for t=[%.1f .. %.1f]&quot; t1 t2)
+end;
+
+m0 = 5.0
+m1 = 4.0
+m2 = 3.0
+
+# Initial positions and velocities of each body (x0, y0, vx0, vy0) 
+gi0 = [ 1.0; -1.0; 0.0; 0.0]
+gi1 = [ 1.0;  3.0; 0.0; 0.0]
+gi2 = [-2.0; -1.0; 0.0; 0.0]
+
+
+T  = 30.0
+NT  = 500*300
+g0  = [gi0; gi1; gi2]
+
+res_ = ode45(f, T, NT, g0)
+
+sess = Session(); init(sess)
+res = run(sess, res_)
+
+r0, v0, r1, v1, r2, v2 = res[:,1:2], res[:,3:4], res[:,5:6], res[:,7:8], res[:,9:10], res[:,11:12]
+
+figure(figsize=[4,1])
+subplot(131); plot_trajectory(0.0,10.0)
+subplot(132); plot_trajectory(10.0,20.0)
+subplot(133); plot_trajectory(20.0,30.0)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/threebody.png?raw=true" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../optimizers/">« Optimizers</a><a class="docs-footer-nextpage" href="../global/">Shared Memory Across Kernels »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 15 October 2020 03:46">Thursday 15 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
