@@ -286,7 +286,7 @@ The output will be the entire solution of size `(NT+1) × DOF`.
     The scheme takes the following form for n = 0, 1, ...
     $$\begin{aligned} D_1(y^{n+\frac12}-y^n) = \frac12\frac{\Delta t}{2}\left(f^{n+\frac12} + f^n - D_0 \left(y^{n+\frac12} + y^n\right)\right)\\ \left(\frac{\Delta t}{2}\right)^{-1} D_1 \left(\frac32y^{n+1} - 2y^{n+\frac12} + \frac12 y^n\right) + D_0 y^{n+1} = f^{n+1}\end{aligned}$$
 """
-struct TR_BDF2
+mutable struct TR_BDF2 
     D0::Union{SparseTensor, SparseMatrixCSC} 
     D1::Union{SparseTensor, SparseMatrixCSC}  
     Δt::Float64
