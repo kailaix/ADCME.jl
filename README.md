@@ -27,7 +27,7 @@ Several features of the library are
 * **Numerical Scheme**. Easy to implement numerical schemes for solving PDEs.
 * **Physics Constrained Learning**. Embed neural network into PDEs and solve with any numerical schemes, including implicit and iterative schemes. 
 * **Static Graphs**. Compilation time computational graph optimization; automatic parallelism for your simulation codes.
-* **Parallel Computing**. Concurrent execution and model/data parallel distributed optimization. 
+* **Parallel Computing**. [Concurrent execution](https://kailaix.github.io/ADCME.jl/dev/multithreading/) and model/data parallel [distributed optimization](https://kailaix.github.io/ADCME.jl/dev/mpi/).
 * **Custom Optimizers**. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. Try out prebuilt [Ipopt and NLopt](https://kailaix.github.io/ADCME.jl/dev/customopt/#Dropin-substitute-of-BFGS!-1) optimizers. 
 * **Sparse Linear Algebra**. Sparse linear algebra library tailored for scientific computing. 
 * **Inverse Modeling**. Many inverse modeling algorithms have been developed and implemented in ADCME, with wide applications in solid mechanics, fluid dynamics, geophysics, and stochastic processes. 
