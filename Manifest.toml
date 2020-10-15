@@ -6,6 +6,12 @@ git-tree-sha1 = "051c95d6836228d120f5f4b984dd5aba1624f716"
 uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
 version = "0.5.0"
 
+[[Artifacts]]
+deps = ["Pkg"]
+git-tree-sha1 = "c30985d8821e0cd73870b17b0ed0ce6dc44cb744"
+uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+version = "1.3.0"
+
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
@@ -47,9 +53,9 @@ version = "0.7.0"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
-git-tree-sha1 = "8cd7b7d1c7f6fcbe7e8743a58adf57788ec7f787"
+git-tree-sha1 = "f76e41cf110de7176a657c72409e722cfc86fbb6"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "3.18.0"
+version = "3.20.0"
 
 [[CompilerSupportLibraries_jll]]
 deps = ["Libdl", "Pkg"]
@@ -109,6 +115,11 @@ version = "2018.0.3+0"
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
+[[JLLWrappers]]
+git-tree-sha1 = "7cec881362e5b4e367ff0279dd99a06526d51a55"
+uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
+version = "1.1.2"
+
 [[JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "81690084b6198a2e1da36fcfda16eeca9f9f24e4"
@@ -167,10 +178,10 @@ uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
 version = "0.5.3+3"
 
 [[Parsers]]
-deps = ["Dates", "Test"]
-git-tree-sha1 = "8077624b3c450b15c087944363606a6ba12f925e"
+deps = ["Dates"]
+git-tree-sha1 = "6fa4202675c05ba0f8268a6ddf07606350eda3ce"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.0.10"
+version = "1.0.11"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
@@ -256,10 +267,10 @@ uuid = "81def892-9a0e-5fdd-b105-ffc91e053289"
 version = "1.2.0"
 
 [[Zlib_jll]]
-deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "fdd89e5ab270ea0f2a0174bd9093e557d06d4bfa"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "ded43825988ace7a311ee7e1d0f09571822509c4"
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.11+16"
+version = "1.2.11+17"
 
 [[Zstd_jll]]
 deps = ["Libdl", "Pkg"]
