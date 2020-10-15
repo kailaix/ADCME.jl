@@ -82,6 +82,8 @@ add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp
   SparseScatterUpdate/SparseScatterUpdate.cpp SparseSolver/SparseSolver.cpp TriLu/TriLu.cpp
   SparseToDense/SparseToDense.cpp TriSolve/TriSolve.cpp PrintTensor/PrintTensor.cpp
   SleepFor/SleepFor.cpp
+  RadialBasisFunction/Functions.cpp RadialBasisFunction/RadialBasisFunction.cpp 
+  RadialBasisFunction/Impl.cpp
   ${MPI_OPS})
 
 set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)

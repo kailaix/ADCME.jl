@@ -1,0 +1,10 @@
+RadialBasisFunction
+double x(?)
+double y(?)
+double xc(?)
+double yc(?)
+double eps(?)
+double c(?)
+double d(?)
+int64 kind()
+double z(?) -> output
