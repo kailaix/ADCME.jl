@@ -125,6 +125,15 @@ else
     CONDA = "$(JULIA_ADCME_DIR)/.julia/adcme/bin/conda"
 end
 
+PIP = ""
+if Sys.iswindows()
+    PIP = "$(JULIA_ADCME_DIR)/.julia/adcme/Scripts/pip.exe"
+else 
+    PIP = "$(JULIA_ADCME_DIR)/.julia/adcme/bin/pip"
+end
+# install matplotlib 
+run(`$PIP install matplotlib`)
+
 # If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
 # ENV["GPU"] = 1
 if !haskey(ENV, "GPU")
