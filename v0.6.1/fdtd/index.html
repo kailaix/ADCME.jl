@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Finite-difference Time-domain for Electromagnetics and Seismic Inversion · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../resources/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li class="is-active"><a class="tocitem" href>Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a><ul class="internal"><li><a class="tocitem" href="#FDTD"><span>FDTD</span></a></li><li><a class="tocitem" href="#Perfectly-Matched-Layer-(PML)"><span>Perfectly Matched Layer (PML)</span></a></li><li><a class="tocitem" href="#Numerical-Experiment:-Forward-Computation"><span>Numerical Experiment: Forward Computation</span></a></li></ul></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Physics Informed Machine Learning</a></li><li class="is-active"><a href>Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/fdtd.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Finite-difference-Time-domain-for-Electromagnetics-and-Seismic-Inversion"><a class="docs-heading-anchor" href="#Finite-difference-Time-domain-for-Electromagnetics-and-Seismic-Inversion">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a><a id="Finite-difference-Time-domain-for-Electromagnetics-and-Seismic-Inversion-1"></a><a class="docs-heading-anchor-permalink" href="#Finite-difference-Time-domain-for-Electromagnetics-and-Seismic-Inversion" title="Permalink"></a></h1><p>The finite-difference time-domain (FDTD) is a very conceptually and technically simple technique for full-wave simulation. It has been widely adopted in electromagnetics and geophysics. For example, the full-waveform inversion (FWI), which is arguably the most famous seismic inversion technique, is typically implemented with FDTD. It is also known as Yee scheme. Given its significance, in this section, we show how to implement FDTD in one-dimension using ADCME, and use the forward computation code to do inverse problems. </p><h2 id="FDTD"><a class="docs-heading-anchor" href="#FDTD">FDTD</a><a id="FDTD-1"></a><a class="docs-heading-anchor-permalink" href="#FDTD" title="Permalink"></a></h2><p>To make the discussion clear and consistent throughout the session, we use notations from electromagnetics, <span>$E$</span>, the electric field, and <span>$H$</span>, the magnetic flux. In 1D, the Faraday&#39;s law and Ampere&#39;s law are simplified to </p><div>\[\begin{aligned}
+\mu \frac{\partial H}{\partial t} &amp;= \frac{\partial E}{\partial x}\\ 
+\epsilon \frac{\partial E}{\partial t} &amp;= \frac{\partial H}{\partial x}
+\end{aligned}\]</div><p>We use the staggered grid shown in the following figure </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/grid.png?raw=true" alt/></p><p>The superscript denotes time step, while the subscript denotes location index. The electric field <span>$E_i^q$</span> is defined on the grid point, while the magnetic flux is defined in the cell center. The Yee algorithm alternatively updates <span>$H$</span> and <span>$E$</span> with </p><div>\[\begin{aligned}
+H_i^{q+\frac12} &amp; = H_i^{q-\frac12} + \frac{\Delta t}{\mu\Delta x} (E^q_{i+1} - E^q_i)\\ 
+E_i^{q+1} &amp;= E_i^{q} + \frac{\Delta t}{\epsilon \Delta x}(H^{q+\frac12}_{i} - H^{q+\frac12}_{i-1})
+\end{aligned}\]</div><p>When we simulate within a finite computational domain, we usually need to design a boundary condition that &quot;absorbs&quot; reflecting waves. This can be done with the so-called perfectly matched layer (PML) boundaries. In practice, we can pad the computational domain with extra grids (the magenta region in the figure above). See the next section for a detailed discussion. </p><p>In the case we want to add some source functions, there are typically two ways:</p><ul><li>Hardwiring source functions by setting <span>$E_k^q=s_k^q$</span> for all <span>$q$</span> and certain index <span>$k$</span>. </li><li>Additive source functions. This is achieved by replacing the second equation with </li></ul><div>\[E_i^{q+1} = E_i^{q} + \frac{\Delta t}{\epsilon \Delta x}(H^{q+\frac12}_{i} - H^{q+\frac12}_{i-1}) + \frac{\Delta t}{\epsilon} J_i^{q+\frac12}\]</div><h2 id="Perfectly-Matched-Layer-(PML)"><a class="docs-heading-anchor" href="#Perfectly-Matched-Layer-(PML)">Perfectly Matched Layer (PML)</a><a id="Perfectly-Matched-Layer-(PML)-1"></a><a class="docs-heading-anchor-permalink" href="#Perfectly-Matched-Layer-(PML)" title="Permalink"></a></h2><p>Let us consider the plane wave <span>$e^{i kx}$</span>. In the infinite space, the plane wave will pass through the domain of interest and never get reflected back. However, in practice, computational domains are finite. If we impose a reflection boundary condition, the plane wave will get reflected. Even if we impose Dirichlet boundary conditions, some portions of reflection is still present. These reflections are not desirable for relevant applications. Therefore, we want to find a way for damping reflected waves away. </p><p>Let us consider the plane waves <span>$e^{ikx}$</span>. It&#39;s complex but we can always think of it as an analytical continuous of <span>$sin(kx)$</span> in the complex space. Instead of looking at real <span>$x$</span>, we consider a complex <span>$x$</span>, and we have</p><div>\[e^{ik(\Re x + i\Im x)} = e^{ik\Re x - k\Im x}\]</div><p>Here is an important observation: if <span>$\Im x = f(\Re x) &gt;0$</span> for some increasing function <span>$f(x)$</span>, the magnitude of the wave <span>$e^{ikx}$</span> along the line <span>$\Re x + i f(\Re x)$</span> will decay exponentially. Thus, within a finite computational domain <span>$[0,1]$</span>, we can extend the governing equation beyond <span>$[0,1]$</span> in the complex domain, with the path given by </p><div>\[\{ x + i f(x): x\in \mathbb{R}\}\]</div><p>Here <span>$f(x) = 0$</span>, <span>$x\in (0,1)$</span>, and </p><div>\[f&#39;(x) = \frac{\sigma(x)}{k}, x&gt;1\]</div><p>The case for <span>$f(x)&lt;0$</span> is similar. </p><p>The fundamental idea is that instead of looking at the governing equation in <span>$[0,1]$</span>, we extend it analytically into the complex space. For example, the transport equation </p><div>\[\frac{\partial u(x, t)}{\partial t} = \frac{\partial u(x, t)}{\partial x}\]</div><p>becomes </p><div>\[\frac{\partial \tilde u(z, t)}{\partial t} = \frac{\partial \tilde u(z, t)}{\partial z}, z\in \mathbb{C}\]</div><p>Then the question is: what is the governing equation for <span>$\bar u(x, t) = \tilde u(x+i f(x), t)$</span>?</p><p>To simplify our notation, we omit <span>$t$</span> here because it is unrelated to the complex domain. We denote <span>$z = x + i f(x)$</span> and </p><div>\[\Re \tilde u = u_1, \Im \tilde u = u_2\]</div><p>Then we have </p><div>\[\begin{aligned}
+\frac{\partial \bar u(x)}{\partial x} &amp;= \frac{\partial \tilde u(x+i f(x))}{\partial x}\\ 
+&amp;= \frac{\partial (u_1(x+i f(x)) + i u_2(x+i f(x)))}{\partial x}\\ 
+&amp;= \frac{\partial (u_1(x+i f(x))}{\partial x} + i \frac{\partial u_2(x+i f(x)))}{\partial x} \\ 
+&amp;= \frac{\partial u_1}{\partial x} + i \frac{\partial u_2}{\partial x} + i \frac{\partial u_1}{\partial x} \frac{\partial f}{\partial x} - \frac{\partial u_2}{\partial x}\frac{\partial f}{\partial x}
+\end{aligned}\]</div><p>Note from complex analysis, </p><div>\[\frac{\partial \tilde u(z)}{\partial z} = \frac{\partial u_1}{\partial x} + i \frac{\partial u_2}{\partial x}\]</div><p>We have</p><div>\[\frac{\partial \bar u(x)}{\partial x} =\left(1 + i\frac{\partial f}{\partial x} \right) \frac{\partial \tilde u}{\partial z}\tag{1}\]</div><p>Now let us consider the Faraday&#39;s law</p><div>\[\mu \frac{\partial H}{\partial t} = \frac{\partial E}{\partial x}\tag{2}\]</div><p>We consider the plane wave <span>$H = e^{-ikx}$</span>, which we want to damp outside the computational domain. First we extend Equation 2 to the complex domain and plug <span>$H$</span> to the equation (note <span>$\frac{\partial H}{\partial t} = \frac{\partial \bar H}{\partial t}$</span>)</p><div>\[-i\mu k \bar H = \frac{\partial \tilde E}{\partial z}\]</div><p>Using Equation 1, we have</p><div>\[-i \mu k \bar H+ \mu \sigma_x(x) \bar H= \frac{\partial \bar  E}{\partial x}\]</div><p>Converting back to the time domain, we have </p><div>\[\mu\frac{\partial \bar H}{\partial t} = \frac{\partial \bar  E}{\partial x} - \mu \sigma_x(x) \bar H\]</div><p>Likewise, we have</p><div>\[\epsilon\frac{\partial \bar H}{\partial t} = \frac{\partial \bar  E}{\partial x} - \epsilon \sigma_x(x) \bar H\]</div><p>Note that the two above equations are exactly the original equations within the domain <span>$[0,1]$</span>. </p><h2 id="Numerical-Experiment:-Forward-Computation"><a class="docs-heading-anchor" href="#Numerical-Experiment:-Forward-Computation">Numerical Experiment: Forward Computation</a><a id="Numerical-Experiment:-Forward-Computation-1"></a><a class="docs-heading-anchor-permalink" href="#Numerical-Experiment:-Forward-Computation" title="Permalink"></a></h2><p>Let us consider a 1D wave equation </p><div>\[\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}\]</div><p>which is equivalent to </p><div>\[\begin{aligned}
+\frac{\partial u}{\partial t} &amp;= c \frac{\partial v}{\partial x}\\
+\frac{\partial v}{\partial t} &amp;= c \frac{\partial u}{\partial x} 
+\end{aligned}\]</div><p>This set of equations is related to Faraday&#39;s law and Ampere&#39;s law via</p><div>\[E = v, H = u, \epsilon = \frac1c, \mu = \frac1c\]</div><p>We use a hardwiring source at the center of the computational domain <span>$[0,1]$</span>. The source function is shown in the left panel. The evolution of <span>$u$</span> is shown in the right panel. </p><p>|Source Function|Evolution of <span>$u$</span>| |–|–| |<img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ricker.png?raw=true" alt/>|<img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/fdtd.gif?raw=true" alt/>|</p><pre><code class="language-julia">using ADCME
+using PyPlot 
+using ADCMEKit 
+
+n = 200
+pml = 30
+C = 100.0
+NT = 1000
+Δt = 1.5/NT 
+x0 = LinRange(0, 1, n+1)
+h = 1/n 
+xE = Array((0:n+2pml)*h .- pml*h)
+xH = (xE[2:end]+xE[1:end-1])/2 
+N = n + 2pml + 1
+
+σE = zeros(N)
+for i = 1:pml
+    d = i*h
+    σE[pml + n + 1 + i] = C* (d/(pml*h))^3
+    σE[pml+1-i] = C* (d/(pml*h))^3
+end
+
+σH = zeros(N-1)
+for i = 1:pml 
+    d = (i-1/2)*h 
+    σH[pml + n + i] = C* (d/(pml*h))^3
+    σH[pml+1-i] = C* (d/(pml*h))^3
+end
+
+function ricker(dt = 0.002, f0 = 3.0)
+    nw = 2/(f0*dt)
+    nc = floor(Int, nw/2)
+    t = dt*collect(-nc:1:nc)
+    b = (π*f0*t).^2
+    w = @. (1 - 2b)*exp(-b)
+end
+R = ricker()
+if length(R)&lt;NT+1
+    R = [R;zeros(NT+1-length(R))]
+end
+
+R_ = constant(R)
+
+# cH = constant(ones(N-1))
+cH = ones(length(xH)) * 1.5
+cE = (cH[1:end-1]+cH[2:end])/2
+Z = zeros(N)
+Z[N÷2] = 1.0
+Z = Z[2:end-1]
+
+function condition(i, E_arr, H_arr)
+    i&lt;=NT+1
+end
+
+function body(i, E_arr, H_arr)
+    E = read(E_arr, i-1)
+    H = read(H_arr, i-1)
+    ΔH = cH * (E[2:end]-E[1:end-1])/h - σH*H
+    H += ΔH * Δt
+    ΔE = cE * (H[2:end]-H[1:end-1])/h - σE[2:end-1]*E[2:end-1] #+ R_[i] * Z
+    E = scatter_add(E, 2:N-1, ΔE * Δt)
+    E = scatter_update(E, N÷2, R_[i])
+    i+1, write(E_arr, i, E), write(H_arr, i, H)
+end
+
+E_arr = TensorArray(NT+1)
+H_arr = TensorArray(NT+1)
+
+E0 = zeros(N)
+E0[N÷2] = R[1]
+E_arr = write(E_arr, 1, E0)
+H_arr = write(H_arr, 1, zeros(N-1))
+
+i = constant(2, dtype = Int32)
+
+_, E, H = while_loop(condition, body, [i, E_arr, H_arr])
+
+E = stack(E)
+H = stack(H)
+
+sess = Session(); init(sess)
+E_, H_ = run(sess, [E, H])
+
+
+pl, = plot([], [], &quot;.-&quot;)
+xlim(-0.5,1.5)
+ylim(minimum(E_), maximum(E_))
+xlabel(&quot;x&quot;)
+ylabel(&quot;y&quot;)
+t = title(&quot;time = 0.0000&quot;)
+function update(i)
+    t.set_text(&quot;time = $(round(i*Δt, digits=4))&quot;)
+    pl.set_data([xE E_[i,:]]&#39;|&gt;Array)
+end 
+p = animate(update, 1:10:NT+1)
+# saveanim(p, &quot;fdtd.gif&quot;)</code></pre><h3 id="Numerical-Experiment"><a class="docs-heading-anchor" href="#Numerical-Experiment">Numerical Experiment</a><a id="Numerical-Experiment-1"></a><a class="docs-heading-anchor-permalink" href="#Numerical-Experiment" title="Permalink"></a></h3><p>Let us consider inverting for a constant <span>$c_H$</span>. The following code is mainly a copy and paste from the above code. The optimization converges within a few iterations. </p><pre><code class="language-julia">using ADCME
+using PyPlot 
+using ADCMEKit 
+
+n = 200
+pml = 30
+C = 100.0
+NT = 1000
+Δt = 1.5/NT 
+x0 = LinRange(0, 1, n+1)
+h = 1/n 
+xE = Array((0:n+2pml)*h .- pml*h)
+xH = (xE[2:end]+xE[1:end-1])/2 
+N = n + 2pml + 1
+
+σE = zeros(N)
+for i = 1:pml
+    d = i*h
+    σE[pml + n + 1 + i] = C* (d/(pml*h))^3
+    σE[pml+1-i] = C* (d/(pml*h))^3
+end
+
+σH = zeros(N-1)
+for i = 1:pml 
+    d = (i-1/2)*h 
+    σH[pml + n + i] = C* (d/(pml*h))^3
+    σH[pml+1-i] = C* (d/(pml*h))^3
+end
+
+function ricker(dt = 0.002, f0 = 3.0)
+    nw = 2/(f0*dt)
+    nc = floor(Int, nw/2)
+    t = dt*collect(-nc:1:nc)
+    b = (π*f0*t).^2
+    w = @. (1 - 2b)*exp(-b)
+end
+R = ricker()
+if length(R)&lt;NT+1
+    R = [R;zeros(NT+1-length(R))]
+end
+
+R_ = constant(R)
+
+# cH = constant(ones(N-1))
+# cH = Variable(ones(length(cH)))
+b = softplus(Variable(1.0))
+cH = ones(length(xH)) * b
+cE = (cH[1:end-1]+cH[2:end])/2
+Z = zeros(N)
+Z[N÷2] = 1.0
+Z = Z[2:end-1]
+
+function condition(i, E_arr, H_arr)
+    i&lt;=NT+1
+end
+
+function body(i, E_arr, H_arr)
+    E = read(E_arr, i-1)
+    H = read(H_arr, i-1)
+    ΔH = cH * (E[2:end]-E[1:end-1])/h - σH*H
+    H += ΔH * Δt
+    ΔE = cE * (H[2:end]-H[1:end-1])/h - σE[2:end-1]*E[2:end-1] #+ R_[i] * Z
+    E = scatter_add(E, 2:N-1, ΔE * Δt)
+    E = scatter_update(E, N÷2, R_[i])
+    i+1, write(E_arr, i, E), write(H_arr, i, H)
+end
+
+E_arr = TensorArray(NT+1)
+H_arr = TensorArray(NT+1)
+
+E0 = zeros(N)
+E0[N÷2] = R[1]
+# v0[N÷2] = 1.0
+E_arr = write(E_arr, 1, E0)
+H_arr = write(H_arr, 1, zeros(N-1))
+
+i = constant(2, dtype = Int32)
+
+_, E, H = while_loop(condition, body, [i, E_arr, H_arr])
+
+E = stack(E); E = set_shape(E, (NT+1, N))
+H = stack(H)
+
+receivers = [pml+1:pml+10; N-pml-9:N-pml]
+loss = sum((E[:,receivers] - E_[:,receivers])^2)
+sess = Session(); init(sess)
+BFGS!(sess, loss)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rbf/">« Radial Basis Functions</a><a class="docs-footer-nextpage" href="../vae/">Variational Autoencoder »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 16 October 2020 20:38">Friday 16 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
