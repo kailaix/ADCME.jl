@@ -1,5 +1,6 @@
+# install.jl collects scripts to install many third party libraries 
 
-export install_adept, install_blas, install_openmpi, install_hypre
+export install_adept, install_blas, install_openmpi, install_hypre, install_had, install_mfem
 
 function install_blas(blas_binary)
     if Sys.iswindows()
@@ -29,11 +30,16 @@ Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR,
         mv("openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
         cd(PWD)
     else 
-        required_file = Sys.isapple() ? ".dylib" : ".so"
-        required_file = joinpath(ADCME.LIBDIR, "libopenblas")*required_file
+        required_file = get_library(joinpath(ADCME.LIBDIR, "openblas"))
         if !isfile(required_file)
             files = readdir(ADCME.LIBDIR)
             files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
+            if length(files)==0
+                CONDA = get_conda()
+                run(`$CONDA install -c anaconda libopenblas`)
+                files = readdir(ADCME.LIBDIR)
+                files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
+            end
             target = joinpath(ADCME.LIBDIR, files[1])
             symlink(target, required_file)
             @info "Symlink $(required_file) --> $(files[1])"
@@ -100,4 +106,33 @@ end
 function install_hypre()
     filepath = joinpath(@__DIR__, "..", "deps", "install_hypre.jl")
     include(filepath)
+end
+
+function install_mfem()
+    PWD = pwd()
+    change_directory()
+    http_file("https://bit.ly/mfem-4-1", "mfem-4-1.tgz")
+    uncompress("mfem-4-1.tgz", "mfem-4.1")
+    str = String(read("mfem-4.1/CMakeLists.txt"))
+    str = replace(str, "add_library(mfem \${SOURCES} \${HEADERS} \${MASTER_HEADERS})"=>"""add_library(mfem SHARED \${SOURCES} \${HEADERS} \${MASTER_HEADERS})
+set_property(TARGET mfem PROPERTY POSITION_INDEPENDENT_CODE ON)""")
+    open("mfem-4.1/CMakeLists.txt", "w") do io 
+        write(io, str)
+    end
+    change_directory("mfem-4.1/build")
+    require_file("build.ninja") do
+        ADCME.cmake(CMAKE_ARGS = ["-DCMAKE_INSTALL_PREFIX=$(joinpath(ADCME.LIBDIR, ".."))", "SHARED=YES", "STATIC=NO"])
+    end
+    require_library("mfem") do 
+        ADCME.make()
+    end
+    require_file(joinpath(ADCME.LIBDIR, get_library_name("mfem"))) do 
+        run_with_env(`$(ADCME.NINJA) install`)
+    end
+    cd(PWD)
+end
+
+function install_had()
+    change_directory()
+    git_repository("https://github.com/kailaix/had", "had")
 end

@@ -79,7 +79,7 @@ Pages   = ["ode.jl"]
 ```
 
 ## RBF
-```
+```@docs
 RBF2D
 ```
 

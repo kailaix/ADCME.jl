@@ -35,7 +35,6 @@ Returns a callable struct, i.e. to evaluates the function at locations $(x, y)$ 
 ```julia
 rbf(x, y)
 ```
-
 """
 mutable struct RBF2D
     xc::PyObject
