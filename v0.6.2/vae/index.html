@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Variational Autoencoder · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../resources/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li class="is-active"><a class="tocitem" href>Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Deep Learning Schemes</a></li><li class="is-active"><a href>Variational Autoencoder</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Variational Autoencoder</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/vae.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Variational-Autoencoder"><a class="docs-heading-anchor" href="#Variational-Autoencoder">Variational Autoencoder</a><a id="Variational-Autoencoder-1"></a><a class="docs-heading-anchor-permalink" href="#Variational-Autoencoder" title="Permalink"></a></h1><p>Let&#39;s see how to implement an autoencoder for generating MNIST images in ADCME. The mathematics underlying autoencoder is the Bayes formula</p><div>\[p(z|x) = \frac{p(x|z)p(z)}{p(x)}\]</div><p>where <span>$x$</span> a sample from the data distribution and <span>$z$</span> is latent variables. To model the data distribution given the latent variable, <span>$p(x|z)$</span>, we use a deep generative neural network <span>$g_\phi$</span> that takees <span>$z$</span> as the input and outputs <span>$x$</span>. This gives us the approximate <span>$p_\phi(x|z) \approx p(x|z)$</span>. </p><p>However, computing <span>$p(z|x)$</span> directly can be intractable. To this end, we approximate the posterior using <span>$z\sim \mathcal{N}(\mu_x, \sigma_x^2I)$</span>, where <span>$\mu_x$</span> and <span>$\sigma_x$</span> are both encoded using neural networks, where <span>$x$</span> is the input to the neural network. In this way, we obtain an approximate posterior </p><div>\[p_w(z|x) = \frac{1}{(\sqrt{2\pi \sigma_x^2})^d}\exp\left( -\frac{\|z-\mu_x)\|^2}{2\sigma_x^2} \right) \tag{1}\]</div><p>How can we choose the correct weights and biases <span>$\phi$</span> and <span>$w$</span>? The idea is to minimize the discrepancy between the true posterior and the approximate posterior Equation (1). We can use the KL divergence, which is a metric for measuring the discrepancy between two distributions</p><div>\[\mathrm{KL}(p_w(z|x)|| p(z|x)) = \mathbb{E}_{p_w}(\log p_w(z|x) - \log p(z|x)) \tag{2}\]</div><p>However, computing Equation 2 is still intractable since we do not know <span>$\log p(z|x)$</span>. Instead, we seek to minimize a maximize bound of the KL divergence </p><div>\[\begin{aligned}
+\mathrm{ELBO} &amp;=  \log p(x) - \mathrm{KL}(p_w(z|x)|| p(z|x))\\
+&amp; = \mathbb{E}_{p_w}( \log p(z,x) - \log p_w(z|x)) \\ 
+&amp; = \mathbb{E}_{p_w(z|x)}[\log p_\phi(x|z)] - \mathrm{KL}(p_w(z|x) || p(z))
+\end{aligned}\]</div><p>Note that we assumed that the generative neural network <span>$g_\phi$</span> is sufficiently expressive so <span>$p_\phi(y|z)\approx p(y|z)$</span>. Additionally, because KL divergence is always positive</p><div>\[\mathrm{ELBO} \leq \log p(x)\tag{3}\]</div><p>Equation (3) justifies the name &quot;evidence lower bound&quot;. </p><p>Let&#39;s consider how to compute ELBO for our autoencoder. For the marginal likelihood term <span>$\mathbb{E}_{p_w(z|x)}[\log p_\phi(x|z)]$</span>, for each given sample <span>$y$</span>, we can calculate the mean and covariance of <span>$z$</span>, namely <span>$\mu_x$</span> and <span>$\sigma_x^2I$</span>. We sample <span>$z_i\sim \mathcal{N}(\mu_x, \sigma_x^2I)$</span> and plug them into <span>$g_\phi$</span> and obtain the outputs <span>$x_i = g_\phi(z_i)$</span>. If we assume that the decoder model is subject to Bernoulli distribution <span>$x \sim Ber(g_\phi(z))$</span> (in this case we have <span>$g_\phi(z)\in [0,1]$</span>), we have the approximation </p><div>\[\mathbb{E}_{p_w(z|x)}[\log p_\phi(x|z)] \approx \frac{1}{n}\sum_{i=1}^n \left[x_i\log (g_\phi(z_i)) + (1-x_i) \log(1-g_\phi(z_i))\right]\tag{4}\]</div><p>Now let us consider the second term <span>$\mathrm{KL}(p_w(z|x) || p(z))$</span>. If we assign a unit Gaussian prior on <span>$z$</span>, we have</p><div>\[\begin{aligned}
+\mathrm{KL}(p_w(z|x) || p(z)) &amp;= \mathbb{E}_{p_w}[\log(p_w(z|x)) - \log(p(z)) ]\\ 
+&amp; =  \mathbb{E}_{p_w}\left[-\frac{\|z-\mu_x\|^2}{2\sigma_x^2} - d\log(\sigma_x) + \frac{\|z\|^2}{2} \right]\\
+&amp; = -d - d\log(\sigma_x) +\frac{1}{2} \|\mu_x\|^2 + \frac{d}{2}\sigma_x^2 
+\end{aligned} \tag{5}\]</div><p>Using Equation 4 and 5 we can formulate a loss function, which we can use a stochastic gradient descent method to minimize. </p><p>The following code is an example of applying the autoencoder to learn a data distribution from MNIST dataset. Here is the result using this script:</p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/vae.png?raw=true" alt/></p><pre><code class="language-julia">using ADCME
+using PyPlot
+using MLDatasets
+using ProgressMeter
+
+
+function encoder(x, n_hidden, n_output, rate)
+    local μ, σ
+    variable_scope(&quot;encoder&quot;) do 
+        y = dense(x, n_hidden, activation = &quot;elu&quot;)
+        y = dropout(y, rate, ADCME.options.training.training)
+        y = dense(y, n_hidden, activation = &quot;tanh&quot;)
+        y = dropout(y, rate, ADCME.options.training.training)
+        y = dense(y, 2n_output)
+        μ = y[:, 1:n_output]
+        σ = 1e-6 + softplus(y[:,n_output+1:end])
+    end
+    return μ, σ
+end
+
+function decoder(z, n_hidden, n_output, rate)
+    local y 
+    variable_scope(&quot;decoder&quot;) do 
+        y = dense(z, n_hidden, activation=&quot;tanh&quot;)
+        y = dropout(y, rate, ADCME.options.training.training)
+        y = dense(y, n_hidden, activation=&quot;elu&quot;)
+        y = dropout(y, rate, ADCME.options.training.training)
+        y = dense(y, n_output, activation=&quot;sigmoid&quot;)
+    end
+    return y 
+end
+
+function autoencoder(xh, x, dim_img, dim_z, n_hidden, rate)
+    μ, σ = encoder(xh, n_hidden, dim_z, rate)
+    z = μ + σ .* tf.random_normal(size(μ), 0, 1, dtype=tf.float64)
+    y = decoder(z, n_hidden, dim_img, rate)
+    y = clip(y, 1e-8, 1-1e-8)
+
+    marginal_likelihood = sum(x .* log(y) + (1-x).*log(1-y), dims=2)
+    KL_divergence = 0.5 * sum(μ^2 + σ^2 - log(1e-8 + σ^2) - 1, dims=2)
+
+    marginal_likelihood = mean(marginal_likelihood)
+    KL_divergence = mean(KL_divergence)
+
+    ELBO = marginal_likelihood - KL_divergence
+    loss = -ELBO 
+    return y, loss, -marginal_likelihood, KL_divergence
+end
+
+function step(epoch)
+    tx = train_x[1:batch_size,:]
+    @showprogress for i = 1:div(60000, batch_size)
+        idx = Array((i-1)*batch_size+1:i*batch_size)
+        run(sess, opt, x=&gt;train_x[idx,:])
+    end
+    y_, loss_, ml_, kl_ = run(sess, [y, loss, ml, KL_divergence],
+            feed_dict = Dict(
+                ADCME.options.training.training=&gt;false, 
+                x =&gt; tx
+            ))
+    println(&quot;epoch $epoch: L_tot = $(loss_), L_likelihood = $(ml_), L_KL = $(kl_)&quot;)
+
+    close(&quot;all&quot;)
+    for i = 1:3
+        for j = 1:3
+            k = (i-1)*3 + j 
+            img = reshape(y_[k,:], 28, 28)&#39;|&gt;Array
+            subplot(3,3,k)
+            imshow(img)
+        end
+    end
+    savefig(&quot;result$epoch.png&quot;)
+end
+
+
+
+n_hidden = 500
+rate = 0.1
+dim_z = 20
+dim_img = 28^2
+batch_size = 128
+ADCME.options.training.training = placeholder(true)
+x = placeholder(Float64, shape = [128, 28^2])
+xh = x
+y, loss, ml, KL_divergence = autoencoder(xh, x, dim_img, dim_z, n_hidden, rate)
+opt = AdamOptimizer(1e-3).minimize(loss)
+
+train_x = MNIST.traintensor(Float64);
+train_x = Array(reshape(train_x, :, 60000)&#39;);
+
+sess = Session(); init(sess)
+for i = 1:100
+    step(i)
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../fdtd/">« Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a><a class="docs-footer-nextpage" href="../flow/">Normalizing Flows »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 19 October 2020 07:08">Monday 19 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
