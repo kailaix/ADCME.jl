@@ -20,7 +20,7 @@ t_{n+1-\alpha_{f_2}} &amp; = (1-\alpha_{f_2}) t_{n+1 + \alpha_{f_2}} + \alpha_{f
 \sigma_{ij,j} + f_i = \ddot u_i \\
 \sigma_{ij} = \mathsf{C} \epsilon_{ij}
 \end{aligned}\]</div><p>The elasticity tensor <span>$\mathsf{C}$</span> is calculated using a Young&#39;s modulus <span>$E=1$</span> and a Poisson&#39;s ratio <span>$\nu=0.35$</span>. We consider a computational domain <span>$[0,2]\times[0,1]$</span> and time horizon <span>$t\in (0,1)$</span>, the exact solution is given by </p><div>\[u_1(x,y,t) = e^{-t}x(2-x)y(1-y)\qquad u_2(x,y,t) = e^{-t}x^2(2-x)^2y^2(1-y)^2\]</div><p>The other terms can be computed analytically based on the exact solutions.</p><pre><code class="language-julia">using ADCME
-using PoreFlow 
+using AdFem 
 using PyPlot
 
 n = 20
@@ -122,7 +122,7 @@ plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of
 end
 d, u, a = αscheme(M, spzero(2(m+1)*(n+1)), K, F, d0, u0, a0, ts; extsolve=solver, ρ = ρ  )</code></pre><p>Basically, we have</p><div>\[A_{II} a_I + A_{IB} a_B = f \Rightarrow A_{II} a_I = f-A_{IB}a_B\]</div><p>and <span>$a_B$</span>(<code>abd</code>) is the acceleration from the Dirichlet boundary condition.  </p></div></div><p>Here is a script for demonstrating how to impose the Dirichlet boundary condition</p><pre><code class="language-julia">using Revise
 using ADCME
-using PoreFlow 
+using AdFem 
 using PyPlot
 
 n = 20
@@ -233,7 +233,7 @@ plot_traj(idx2)</code></pre><h2 id="Example:-Viscosity"><a class="docs-heading-a
 \sigma_{3j,j} + f &amp;= \ddot u \\
 \sigma_{3j} &amp;= \dot \epsilon_{3j}
 \end{aligned}\]</div><p>where <span>$u(x,y,t)$</span> is the displacement in the <span>$z$</span>-direction. We assume zero Dirichlet boundary condition,  the computational domain is <span>$[0,2]\times [0,1]$</span>, and the exact solution is</p><div>\[u(x, y, t) = e^{-t} x(2-x)y(1-y)\]</div><p>The weak form of the equation is </p><div>\[\int_\Omega \ddot u\delta u + \int_\Omega \dot \epsilon\delta \epsilon = \int_\Omega f \delta u\]</div><p>In the discretization form we have</p><div>\[M\mathbf{a} + K \mathbf{v} = \mathbf{F}\]</div><pre><code class="language-julia">using ADCME
-using PoreFlow 
+using AdFem 
 
 n = 50
 m = 2n
@@ -311,4 +311,4 @@ end
 
 idx = (n÷2)*(m+1) + m÷2
 idx2 = (n÷3)*(m+1) + m÷3
-plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of <span>$\mathbf{a}$</span>, <span>$\mathbf{v}$</span>, and <span>$\mathbf{d}$</span> at <span>$(0.64,0.32)$</span>, and obtain the following plot </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/alpha_visco.png?raw=true" alt/></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-radii"><a class="tag is-link" href="#citeref-radii">radii</a>http://www.dymoresolutions.com/AnalysisControls/CreateFEModel.html</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../resource_manager/">« Resource Manager</a><a class="docs-footer-nextpage" href="../factorization/">Direct Methods for Sparse Matrices »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 16 October 2020 20:13">Friday 16 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot_traj(idx2)</code></pre><p>Using the above code, we plot the trajectories of <span>$\mathbf{a}$</span>, <span>$\mathbf{v}$</span>, and <span>$\mathbf{d}$</span> at <span>$(0.64,0.32)$</span>, and obtain the following plot </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/alpha_visco.png?raw=true" alt/></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-radii"><a class="tag is-link" href="#citeref-radii">radii</a>http://www.dymoresolutions.com/AnalysisControls/CreateFEModel.html</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../resource_manager/">« Resource Manager</a><a class="docs-footer-nextpage" href="../factorization/">Direct Methods for Sparse Matrices »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 19 October 2020 02:39">Monday 19 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
