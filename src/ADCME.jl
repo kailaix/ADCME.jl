@@ -73,10 +73,7 @@ module ADCME
             PWD = pwd()
             if !isdir("$(@__DIR__)/../deps/CustomOps/build")
                 @info "You are using ADCME for the first time. Precompiling built-in custom operators may take some time..."
-                cd("$(@__DIR__)/../deps/CustomOps")
-                rm("build", force=true, recursive=true)
-                mkdir("build")
-                cd("build")
+                ADCME.change_directory("$(@__DIR__)/../deps/CustomOps/build")
                 ADCME.cmake()
                 ADCME.make()
                 cd(PWD)
