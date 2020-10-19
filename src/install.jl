@@ -120,14 +120,25 @@ set_property(TARGET mfem PROPERTY POSITION_INDEPENDENT_CODE ON)""")
         write(io, str)
     end
     change_directory("mfem-4.1/build")
-    require_file("build.ninja") do
-        ADCME.cmake(CMAKE_ARGS = ["-DCMAKE_INSTALL_PREFIX=$(joinpath(ADCME.LIBDIR, ".."))", "SHARED=YES", "STATIC=NO"])
+    require_file("CMakeCache.txt") do
+        if Sys.iswindows()
+            cnt = String(read("../CMakeLists.txt"))
+            cnt = replace(cnt, "cmake_minimum_required(VERSION 2.8.11)"=>"cmake_minimum_required(VERSION 2.8.11)\nset(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)")
+            open("../CMakeLists.txt", "w") do io
+                write(io, cnt)
+            end
+        end
+        ADCME.cmake(CMAKE_ARGS = ["-DCMAKE_INSTALL_PREFIX=$(joinpath(ADCME.LIBDIR, ".."))", "-SHARED=YES", "-STATIC=NO"])
     end
     require_library("mfem") do 
         ADCME.make()
     end
     require_file(joinpath(ADCME.LIBDIR, get_library_name("mfem"))) do 
-        run_with_env(`$(ADCME.NINJA) install`)
+        if Sys.iswindows()
+            run_with_env(`cmd /c $(ADCME.CMAKE) --install .`)
+        else
+            run_with_env(`$(ADCME.NINJA) install`)
+        end
     end
     cd(PWD)
 end

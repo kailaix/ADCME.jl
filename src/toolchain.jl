@@ -21,7 +21,8 @@ PREFIXDIR
 =#
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
-    run_with_env, get_conda, read_with_env, get_library_name, get_pip
+    run_with_env, get_conda, read_with_env, get_library_name, get_pip,
+    copy_file
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -291,4 +292,19 @@ function get_pip()
         PIP = joinpath(BINDIR, "pip")
     end
     return PIP 
+end
+
+"""
+    copy_file(src::String, dest::String)
+
+Copy file `src` to `dest`
+"""
+function copy_file(src::String, dest::String)
+    if !isfile(src) && !isdir(src) 
+        error("$src is neither a file nor a directory")
+    end
+    require_file(dest) do 
+        cp(src, dest)
+        @info "Move file $src to $dest"
+    end
 end
