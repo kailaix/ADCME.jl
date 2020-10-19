@@ -16,7 +16,7 @@ else
 end
 
 
-if (!FORCE_REINSTALL_ADCME) && isfile(CONDA) && occursin("4.8.4", read(`$CONDA --version`, String)) && 
+if (!FORCE_REINSTALL_ADCME) && isfile(CONDA) && 
     (occursin("tensorflow-gpu", read(`$CONDA list`, String)) || 
         (!INSTALL_GPU && occursin("tensorflow", read(`$CONDA list`, String))))
     @info "ADCME dependencies have already been installed"
