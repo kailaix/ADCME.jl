@@ -31,6 +31,7 @@ Several features of the library are
 * **Custom Optimizers**. Large scale constrained optimization? Use `CustomOptimizer` to integrate your favorite optimizer. Try out prebuilt [Ipopt and NLopt](https://kailaix.github.io/ADCME.jl/dev/customopt/#Dropin-substitute-of-BFGS!-1) optimizers. 
 * **Sparse Linear Algebra**. Sparse linear algebra library tailored for scientific computing. 
 * **Inverse Modeling**. Many inverse modeling algorithms have been developed and implemented in ADCME, with wide applications in solid mechanics, fluid dynamics, geophysics, and stochastic processes. 
+* [![](https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/a82f1ae2c686e2c2a9eb2bc940540afb004c6503/ADCME/newrelease.svg)](https://github.com/kailaix/AdFem.jl)**Finite Element Method**. Get [AdFem.jl](https://github.com/kailaix/AdFem.jl) today for finite element simulation and inverse modeling! 
 
 Start building your forward and inverse modeling using ADCME today!
 

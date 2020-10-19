@@ -1,6 +1,6 @@
 # install.jl collects scripts to install many third party libraries 
 
-export install_adept, install_blas, install_openmpi, install_hypre, install_had, install_mfem
+export install_adept, install_blas, install_openmpi, install_hypre, install_had, install_mfem, install_matplotlib
 
 function install_blas(blas_binary)
     if Sys.iswindows()
@@ -135,4 +135,21 @@ end
 function install_had()
     change_directory()
     git_repository("https://github.com/kailaix/had", "had")
+end
+
+function install_matplotlib()
+    PIP = get_pip()
+    run(`$PIP install matplotlib`)
+    if Sys.isapple() 
+        CONDA = get_conda()
+        pkgs = run(`$CONDA list`)
+        if occursin("pyqt", pkgs)
+            return
+        end
+        if !isdefined(Main, :Pkg)
+            error("Package Pkg must be imported in the main module using `import Pkg` or `using Pkg`")
+        end
+        run(`$CONDA install -y pyqt`)
+        Main.Pkg.build("PyPlot")
+    end
 end

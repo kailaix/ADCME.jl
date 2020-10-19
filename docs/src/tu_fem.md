@@ -144,11 +144,11 @@ The weak formulation is given by
 
 $$\int_\Omega \kappa(x) \nabla u \cdot \nabla v dx = - \int_\Omega f(x) v(x) dx\quad \forall v \in H_0^1(\Omega)$$
 
-The strategy is to implement two custom operators, one for computing the stiffness matrix, and the other for computing the right hand side. We suggest readers to use our [PoreFlow](https://github.com/kailaix/PoreFlow.jl) library instead of their own. the PoreFlow library is built on ADCME and contains a rich set of custom operators that allow users to implement FEM fairly easily. 
+The strategy is to implement two custom operators, one for computing the stiffness matrix, and the other for computing the right hand side. We suggest readers to use our [AdFem](https://github.com/kailaix/AdFem.jl) library instead of their own. the AdFem library is built on ADCME and contains a rich set of custom operators that allow users to implement FEM fairly easily. 
 
 
 ```julia
-using PoreFlow 
+using AdFem 
 using PyPlot 
 
 mmesh = Mesh(50, 50, 1/50)

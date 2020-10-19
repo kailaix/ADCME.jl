@@ -21,7 +21,7 @@ PREFIXDIR
 =#
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
-    run_with_env, get_conda, read_with_env, get_library_name
+    run_with_env, get_conda, read_with_env, get_library_name, get_pip
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -276,4 +276,19 @@ function read_with_env(cmd::Cmd, env::Union{Missing, Dict} = missing)
         ENV_ = merge(env, ENV_)
     end
     String(read(setenv(cmd, ENV_)))
+end
+
+"""
+    get_pip()
+
+Returns the location for `pip`
+"""
+function get_pip()
+    PIP = ""
+    if Sys.iswindows()
+        PIP = joinpath(BINDIR, "pip.exe")
+    else 
+        PIP = joinpath(BINDIR, "pip")
+    end
+    return PIP 
 end

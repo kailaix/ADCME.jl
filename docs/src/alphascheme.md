@@ -102,7 +102,7 @@ The other terms can be computed analytically based on the exact solutions.
 
 ```julia
 using ADCME
-using PoreFlow 
+using AdFem 
 using PyPlot
 
 n = 20
@@ -225,7 +225,7 @@ Here is a script for demonstrating how to impose the Dirichlet boundary conditio
 ```julia
 using Revise
 using ADCME
-using PoreFlow 
+using AdFem 
 using PyPlot
 
 n = 20
@@ -360,7 +360,7 @@ $$M\mathbf{a} + K \mathbf{v} = \mathbf{F}$$
 
 ```julia
 using ADCME
-using PoreFlow 
+using AdFem 
 
 n = 50
 m = 2n

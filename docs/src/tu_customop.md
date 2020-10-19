@@ -4,10 +4,10 @@
     As a reminder, there are many built-in custom operators in `deps/CustomOps` and they are good resources for understanding custom operators. The following is a step-by-step instruction on how custom operators are implemented. 
 
 ## The Need for Custom Operators 
-Custom operators are ways to add missing features or improve performance critical components in ADCME. Typically users do not have to worry about custom operators and performance of prototypes is in general pretty good. However, in the following situation custom opreators might be very useful
+Custom operators are ways to add missing features or improve performance critical components in ADCME. Typically users do not have to worry about custom operators. However, in the following situation custom opreators might be very useful
 
 - Direct implementation in ADCME is inefficient, e.g., vectorizing some codes is difficult. 
-- There are legacy codes users want to reuse, such as Fortran libraries.  
+- There are legacy codes users want to reuse, such as Fortran libraries or adjoint-state method solvers.  
 - Special acceleration techniques, such as checkpointing scheme, MPI-enabled linear solvers, and FPGA/GPU-accelerated codes. 
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom.png?raw=true)
@@ -15,13 +15,13 @@ Custom operators are ways to add missing features or improve performance critica
 
 ## The Philosophy of Implementing Custom Operators
 
-Usually the motivation for implementing custom operators is to enable gradient backpropagation for some performance critical operators. However, not all performance critical operators participate the automatic differentiation. Therefore, before we devote ourselves to implementating custom operators, we need to identify which operators need to be implemented as custom operators. 
+Usually the motivation for implementing custom operators is to enable gradient backpropagation for some performance critical operators. However, not all performance critical operators participate the automatic differentiation. Using terminologies from programming, these computations are "constant expressions", which can be evaluated at compilation time (constant folding). Therefore, before we devote ourselves to implementating custom operators, we need to identify which operators need to be implemented as custom operators. 
 
 ![forwardbackward](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/forwardbackward.png?raw=true)
 
-This identification task can be done by sketching out the computational graph of your program. Assume your optimization outer loops update $x$ repeatly, then we can trace all downstream the operators that depend on this parameter $x$. We call the dependent operators "tensor operations", because they are essentially TensorFlow operators that consume and output tensors. The dependent variables are called "tensors". The other side of tensors or tensor operations is "numerical arrays" and "numerical operations". The names seem a bit vague here but the essence is that numerical operations/arrays do no participate automatic differentiation during the optimization. They are essentially computed once. 
+This identification task can be done by sketching out the computational graph of your program. Assume your optimization outer loops update $x$ repeatly, then we can track all downstream the operators that depend on this parameter $x$. We call the dependent operators "tensor operations", because they are essentially TensorFlow operators that consume and output tensors. The dependent variables are called "tensors". The counterpart of tensors and tensor operations are "numerical arrays" and "numerical operations", respectively. The names seem a bit vague here but the essence is that numerical operations/arrays do no participate automatic differentiation during the optimization, so the values can be precomputed only once during the entire optimization process. 
 
-In ADCME, we can precompute all numerical quantities of numerical arrays using Julia. No TensorFlow operators or custom operators are needed. This procedure combines the best of the two worlds: the simple syntax and high performance computing environment provided by Julia, and the efficient AD capability provided by TensorFlow. The high performance computing for precomputing cannot be provided by Python, the official language that TensorFlow or PyTorch supports. Readers migh suspect that such precomputing may not be significant in many tasks. Actually, the precomputing constitutes a large portion in scientific computing. For example, researchers assemble matrices, prepare geometries and construct preconditioners in a finite element program. These tasks are by no means trivial and cheap. The consideration for  performance in scientific computing actually forms the major motivation behind adopting Julia for the major language for ADCME. 
+In ADCME, we can precompute all numerical quantities of numerical arrays using Julia. No TensorFlow operators or custom operators are needed. This procedure combines the best of the two worlds: the simple syntax and high performance computing environment provided by Julia, and the efficient AD capability provided by TensorFlow. The high performance computing for precomputing cannot be provided by Python, the main scripting language that TensorFlow or PyTorch supports. Readers migh suspect that such precomputing may not be significant in many tasks. Actually, the precomputing constitutes a large portion in scientific computing. For example, researchers assemble matrices, prepare geometries and construct preconditioners in a finite element program. These tasks are by no means trivial and cheap. The consideration for  performance in scientific computing actually forms the major motivation behind adopting Julia for the major language for ADCME. 
 
 
 
@@ -67,7 +67,7 @@ The last line is the output, denoted by ` -> output` (do not forget the whitespa
 
 **Step 2: Implement the kernels**
 
-Run `customop()` again and there will be `CMakeLists.txt`, `gradtest.jl`, `MySparseSolver.cpp` appearing in the current directory. `MySparseSolver.cpp` is the main wrapper for the codes and `gradtest.jl` is used for testing the operator and its gradients. `CMakeLists.txt` is the file for compilation. 
+Run `customop()` again and there will be `CMakeLists.txt`, `gradtest.jl`, `MySparseSolver.cpp` appearing in the current directory. `MySparseSolver.cpp` is the main wrapper for the codes and `gradtest.jl` is used for testing the operator and its gradients. `CMakeLists.txt` is the file for compilation. In the gradient back-propagation (`backward` below), we want to back-propagate the gradients from the output to the inputs, and the associated rule can be derived using adjoint-state methods. 
 
 Create a new file `MySparseSolver.h` and implement both the forward simulation and backward simulation (gradients)
 
@@ -122,7 +122,7 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 
 **Step 3: Compile**
 
-You should always compile your custom operator using the built-in toolchain `ADCME.make` and `ADCME.cmake` to ensure compatability such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:
+You should always compile your custom operator using the [built-in toolchain](https://kailaix.github.io/ADCME.jl/dev/toolchain/) `ADCME.make` and `ADCME.cmake` to ensure compatability such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:
 
 | Variable      | Description                           |
 | ------------- | ------------------------------------- |
@@ -421,7 +421,12 @@ endforeach(IDX)
 
 ## Loading Order
 
-To ensure that TensorFlow can find all the registered symbols, it is recommended that you should always load the shared libraries first if you also run `ccall` on the shared library. This can be done with [`load_op_and_grad`](@ref) or [`load_op`](@ref) by passing the loaded shared library (via `tf.load_op_library`) handle. 
+To ensure that TensorFlow can find all the registered symbols, it is recommended that you should always load the shared libraries first if you also run `ccall` on the shared library. This can be done using [`load_library`](@ref) to obtain a handle to the shared library. Then you can use the handle in [`load_op_and_grad`](@ref) or [`load_op`](@ref). For example
+
+```julia
+lib = load_library("path/to/my/library")
+my_custom_op = load_op_and_grad(lib, "my_custom_op")
+```
 
 
 ## Error Handling
@@ -630,14 +635,14 @@ ERROR: LoadError: ADCME is not properly built; run `Pkg.build("ADCME")` to fix t
 
 **A:** Build ADCME using `Pkg.build("ADCME")`. Exit Julia and open Julia again. Check whether `deps.jl` exists in the `deps` directory of your Julia package (optional).
 
-
 **Q: On Mac, the PyPlot package gives the warning: PyPlot is using tkagg backend, which is known to cause crashes on MacOS (#410); use the MPLBACKEND environment variable to request a different backend.**
 
 **A:** 
 ```julia
-using Conda
-Conda.add("pyqt")
+using ADCME
 using Pkg
+CONDA = get_conda()
+run(`$CONDA install -y pyqt`)
 Pkg.build("PyPlot")
 ```
 This will install a working backend for PyPlot. 

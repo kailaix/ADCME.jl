@@ -211,7 +211,7 @@ The following plot shows the estimated mean together with 2 standard deviations.
 ```julia
 using ADCME
 using PyPlot
-using PoreFlow
+using AdFem
 
 
 Random.seed!(233)
@@ -291,7 +291,7 @@ We apply the UQ method and obtain the standard deviation plot on the left, toget
 using Revise
 using ADCME
 using PyPlot
-using PoreFlow
+using AdFem
 
 
 m = 40

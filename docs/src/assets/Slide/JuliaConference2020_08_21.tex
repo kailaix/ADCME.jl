@@ -521,7 +521,7 @@ Targeting at \textcolor{red}{scientific computing}:
 \begin{itemize}
 	\item Sparse linear algebra;
 	\item MPI-based distributed computing;
-	\item Domain specific numerical schemes: seismic inversion (ADSeismic.jl), fluid dynamics (FwiFlow.jl), geomechanics (PoreFlow.jl), solid mechanics (NNFEM.jl), $\ldots$
+	\item Domain specific numerical schemes: seismic inversion (ADSeismic.jl), fluid dynamics (FwiFlow.jl), geomechanics (AdFem.jl), solid mechanics (NNFEM.jl), $\ldots$
 \end{itemize}
 \end{frame}
 
@@ -603,7 +603,7 @@ println("Estimated b = ", run(sess, b))
 		\begin{equation*}
 			\int_\Omega \kappa \nabla u \cdot \nabla v d\mathbf{x} = \int_\Omega f v d\mathbf{x}
 		\end{equation*}
-		\item The variational problem is transcribed into numerical simulation using domain specific implementations from PoreFlow.jl:
+		\item The variational problem is transcribed into numerical simulation using domain specific implementations from AdFem.jl:
 	\end{itemize}
 	{\small
 	\begin{lstlisting}
@@ -815,7 +815,7 @@ L_{2211}  & L_{2222} & &   & &\\
 
 
 \begin{frame}
-	\frametitle{PoreFlow.jl: FEM/FVM on Structured Grids}
+	\frametitle{AdFem.jl: FEM/FVM on Structured Grids}
 	\begin{itemize}
 		\item Steady-state Navier-Stokes equation
 		\begin{equation*}
@@ -841,7 +841,7 @@ L_{2211}  & L_{2222} & &   & &\\
   
   
   \begin{frame}
-  	\frametitle{PoreFlow.jl: FEM/FVM on Structure Grids}
+  	\frametitle{AdFem.jl: FEM/FVM on Structure Grids}
   	
   	\begin{figure}[hbt]
     \centering
@@ -853,7 +853,7 @@ L_{2211}  & L_{2222} & &   & &\\
   
   
   \begin{frame}
-  	\frametitle{PoreFlow.jl: FEM/FVM on Structure Grids}
+  	\frametitle{AdFem.jl: FEM/FVM on Structure Grids}
 \begin{itemize}
 	\item Data: $(u, v)$
 	\item Unknown: $\nu(\mathbf{x})$ (represented by a deep neural network)
