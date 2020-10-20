@@ -111,23 +111,10 @@ end
 function install_mfem()
     PWD = pwd()
     change_directory()
-    http_file("https://bit.ly/mfem-4-1", "mfem-4-1.tgz")
-    uncompress("mfem-4-1.tgz", "mfem-4.1")
-    str = String(read("mfem-4.1/CMakeLists.txt"))
-    str = replace(str, "add_library(mfem \${SOURCES} \${HEADERS} \${MASTER_HEADERS})"=>"""add_library(mfem SHARED \${SOURCES} \${HEADERS} \${MASTER_HEADERS})
-set_property(TARGET mfem PROPERTY POSITION_INDEPENDENT_CODE ON)""")
-    open("mfem-4.1/CMakeLists.txt", "w") do io 
-        write(io, str)
-    end
-    change_directory("mfem-4.1/build")
+    http_file("https://github.com/kailaix/mfem/archive/shared-msvc-dev.zip", "mfem.zip")
+    uncompress("mfem.zip", "mfem-shared-msvc-dev")
+    change_directory("mfem-shared-msvc-dev/build")
     require_file("CMakeCache.txt") do
-        if Sys.iswindows()
-            cnt = String(read("../CMakeLists.txt"))
-            cnt = replace(cnt, "cmake_minimum_required(VERSION 2.8.11)"=>"cmake_minimum_required(VERSION 2.8.11)\nset(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)")
-            open("../CMakeLists.txt", "w") do io
-                write(io, cnt)
-            end
-        end
         ADCME.cmake(CMAKE_ARGS = ["-DCMAKE_INSTALL_PREFIX=$(joinpath(ADCME.LIBDIR, ".."))", "-SHARED=YES", "-STATIC=NO"])
     end
     require_library("mfem") do 
@@ -138,6 +125,21 @@ set_property(TARGET mfem PROPERTY POSITION_INDEPENDENT_CODE ON)""")
             run_with_env(`cmd /c $(ADCME.CMAKE) --install .`)
         else
             run_with_env(`$(ADCME.NINJA) install`)
+        end
+    end
+    if Sys.iswindows()
+mfem_h = """
+// Auto-generated file.
+#undef NO_ERROR 
+#undef READ_ERROR 
+#undef WRITE_ERROR
+#undef ALIAS
+#undef REGISTERED
+#include "mfem/mfem.hpp"
+"""
+        open(joinpath(ADCME.LIBDIR, "..",  "include", "mfem.hpp"), "w") do io 
+            write(io, mfem_h)
+            @info "Fixed mfem.hpp definitions"
         end
     end
     cd(PWD)

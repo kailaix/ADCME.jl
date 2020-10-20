@@ -43,7 +43,9 @@ end
     uncompress(zipfile::AbstractString, file::AbstractString)
 
 Uncompress a zip file `zipfile` to `file` (a directory). Note this function does not check that the 
-uncompressed content has the name `file`. Users may use `mv uncompress_file file` to enforce the consistency.
+uncompressed content has the name `file`. It is used as a hint to skip `uncompress` action.
+
+Users may use `mv uncompress_file file` to enforce the consistency.
 """
 function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString}=missing)
     zipfile = abspath(zipfile)
@@ -51,7 +53,7 @@ function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString
         d = "."
     else
         file = abspath(file)
-        d = splitdir(file)
+        d = splitdir(file)[1]
     end
     uncompress_ = ()->begin
         if length(zipfile)>4 && zipfile[end-3:end]==".zip"
