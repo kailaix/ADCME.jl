@@ -13,36 +13,11 @@ CustomOptimizer,
 newton_raphson,
 newton_raphson_with_grad,
 NonlinearConstrainedProblem,
-pack, unpack,
-UnconstrainedOptimizer,
-getInit, getLoss, getLossAndGrad, update!,
-setSearchDirection!, linesearch, getSearchDirection, getOptimizerState,
-Optimize!
-
-using .Optimizer
-export Optimizer
-for OP in [:ADAM, :Descent,
-    :Momentum, :Nesterov, :RMSProp, :RADAM,
-    :AdaMax, :ADAGrad, :ADADelta, :AMSGrad,
-    :NADAM, :LBFGS, :AndersonAcceleration, :ExpDecay, :InvDecay]
-    @eval begin
-        $OP = Optimizer.$OP 
-        export $OP 
-    end
-end
+Optimize!,
+Optimizer
 
 
-export apply!
-"""
-    apply!(opt, x, g) 
-
-Modifies the gradient direction `g` to the modified direction (if line search is used, `-g` is the search direction).
-
-- `opt`: Optimizer, such as `Descent`, `ADAM`
-- `x`: current state, a real vector
-- `g`: gradient 
-"""
-apply! = Optimizer.apply!
+#### Section 1: TensorFlow Optimizers ####
 
 function AdamOptimizer(learning_rate=1e-3;kwargs...)
     return tf.train.AdamOptimizer(;learning_rate=learning_rate,kwargs...)
@@ -688,6 +663,24 @@ function BFGS!(sess::PyObject, loss::PyObject, grads::Union{Array{T},Nothing,PyO
 end
 
 
+#### Section 2: External Optimizers ####
+# each optimizer has the following method 
+# optimize(opt, f, g!, x0, options)
+
+
+"""
+    Optimizer
+
+An abstract type for optimizers. The optimizers must have the following fields:
+
+- `f`, a scalar function to evaluate the loss function, signature: `f(x::Array{Float64, 1})::Array{Float64, 1}`
+- `g!`, a void function with signature `g!(G, x)`. The gradient is evaluated at location `x` and stored in `G`.
+- `x0`, initial guess 
+- `options`: a dictionary. By default, it has fields: `f_tol`, `g_tol`, `x_tol`, `step_callback`
+"""
+abstract type Optimizer end
+
+
 """
     Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     vars::Union{Array{PyObject},PyObject, Missing} = missing, 
@@ -698,8 +691,7 @@ end
     f_tol::Union{Missing, Float64} = missing,
     g_tol::Union{Missing, Float64} = missing, kwargs...) where T<:Union{Nothing, PyObject}
 
-
-An interface for using optimizers in the Optim package. 
+An interface for using optimizers in the Optim package or custom optimizers. 
 
 - `sess`: a session;
 
@@ -714,6 +706,9 @@ An interface for using optimizers in the Optim package.
 - `callback`: callback after each linesearch completion (NOT one step in the linesearch)
 
 Other arguments are passed to Options in Optim optimizers. 
+
+
+We can also construct optimizer as a [`Optimizer`](@ref).
 """
 function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     vars::Union{Array{PyObject},PyObject, Missing} = missing, 
@@ -723,9 +718,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     x_tol::Union{Missing, Float64} = missing,
     f_tol::Union{Missing, Float64} = missing,
     g_tol::Union{Missing, Float64} = missing, kwargs...) where T<:Union{Nothing, PyObject}
-    if !isdefined(Main, :Optim)
-        error("Package Optim.jl must be imported in the main module using `import Optim` or `using Optim`")
-    end
+    
     vars = coalesce(vars, get_collection())
     grads = coalesce(grads, gradients(loss, vars))
     if isa(vars, PyObject); vars = [vars]; end
@@ -774,6 +767,25 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         G[:] = run(sess, grds)
     end
 
+    if isa(optimizer, Optimizer)
+        optimizer.f = f 
+        optimizer.g! = g!
+        optimizer.x0 = x0 
+        optimizer.options = Dict(
+            :x_tol=>coalesce(x_tol, 1e-12),
+            :f_tol=>coalesce(f_tol, 1e-12),
+            :g_tol=>coalesce(g_tol, 1e-12),
+            :step_callback=>callback, 
+            kwargs...
+        )
+        __losses = Main.optimize(optimizer)
+        return __losses
+    end
+
+    if !isdefined(Main, :Optim)
+        error("Package Optim.jl must be imported in the main module using `import Optim` or `using Optim`")
+    end
+
     function callback1(x)
         @info x.iteration, x.value
         __iter = x.iteration
@@ -801,315 +813,5 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         g_tol = coalesce(g_tol, 1e-12),
          kwargs...))
     return __losses
-end
-
-
-# #---------------------------------------------------------------
-# # Custom Optimizers 
-
-function pack(jvars::Array)
-    k = 0
-    l = sum([length(v) for v in jvars])
-    val = zeros(l)
-    for i = 1:length(jvars)
-        if length(size(jvars[i]))==0
-            val[k+1] = jvars[i]
-            k+=1
-        elseif length(size(jvars[i]))==1
-            val[k+1:k+length(jvars[i])] = jvars[i]
-            k += length(jvars[i])
-        else
-            val[k+1:k+length(jvars[i])] = permutedims(jvars[i], collect(ndims(jvars[i]):-1:1))[:]
-            k += length(jvars[i])
-        end
-    end
-    return val 
-end
-
-function unpack(jvars::Array{<:Real}, vars::Array{PyObject})
-    a = Array{Any}(undef, length(vars))
-    k = 0
-    for i = 1:length(vars)
-        vsize = size(vars[i])
-        if length(vsize)==0
-            a[i] = jvars[k+1]
-            k += 1
-        elseif length(vsize)==1
-            a[i] = jvars[k+1:k+length(vars[i])]
-            k += length(vars[i])
-        else
-            a[i] = permutedims(reshape(jvars[k+1:k+length(vars[i])], reverse(vsize)),collect(ndims(vars[i]):-1:1))
-            k += length(vars[i])
-        end
-    end
-    return a 
-end
-
-mutable struct UnconstrainedOptimizer
-    eval_fn_and_grad::Function
-    eval_fn::Function
-    eval_grad::Function
-    eval_fn_and_grad_ls::Function
-    eval_fn_ls::Function
-    eval_grad_ls::Function 
-    get_init::Function
-    update_fn::Function
-    xs
-    d
-    f_ncall::Int64 
-    df_ncall::Int64
-    vars::Array{PyObject}
-end
-
-function Base.:show(io::IO, uo::UnconstrainedOptimizer)
-    print("UnconstrainedOptimizer with variables: \n$(uo.vars...)")
-end
-
-
-"""
-    UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
-    vars::Union{Array, Missing} = missing, callback::Union{Missing,Function}=missing,
-    grads::Union{Missing, Array} = missing)
-
-Constructs an unconstrained optimization optimizer. 
-
-- `callback` is called whenever the loss function is evaluated in 
-the **linesearch** stage. It has the signature
-
-```
-callback(α::Float64, loss::Float64) 
-```
-
-- If `loss_grads` is provided, it will be used as gradients instead of `gradients(loss, vars)`. 
-
-# Without Linesearch
-```
-reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
-x = Variable(2*ones(10))
-y = constant(ones(10))
-loss = sum((y-x)^4)
-sess = Session(); init(sess)
-uo = UnconstrainedOptimizer(sess, loss)
-
-getInit(uo) # get initial guess
-getLoss(uo, 3*ones(10)) # get the loss function 
-getLossAndGrad(uo, 3*ones(10)) # get the loss function and grad 
-
-x0 = getInit(uo)
-for i = 1:100
-    global x0 
-    l, g = getLossAndGrad(uo, x0)
-    x0 -= 1/(1+i) * g 
-    @info l
-end
-update(uo, x0)
-
-run(sess, x0)
-```
-
-# With Linesearch
-```
-using LineSearches
-reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
-x = Variable(2*ones(10))
-y = constant(ones(10))
-loss = mean((y-x)^4)
-sess = Session(); init(sess)
-uo = UnconstrainedOptimizer(sess, loss)
-
-ls = BackTracking()
-x0 = getInit(uo)
-f, df = getLossAndGrad(uo, x0)
-setSearchDirection!(uo, x0, -df)
-linesearch(uo, f, df, ls, 100.0)
-```
-"""
-function UnconstrainedOptimizer(sess::PyObject, loss::PyObject; 
-    vars::Union{Array, Missing} = missing, callback::Union{Missing,Function}=missing,
-    grads::Union{Missing, Array} = missing)
-
-    if ismissing(vars)
-        vars = get_collection()
-    end
-    T = get_dtype(vars[1]) # Only FloatXX are supported 
-    
-    # we use a packed vector `pl` for internal update. This makes it easy to interact with external optimizers. 
-    pl = placeholder(T, shape = sum([length(v) for v in vars]))
-    update_op = PyObject[]
-    k = 0
-    for i = 1:length(vars)
-        push!(update_op, assign(vars[i], reshape(pl[k+1:k+length(vars[i])], size(vars[i]))))
-    end
-    update_op = group(update_op)
-
-    # search direction 
-    d = placeholder(T, shape = sum([length(v) for v in vars]))
-    raw_loss_grads = [tf.convert_to_tensor(x) for x in coalesce(grads, gradients(loss, vars, unconnected_gradients="zero"))]
-    loss_grads = vcat([reshape(x, (-1,)) for x in raw_loss_grads]...)
-    loss_grads_ls = sum(dot(d, loss_grads))
-
-
-    function eval_fn_and_grad(xs::Array{<:Real, 1})
-        update_fn(xs)
-        l, grad = run(sess, [loss, loss_grads])
-        return l, grad
-    end
-
-    function eval_fn(xs::Array{<:Real, 1})
-        update_fn(xs)
-        run(sess, loss)
-    end
-
-    function eval_grad(xs::Array{<:Real, 1})
-        update_fn(xs)
-        grad = run(sess, loss_grads)
-        return grad
-    end
-
-    function eval_fn_and_grad_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
-        xs += α*search_direction
-        update_fn(xs)
-        l, grad = run(sess, [loss, loss_grads_ls], d=>search_direction)
-        !ismissing(callback) && callback(α, l)
-        return l, grad
-    end
-
-    function eval_fn_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
-        xs += α*search_direction
-        update_fn(xs)
-        l = run(sess, loss, d=>search_direction)
-        !ismissing(callback) && callback(α, l)
-        return l 
-    end
-
-
-    function eval_grad_ls(xs::Array{<:Real, 1}, search_direction::Array{<:Real, 1}, α::Real)
-        xs += α*search_direction
-        update_fn(xs)
-        grad = run(sess, loss_grads_ls, d=>search_direction)
-        return grad
-    end
-  
-    function get_init()
-        ret = run(sess, vars)
-        ret = pack(ret)
-        return ret 
-    end
-
-    function update_fn(xs)
-        run(sess, update_op, pl=>xs)
-    end
-
-    UnconstrainedOptimizer(
-        eval_fn_and_grad,
-        eval_fn,
-        eval_grad,
-        eval_fn_and_grad_ls,
-        eval_fn_ls,
-        eval_grad_ls,
-        get_init,
-        update_fn,
-        missing, 
-        missing,
-        0,
-        0,
-        vars
-    )    
-end
-
-
-function getInit(UO::UnconstrainedOptimizer)
-    UO.get_init()
-end
-"""
-    getLoss(UO::UnconstrainedOptimizer, xs)
-
-Returns `Loss(xs)`.
-"""
-function getLoss(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
-    UO.f_ncall += 1
-    UO.eval_fn(xs)
-end
-
-
-@doc raw"""
-    getLossAndGrad(UO::UnconstrainedOptimizer, xs)
-
-Returns 
-
-$$L(x), \qquad \nabla L(x)$$
-"""
-function getLossAndGrad(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
-    UO.f_ncall += 1
-    UO.df_ncall += 1
-    UO.eval_fn_and_grad(xs)
-end
-
-""" 
-getOptimizerState(UO::UnconstrainedOptimizer, xs)
-
-Returns the unpacked value based on the packed vector `xs`.
-
-# Example
-```julia
-a = Variable(ones(10,10))
-loss = sum(a)
-sess = Session(); init(sess)
-uo = UnconstrainedOptimizer(sess, loss, vars = [a])
-x0 = getInit(uo) # equal to ones(100)
-y0 = getOptimizerState(uo, x0) 
-# 1-element Array{Any,1}:
-# [1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0; … ; 1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0]
-```
-"""
-function getOptimizerState(UO::UnconstrainedOptimizer, xs::Array{<:Real, 1})
-    unpack(xs, UO.vars)
-end
-
-
-"""
-    linesearch(UO::UnconstrainedOptimizer,  f::T, df, linesearch_fn, α::T=1.0) where T<:Real
-
-Performs linesearch. `f` and `df` are the current loss function value and gradient. `α` is the initial step size for linesearch. 
-
-`linesearch_fn` has the signature
-
-`α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)`
-
-Here the inputs are 
-
-- `φ(α)`: `φ( x + α * d )`
-- `dφ(α)`: `d' * ∇φ( x + α * d )`
-- `φdφ`: returns both `φ(α)` and `dφ(α)`
-- `α`: initial search step size 
-- `f`: inital function value 
-- `dφ_0`: `dφ(0)`
-
-The output are the terminal step size and function value. Users are free to insert callbacks into `linesearch_fn`.  
-"""
-function linesearch(UO::UnconstrainedOptimizer, 
-    x0::Array{T},  
-    f::T, df::Array{T},
-    search_direction::Array{T},
-    linesearch_fn, 
-    α::T=1.0) where T<:Real
-
-    dφ_0 = sum(df .* search_direction)
-    if dφ_0 > 0 
-        @warn("Δ is not a descent direction. You might have passed (modified) gradient to `linesearch`. In this case, you need to pass its negative value.")
-        search_direction = -search_direction
-        dφ_0 = -dφ_0
-    end
-
-    φ = α->(UO.f_ncall+=1; UO.eval_fn_ls(x0, search_direction, α))
-    dφ = α->(UO.df_ncall+=1; UO.eval_grad_ls(x0, search_direction, α))
-    φdφ = α->(UO.f_ncall+=1; UO.df_ncall+=1; UO.eval_fn_and_grad_ls(x0, search_direction, α))
-    
-    α, fx = linesearch_fn(φ, dφ, φdφ, α, f, dφ_0)
-    return α, fx 
-end
-
-function update!(UO::UnconstrainedOptimizer, xs)
-    UO.update_fn(xs)
 end
 
