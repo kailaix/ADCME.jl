@@ -217,7 +217,7 @@
 	\frametitle{Inverse Modeling}
 	\begin{itemize}
 		\item \textbf{Inverse modeling} identifies a certain set of parameters or functions with which the outputs of the forward analysis matches the desired result or measurement.
-		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.t
+		\item Many real life engineering problems can be formulated as inverse modeling problems: shape optimization for improving the performance of structures, optimal control of fluid dynamic systems, etc.
 	\end{itemize}
 	\begin{figure}[hbt]
 		\centering
@@ -812,7 +812,7 @@ sol = Z\rhs
 		}
 		\item Approximate the constitutive relation by a neural network
 		{\small
-			$$\bsigma^{n+1} = \mathcal{NN}_{\bt} (\bsigma^n, \bepsilon^n) + H\bepsilon^{n+1}$$}
+			$$\bsigma^{n+1} = H(\bepsilon^{n+1}-\bepsilon^n) + \mathcal{NN}_{\bt} (\bsigma^n, \bepsilon^n)$$}
 	\end{itemize}		
 	\begin{figure}[hbt]	
 		\centering
