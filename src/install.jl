@@ -2,44 +2,37 @@
 
 export install_adept, install_blas, install_openmpi, install_hypre, install_had, install_mfem, install_matplotlib
 
-function install_blas(blas_binary)
+function install_blas(blas_binary::Bool = true)
     if Sys.iswindows()
         if isfile(joinpath(ADCME.LIBDIR, "openblas.lib"))
+            @info "openblas.lib exists"
             return 
         end 
         if blas_binary
-            @info "Downloading prebuilt blas from Github. If you encounter any problem with openblas when using adept, run `install_adept(blas_binary=false)` to compile from source"
-            download("https://github.com/kailaix/tensorflow-1.15-include/releases/download/v0.1.0/openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
+            http_file("https://github.com/kailaix/tensorflow-1.15-include/releases/download/v0.1.0/openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
             return 
         end
         @info "You are building openblas from source on Windows, and this process may take a long time.
 Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR, "openblas.lib"))"
         PWD = pwd()
-        download("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.zip", joinpath(ADCME.LIBDIR, "OpenBlas.zip"))
-        cd(ADCME.LIBDIR)
-        run(`cmd /c unzip OpenBLAS.zip`)
-        rm("OpenBlas", force=true, recursive=true)
-        run(`cmd /c ren OpenBlas-0.3.9 OpenBlas`)
-        rm("OpenBlas.zip")
-        cd("OpenBlas")
-        mkdir("build")
-        cd("build")
-        ADCME.cmake(CMAKE_ARGS="-DCMAKE_Fortran_COMPILER=flang -DBUILD_WITHOUT_LAPACK=no -DNOFORTRAN=0 -DDYNAMIC_ARCH=ON")
-        ADCME.make()
-        cd("../build/lib/Release")
-        mv("openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
+        change_directory()
+        http_file("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.zip", "OpenBlas.zip")
+        uncompress("OpenBLAS.zip", "OpenBlas-0.3.9")
+        change_directory("OpenBlas-0.3.9/build")
+        require_cmakecache() do 
+            ADCME.cmake(CMAKE_ARGS="-DCMAKE_Fortran_COMPILER=flang -DBUILD_WITHOUT_LAPACK=no -DNOFORTRAN=0 -DDYNAMIC_ARCH=ON")
+        end 
+        require_library("lib/Release/openblas") do 
+            ADCME.make()
+        end
+        change_directory("lib/Release")
+        copy_file("openblas.lib", joinpath(ADCME.LIBDIR, "openblas.lib"))
         cd(PWD)
     else 
         required_file = get_library(joinpath(ADCME.LIBDIR, "openblas"))
         if !isfile(required_file)
             files = readdir(ADCME.LIBDIR)
             files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
-            if length(files)==0
-                CONDA = get_conda()
-                run(`$CONDA install -c anaconda libopenblas`)
-                files = readdir(ADCME.LIBDIR)
-                files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
-            end
             target = joinpath(ADCME.LIBDIR, files[1])
             symlink(target, required_file)
             @info "Symlink $(required_file) --> $(files[1])"
@@ -71,18 +64,6 @@ function install_adept(; blas_binary::Bool = true)
             ADCME.make()
         end
     end
-
-        printstyled("""
-∘ Add the following lines to CMakeLists.txt 
-
-include_directories(\${LIBDIR}/Adept-2/include)
-find_library(ADEPT_LIB_FILE adept HINTS \${LIBDIR})
-find_library(LIBOPENBLAS openblas HINTS \${LIBDIR})
-message("ADEPT_LIB_FILE=\${ADEPT_LIB_FILE}")
-message("LIBOPENBLAS=\${LIBOPENBLAS}")
-
-∘ Add `\${ADEPT_LIB_FILE}` and `\${LIBOPENBLAS}` to `target_link_libraries`
-""", color=:green)
 end
 
 
