@@ -22,7 +22,7 @@ PREFIXDIR
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
     run_with_env, get_conda, read_with_env, get_library_name, get_pip,
-    copy_file
+    copy_file, require_cmakecache
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -309,4 +309,38 @@ function copy_file(src::String, dest::String)
         cp(src, dest)
         @info "Move file $src to $dest"
     end
+end
+
+"""
+    require_cmakecache(func::Function, DIR::String = ".")
+
+Check if `cmake` has output something. If not, `func` is executed.
+"""
+function require_cmakecache(func::Function, DIR::String = ".")
+    DIR = abspath(DIR)
+    if !isdir(DIR)
+        error("$DIR is not a valid directory")
+    end
+
+    if Sys.iswindows()
+        files = readdir(DIR)
+        if length(files)==0
+            func()
+            return 
+        end
+        x = [splitext(x)[2] for x in files]
+        if ".sln" in x 
+            return 
+        else
+            func()
+        end
+    else
+        file = joinpath(DIR, "build.ninja")
+        if isfile(file)
+            return 
+        else
+            func()
+        end
+    end
+     
 end

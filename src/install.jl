@@ -48,37 +48,30 @@ Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR,
 end
 
 """
-    install_adept(force::Bool=false)
+    install_adept()
 
 Install adept-2 library: https://github.com/rjhogan/Adept-2
 """
-function install_adept(force::Bool=false; blas_binary::Bool = true)
-    PWD = pwd()
-    cd(ADCME.LIBDIR)
-    if force 
-        @info "Removing Adept-2 by force..."
-        rm("Adept-2", force=true, recursive=true)
-    end
-    if !isdir("Adept-2") 
-        LibGit2.clone("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
-    end
+function install_adept(; blas_binary::Bool = true)
+    change_directory()
+    git_repository("https://github.com/ADCMEMarket/Adept-2", "Adept-2")
     cd("Adept-2/adept")
     install_blas(blas_binary)
-    try
-        if (!isfile("$(LIBDIR)/libadept.so") && !isfile("$(LIBDIR)/libadept.dylib") && !isfile("$(LIBDIR)/adept.lib")) || force
-            @info """Copy "$(@__DIR__)/../deps/AdeptCMakeLists.txt" to "$(joinpath(pwd(), "CMakeLists.txt"))" ... """
-            cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
-            @info """Remove $(joinpath(pwd(), "build")) ... """
-            rm("build", force=true, recursive=true)
-            @info "Make $(joinpath(pwd(), "build")) ... "
-            mkdir("build")
-            @info "Change directory into $(joinpath(pwd(), "build")) ... "
-            cd("build")
-            @info "Cmake ... "
-            ADCME.cmake()
-            @info "Make ... "
+    cp("$(@__DIR__)/../deps/AdeptCMakeLists.txt", "./CMakeLists.txt", force=true)
+    change_directory("build")
+    require_cmakecache() do 
+        ADCME.cmake()
+    end
+    if Sys.iswindows()
+        require_file("$(ADCME.LIBDIR)/adept.lib") do 
             ADCME.make()
         end
+    else
+        require_library("$(ADCME.LIBDIR)/adept") do 
+            ADCME.make()
+        end
+    end
+
         printstyled("""
 ∘ Add the following lines to CMakeLists.txt 
 
@@ -90,11 +83,6 @@ message("LIBOPENBLAS=\${LIBOPENBLAS}")
 
 ∘ Add `\${ADEPT_LIB_FILE}` and `\${LIBOPENBLAS}` to `target_link_libraries`
 """, color=:green)
-    catch
-        printstyled("Compliation failed\n", color=:red)
-    finally
-        cd(PWD)
-    end
 end
 
 
