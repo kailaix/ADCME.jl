@@ -48,6 +48,7 @@ The executed command might be:
 ```
 """
 function cmake(DIR::String=".."; CMAKE_ARGS::Union{Array{String}, String} = "")
+    DIR = abspath(DIR)
     ENV_ = copy(ENV)
     LD_PATH = Sys.iswindows() ? "PATH" : "LD_LIBRARY_PATH"
     if haskey(ENV_, LD_PATH)
