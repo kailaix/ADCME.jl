@@ -144,7 +144,7 @@ Make a directory if it does not exist.
 """
 function make_directory(directory::AbstractString)
     require_file(directory) do 
-        mkdir(directory)
+        mkpath(directory)
         @info "Made directory directory"
     end
 end
