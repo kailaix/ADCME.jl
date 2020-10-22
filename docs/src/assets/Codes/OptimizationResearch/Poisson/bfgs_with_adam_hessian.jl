@@ -29,7 +29,7 @@ losses = Optimize!(sess, loss; optimizer = BFGSOptimizer(), max_num_iter=700, B 
 
 losses = [losses0;losses]
 w = run(sess, θ)
-@save "data/bfgs.jld2" losses w 
+@save "data/bfgs_with_adam_hessian.jld2" losses w 
 
 figure(figsize = (10, 4))
 subplot(121)
@@ -37,4 +37,4 @@ semilogy(losses)
 xlabel("Iterations"); ylabel("Loss")
 subplot(122)
 visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
-savefig("data/bfgs.png")
+savefig("data/bfgs_with_adam_hessian.png")
