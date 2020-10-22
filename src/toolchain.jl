@@ -22,7 +22,7 @@ PREFIXDIR
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
     run_with_env, get_conda, read_with_env, get_library_name, get_pip,
-    copy_file
+    copy_file, require_cmakecache
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -43,7 +43,9 @@ end
     uncompress(zipfile::AbstractString, file::AbstractString)
 
 Uncompress a zip file `zipfile` to `file` (a directory). Note this function does not check that the 
-uncompressed content has the name `file`. Users may use `mv uncompress_file file` to enforce the consistency.
+uncompressed content has the name `file`. It is used as a hint to skip `uncompress` action.
+
+Users may use `mv uncompress_file file` to enforce the consistency.
 """
 function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString}=missing)
     zipfile = abspath(zipfile)
@@ -51,7 +53,7 @@ function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString
         d = "."
     else
         file = abspath(file)
-        d = splitdir(file)
+        d = splitdir(file)[1]
     end
     uncompress_ = ()->begin
         if length(zipfile)>4 && zipfile[end-3:end]==".zip"
@@ -307,4 +309,38 @@ function copy_file(src::String, dest::String)
         cp(src, dest)
         @info "Move file $src to $dest"
     end
+end
+
+"""
+    require_cmakecache(func::Function, DIR::String = ".")
+
+Check if `cmake` has output something. If not, `func` is executed.
+"""
+function require_cmakecache(func::Function, DIR::String = ".")
+    DIR = abspath(DIR)
+    if !isdir(DIR)
+        error("$DIR is not a valid directory")
+    end
+
+    if Sys.iswindows()
+        files = readdir(DIR)
+        if length(files)==0
+            func()
+            return 
+        end
+        x = [splitext(x)[2] for x in files]
+        if ".sln" in x 
+            return 
+        else
+            func()
+        end
+    else
+        file = joinpath(DIR, "build.ninja")
+        if isfile(file)
+            return 
+        else
+            func()
+        end
+    end
+     
 end
