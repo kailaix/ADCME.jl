@@ -14,7 +14,9 @@ newton_raphson,
 newton_raphson_with_grad,
 NonlinearConstrainedProblem,
 Optimize!,
-Optimizer
+DefaultOptimizer,
+AbstractOptimizer,
+optimize
 
 
 #### Section 1: TensorFlow Optimizers ####
@@ -668,18 +670,67 @@ end
 # optimize(opt, f, g!, x0, options)
 
 
-"""
-    Optimizer
 
-An abstract type for optimizers. The optimizers must have the following fields:
+abstract type AbstractOptimizer end
+
+"""
+    mutable struct Optimizer <: AbstractOptimizer
+        f::Function  
+        g!::Function 
+        x0::Array{Float64, 1}
+        options::Dict{Symbol, Any}
+        function MyOwnOptimizer()  
+            new(missing, missing, missing, missing)
+        end
+    end
+
+An interface for defining optimizers. The optimizers have the following fields
 
 - `f`, a scalar function to evaluate the loss function, signature: `f(x::Array{Float64, 1})::Array{Float64, 1}`
 - `g!`, a void function with signature `g!(G, x)`. The gradient is evaluated at location `x` and stored in `G`.
 - `x0`, initial guess 
 - `options`: a dictionary. By default, it has fields: `f_tol`, `g_tol`, `x_tol`, `step_callback`
-"""
-abstract type Optimizer end
 
+To use [`Optimize!`](@ref), users need to define a function 
+
+```julia
+loss = optimize(opt::Optimizer)
+```
+
+which outputs a loss function vector. Users can also optionally add fields to `options`, or override `f` and `g!`.
+"""
+mutable struct DefaultOptimizer <: AbstractOptimizer
+    f::Union{Missing, Function}
+    g!::Union{Missing, Function}
+    x0::Union{Missing, Array{Float64, 1}}
+    options::Union{Missing, Dict{Symbol, Any}}
+    function DefaultOptimizer(f, g!, x0, options)  
+        new(f, g!, x0, options)
+    end
+    function DefaultOptimizer()  
+        new(missing, missing, missing, missing)
+    end
+end
+
+"""
+    optimize(opt<:AbstractOptimizer)
+
+A pure function for overriding by users. Users can override optimize with 
+```julia 
+import ADCME:optimize
+function optimize(opt::YourConcreteOptimizer)
+    # Your implementation...
+end
+``` 
+"""
+function optimize(opt::T) where T<:AbstractOptimizer
+    error("`optimize` is not implemented. To implement `optimize`, use 
+```
+function optimize(opt::)
+    # Your implementation here
+end
+```")
+end
 
 """
     Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
@@ -767,7 +818,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         G[:] = run(sess, grds)
     end
 
-    if isa(optimizer, Optimizer)
+    if isa(optimizer, AbstractOptimizer)
         optimizer.f = f 
         optimizer.g! = g!
         optimizer.x0 = x0 
@@ -778,7 +829,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
             :step_callback=>callback, 
             kwargs...
         )
-        __losses = Main.optimize(optimizer)
+        __losses = optimize(optimizer)
         return __losses
     end
 
