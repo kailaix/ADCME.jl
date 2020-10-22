@@ -5,37 +5,36 @@ MODE = "bfgs_adam_hessian"
 make_directory("data/result$MODE")
 opt = AdamOptimizer().minimize(loss)
 
-g = [tf.convert_to_tensor(gradients(loss, θ1)); tf.convert_to_tensor(gradients(loss, θ2))]
+g = tf.convert_to_tensor(gradients(loss, θ1))
 include("../optimizers.jl")
 
 sess = Session(); init(sess)
 
 
-B = diagm(0=>ones(length(θ1)+length(θ2)))
-G, THETA1, THETA2 = run(sess, [g,θ1, θ2])
+B = diagm(0=>ones(length(θ1)))
+G, THETA1 = run(sess, [g,θ1])
 
 # run(sess, loss)
 losses0 = Float64[]
 
-for i = 1:300
+for i = 1:50
     _, l = run(sess, [opt, loss])
     @info i, l 
     push!(losses0, l)
 
-    G_, THETA1_, THETA2_ = run(sess, [g,θ1, θ2])
+    G_, THETA1_ = run(sess, [g,θ1])
 
 
     global G, G_ = G_, G 
     global THETA1, THETA1_ = THETA1_, THETA1 
-    global THETA2, THETA2_ = THETA2_, THETA2 
-    s = [THETA1 - THETA1_; THETA2 - THETA2_]
+    s = THETA1 - THETA1_
     y = G - G_ 
     global B = (I - s*y'/(y'*s)) * B * (I - y*s'/(y'*s)) + s*s'/(y'*s)
 
 end
 
 
-losses = Optimize!(sess, loss; vars = [θ1, θ2], optimizer = BFGSOptimizer(), max_num_iter=700, B = B)
+losses = Optimize!(sess, loss; optimizer = BFGSOptimizer(), max_num_iter=450, B = B)
 
 losses = [losses0; losses]
 

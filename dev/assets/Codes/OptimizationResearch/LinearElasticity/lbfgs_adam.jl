@@ -11,7 +11,7 @@ sess = Session(); init(sess)
 # run(sess, loss)
 losses0 = Float64[]
 
-for i = 1:300
+for i = 1:50
     _, l = run(sess, [opt, loss])
     @info i, l 
     push!(losses0, l)
@@ -19,7 +19,7 @@ end
 
 
 
-losses = Optimize!(sess, loss; vars = [θ1, θ2], optimizer = LBFGSOptimizer(), max_num_iter=700, m = 50)
+losses = Optimize!(sess, loss; vars = θ1, optimizer = LBFGSOptimizer(), max_num_iter=450, m = 50)
 
 
 losses = [losses0; losses]

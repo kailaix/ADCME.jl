@@ -4,11 +4,8 @@ using PyPlot
 using LinearAlgebra
 using Statistics
 using MAT 
-function f1(x, y)
-    x/0.05 + sin(10π*y)
-end
-function f2(x, y)
-    y/0.05 + sin(10π*x) + 0.3
+function f(x, y)
+    sin(10*π*x) + (10y-20x)^2 + 1.0
 end
 
 mmesh = Mesh(joinpath(PDATA, "twoholes.stl"), degree=2)
@@ -20,8 +17,8 @@ t1 = eval_f_on_boundary_edge((x,y)->1.0e-4, right, mmesh)
 t2 = eval_f_on_boundary_edge((x,y)->0.0, right, mmesh)
 rhs = compute_fem_traction_term(t1, t2, right, mmesh)
 
-ν = 0.3 * eval_f_on_gauss_pts(f1, mmesh)
-E = eval_f_on_gauss_pts(f2, mmesh)
+ν = 0.3 * ones(get_ngauss(mmesh))
+E = eval_f_on_gauss_pts(f, mmesh)
 D = compute_plane_stress_matrix(E, ν)
 K = compute_fem_stiffness_matrix(D, mmesh)
 

@@ -6,7 +6,7 @@ make_directory("data/result$MODE")
 include("../optimizers.jl")
 # run(sess, loss)
 sess = Session(); init(sess)
-losses = Optimize!(sess, loss; vars = [θ1, θ2], optimizer = LBFGSOptimizer(), max_num_iter=1000, m = 50)
+losses = Optimize!(sess, loss; vars = θ1, optimizer = LBFGSOptimizer(), max_num_iter=500, m = 50)
 
 THETA1, THETA2 = run(sess, [θ1, θ2])
 
