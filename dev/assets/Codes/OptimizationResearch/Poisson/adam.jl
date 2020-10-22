@@ -12,7 +12,7 @@ for i = 1:1000
 end
 
 w = run(sess, θ)
-@save "data/bfgs.jld2" losses w 
+@save "data/adam.jld2" losses w 
 
 figure(figsize = (10, 4))
 subplot(121)
@@ -20,4 +20,4 @@ semilogy(losses)
 xlabel("Iterations"); ylabel("Loss")
 subplot(122)
 visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
-savefig("data/bfgs.png")
+savefig("data/adam.png")
