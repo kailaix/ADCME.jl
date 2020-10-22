@@ -5,7 +5,7 @@ MODE = "bfgs_noadam"
 make_directory("data/result$MODE")
 include("../optimizers.jl")
 # run(sess, loss)
-losses = Optimize!(sess, loss; vars = [θ1, θ2], optimizer = BFGSOptimizer(), max_num_iter=1000)
+losses = Optimize!(sess, loss; vars = θ1, optimizer = BFGSOptimizer(), max_num_iter=500)
 
 THETA1, THETA2 = run(sess, [θ1, θ2])
 

@@ -5,13 +5,9 @@ using LinearAlgebra
 using Statistics
 using MAT 
 using JLD2
-function f1(x, y)
-    x/0.05 + sin(10π*y)
+function f(x, y)
+    sin(10*π*x) + (10y-20x)^2 + 1.0
 end
-function f2(x, y)
-    y/0.05 + sin(10π*x) + 0.3
-end
-
 
 mmesh = Mesh(joinpath(PDATA, "twoholes.stl"), degree=2)
 
@@ -24,27 +20,27 @@ rhs = compute_fem_traction_term(t1, t2, right, mmesh)
 
 x = gauss_nodes(mmesh)
 
-using Random; Random.seed!(233)
+using Random; Random.seed!(2333)
 θ1 = Variable(ae_init([2,20, 20, 20, 1]))
 θ2 = Variable(ae_init([2,20, 20, 20, 1]))
-E = abs(fc(x, [20, 20, 20, 1], θ1)|>squeeze)
-nu = abs(fc(x, [20, 20, 20, 1], θ2)|>squeeze)
+E = abs(squeeze(fc(x, [20, 20, 20, 1], θ1)) + 2.0)
+nu = constant(0.3 * ones(get_ngauss(mmesh)))
 
-
-nu0 = 0.3*eval_f_on_gauss_pts(f1, mmesh)
-E0 = eval_f_on_gauss_pts(f2, mmesh)
 
 sess = Session(); init(sess)
 
 
 E_, nu_ = run(sess, [E, nu])
+E0 = eval_f_on_gauss_pts(f, mmesh)
 close("all")
 figure(figsize=(10,4))
 subplot(121)
-visualize_scalar_on_gauss_points(E_, mmesh)
+visualize_scalar_on_gauss_points(E_, mmesh, vmin=1, vmax=3)
+title("Initial Guess")
 subplot(122)
-visualize_scalar_on_gauss_points(nu_, mmesh)
-savefig("data/init.png")
+visualize_scalar_on_gauss_points(E0, mmesh, vmin=1, vmax=3)
+title("Exact")
+savefig("data/init_le.png")
 
 D = compute_plane_stress_matrix(E, nu)
 K = compute_fem_stiffness_matrix(D, mmesh)

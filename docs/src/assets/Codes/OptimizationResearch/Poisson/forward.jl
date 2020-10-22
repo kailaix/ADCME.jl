@@ -30,6 +30,6 @@ title("\$\\kappa\$")
 subplot(122)
 visualize_scalar_on_fem_points(SOL, mmesh)
 title("Solution")
-savefig("data/fwd.png")
+savefig("data/fwd_ps.png")
 
 @save "data/fwd.jld2" SOL

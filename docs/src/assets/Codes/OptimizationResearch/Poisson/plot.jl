@@ -55,14 +55,32 @@ loss6 = losses
 KappaNN = squeeze(fc(xy, [20, 20, 20, 1], w)) + 1.0
 push!(MSE, mean((run(sess,KappaNN)-Kappa).^2))
 
+
+MSE = round.(MSE, sigdigits=2)
+
 close("all")
 semilogy(loss1, label="Adam")
-semilogy(loss2, label="BFGS (Warm Start with Inherent Hessian)")
-semilogy(loss3, label="BFGS (Warm Start without Inherent Hessian)")
+semilogy(loss2, label="BFGS+Adam+Hessian")
+semilogy(loss3, label="BFGS+Adam")
 semilogy(loss4, label="BFGS")
-semilogy(loss5, label="LBFGS (Warm Start)")
+semilogy(loss5, label="LBFGS+Adam")
 semilogy(loss6, label="LBFGS")
 legend()
 xlabel("Iterations")
 ylabel("Loss")
-savefig("data/loss.png")
+savefig("data/loss300.png")
+
+
+close("all")
+# semilogy(loss1, label="Adam")
+# semilogy(loss2, label="BFGS+Adam+Hessian")
+# semilogy(loss3, label="BFGS+Adam")
+semilogy(loss4, label="BFGS")
+# semilogy(loss5, label="LBFGS+Adam")
+semilogy(loss6, label="LBFGS")
+xlim(0, 20)
+legend()
+xlabel("Iterations")
+ylabel("Loss")
+tight_layout()
+savefig("data/loss300_zoom.png")
