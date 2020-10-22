@@ -146,17 +146,7 @@ Unfortunately, it got stuck after several iterations.
 What if we want to design our own optimizers. To do this, we can construct an [`Optimizer`](@ref) object:
 
 ```julia
-mutable struct MyOwnOptimizer <: Optimizer
-    f 
-    g!
-    x0
-    options
-    function MyOwnOptimizer()  
-        new(missing, missing, missing, missing)
-    end
-end
-
-function optimize(opt::MyOwnOptimizer)
+function ADCME.:optimize(opt::DefaultOptimizer)
     x = opt.x0
     g = zeros(length(x))
     losses = zeros(1000)
@@ -169,7 +159,7 @@ function optimize(opt::MyOwnOptimizer)
     return losses
 end
 
-opt = MyOwnOptimizer()
+opt = DefaultOptimizer()
 sess = Session(); init(sess)
 losses = Optimize!(sess, loss, optimizer = opt, niter = 1000)
 ```
@@ -189,3 +179,25 @@ savefig("optimizer_gd.png")
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/optimizer_gd.png?raw=true)
 
 Not good enough, but at least we have a way to interact with optimizers!
+
+
+## The `AbstractOptimizer` Interface
+
+To create your own optimizer, you will be deal with `AbstractOptimizer` most of the time. The actual implementation is in (you need to `import ADCME:optimize` first)
+```julia
+optimize(opt::YourOwnOptimizer)
+```
+Here `YourOwnOptimizer` is a derived class of `AbstractOptimizer`, and ADCME provides `DefaultOptimizer` for convenience. You can assume that `opt` has the following fields:
+
+- `f`: returns the loss function at `x`
+- `g!`: an in-place function `g!(G, x)` that modifies the gradient vector `G` at `x`
+- `x0`: the initial guess 
+- `options`: a Symbol to Any mapping
+
+Once `optimize` is implemented and `opt` is an instance of `YourOwnOptimizer`, you can run `optimize(opt)`. Or, if you want to use with the computational graph:
+
+```julia
+Optimize!(sess, loss; optimizer = YourOwnOptimizer(...))
+```
+
+Note ADCME will override `f`, `g!`, `x0`, and add additional options to `options`. See [`Optimizer`](@ref) for concrete examples. 
