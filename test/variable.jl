@@ -186,3 +186,10 @@ end
 end
 
 
+
+@testset "is_variable" begin 
+    a = Variable(rand(10))
+    b = constant(rand(10))
+    @test is_variable(a)==true 
+    @test is_variable(b)==false
+end
