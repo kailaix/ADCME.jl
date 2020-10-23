@@ -55,7 +55,7 @@ if(MSVC)
   add_definitions(-DNOMINMAX)
 endif()
 
-include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC} ${LIBDIR}/Adept-2/include)
+include_directories(${TF_INC} ${PREFIXDIR} ${PREFIXDIR}/Adept-2/include)
 
 find_library(LIBOPENBLAS openblas HINTS ${LIBDIR})
 find_library(ADEPT_LIB_FILE adept HINTS ${LIBDIR})
