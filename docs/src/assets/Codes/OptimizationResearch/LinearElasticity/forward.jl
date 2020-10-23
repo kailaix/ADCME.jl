@@ -5,11 +5,10 @@ using LinearAlgebra
 using Statistics
 using MAT 
 function f(x, y)
-    1/(1+x^2) + x * y + y^2
+    sin(10*π*x) + (10y-20x)^2 + 1.0
 end
 
-
-mmesh = Mesh(50, 50, 1/50, degree=2)
+mmesh = Mesh(joinpath(PDATA, "twoholes.stl"), degree=2)
 
 left = bcnode((x,y)->x<1e-5, mmesh)
 right = bcedge((x1,y1,x2,y2)->(x1>0.049-1e-5) && (x2>0.049-1e-5), mmesh)
@@ -31,11 +30,15 @@ u = K\rhs
 sess = Session(); init(sess)
 S = run(sess, u)
 
-matwrite("fenics/data2.mat", Dict("u"=>S, "E"=>E))
+matwrite("data/fwd.mat", Dict("u"=>S, "E"=>E, "nu"=>ν))
 
 close("all")
 visualize_scalar_on_gauss_points(E, mmesh)
-savefig("fenics/E2.png")
+savefig("data/E.png")
+
+close("all")
+visualize_scalar_on_gauss_points(ν, mmesh)
+savefig("data/nu.png")
 
 close("all")
 figure(figsize=(20, 5))
@@ -49,4 +52,4 @@ subplot(133)
 Dval = run(sess, D)
 visualize_von_mises_stress(Dval, S, mmesh)
 title("von Mises Stress")
-savefig("fenics/fwd2.png")
+savefig("data/fwd.png")

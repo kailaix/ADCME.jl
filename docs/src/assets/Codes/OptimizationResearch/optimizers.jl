@@ -91,12 +91,12 @@ function ADCME.:optimize(opt::BFGSOptimizer)
         dφ0 = dφ(0.0)
         # scaled_α0 = 0.01/maximum(abs.(dx))
         # α = min(1.0, α)
-        α0 = min(1.0, 10α)
+        α0 = min(10.0, 10α)
         res = BackTracking()(φ, dφ, φdφ, α0, φ0,dφ0)
         α = res[1]
         @info α
 
-        if abs(α)<1e-16
+        if abs(α)<1e-15
             @warn "Step size too small"
             return losses 
         end
@@ -220,7 +220,7 @@ function ADCME.:optimize(opt::LBFGSOptimizer)
         res = BackTracking()(φ, dφ, φdφ, α0, φ0,dφ0)
         α = res[1]
 
-        if abs(α)<1e-16
+        if abs(α)<1e-15
             @warn "Step size too small"
             return losses 
         end

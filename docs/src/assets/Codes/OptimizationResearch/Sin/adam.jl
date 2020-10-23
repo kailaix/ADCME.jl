@@ -1,6 +1,13 @@
+# julia adam.jl &
+# julia bfgs.jl &
+# julia lbfgs.jl &
+# wait 
+# 
+
 using ADCME
 using JLD2
 using Optim
+include("../optimizers.jl")
 using Random; Random.seed!(233)
 
 x = rand(10)

@@ -12,7 +12,7 @@ losses = Optimize!(sess, loss; optimizer = LBFGSOptimizer(), max_num_iter=1000, 
 
 losses = [losses0;losses]
 w = run(sess, θ)
-@save "data/lbfgs_adam.jld2" losses w 
+@save "data/lbfgs_noadam.jld2" losses w 
 
 figure(figsize = (10, 4))
 subplot(121)
@@ -20,4 +20,4 @@ semilogy(losses)
 xlabel("Iterations"); ylabel("Loss")
 subplot(122)
 visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
-savefig("data/lbfgs_adam.png")
+savefig("data/lbfgs_noadam.png")
