@@ -38,7 +38,7 @@ Now we can compile a dynamical shared library `Saver.so` (or `Saver.dylib`) with
 
 ### Code Examples
 
-We show an example for storing, querying and deleting $10\times 1$ `Float64` vectors with this technique. The main files are (the codes can be accessed [here](./assets/Codes/share_memory/))
+We show an example for storing, querying and deleting $10\times 1$ `Float64` vectors with this technique. The main files are (the codes can be accessed [here](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/SharedMemory))
 
 * `SaverTensor.cpp`
 ```c++
@@ -256,7 +256,7 @@ public:
 REGISTER_KERNEL_BUILDER(Name("DeleteTensor").Device(DEVICE_CPU), DeleteTensorOp);
 ```
 
-Here is part of the [`CMakeLists.txt`](./assets/Codes/share_memory/CMakeLists.txt) used for compilation, where we link `XXTensor.cpp` with `Saver`
+Here is part of the [`CMakeLists.txt`](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/SharedMemory/CMakeLists.txt) used for compilation, where we link `XXTensor.cpp` with `Saver`
 ```cmake
 cmake_minimum_required(VERSION 3.5)
 project(TF_CUSTOM_OP)
