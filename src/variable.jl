@@ -28,7 +28,7 @@ gradient_checkpointing,
 zeros_like,
 ones_like,
 gradients_colocate,
-is_trainable
+is_variable
 
 """
     constant(value; kwargs...)
@@ -820,10 +820,10 @@ function ones_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
 end
 
 """
-    is_trainable(o::PyObject)
+    is_variable(o::PyObject)
 
 Determines whether `o` is a trainable variable.
 """
-function is_trainable(o::PyObject)
+function is_variable(o::PyObject)
     hasproperty(o, :trainable) && o.trainable
 end

@@ -776,7 +776,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     if isa(grads, PyObject); grads = [grads]; end
     if length(grads)!=length(vars); error("ADCME: length of grads and vars do not match"); end
 
-    if !all(is_trainable.(vars))
+    if !all(is_variable.(vars))
         error("ADCME: the input `vars` should be trainable variables")
     end
 

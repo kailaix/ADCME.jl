@@ -270,24 +270,3 @@ end
 #         apply!(ad, rand(10), rand(10))
 #     end
 # end
-
-@testset "search direction" begin 
-    opt = Descent()
-    x = rand(10)
-    g = rand(10)
-    g2 = copy(g)
-    d = apply!(opt, x, g2)
-    @test d ≈ 0.001 * g 
-end
-
-
-@testset "Optim" begin 
-    x = Variable(rand(2))
-    loss = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
-    init(sess)
-    loss_ = Optimize!(sess, loss)
-    @test loss_[end] < 1e-10
-    init(sess)
-    loss_ = Optimize!(sess, loss, optimizer = ConjugateGradient())
-    @test loss_[end] < 1e-10
-end
