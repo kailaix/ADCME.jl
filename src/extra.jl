@@ -18,7 +18,8 @@ diagnose,
 get_placement,
 timestamp,
 load_library,
-sleep_for
+sleep_for,
+get_library_symbols
 
 """
     xavier_init(size, dtype=Float64)
@@ -1008,4 +1009,17 @@ function load_library(filename::String)
         error("Failed to load library: $filename. Original error message:\n$e")
     end
     return STORAGE[keyname] 
+end
+
+"""
+    get_library_symbols(file::Union{String, PyObject})
+
+Returns the symbols in the custom op library `file`.
+"""
+function get_library_symbols(files::Union{String, PyObject})
+    if isa(files, String)
+        files = load_library(files)
+    end
+    files = keys(files)
+    filter(x->islowercase(String(x)[1]) && String(x)!="tf_export" && !(occursin("fallback", String(x))) && String(x)!="deprecated_endpoints", files)
 end

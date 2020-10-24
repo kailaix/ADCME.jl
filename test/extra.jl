@@ -65,3 +65,7 @@ end
         true
     end
 end
+
+@testset "get_library_symbols" begin 
+    @test length(get_library_symbols(ADCME.libadcme))>0
+end
