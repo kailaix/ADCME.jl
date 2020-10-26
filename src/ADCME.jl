@@ -69,22 +69,6 @@ module ADCME
         TRAINABLE_VARIABLES = tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES
         UPDATE_OPS = tf.compat.v1.GraphKeys.UPDATE_OPS
         global options = Options()
-        try
-            PWD = pwd()
-            if !isdir("$(@__DIR__)/../deps/CustomOps/build")
-                @info "You are using ADCME for the first time. Precompiling built-in custom operators may take some time..."
-                ADCME.change_directory("$(@__DIR__)/../deps/CustomOps/build")
-                ADCME.cmake()
-                ADCME.make()
-                cd(PWD)
-            end
-        catch e
-            @warn """Compiling ADCME custom operators failed. The functionalities of ADCME is limited to TensorFlow backend
-=============================================================================
-                            Error Message
-=============================================================================
-$e"""
-        end
 
         try 
             libadcme = tf.load_op_library(LIBADCME)

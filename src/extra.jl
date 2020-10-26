@@ -326,26 +326,13 @@ function Base.:precompile(force::Bool=false)
 2. Remove $(joinpath(pwd(), "build")) manually.""")
         end
     end
-    if isdir("$(@__DIR__)/../deps/CustomOps/build")
-        files = readdir("$(@__DIR__)/../deps/CustomOps/build")
-        if "adcme.dll" in files || "libadcme.so" in files || "libadcme.dylib" in files 
-            cd(PWD)
-        elseif "Makefile" in files 
-            cd("build")
-            ADCME.make()
-            cd(PWD)
-        else 
-            cd("build")
-            ADCME.cmake()
-            ADCME.make()
-            cd(PWD)
-        end
-        return 
+    change_directory("build")
+    require_cmakecache() do 
+        ADCME.cmake()
     end
-    mkdir("build")
-    cd("build")
-    ADCME.cmake()
-    ADCME.make()
+    require_library("adcme") do 
+        ADCME.make()
+    end
     cd(PWD)
     global libadcme = tf.load_op_library(LIBADCME)
 end
