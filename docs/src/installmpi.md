@@ -51,7 +51,7 @@ customop(with_mpi=true)
 
 In this case, there will be extra lines in `CMakeLists.txt` to setup MPI dependencies.
 ```julia
-IF(DEFINED ENV{MPI_INCLUDE_PATH})
+IF(DEFINED ENV{MPI_C_LIBRARIES})
   set(MPI_INCLUDE_PATH $ENV{MPI_INCLUDE_PATH})
   set(MPI_C_LIBRARIES $ENV{MPI_C_LIBRARIES})
   message("MPI_INCLUDE_PATH = ${MPI_INCLUDE_PATH}")

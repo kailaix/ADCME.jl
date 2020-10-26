@@ -57,6 +57,11 @@ function cmake(DIR::String=".."; CMAKE_ARGS::Union{Array{String}, String} = "")
     else
         ENV_[LD_PATH] = LIBDIR
     end
+
+    if has_mpi(false)
+        ENV_["MPI_INCLUDE_PATH"], ENV_["MPI_C_LIBRARIES"] = get_mpi()
+    end
+
     if Sys.iswindows()
         if !haskey(ENV_, "VS150COMNTOOLS")
             # @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools" maxlog=1
