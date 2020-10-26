@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Optimizers · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../resources/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li class="is-active"><a class="tocitem" href>Optimizers</a><ul class="internal"><li><a class="tocitem" href="#Solving-an-Inverse-Problem-using-L-BFGS-optimizer"><span>Solving an Inverse Problem using L-BFGS optimizer</span></a></li><li><a class="tocitem" href="#Use-the-optimizer-from-Optim.jl"><span>Use the optimizer from Optim.jl</span></a></li><li><a class="tocitem" href="#Build-your-own-optimizers"><span>Build your own optimizers</span></a></li><li><a class="tocitem" href="#The-AbstractOptimizer-Interface"><span>The <code>AbstractOptimizer</code> Interface</span></a></li></ul></li><li><a class="tocitem" href="../optim/">Study on Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Resources</a></li><li class="is-active"><a href>Optimizers</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Optimizers</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/optimizers.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Optimizers"><a class="docs-heading-anchor" href="#Optimizers">Optimizers</a><a id="Optimizers-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizers" title="Permalink"></a></h1><p>ADCME provides a rich class of optimizers and acceleration techniques for conducting inverse modeling. The programming model also allows for easily extending ADCME with customer optimizers. In this section, we show how to take advantage of the built-in optimization library by showing how to solve an inverse problem–estimating the diffusivity coefficient of a Poisson equation from sparse observations–using different kinds of optimization techniques.    </p><h2 id="Solving-an-Inverse-Problem-using-L-BFGS-optimizer"><a class="docs-heading-anchor" href="#Solving-an-Inverse-Problem-using-L-BFGS-optimizer">Solving an Inverse Problem using L-BFGS optimizer</a><a id="Solving-an-Inverse-Problem-using-L-BFGS-optimizer-1"></a><a class="docs-heading-anchor-permalink" href="#Solving-an-Inverse-Problem-using-L-BFGS-optimizer" title="Permalink"></a></h2><p>Consider the Poisson equation in 2D:</p><div>\[\begin{aligned}
+\nabla  \cdot (\kappa (x,y)\nabla u(x,y)) &amp;= f(x) &amp; (x,y) \in \Omega\\ 
+u(x,y) &amp;=0 &amp; (x,y)\in \partial \Omega
+\end{aligned}\tag{1}\]</div><p>Here <span>$\Omega$</span> is a L-shaped domain, which can be loaded using <code>meshread</code>. </p><div>\[f(x,y) = -\sin\left(20\pi y+\frac{\pi}{8}\right)\]</div><p>and the diffusivity coefficient <span>$\kappa(x,y)$</span> is given by </p><div>\[\kappa(x,y) = 2+e^{10x} - (10y)^2\]</div><p>We can solve Equation 1 using a standard finite element method. Here, we use <a href="https://github.com/kailaix/AdFem.jl">AdFem.jl</a> to solve the PDE.</p><pre><code class="language-julia">using AdFem
+using ADCME
+using PyPlot 
+
+function kappa(x, y)
+    return 2 + exp(10x) - (10y)^2
+end
+
+function f(x, y)
+    return sin(2π*10y+π/8)
+end
+
+mmesh = Mesh(joinpath(PDATA, &quot;twoholes_large.stl&quot;))
+
+Kappa = eval_f_on_gauss_pts(kappa, mmesh)
+F = eval_f_on_gauss_pts(f, mmesh)
+L = compute_fem_laplace_matrix1(Kappa, mmesh)
+RHS = compute_fem_source_term1(F, mmesh)
+
+bd = bcnode(mmesh)
+L, RHS = impose_Dirichlet_boundary_conditions(L, RHS, bd, zeros(length(bd)))
+
+SOL = L\RHS 
+close(&quot;all&quot;)
+figure(figsize = (10, 4))
+subplot(121)
+visualize_scalar_on_gauss_points(Kappa, mmesh)
+title(&quot;\$\\kappa\$&quot;)
+subplot(122)
+visualize_scalar_on_fem_points(SOL, mmesh)
+title(&quot;Solution&quot;)
+savefig(&quot;optimizers_poisson.png&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/optimizers_poisson.png?raw=true" alt/></p><p>Now we approximate <span>$\kappa(x,y)$</span> using a deep neural network (<a href="../api/#ADCME.fc"><code>fc</code></a> in ADCME). The script is nearly the same as the forward computation</p><pre><code class="language-julia">using AdFem
+using ADCME
+using PyPlot 
+
+function f(x, y)
+    return sin(2π*10y+π/8)
+end
+
+mmesh = Mesh(joinpath(PDATA, &quot;twoholes_large.stl&quot;))
+
+xy = gauss_nodes(mmesh)
+Kappa = squeeze(fc(xy, [20, 20, 20, 1])) + 1.0
+F = eval_f_on_gauss_pts(f, mmesh)
+L = compute_fem_laplace_matrix1(Kappa, mmesh)
+RHS = compute_fem_source_term1(F, mmesh)
+
+bd = bcnode(mmesh)
+L, RHS = impose_Dirichlet_boundary_conditions(L, RHS, bd, zeros(length(bd)))
+
+sol = L\RHS </code></pre><p>We want to find a deep neural network such that <code>sol</code> and <code>SOL</code> match. We can train the neural network by minimizing a loss function. </p><pre><code class="language-julia">loss = sum((sol - SOL)^2)*1e10</code></pre><p>Here we multiply the loss function by <code>1e10</code> because the scale of <code>SOL</code> is <span>$10^{-5}$</span>. We want the initial value of <code>loss</code> to have a scale of <span>$O(1)$</span>. </p><p>We can minimize the loss function by </p><pre><code class="language-julia">sess = Session(); init(sess)
+losses = BFGS!(sess, loss)</code></pre><p>We can visualize the result:</p><pre><code class="language-julia">figure(figsize = (10, 4))
+subplot(121)
+semilogy(losses)
+xlabel(&quot;Iterations&quot;); ylabel(&quot;Loss&quot;)
+subplot(122)
+visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
+savefig(&quot;optimizer_bfgs.png&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/optimizer_bfgs.png?raw=true" alt/></p><p>We see that the estimated <span>$\kappa(x,y)$</span> is quite similar to the reference one. </p><h2 id="Use-the-optimizer-from-Optim.jl"><a class="docs-heading-anchor" href="#Use-the-optimizer-from-Optim.jl">Use the optimizer from Optim.jl</a><a id="Use-the-optimizer-from-Optim.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Use-the-optimizer-from-Optim.jl" title="Permalink"></a></h2><p>We have used the built-in optimizer L-BFGS. What if we want to try out other options? <a href="../api/#ADCME.Optimize!-Union{Tuple{T}, Tuple{PyCall.PyObject,PyCall.PyObject}, Tuple{PyCall.PyObject,PyCall.PyObject,Int64}} where T&lt;:Union{Nothing, PyCall.PyObject}"><code>Optimize!</code></a> is an API that allows you to try out custom optimizers. For convenience, it also supports optimizers from the <a href="https://github.com/JuliaNLSolvers/Optim.jl">Optim.jl</a> package. </p><p>Let&#39;s consider using BFGS to solve the above problem:</p><pre><code class="language-julia">import Optim
+sess = Session(); init(sess)
+losses = Optimize!(sess, loss, optimizer = Optim.BFGS())
+
+figure(figsize = (10, 4))
+subplot(121)
+semilogy(losses)
+xlabel(&quot;Iterations&quot;); ylabel(&quot;Loss&quot;)
+subplot(122)
+visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
+savefig(&quot;optimizer_bfgs2.png&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/optimizer_bfgs2.png?raw=true" alt/></p><p>Unfortunately, it got stuck after several iterations. </p><h2 id="Build-your-own-optimizers"><a class="docs-heading-anchor" href="#Build-your-own-optimizers">Build your own optimizers</a><a id="Build-your-own-optimizers-1"></a><a class="docs-heading-anchor-permalink" href="#Build-your-own-optimizers" title="Permalink"></a></h2><p>What if we want to design our own optimizers. To do this, we can construct an <a href="@ref"><code>Optimizer</code></a> object:</p><pre><code class="language-julia">function ADCME.:optimize(opt::DefaultOptimizer)
+    x = opt.x0
+    g = zeros(length(x))
+    losses = zeros(1000)
+    @info opt.options
+    for i = 1:opt.options[:niter]
+        losses[i] = opt.f(x)
+        opt.g!(g, x)
+        x = x - 0.001 * g
+    end
+    return losses
+end
+
+opt = DefaultOptimizer()
+sess = Session(); init(sess)
+losses = Optimize!(sess, loss, optimizer = opt, niter = 1000)</code></pre><p>We can visualize the result:</p><pre><code class="language-julia">figure(figsize = (10, 4))
+subplot(121)
+semilogy(losses)
+xlabel(&quot;Iterations&quot;); ylabel(&quot;Loss&quot;)
+subplot(122)
+visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
+savefig(&quot;optimizer_gd.png&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/optimizer_gd.png?raw=true" alt/></p><p>Not good enough, but at least we have a way to interact with optimizers!</p><h2 id="The-AbstractOptimizer-Interface"><a class="docs-heading-anchor" href="#The-AbstractOptimizer-Interface">The <code>AbstractOptimizer</code> Interface</a><a id="The-AbstractOptimizer-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#The-AbstractOptimizer-Interface" title="Permalink"></a></h2><p>To create your own optimizer, you will be deal with <code>AbstractOptimizer</code> most of the time. The actual implementation is in (you need to <code>import ADCME:optimize</code> first)</p><pre><code class="language-julia">optimize(opt::YourOwnOptimizer)</code></pre><p>Here <code>YourOwnOptimizer</code> is a derived class of <code>AbstractOptimizer</code>, and ADCME provides <code>DefaultOptimizer</code> for convenience. You can assume that <code>opt</code> has the following fields:</p><ul><li><code>f</code>: returns the loss function at <code>x</code></li><li><code>g!</code>: an in-place function <code>g!(G, x)</code> that modifies the gradient vector <code>G</code> at <code>x</code></li><li><code>x0</code>: the initial guess </li><li><code>options</code>: a Symbol to Any mapping</li></ul><p>Once <code>optimize</code> is implemented and <code>opt</code> is an instance of <code>YourOwnOptimizer</code>, you can run <code>optimize(opt)</code>. Or, if you want to use with the computational graph:</p><pre><code class="language-julia">Optimize!(sess, loss; optimizer = YourOwnOptimizer(...))</code></pre><p>Note ADCME will override <code>f</code>, <code>g!</code>, <code>x0</code>, and add additional options to <code>options</code>. See <a href="@ref"><code>Optimizer</code></a> for concrete examples. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../parallel/">« Parallel Computing</a><a class="docs-footer-nextpage" href="../optim/">Study on Optimizers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 26 October 2020 09:50">Monday 26 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

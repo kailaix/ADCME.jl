@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Radial Basis Functions · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../resources/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li><a class="tocitem" href="../optim/">Study on Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li class="is-active"><a class="tocitem" href>Radial Basis Functions</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Resources</a></li><li class="is-active"><a href>Radial Basis Functions</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Radial Basis Functions</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/rbf.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Radial-Basis-Functions"><a class="docs-heading-anchor" href="#Radial-Basis-Functions">Radial Basis Functions</a><a id="Radial-Basis-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Radial-Basis-Functions" title="Permalink"></a></h1><p>The principle of radial basis functions (RBF) is to use linear combination of radial basis functions to approximate a function. The radial basis functions are usually global functions in the sense that its support spans over the entire domain. This property lends adaptivity and regularization to the RBF function form: unlike local basis functions such as piecewise linear functions, RBF usually does not suffer from local anomalies and produces a smoother approximation. </p><p>The mathematical formulation of RBFs on a 2D domain is as follows</p><div>\[f(x, y) = \sum_{i=1}^N c_i \phi(r; \epsilon_i) + d_0 + d_1 x + d_2 y\]</div><p>Here <span>$r = \sqrt{|x-x_i|^2 + |y-y_i|^2}$</span>. <span>$\{x_i, y_i\}_{i=1}^N$</span> are called centers of the RBF, <span>$c_i$</span> is the coefficient, <span>$d_0+d_1x+d_2y$</span> is an additional affine term, and <span>$\phi$</span> is a radial basis function parametrized by <span>$\epsilon_i$</span>. Four common radial basis functions are as follows (all are supported by ADCME)</p><ul><li>Gaussian</li></ul><div>\[\phi(r; \epsilon) = e^{-(\epsilon r)^2}\]</div><ul><li>Multiquadric</li></ul><div>\[\phi(r; \epsilon) = \sqrt{1+(\epsilon r)^2}\]</div><ul><li>Inverse quadratic</li></ul><div>\[\phi(r; \epsilon) = \frac{1}{1+(\epsilon r)^2}\]</div><ul><li>Inverse multiquadric</li></ul><div>\[\phi(r; \epsilon) = \frac{1}{\sqrt{1+(\epsilon r)^2}}\]</div><p>In ADCME, we allow <span>$(x_i, y_i)$</span>, <span>$\epsilon_i$</span>, <span>$d_i$</span> and <span>$c_i$</span> to be trainable (of course, users can allow only a subset to be trainable). This is done via <a href="../api/#ADCME.RBF2D"><code>RBF2D</code></a> function. As an example, we consider using radial basis function to approximate </p><div>\[y = 1 + \frac{y^2}{1+x^2}\]</div><p>on the domain <span>$[0,1]^2$</span>. We use the following function to visualize the result</p><pre><code class="language-julia">using PyPlot
+n = 20
+h = 1/n
+x = Float64[]; y = Float64[]
+for i = 1:n+1
+    for j = 1:n+1
+        push!(x, (i-1)*h)
+        push!(y, (j-1)*h)
+    end
+end
+
+close(&quot;all&quot;)
+f = run(sess, rbf(x, y))
+g = (@. 1+y^2/(1+x^2))
+figure()
+scatter3D(x, y, f, color=&quot;r&quot;)
+scatter3D(x, y, g, color=&quot;g&quot;)
+xlabel(&quot;x&quot;)
+ylabel(&quot;y&quot;)
+savefig(&quot;compare.png&quot;)
+figure()
+scatter3D(x, y, abs.(f-g))
+xlabel(&quot;x&quot;)
+ylabel(&quot;y&quot;)
+savefig(&quot;diff.png&quot;)</code></pre><p>We consider several cases:</p><ul><li>Only <span>$c_i$</span> is trainable </li></ul><pre><code class="language-julia">using ADCME
+
+# use centers on a uniform grid 
+n = 5
+h = 1/n
+xc = Float64[]; yc = Float64[]
+for i = 1:n+1
+    for j = 1:n+1
+        push!(xc, (i-1)*h)
+        push!(yc, (j-1)*h)
+    end
+end
+
+# by default, c is initialized to Variable(ones(...))
+# eps is initialized to ones(...) and no linear terms are used
+rbf = RBF2D(xc, yc) 
+
+x = rand(100); y = rand(100)
+f = @. 1+y^2/(1+x^2)
+
+fv = rbf(x, y)
+loss = sum((f-fv)^2)
+
+sess = Session(); init(sess)
+BFGS!(sess, loss)</code></pre><table><tr><th style="text-align: right">Approximation</th><th style="text-align: center">Difference</th></tr><tr><td style="text-align: right"><img src="https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf1_compare.png" alt/></td><td style="text-align: center"><img src="https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf1_diff.png" alt/></td></tr></table><ul><li>Only <span>$c_i$</span> is trainable + Additional Linear Term </li></ul><p>Here we need to specify <code>d=Variable(zeros(3))</code> to tell ADCME we want both the constant and linear terms. If <code>d=Variable(zeros(1))</code>, only the constant term will be present.</p><pre><code class="language-julia">using ADCME
+
+# use centers on a uniform grid 
+n = 5
+h = 1/n
+xc = Float64[]; yc = Float64[]
+for i = 1:n+1
+    for j = 1:n+1
+        push!(xc, (i-1)*h)
+        push!(yc, (j-1)*h)
+    end
+end
+
+# by default, c is initialized to Variable(ones(...))
+# eps is initialized to ones(...) and no linear terms are used
+rbf = RBF2D(xc, yc; d = Variable(zeros(3))) 
+
+x = rand(100); y = rand(100)
+f = @. 1+y^2/(1+x^2)
+
+fv = rbf(x, y)
+loss = sum((f-fv)^2)
+
+sess = Session(); init(sess)
+BFGS!(sess, loss)</code></pre><table><tr><th style="text-align: right">Approximation</th><th style="text-align: center">Difference</th></tr><tr><td style="text-align: right"><img src="https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf2_compare.png" alt/></td><td style="text-align: center"><img src="https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf2_diff.png" alt/></td></tr></table><ul><li>Free every trainable variables</li></ul><pre><code class="language-julia">xc = Variable(rand(25))
+yc = Variable(rand(25))
+d = Variable(zeros(3))
+e = Variable(ones(25))
+
+# by default, c is initialized to Variable(ones(...))
+# eps is initialized to ones(...) and no linear terms are used
+rbf = RBF2D(xc, yc; eps = e, d = d) 
+
+x = rand(100); y = rand(100)
+f = @. 1+y^2/(1+x^2)
+
+fv = rbf(x, y)
+loss = sum((f-fv)^2)
+
+sess = Session(); init(sess)
+BFGS!(sess, loss)</code></pre><p>We see we get much better result by freeing up all variables. </p><table><tr><th style="text-align: right">Approximation</th><th style="text-align: center">Difference</th></tr><tr><td style="text-align: right"><img src="https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf3_compare.png" alt/></td><td style="text-align: center"><img src="https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf3_diff.png" alt/></td></tr></table></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../multithreading/">« Understand the Multi-threading Model</a><a class="docs-footer-nextpage" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 26 October 2020 09:50">Monday 26 October 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
