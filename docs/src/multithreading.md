@@ -49,7 +49,7 @@ The following figure is an illustration of the two thread pools of ADCME.
 
 ## How to Use the Intra Thread Pool
 
-In practice, when we implement custom operators, we may want to use the intra thread pool. [here](./assets/Codes/threadpool) gives an example how to use thread pools. 
+In practice, when we implement custom operators, we may want to use the intra thread pool. [Here](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/ThreadPools) gives an example how to use thread pools. 
 
 ```c++
 #include <thread>

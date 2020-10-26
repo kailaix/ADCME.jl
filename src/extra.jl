@@ -18,7 +18,8 @@ diagnose,
 get_placement,
 timestamp,
 load_library,
-sleep_for
+sleep_for,
+get_library_symbols
 
 """
     xavier_init(size, dtype=Float64)
@@ -56,6 +57,11 @@ function cmake(DIR::String=".."; CMAKE_ARGS::Union{Array{String}, String} = "")
     else
         ENV_[LD_PATH] = LIBDIR
     end
+
+    if has_mpi(false)
+        ENV_["MPI_INCLUDE_PATH"], ENV_["MPI_C_LIBRARIES"] = get_mpi()
+    end
+
     if Sys.iswindows()
         if !haskey(ENV_, "VS150COMNTOOLS")
             # @warn "VS150COMNTOOLS is not set, default to /c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools" maxlog=1
@@ -320,26 +326,13 @@ function Base.:precompile(force::Bool=false)
 2. Remove $(joinpath(pwd(), "build")) manually.""")
         end
     end
-    if isdir("$(@__DIR__)/../deps/CustomOps/build")
-        files = readdir("$(@__DIR__)/../deps/CustomOps/build")
-        if "adcme.dll" in files || "libadcme.so" in files || "libadcme.dylib" in files 
-            cd(PWD)
-        elseif "Makefile" in files 
-            cd("build")
-            ADCME.make()
-            cd(PWD)
-        else 
-            cd("build")
-            ADCME.cmake()
-            ADCME.make()
-            cd(PWD)
-        end
-        return 
+    change_directory("build")
+    require_cmakecache() do 
+        ADCME.cmake()
     end
-    mkdir("build")
-    cd("build")
-    ADCME.cmake()
-    ADCME.make()
+    require_library("adcme") do 
+        ADCME.make()
+    end
     cd(PWD)
     global libadcme = tf.load_op_library(LIBADCME)
 end
@@ -1008,4 +1001,17 @@ function load_library(filename::String)
         error("Failed to load library: $filename. Original error message:\n$e")
     end
     return STORAGE[keyname] 
+end
+
+"""
+    get_library_symbols(file::Union{String, PyObject})
+
+Returns the symbols in the custom op library `file`.
+"""
+function get_library_symbols(files::Union{String, PyObject})
+    if isa(files, String)
+        files = load_library(files)
+    end
+    files = keys(files)
+    filter(x->islowercase(String(x)[1]) && String(x)!="tf_export" && !(occursin("fallback", String(x))) && String(x)!="deprecated_endpoints", files)
 end

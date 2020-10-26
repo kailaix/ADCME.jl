@@ -10,25 +10,27 @@ Do you know...
 
 ## Slides
 
-* [Physics Based Machine Learning for Inverse Problems](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/ADCME.pdf)
+* [Physics Based Machine Learning for Inverse Problems](https://kailaix.github.io/ADCMESlides/ADCME.pdf)
 
-* [Automatic Differentiation for Scientific Computing](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/AD.pdf)
+* [Automatic Differentiation for Scientific Computing](https://kailaix.github.io/ADCMESlides/AD.pdf)
 
-* [Deep Neural Networks and Inverse Modeling](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Inverse.pdf)
+* [Deep Neural Networks and Inverse Modeling](https://kailaix.github.io/ADCMESlides/Inverse.pdf)
 
-* [Subsurface Inverse Modeling with Physics Based Machine Learning](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/Subsurface.pdf)
+* [Subsurface Inverse Modeling with Physics Based Machine Learning](https://kailaix.github.io/ADCMESlides/Subsurface.pdf)
 
-* [Calibrating Multivariate Lévy Processes with Neural Networks](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/MSML2020.pdf)
+* [Calibrating Multivariate Lévy Processes with Neural Networks](https://kailaix.github.io/ADCMESlides/MSML2020.pdf)
 
-* [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (JuliaCN 2020)](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/JuliaConference2020_08_21.pdf)
+* [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (JuliaCN 2020)](https://kailaix.github.io/ADCMESlides/JuliaConference2020_08_21.pdf)
 
-* [ADCME -- Machine Learning for Computational Engineering (Berkeley/Stanford CompFest)](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/CompFest2020.pdf)
+* [ADCME -- Machine Learning for Computational Engineering (Berkeley/Stanford CompFest)](https://kailaix.github.io/ADCMESlides/CompFest2020.pdf)
 
-* [Presentation on 09/23/2020](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/InverseAdFem2020_09_23.pdf)
+* [Presentation on 09/23/2020](https://kailaix.github.io/ADCMESlides/InversePoreFlow2020_09_23.pdf)
 
-* [Presentation on 10/01/2020](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/InverseAdFem2020_10_01.pdf)
+* [Presentation on 10/01/2020](https://kailaix.github.io/ADCMESlides/2020_10_01.pdf)
 
-* [Presentation on 10/06/2020](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/InverseAdFem2020_10_06.pdf)
+* [Presentation on 10/06/2020](https://kailaix.github.io/ADCMESlides/2020_10_06.pdf)
+
+* [Presentation in SMS, Peking University 10/22/2020](https://kailaix.github.io/ADCMESlides/2020_10_22.pdf)
 
 ## Instruction on Installing ADCME 
 
@@ -42,7 +44,7 @@ Do you know...
 ## Posters
 
 
-* [SPD-NN Poster](https://kailaix.github.io/ADCME.jl/dev/assets/Slide/NNFEM_poster.pdf)
+* [SPD-NN Poster](https://kailaix.github.io/ADCMESlides/NNFEM_poster.pdf)
 
 ## Videos
 * [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (中文)](https://www.bilibili.com/video/BV1va4y177fe)

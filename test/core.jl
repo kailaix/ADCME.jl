@@ -179,3 +179,17 @@ end
     @test a.device == "/device:CPU:0"
     @test b.device == "/device:GPU:0"
 end
+
+@testset "mpi utils" begin 
+    @test has_mpi() == false 
+    try 
+        get_mpi()
+    catch
+        @test true 
+    end
+    try 
+        get_mpirun()
+    catch
+        @test true 
+    end
+end

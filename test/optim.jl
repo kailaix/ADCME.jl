@@ -249,20 +249,6 @@ minimize(opt, sess)
     @test run(sess, gradients(sum(x), θ))≈1/3*[2. .^3;3. ^3; 4. ^3] .^(-2/3)
 end
 
-@testset "pack and unpack" begin 
-    v = [constant(rand(4,2)), constant(rand(3)), constant(1.0)]
-    p = rand(12)
-    @test unpack(p, v) ≈ [
-        reshape(p[1:8], 2,4)'|>Array, 
-        p[9:11],
-        p[12]
-    ]
-    @test pack([
-        reshape(p[1:8], 2,4)'|>Array, 
-        p[9:11],
-        p[12]
-    ])≈p
-end
 
 # @testset "Constrained Optimizer" begin 
 #     reset_default_graph() # this is very important. UnconstrainedOptimizer only works with a fresh session 
@@ -284,24 +270,3 @@ end
 #         apply!(ad, rand(10), rand(10))
 #     end
 # end
-
-@testset "search direction" begin 
-    opt = Descent()
-    x = rand(10)
-    g = rand(10)
-    g2 = copy(g)
-    d = apply!(opt, x, g2)
-    @test d ≈ 0.001 * g 
-end
-
-
-@testset "Optim" begin 
-    x = Variable(rand(2))
-    loss = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
-    init(sess)
-    loss_ = Optimize!(sess, loss)
-    @test loss_[end] < 1e-10
-    init(sess)
-    loss_ = Optimize!(sess, loss, optimizer = ConjugateGradient())
-    @test loss_[end] < 1e-10
-end

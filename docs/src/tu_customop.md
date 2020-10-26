@@ -570,7 +570,7 @@ The output is
 [1.0,2.0,3.0]
 [1.0,4.0,9.0]
 ```
-We can see that the tensors depending on `u` are also aware of the assign operator. The complete programs can be downloaded here: [CMakeLists.txt](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/mutable/CMakeLists.txt), [MyAssign.cpp](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/mutable/MyAssign.cpp), [gradtest.jl](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/mutable/gradtest.jl).
+We can see that the tensors depending on `u` are also aware of the assign operator. The complete programs can be downloaded here: [CMakeLists.txt](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/Mutables/CMakeLists.txt), [MyAssign.cpp](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/Mutables/MyAssign.cpp), [gradtest.jl](https://kailaix.github.io/ADCME.jl/dev/assets/Codes/Mutables/gradtest.jl).
 
 ### Third-party Plugins
 

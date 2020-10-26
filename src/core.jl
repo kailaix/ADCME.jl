@@ -10,6 +10,9 @@ stop_gradient,
 independent,
 tensor,
 tensorname,
+has_mpi,
+get_mpi,
+get_mpirun,
 @cpu, 
 @gpu 
 
@@ -254,6 +257,94 @@ function has_gpu()
         return false
     else
         return true
+    end
+end
+
+"""
+    has_mpi(verbose::Bool = true)
+
+Determines whether MPI is installed. 
+"""
+function has_mpi(verbose::Bool = true)
+    if Sys.iswindows()
+        if haskey(ENV, "MSMPI_INC") && haskey(ENV, "MSMPI_LIB64")
+            return true 
+        else 
+            return false 
+        end
+    end
+    if haskey(ENV, "MPI_INCLUDE_PATH") && haskey(ENV, "MPI_C_LIBRARIES")
+        if !(isdir(ENV["MPI_INCLUDE_PATH"]) && "mpi.h" in readdir(ENV["MPI_INCLUDE_PATH"]))
+            error("mpi.h is not found in ENV[\"MPI_INCLUDE_PATH\"] = $(ENV["MPI_INCLUDE_PATH"])")
+        end
+        if !isfile(ENV["MPI_C_LIBRARIES"])
+            error("ENV[\"MPI_C_LIBRARIES\"]=$(ENV["MPI_C_LIBRARIES"]) does not exists.")
+        end
+        verbose && (@info "Use MPI libraries: $(ENV["MPI_C_LIBRARIES"])")
+        return true 
+    end 
+    if isfile(get_library(joinpath(ADCME.LIBDIR, "mpi"))) && isfile(joinpath(ADCME.INCDIR, "mpi.h"))
+        verbose && (@info "Use default MPI library (OpenMPI)")
+        return true 
+    end
+    return false
+end
+
+""" 
+    get_mpi()
+
+Returns the MPI include directory and shared library.
+"""
+function get_mpi()
+    if Sys.iswindows()
+        if haskey(ENV, "MSMPI_INC") && haskey(ENV, "MSMPI_LIB64")
+            return ENV["MSMPI_INC"], ENV["MSMPI_LIB64"]
+        else 
+            return false 
+        end
+    end
+    if haskey(ENV, "MPI_INCLUDE_PATH") && haskey(ENV, "MPI_C_LIBRARIES")
+        return ENV["MPI_INCLUDE_PATH"], ENV["MPI_C_LIBRARIES"]
+    end 
+    if isfile(get_library(joinpath(ADCME.LIBDIR, "mpi"))) && isfile(joinpath(ADCME.INCDIR, "mpi.h"))
+        return ADCME.INCDIR, get_library(joinpath(ADCME.LIBDIR, "mpi"))
+    end
+    error("""MPI Library is not found. 
+- On Windows, you can download Microsoft MPI (https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
+- On Unix, you can install OpenMPI via `install_openmpi()`
+""")
+end
+
+"""
+    get_mpirun()
+
+Returns the **default** mpirun executable. 
+"""
+function get_mpirun()
+    if !has_mpi(false)
+        error("""MPI Library is not found. 
+- On Windows, you can download Microsoft MPI (https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
+- On Unix, you can install OpenMPI via `install_openmpi()`
+""")
+    end
+    if Sys.iswindows()
+        return joinpath(ENV["MPI_BIN"], "mpiexec.exe")
+    else
+        if haskey(ENV, "MPI_INCLUDE_PATH") && haskey(ENV, "MPI_C_LIBRARIES")
+            @warn("You are not using the default MPI. Trying to detect the executable...")
+            mpirun = abspath(joinpath(ENV["MPI_INCLUDE_PATH"], "..", "bin", "mpirun"))
+            if !isfile(mpirun)
+                error("Failed.")
+            else
+                return mpirun 
+            end
+        end 
+
+        mpirun =  joinpath(ADCME.BINDIR, "mpirun")
+        if !isfile(mpirun)
+            error("Failed.")
+        end
+        return mpirun 
     end
 end
 

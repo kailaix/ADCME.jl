@@ -1,12 +1,5 @@
-if Sys.islinux() && haskey(ENV, "GPU") 
-    try 
-        run(`which nvcc`)
-    catch 
-        error("You specified GPU=1 but NVCC is not available. Please include `nvcc` in your system path.")
-    end
-end
-
-INSTALL_GPU = Sys.islinux() && haskey(ENV, "GPU") 
+## define variables...
+INSTALL_GPU = Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in [1, "1"]
 
 CONDA = ""
 if Sys.iswindows()
@@ -15,54 +8,60 @@ else
     CONDA = "$(JULIA_ADCME_DIR)/.julia/adcme/bin/conda"
 end
 
+INSTALLER = ""
+if Sys.islinux() 
+    INSTALLER = "Miniconda3-py37_4.8.3-Linux-x86_64.sh"
+elseif Sys.isapple()
+    INSTALLER = "Miniconda3-py37_4.8.3-MacOSX-x86_64.sh"
+else 
+    INSTALLER = "Miniconda3-py37_4.8.3-Windows-x86_64.exe"
+end
 
-if (!FORCE_REINSTALL_ADCME) && isfile(CONDA) && 
-    (occursin("tensorflow-gpu", read(`$CONDA list`, String)) || 
-        (!INSTALL_GPU && occursin("tensorflow", read(`$CONDA list`, String))))
-    @info "ADCME dependencies have already been installed"
-else
-    installer = ""
-    if Sys.islinux() 
-        installer = "Miniconda3-py37_4.8.3-Linux-x86_64.sh"
-    elseif Sys.isapple()
-        installer = "Miniconda3-py37_4.8.3-MacOSX-x86_64.sh"
-    else 
-        installer = "Miniconda3-py37_4.8.3-Windows-x86_64.exe"
-    end
-
+function install_conda()
     PWD = pwd()
     cd("$(JULIA_ADCME_DIR)/.julia/")
-    if !(installer in readdir("."))
+    if !(INSTALLER in readdir("."))
         @info "Downloading miniconda installer..."
-        download("https://repo.anaconda.com/miniconda/"*installer, installer)
+        download("https://repo.anaconda.com/miniconda/"*INSTALLER, INSTALLER)
     end
 
-    if isdir("adcme") && FORCE_REINSTALL_ADCME
-        error("""$(joinpath(pwd(), "adcme")) already exists. Please quit Julia, remove the path and try again.""")
+    if isdir("adcme")
+        if FORCE_REINSTALL_ADCME
+            error("""ADCME dependencies directory already exist, and you indicate FORCE_REINSTALL_ADCME=true.
+    Please (1) quit Julia, (2) remove the path $(joinpath(pwd(), "adcme")) and (3) rebuild ADCME.""")
+        else 
+            @info "ADCME dependencies have already been installed."
+            return 
+        end
     end
 
     @info "Installing miniconda..."
     if Sys.iswindows()
-        run(`cmd /c start /wait "" $installer /InstallationType=JustMe /RegisterPython=0 /S /D=$(JULIA_ADCME_DIR)\\.julia\\adcme`)
+        run(`cmd /c start /wait "" $INSTALLER /InstallationType=JustMe /RegisterPython=0 /S /D=$(JULIA_ADCME_DIR)\\.julia\\adcme`)
     else
-        run(`bash $installer -f -b -p adcme`)
+        run(`bash $INSTALLER -f -b -p adcme`)
     end
     cd(PWD)
+end
+
+function install_conda_envs()
+    cd(@__DIR__)
 
     ENV_ = copy(ENV)
     if Sys.iswindows()
         platform = "windows"
         ENV_["PATH"] = "$(JULIA_ADCME_DIR)/.julia/adcme/Scripts;$(JULIA_ADCME_DIR)/.julia/adcme/Library/bin;$(JULIA_ADCME_DIR)/.julia/adcme/" * ENV_["PATH"]
     elseif Sys.islinux()
-        if haskey(ENV, "GPU") && ENV["GPU"] in [1, "1"]
-            platform = "linux-gpu"
-        else
-            platform = "linux"
-        end
+        platform = INSTALL_GPU ? "linux-gpu" : "linux"
     else
         platform = "osx"
     end
-    
+    if (platform == "linux-gpu" && occursin("tensorflow-gpu", read(`$CONDA list`, String))) ||
+        platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String)) 
+        return 
+    end 
     run(setenv(`$CONDA env update -n base --file $platform.yml`, ENV_))
-    
 end
+
+install_conda()
+install_conda_envs()

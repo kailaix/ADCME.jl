@@ -27,7 +27,8 @@ TensorArray,
 gradient_checkpointing,
 zeros_like,
 ones_like,
-gradients_colocate
+gradients_colocate,
+is_variable
 
 """
     constant(value; kwargs...)
@@ -816,4 +817,13 @@ b = ones_like(a)
 function ones_like(o::Union{PyObject,Real, Array{<:Real}}, args...; kwargs...)
     kwargs = jlargs(kwargs)
     tf.ones_like(o, args...;kwargs...)
+end
+
+"""
+    is_variable(o::PyObject)
+
+Determines whether `o` is a trainable variable.
+"""
+function is_variable(o::PyObject)
+    hasproperty(o, :trainable) && o.trainable
 end

@@ -75,7 +75,7 @@ $$x \rightarrow o_1 \rightarrow o_2 \rightarrow \ldots \rightarrow o_k$$
 function fcx(x::Union{Array{Float64,2},PyObject}, output_dims::Array{Int64,1}, 
     θ::Union{Array{Float64,1}, PyObject};
     activation::String = "tanh")
-    pth = joinpath(@__DIR__, "../deps/Plugin/ExtendedNN/build/ExtendedNN")
+    pth = joinpath(@__DIR__, "../deps/Plugin/ExtendedNN/build/ExtendedNn")
     pth = get_library(pth)
     require_file(pth) do 
         install_adept()
