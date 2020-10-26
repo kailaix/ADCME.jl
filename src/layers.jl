@@ -97,7 +97,7 @@ end
     ae(x::PyObject, output_dims::Array{Int64}, scope::String = "default";
         activation::Union{Function,String} = "tanh")
 
-Alias: `fc`
+Alias: `fc`, `ae`
 
 Creates a neural network with intermediate numbers of neurons `output_dims`.
 """
@@ -128,7 +128,7 @@ end
     ae(x::Union{Array{Float64}, PyObject}, output_dims::Array{Int64}, θ::Union{Array{Float64}, PyObject};
     activation::Union{Function,String, Nothing} = "tanh")
 
-Alias: `fc`
+Alias: `fc`, `ae`
 
 Creates a neural network with intermediate numbers of neurons `output_dims`. The weights are given by `θ`
 
@@ -190,7 +190,7 @@ end
         θ::Union{Array{Array{Float64}}, Array{PyObject}};
         activation::Union{Function,String} = "tanh")
 
-Alias: `fc`
+Alias: `fc`, `ae`
 
 Constructs a neural network with given weights and biases `θ`
 
@@ -228,24 +228,24 @@ end
 
 Return the initial weights and bias values by TensorFlow as a vector. The neural network architecture is
 
-$$o_1 (Input layer) \rightarrow o_2 \rightarrow \cdots \rightarrow o_n (Output layer)$$
+$$o_1 (\text{Input layer}) \rightarrow o_2 \rightarrow \ldots \rightarrow o_n (\text{Output layer})$$
 
 Three types of 
 random initializers are provided
 
 - `xavier` (default). It is useful for `tanh` fully connected neural network. 
-```math 
-W^l_i \sim \sqrt{\frac{1}{n_{l-1}}}
-```
+ 
+$$W^l_i \sim \sqrt{\frac{1}{n_{l-1}}}$$
+
+
 - `xavier_avg`. A variant of `xavier`
-```math 
-W^l_i \sim \sqrt{\frac{2}{n_l + n_{l-1}}}
-```
+
+$$W^l_i \sim \sqrt{\frac{2}{n_l + n_{l-1}}}$$
+
 - `he`. This is the activation aware initialization of weights and helps mitigate the problem
 of vanishing/exploding gradients. 
-```math 
-W^l_i \sim \sqrt{\frac{2}{n_{l-1}}}
-```
+
+$$W^l_i \sim \sqrt{\frac{2}{n_{l-1}}}$$
 
 # Example
 ```julia
