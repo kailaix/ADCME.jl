@@ -16,5 +16,5 @@ end
 input = rand(10)
 u = compute_sin(input)
 
-sess = Session(inter = 1, intra = 1, CPU = 1); init(sess)
+sess = Session(CPU=1); init(sess)
 @show run(sess, u)
