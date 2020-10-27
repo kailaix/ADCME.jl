@@ -74,6 +74,9 @@ REGISTER_KERNEL_BUILDER(Name("ComputeSin").Device(DEVICE_CPU), ComputeSinOp);
 
 
 #ifdef GOOGLE_CUDA
+
+void ComputeSinGPU(double *y, const double *x, int n);
+
 class ComputeSinOpGPU : public OpKernel {
 private:
   
@@ -97,8 +100,8 @@ public:
     // extra check
         
     // create output shape
-    
-    TensorShape output_shape({-1});
+    int n = input_shape.dim_size(0);
+    TensorShape output_shape({n});
             
     // create output tensor
     
@@ -113,6 +116,7 @@ public:
     // implement your forward function here 
 
     // TODO:
+    ComputeSinGPU(output_tensor, input_tensor, n);
 
   }
 };
