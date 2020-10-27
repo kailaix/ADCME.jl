@@ -87,3 +87,60 @@ void threadpool_print(OpKernelContext* context){
 Basically, we can asynchronously launch jobs using the thread pools. Additionally, we are responsible for synchronization. Here we have used condition variables for synchronization. 
 
 Typically our CPU operators are synchronous and do not need the thread pools. But it does not hard to have an intra thread pool. 
+
+
+## Runtime Optimizations
+
+If you are using Intel CPUs, we may have some runtime optimization configurations. See this [link](https://software.intel.com/content/www/us/en/develop/articles/guide-to-tensorflow-runtime-optimizations-for-cpu.html) for details. Here, we show the effects of some optimizations. 
+
+We already understand `intra_op_parallelism_threads` and `inter_op_parallelism_threads`; now let us consider some other options. We consider computing $\sin$ function using the following formula 
+
+$$\sin x \approx x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!}$$
+
+The implementation can be found [here]().
+
+### Configure OpenMP 
+
+To set the number of OMP threads, we can configure the `OMP_NUM_THREADS` environment variable. One caveat is that the variable must be set before loading ADCME. For example 
+
+```julia
+ENV["OMP_NUM_THREADS"] = 5
+using ADCME
+```
+
+Running the `omp_thread.jl`, we have the following output
+
+```
+There are 5 OpenMP threads
+4 is computing...
+0 is computing...
+4 is computing...
+1 is computing...
+1 is computing...
+0 is computing...
+3 is computing...
+3 is computing...
+2 is computing...
+2 is computing...
+```
+
+We see that there are 5 threads running. 
+
+### Configure Number of Devices
+
+
+[`Session`](@ref) accepts keywords `CPU`, which limits the number of CPUs we can use. Note, `CPU` corresponds to the number of CPU devices, not cores or threads. For example, if we run `num_device.jl` with (default is using all CPUs)
+
+```julia
+sess = Session(CPU=1); init(sess)
+```
+
+We will see 
+```
+There are 144 OpenMP threads
+```
+This is because we have 144 cores in our machine. 
+
+
+### Soft Placement 
+
