@@ -17,9 +17,48 @@ before starting ADCME, you need to set the environment variable via
 ENV["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 ```
 
+# Configuration
+
+Session accepts some runtime optimization configurations 
+
+- `intra`: Number of threads used within an individual op for parallelism
+- `inter`: Number of threads used for parallelism between independent operations.
+- `CPU`: Maximum number of CPU cores to use
+- `GPU`: Maximum number of GPU devices to use
+- `soft`: Set to True/enabled to facilitate operations to be placed on CPU instead of GPU
 """
 function Session(args...; kwargs...)
-    sess = tf.compat.v1.Session(args...;kwargs...)
+    
+
+    kwargs_ = Dict{Symbol, Any}()
+    if haskey(kwargs, :intra)
+        kwargs_[:intra_op_parallelism_threads] = kwargs[:intra]
+    end
+    if haskey(kwargs, :inter)
+        kwargs_[:inter_op_parallelism_threads] = kwargs[:intra]
+    end
+    if haskey(kwargs, :soft)
+        kwargs_[:allow_soft_placement] = kwargs[:soft]
+    end
+    if haskey(kwargs, :CPU) || haskey(kwargs, :GPU)
+        cnt = Dict{String, Int64}()
+        if haskey(kwargs, :CPU)
+            cnt["CPU"] = kwargs[:CPU]
+        end
+        if haskey(kwargs, :GPU)
+            cnt["GPU"] = kwargs[:GPU]
+        end
+        kwargs_[:device_count] = cnt
+    end
+
+    if haskey(kwargs, :config)
+        sess = tf.compat.v1.Session(args...;kwargs...)
+    else
+        @info kwargs_
+        config = tf.ConfigProto(;kwargs_...)
+        sess = tf.compat.v1.Session(config = config)
+    end
+    
     STORAGE["session"] = sess 
     return sess 
 end
