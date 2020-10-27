@@ -23,9 +23,12 @@ Session accepts some runtime optimization configurations
 
 - `intra`: Number of threads used within an individual op for parallelism
 - `inter`: Number of threads used for parallelism between independent operations.
-- `CPU`: Maximum number of CPU cores to use
+- `CPU`: Maximum number of CPUs to use. 
 - `GPU`: Maximum number of GPU devices to use
 - `soft`: Set to True/enabled to facilitate operations to be placed on CPU instead of GPU
+
+!!! note 
+    `CPU` limits the number of CPUs being used, not the number of cores or threads.
 """
 function Session(args...; kwargs...)
     
