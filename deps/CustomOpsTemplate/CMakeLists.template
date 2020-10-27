@@ -54,7 +54,7 @@ endif()
 include_directories($${TF_INC} $${PREFIXDIR} $${CUDA_INC})
 
 find_program(_nvidia_smi "nvidia-smi")
-if (_nvidia_smi)
+if (_nvidia_smi AND UNIX)
   find_package(CUDA QUIET REQUIRED)
   SET(CMAKE_CXX_FLAGS "-std=c++11 $${CMAKE_CXX_FLAGS}")
   SET(CMAKE_CXX_FLAGS "-O3 $${CMAKE_CXX_FLAGS}")

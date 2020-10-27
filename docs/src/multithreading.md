@@ -140,7 +140,3 @@ We will see
 There are 144 OpenMP threads
 ```
 This is because we have 144 cores in our machine. 
-
-
-### Soft Placement 
-
