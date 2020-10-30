@@ -12,7 +12,11 @@ semilogy(losses, label = "BFGS")
 @load "data/lbfgs.jld2" losses
 semilogy(losses, label = "LBFGS")
 
+
+@load "data/dampled_bfgs.jld2" losses
+semilogy(losses, label = "Damped BFGS")
+
 legend()
 xlabel("Iterations")
 ylabel("Loss")
-savefig("data/loss.png")
+savefig("data/sinloss.png")

@@ -11,7 +11,13 @@ end
 
 mmesh = Mesh(joinpath(PDATA, "twoholes_large.stl"))
 
-using Random; Random.seed!(233)
+SEED = 233
+if length(ARGS)>=1
+    SEED = parse(Int64, ARGS[1])
+end
+@info "seed = $SEED"
+
+using Random; Random.seed!(SEED)
 idx = rand(1:length(SOL), length(SOL)÷5)
 xy = gauss_nodes(mmesh)
 θ = Variable(fc_init([2,20,20,20,1]))

@@ -9,11 +9,11 @@ losses0 = Float64[]
 
 # error()
 
-losses = Optimize!(sess, loss; optimizer = BFGSOptimizer(), max_num_iter=1000)
+losses = Optimize!(sess, loss; optimizer = BFGSOptimizer(), max_num_iter=1000, β=0.8)
 
 losses = [losses;losses0]
 w = run(sess, θ)
-@save "data/bfgs_with_noadam$SEED.jld2" losses w 
+@save "data/damped_bfgs_with_noadam$SEED.jld2" losses w 
 
 figure(figsize = (10, 4))
 subplot(121)
@@ -21,4 +21,4 @@ semilogy(losses)
 xlabel("Iterations"); ylabel("Loss")
 subplot(122)
 visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
-savefig("data/bfgs_with_noadam$SEED.png")
+savefig("data/damped_bfgs_with_noadam$SEED.png")
