@@ -68,7 +68,7 @@ Pages   = ["gan.jl"]
 
 ```@autodocs
 Modules = [ADCME]
-Pages   = ["extra.jl"]
+Pages   = ["extra.jl", "kit.jl"]
 ```
 
 ## ODE
