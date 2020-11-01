@@ -1,0 +1,5 @@
+InterpDimOne
+double x(?) 
+double y(?)
+double z(?)
+double w(?) -> output

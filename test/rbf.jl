@@ -21,3 +21,19 @@
     init(sess)
     @test norm(run(sess, o)-O)<1e-5
 end
+
+@testset "interp1" begin 
+    Random.seed!(233)
+    x = sort(rand(10))
+    y = @. x^2 + 1.0
+    z = [x[1]; x[2]; rand(5) * (x[end]-x[1]) .+ x[1]; x[end]]
+    u = interp1(x,y,z)
+    @test norm(run(sess, u)-[1.026422850882909
+                    1.044414684090653
+                    1.312604319732756
+                    1.810845361128137
+                    1.280789421523103
+                    1.600084940795178
+                    1.930560200260898
+                    1.972130181835701]) < 1e-10
+end

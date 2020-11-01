@@ -1,4 +1,4 @@
-export RBF2D
+export RBF2D, interp1
 
 @doc raw"""
     function RBF2D(xc::Union{PyObject, Array{Float64, 1}}, yc::Union{PyObject, Array{Float64, 1}}; 
@@ -72,4 +72,17 @@ function Base.:show(io::IO, o::RBF2D)
     et = hasproperty(o.eps, :trainable) && o.eps.trainable
     dt = hasproperty(o.d, :trainable) && o.d.trainable
     print("RadialBasisFunction(NumOfCenters=$(length(o.xc)),NumOfAdditionalTerm=$(length(o.d)),CoeffIsVariable=$(ct),ShapeIsVariable=$(et),AdditionalTermIsVariable=$dt)")
+end
+
+"""
+    interp1(x::Union{Array{Float64, 1}, PyObject},v::Union{Array{Float64, 1}, PyObject},xq::Union{Array{Float64, 1}, PyObject})
+
+returns interpolated values of a 1-D function at specific query points using linear interpolation. 
+Vector x contains the sample points, and v contains the corresponding values, v(x). 
+Vector xq contains the coordinates of the query points.
+"""
+function interp1(x::Union{Array{Float64, 1}, PyObject},v::Union{Array{Float64, 1}, PyObject},xq::Union{Array{Float64, 1}, PyObject})
+    interp_dim_one_ = load_system_op("interp_dim_one")
+    x,v,xq = convert_to_tensor(Any[x,v,xq], [Float64,Float64,Float64])
+    out = interp_dim_one_(x,v,xq)
 end
