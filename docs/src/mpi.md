@@ -100,6 +100,16 @@ We have the results:
 [ Info: (15.0, [17.0])
 ```
 
+## Hybrid Programming
+
+Each MPI processor can communicate data between processes, which do not share memory. Within each process, ADCME also allows for multi-threaded parallelism with a shared-memory model. For example, we can use OpenMP to accelerate matrix vector production. We can also use a threadpool per process to manage more complex and dynamic parallel tasks. However, the hybrid model brings challenges to communicate data using MPI. When we post MPI calls from different threads within the same process, we need to prevent data races and match the corresponding broadcast and collective operators. For example, without any guarantee on the ordering of concurrent MPI calls, we might incorrectly matched a send operator with a gather operator. 
+
+In ADCME, we adopt the dependency injection technique: we explicitly serialize the MPI calls by adding ghost dependencies. For example, in the following computational graph, originally, Operator 2 and Operator 3 are independent. In a concurrent computing environment, Rank 0 may execute Operator 2 first and then Operator 3, while Rank 1 executes Operator 3 first and then Operator 2. Then there is a mismatch of the MPI call (race condition): Operator 2 in Rank 0 coacts with Operator 3 in Rank 1, and Operator 3 in Rank 0 coacts with Operator 2 in Rank 1. 
+
+
+To resolve the data race issue, we can explicitly make Operator 3 depend on Operator 2. In this way, we can ensure that **the MPI calls** Operator 1, 2, and 3 are executed in order. Note this technique sacrifices some concurrency (Operator 2 and Operator 3 cannot be executed concurrently), but the concurrency of most non-MPI operators is still preserved. 
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/dependency_injection.PNG?raw=true)
 
 ## Optimization 
 
