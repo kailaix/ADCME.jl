@@ -177,7 +177,7 @@ end
 
 @doc raw"""
     BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
-    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, kwargs...)
+    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, method::String = "L-BFGS-B", kwargs...)
 
 `BFGS!` is a simplified interface for BFGS optimizer. See also [`ScipyOptimizerInterface`](@ref).
 `callback` is a callback function with signature 
@@ -215,9 +215,12 @@ loss = x^2
 sess = Session(); init(sess)
 BFGS!(sess, loss, bounds=Dict(x=>[1.0,3.0]))
 ```
+
+!!! note 
+    Users can also use other scipy optimization algorithm by providing `method` keyword arguments
 """->
 function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
-    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, kwargs...)
+    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, method::String = "L-BFGS-B", kwargs...)
     __cnt = 0
     __loss = 0
     __var = nothing
@@ -257,7 +260,7 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
             end
         end
     end
-    opt = ScipyOptimizerInterface(loss, method="L-BFGS-B",options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12); kwargs...)
+    opt = ScipyOptimizerInterface(loss, method=method,options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12); kwargs...)
     @info "Optimization starts..."
     ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...])
     out
