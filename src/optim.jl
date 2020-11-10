@@ -771,9 +771,8 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     end
 
     function g!(G, x)
-        run(sess, assign_ops, pl=>x)
+        G[:], _ = run(sess, [grds, assign_ops], pl=>x)
         __value = x
-        G[:] = run(sess, grds)
     end
 
     function fg(G, x)
