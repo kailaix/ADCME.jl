@@ -141,63 +141,34 @@ savefig("optimizer_bfgs2.png")
 
 Unfortunately, it got stuck after several iterations. 
 
-## Build your own optimizers
 
-What if we want to design our own optimizers. To do this, we can construct an [`Optimizer`](@ref) object:
+## Build Your Own Optimizer 
+
+Sometimes we might want to build our own optimizer. This can be done using [`Optimize!`](@ref). To this end, we want to supply the function with the following arguments:
+
+- `sess`: Session 
+- `loss`: Loss function to minimize 
+- `optimizer`: a **keyword argument** that specifies the optimizer function. The function takes `f`, `fprime`, and `f_fprime` (outputs both loss and gradients), initial value `x0` as input. The output is redirected to the output of `Optimize!`.
+
+Let us consider minimizing the Rosenbrock function using an optimizer from Ipopt
 
 ```julia
-function ADCME.:optimize(opt::DefaultOptimizer)
-    x = opt.x0
-    g = zeros(length(x))
-    losses = zeros(1000)
-    @info opt.options
-    for i = 1:opt.options[:niter]
-        losses[i] = opt.f(x)
-        opt.g!(g, x)
-        x = x - 0.001 * g
-    end
-    return losses
+import Ipopt
+x = Variable(rand(2))
+loss = (1-x[1])^2 + 100(x[2]-x[1]^2)^2
+
+function opt(f, g, fg, x0)
+    prob = createProblem(2, -100ones(2), 100ones(2), 0, Float64[], Float64[], 0, 0,
+                     f, (x,g)->nothing, (x,G)->g(G, x), (x, mode, rows, cols, values)->nothing, nothing)
+    prob.x = x0 
+    Ipopt.addOption(prob, "hessian_approximation", "limited-memory")
+    status = Ipopt.solveProblem(prob)
+    println(Ipopt.ApplicationReturnStatus[status])
+    println(prob.x)
+    Ipopt.freeProblem(prob)
+    nothing
 end
 
-opt = DefaultOptimizer()
 sess = Session(); init(sess)
-losses = Optimize!(sess, loss, optimizer = opt, niter = 1000)
+Optimize!(sess, loss, optimizer = opt)
 ```
-
-We can visualize the result:
-```julia
-figure(figsize = (10, 4))
-subplot(121)
-semilogy(losses)
-xlabel("Iterations"); ylabel("Loss")
-subplot(122)
-visualize_scalar_on_gauss_points(run(sess, Kappa), mmesh)
-savefig("optimizer_gd.png")
-```
-
-
-![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/Optimizers/optimizer_gd.png?raw=true)
-
-Not good enough, but at least we have a way to interact with optimizers!
-
-
-## The `AbstractOptimizer` Interface
-
-To create your own optimizer, you will be deal with `AbstractOptimizer` most of the time. The actual implementation is in (you need to `import ADCME:optimize` first)
-```julia
-optimize(opt::YourOwnOptimizer)
-```
-Here `YourOwnOptimizer` is a derived class of `AbstractOptimizer`, and ADCME provides `DefaultOptimizer` for convenience. You can assume that `opt` has the following fields:
-
-- `f`: returns the loss function at `x`
-- `g!`: an in-place function `g!(G, x)` that modifies the gradient vector `G` at `x`
-- `x0`: the initial guess 
-- `options`: a Symbol to Any mapping
-
-Once `optimize` is implemented and `opt` is an instance of `YourOwnOptimizer`, you can run `optimize(opt)`. Or, if you want to use with the computational graph:
-
-```julia
-Optimize!(sess, loss; optimizer = YourOwnOptimizer(...))
-```
-
-Note ADCME will override `f`, `g!`, `x0`, and add additional options to `options`. See [`Optimizer`](@ref) for concrete examples. 
