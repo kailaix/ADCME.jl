@@ -265,13 +265,37 @@ See a detailed [tutorial](https://kailaix.github.io/ADCME.jl/dev/tutorial/), or 
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/law.png?raw=true)                              | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/earthquake.png?raw=true)                       | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/geo.png?raw=true)                              | ![law](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/algo.png?raw=true)                             |
 
+Here are some research papers using ADCME:
+
+
+1. Li, Dongzhuo, Kailai Xu, Jerry M. Harris, and Eric Darve. "Coupled Time‐Lapse Full‐Waveform Inversion for Subsurface Flow Problems Using Intrusive Automatic Differentiation." Water Resources Research 56, no. 8 (2020): e2019WR027032.
+
+2. Xu, Kailai, Alexandre M. Tartakovsky, Jeff Burghardt, and Eric Darve. "Inverse Modeling of Viscoelasticity Materials using Physics Constrained Learning." arXiv preprint arXiv:2005.04384 (2020).
+
+3. Zhu, Weiqiang, Kailai Xu, Eric Darve, and Gregory C. Beroza. "A General Approach to Seismic Inversion with Automatic Differentiation." arXiv preprint arXiv:2003.06027 (2020).
+
+4. Xu, K. and Darve, E., 2019. Adversarial Numerical Analysis for Inverse Problems. arXiv preprint arXiv:1910.06936.
+
+5. Xu, Kailai, Weiqiang Zhu, and Eric Darve. "Distributed Machine Learning for Computational Engineering using MPI." arXiv preprint arXiv:2011.01349 (2020).
+
+6. Xu, Kailai, and Eric Darve. "Physics constrained learning for data-driven inverse modeling from sparse observations." arXiv preprint arXiv:2002.10521 (2020).
+
+7. Xu, Kailai, Daniel Z. Huang, and Eric Darve. "Learning constitutive relations using symmetric positive definite neural networks." arXiv preprint arXiv:2004.00265 (2020).
+
+8. Xu, Kailai, and Eric Darve. "The neural network approach to inverse problems in differential equations." arXiv preprint arXiv:1901.07758 (2019).
+
+9. Huang, D.Z., Xu, K., Farhat, C. and Darve, E., 2019. Predictive modeling with learned constitutive laws from indirect observations. arXiv preprint arXiv:1905.12530.
+
+
+
 **Domain specific software based on ADCME**
 
 [ADSeismic.jl](https://github.com/kailaix/ADSeismic.jl): Inverse Problems in Earthquake Location/Source-Time Function, FWI, Rupture Process 
 
 [FwiFlow.jl](https://github.com/lidongzh/FwiFlow.jl): Seismic Inversion, Two-phase Flow, Coupled seismic and flow equations 
 
-[NNFEM.jl](https://github.com/kailaix/NNFEM.jl/): Constitutive Modeling, Elasticity, Plasticity, Hyperelasticity, Finite Element Method on Unstructured Grid 
+[AdFem.jl](https://github.com/kailaix/AdFem.jl/): Inverse Modeling with the Finite Element Method
+
 
 
 # LICENSE
