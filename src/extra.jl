@@ -580,7 +580,7 @@ function doctor()
     end
 
     c = true 
-    if VERSION>=v"1.4" && Sys.isapple() 
+    if VERSION>=v"1.4" && VERSION<v"1.5" && Sys.isapple() 
         c = false
     end
 
@@ -588,16 +588,16 @@ function doctor()
         yes("Julia version")
     else
         no("Julia version", 
-"""Your Julia version is $VERSION, and your system is MACOSX. This combination has a compatability issue.""",
-"""Downgrade your Julia to ≦1.3""")
+"""Your Julia version is $VERSION, and your system is MACOSX. This combination may have a compatability issue.""",
+"""If `using ADCME` freezes, consider install another version of Julia.""")
     end 
-
-    c = (tf.__version__[1:6]=="1.15.0")
+    
+    c = (length(tf.__version__)>=6) && (tf.__version__[1:6]=="1.15.0")
     if c 
         yes("TensorFlow version")
     else
         no("TensorFlow version", 
-"""Your TensorFlow version is $(tf.__version__). ADCME is only tested against 1.15.0.""",
+"""Your TensorFlow version is $(tf.__version__). The TensorFlow version shipped with ADCME is 1.15.0.""",
 """Set ENV["FORCE_REINSTALL_ADCME"] = 1 and rebuild ADCME
 julia> ENV["FORCE_REINSTALL_ADCME"] = 1
 julia> ]
