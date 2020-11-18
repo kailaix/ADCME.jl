@@ -588,7 +588,7 @@ function doctor()
         yes("Julia version")
     else
         no("Julia version", 
-"""Your Julia version is $VERSION, and your system is MACOSX. This combination may have a compatability issue.""",
+"""Your Julia version is $VERSION, and your system is MACOSX. This combination may have a compatibility issue.""",
 """If `using ADCME` freezes, consider install another version of Julia.""")
     end 
     
