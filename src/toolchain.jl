@@ -22,7 +22,7 @@ PREFIXDIR
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
     run_with_env, get_conda, read_with_env, get_library_name, get_pip,
-    copy_file, require_cmakecache
+    copy_file, require_cmakecache, require_import
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -343,4 +343,16 @@ function require_cmakecache(func::Function, DIR::String = ".")
         end
     end
      
+end
+
+@doc raw"""
+    require_import(s::Symbol)
+
+Checks whether the package `s` is imported in the Main namespace. Returns the package handle. 
+"""
+function require_import(s::Symbol)
+    if !isdefined(Main, s)
+        error("Package $s.jl must be imported in the main module using `import $s` or `using $s`")
+    end
+    @eval Main.$s
 end
