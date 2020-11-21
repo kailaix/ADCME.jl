@@ -122,7 +122,7 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
 
 **Step 3: Compile**
 
-You should always compile your custom operator using the [built-in toolchain](https://kailaix.github.io/ADCME.jl/dev/toolchain/) `ADCME.make` and `ADCME.cmake` to ensure compatability such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:
+You should always compile your custom operator using the [built-in toolchain](https://kailaix.github.io/ADCME.jl/dev/toolchain/) `ADCME.make` and `ADCME.cmake` to ensure compatibility such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:
 
 | Variable      | Description                           |
 | ------------- | ------------------------------------- |

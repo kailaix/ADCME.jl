@@ -177,7 +177,7 @@ end
     BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
     vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, method::String = "L-BFGS-B", kwargs...)
 
-`BFGS!` is a simplified interface for BFGS optimizer. See also [`ScipyOptimizerInterface`](@ref).
+`BFGS!` is a simplified interface for **L-BFGS-B** optimizer. See also [`ScipyOptimizerInterface`](@ref).
 `callback` is a callback function with signature 
 ```julia
 callback(vs::Array, iter::Int64, loss::Float64)
@@ -215,7 +215,10 @@ BFGS!(sess, loss, bounds=Dict(x=>[1.0,3.0]))
 ```
 
 !!! note 
-    Users can also use other scipy optimization algorithm by providing `method` keyword arguments
+    Users can also use other scipy optimization algorithm by providing `method` keyword arguments. For example, you can use the BFGS optimizer 
+    ```julia
+    BFGS!(sess, loss, method = "BFGS")
+    ```
 """->
 function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
     vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, method::String = "L-BFGS-B", kwargs...)

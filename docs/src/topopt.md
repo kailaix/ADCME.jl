@@ -90,7 +90,7 @@ end
 sess = Session(); init(sess)
 losses = Optimize!(sess, loss, optimizer = opt)
 
-visualize_scalar_on_fvm_points(run(sess, x).^p, m, n, h)
+visualize_scalar_on_fvm_points(run(sess, x).^p, m, n, h, vmin = 0, vmax = 1)
 ```
 
 

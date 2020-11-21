@@ -32,6 +32,10 @@ Do you know...
 
 * [Presentation in SMS, Peking University 10/22/2020](https://kailaix.github.io/ADCMESlides/2020_10_22.pdf)
 
+* [Presentation in Berkeley, 11/17/2020](https://kailaix.github.io/ADCMESlides/2020_11_17.pdf); a relative comprehensive slide.
+
+* [WCCM 2020](https://kailaix.github.io/ADCMESlides/2020_11_18.pdf)
+
 ## Instruction on Installing ADCME 
 
 1. [Installing ADCME (Windows)](https://www.youtube.com/watch?v=Vsc_dpyOD6k)
