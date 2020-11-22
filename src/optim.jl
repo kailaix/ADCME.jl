@@ -764,26 +764,36 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     __value = nothing
     __ls_iter = 0
     function f(x)
-        __loss, _ = run(sess, [loss, assign_ops], pl=>x)
+        run(sess, assign_ops, pl=>x)
+        __loss = run(sess, loss)
         __ls_iter += 1
         options.training.verbose && (println("iter $__ls_iter, current loss = $__loss"))
         return __loss
     end
 
     function g!(G, x)
-        G[:], _ = run(sess, [grds, assign_ops], pl=>x)
+        run(sess, assign_ops, pl=>x)
+        G[:] = run(sess, grds)
         __value = x
     end
 
     function fg(G, x)
-        __loss, _, G[:] = run(sess, [loss, assign_ops, grds], pl=>x)
+        run(sess, assign_ops, pl=>x)
+        __loss,  G[:] = run(sess, [loss, grds])
         __ls_iter += 1
         __value = x
         return __loss
     end
 
+    
     if isa(optimizer, Function)
-        __losses = optimizer(f, g!, fg, x0)
+        if length(kwargs)>0
+            kwargs_ = copy(kwargs)
+        else
+            kwargs_ = Dict{Symbol, Any}()
+        end
+        kwargs_[:max_iter] = max_iter
+        __losses = optimizer(f, g!, fg, x0; kwargs_...)
         return __losses
     end
 
