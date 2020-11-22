@@ -1,3 +1,5 @@
+
+
 using AdFem
 using ADCME
 using PyPlot 
@@ -30,6 +32,8 @@ title("\$\\kappa\$")
 subplot(122)
 visualize_scalar_on_fem_points(SOL, mmesh)
 title("Solution")
+
+make_directory("data")
 savefig("data/fwd_ps.png")
 
 @save "data/fwd.jld2" SOL
