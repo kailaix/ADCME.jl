@@ -25,7 +25,7 @@ end
                 M[i,j] = norm(a[i,:] - b[j,:], order)
             end
         end
-        m = dist(a, b, order)
+        m = ot_dist(a, b, order)
         @test run(sess, m)≈M
     end
 end
