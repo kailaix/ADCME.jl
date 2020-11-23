@@ -26,6 +26,8 @@ end
             end
         end
         m = ot_dist(a, b, order)
+        @test m≈M 
+        m = ot_dist(a, constant(b), order)
         @test run(sess, m)≈M
     end
 end
