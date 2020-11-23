@@ -45,3 +45,4 @@ docs/src/assets/mcmc
 !deps/build.jl
 test/*.gif
 test/*.png
+docs/src/assets/Codes/OptimizationResearch/*
