@@ -1,14 +1,6 @@
 ulimit -u 10000
-
-for seed in 1 
+for SEED in 2 23 233 2333 23333
 do 
-    # julia bfgs_with_adam_hessian.jl $seed &
-    # julia bfgs_with_adam_nohessian.jl $seed &
-    # julia bfgs_with_noadam.jl $seed &
-    # julia adam.jl $seed &
-    # julia lbfgs_with_adam.jl $seed &
-    # julia lbfgs_with_noadam.jl $seed &
-    julia damped_bfgs.jl $seed &
-    julia damped_bfgs_with_adam_nohessian.jl $seed &
-    wait 
+julia bfgs.jl $SEED &
 done 
+wait 
