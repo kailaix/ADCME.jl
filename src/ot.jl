@@ -175,7 +175,7 @@ M_{ij} = ||x_i - y_j||_{o}
 ```
 """
 function ot_dist(x::Union{PyObject, Array{Float64}}, y::Union{PyObject, Array{Float64}}, order::Union{Int64, PyObject}=2)
-    if !(isa(x, PyObject) || isa(x, PyObject) || isa(order, PyObject))
+    if !(isa(x, PyObject) || isa(y, PyObject) || isa(order, PyObject))
         x = reshape(x, size(x, 1), :)
         y = reshape(y, size(y, 1), :)
         M = zeros(size(x, 1), size(y, 1))
