@@ -228,19 +228,25 @@ end
 
 Return the initial weights and bias values by TensorFlow as a vector. The neural network architecture is
 
-$$o_1 (\text{Input layer}) \rightarrow o_2 \rightarrow \ldots \rightarrow o_n (\text{Output layer})$$
+```math
+o_1 (\text{Input layer}) \rightarrow o_2 \rightarrow \ldots \rightarrow o_n (\text{Output layer})
+```
 
 Three types of 
 random initializers are provided
 
 - `xavier` (default). It is useful for `tanh` fully connected neural network. 
- 
-$$W^l_i \sim \sqrt{\frac{1}{n_{l-1}}}$$
+
+```
+W^l_i \sim \sqrt{\frac{1}{n_{l-1}}}
+```
 
 
 - `xavier_avg`. A variant of `xavier`
 
-$$W^l_i \sim \sqrt{\frac{2}{n_l + n_{l-1}}}$$
+```math
+W^l_i \sim \sqrt{\frac{2}{n_l + n_{l-1}}}
+```
 
 - `he`. This is the activation aware initialization of weights and helps mitigate the problem
 of vanishing/exploding gradients. 

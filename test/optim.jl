@@ -172,9 +172,9 @@ end
 
 @testset "Custom BFGS!" begin
     reset_default_graph()
-    x = Variable(rand(10))
+    x = Variable(2ones(10))
     z = Variable(1.0)
-    w = Variable(rand(20,30,10))
+    w = Variable(ones(20,30,10))
     loss = sum((x-1.0)^2+z^2+w^2)
     grads = [gradients(loss, x), gradients(loss, z), gradients(loss, w)]
     vars = [x,z, w]
