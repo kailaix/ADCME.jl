@@ -78,9 +78,10 @@ Modules = [ADCME]
 Pages   = ["ode.jl"]
 ```
 
-## RBF
+## Function Approximators
 ```@docs
 RBF2D
+interp1
 ```
 
 ## Optimal Transport
