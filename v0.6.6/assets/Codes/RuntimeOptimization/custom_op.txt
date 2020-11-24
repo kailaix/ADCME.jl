@@ -1,0 +1,3 @@
+ComputeSin
+double input(?)
+double output(?) -> output

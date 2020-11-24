@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Bayesian Neural Networks · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../videos_and_slides/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li><a class="tocitem" href="../optim/">Study on Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li><li><a class="tocitem" href="../topopt/">Topological Optimization</a></li><li><a class="tocitem" href="../quadrature/">Numerical Integration</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li class="is-active"><a class="tocitem" href>Bayesian Neural Networks</a><ul class="internal"><li><a class="tocitem" href="#Uncertainty-Quantification"><span>Uncertainty Quantification</span></a></li><li><a class="tocitem" href="#Bayesian-Thinking"><span>Bayesian Thinking</span></a></li><li><a class="tocitem" href="#Bayesian-Neural-Network"><span>Bayesian Neural Network</span></a></li><li><a class="tocitem" href="#Training-the-Neural-Network"><span>Training the Neural Network</span></a></li><li><a class="tocitem" href="#Mathematical-Formulation"><span>Mathematical Formulation</span></a></li><li><a class="tocitem" href="#Variational-Inference"><span>Variational Inference</span></a></li><li><a class="tocitem" href="#Parametric-Family"><span>Parametric Family</span></a></li><li><a class="tocitem" href="#Example"><span>Example</span></a></li></ul></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Deep Learning Schemes</a></li><li class="is-active"><a href>Bayesian Neural Networks</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Bayesian Neural Networks</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/bnn.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Bayesian-Neural-Networks"><a class="docs-heading-anchor" href="#Bayesian-Neural-Networks">Bayesian Neural Networks</a><a id="Bayesian-Neural-Networks-1"></a><a class="docs-heading-anchor-permalink" href="#Bayesian-Neural-Networks" title="Permalink"></a></h1><h2 id="Uncertainty-Quantification"><a class="docs-heading-anchor" href="#Uncertainty-Quantification">Uncertainty Quantification</a><a id="Uncertainty-Quantification-1"></a><a class="docs-heading-anchor-permalink" href="#Uncertainty-Quantification" title="Permalink"></a></h2><p>We want to quantify uncertainty. But what is uncertainty? In the literature, there are usually two types of uncertainty: <strong>aleatoric</strong>, the irreducible part of the uncertainty, and <strong>epidemic</strong>, the reducible part of the uncertainty. For example, when we flip a coin, the outcome of one experiment is intrinsically stochastic, and we cannot reduce the uncertainty by conducting more experiments. However, if we want to estimate the probability of heads, we can reduce the uncertainty of estimation by observing more experiments.  In finance, the words for these two types of uncertainty is <strong>systematic</strong> and <strong>non-systematic</strong> uncertainty. The total uncertainty is composed of these two types of uncertainty.  </p><table><tr><th style="text-align: right">Statistics</th><th style="text-align: right">Finance</th><th style="text-align: right">Reducibility</th></tr><tr><td style="text-align: right">aleatoric</td><td style="text-align: right">systematic</td><td style="text-align: right">irreducible</td></tr><tr><td style="text-align: right">epidemic</td><td style="text-align: right">non-systematic</td><td style="text-align: right">reducible</td></tr></table><h2 id="Bayesian-Thinking"><a class="docs-heading-anchor" href="#Bayesian-Thinking">Bayesian Thinking</a><a id="Bayesian-Thinking-1"></a><a class="docs-heading-anchor-permalink" href="#Bayesian-Thinking" title="Permalink"></a></h2><p>One popular approach for uncertainty quantification is the Bayesian method. One distinct characteristic of the Bayesian method is that we have a prior. The prior can be subjective: it is up to the researcher to pick and justify one. Even for the so-called non-informative prior, it introduces some bias if the posterior is quite different from the prior. </p><p>However, this should be the most exciting part of the Bayesian philosophy: as human beings, we do have prior knowledge on stochastic events. The prior knowledge can be domain specific knowledge, experience, or even opinions. As long as we can justify the prior well, it is fine. </p><h2 id="Bayesian-Neural-Network"><a class="docs-heading-anchor" href="#Bayesian-Neural-Network">Bayesian Neural Network</a><a id="Bayesian-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Bayesian-Neural-Network" title="Permalink"></a></h2><p>The so-called Bayesian neural network is the application of the Bayesian thinking on neural networks. Instead of treating the weights and biases as deterministic numbers, we consider them as probability distributions with certain priors. As we collect more and more data, we can calculate the posteriors. </p><p>But why do we bother with the Bayesian approach? For example, if we just want to quantify the uncertainty in the prediction, suppose we have a point estimation <span>$w$</span> for the neural network, we can perturb <span>$w$</span> a little and run the forward inference. This process will give us many candidate values of the prediction, which serve as our uncertainty estimation. </p><p>If we think about it, it is actually an extreme case in the Bayesian approach: we actually use the <strong>prior</strong> to do uncertainty quantification. The perturbation is our prior, and we have not taken into account of the observed data for constructing the distribution except for that we get our point estimation <span>$w$</span>. The Bayesian approach goes a bit further: instead of just using a prior, we use data to calibrate our distribution, and this leads to the <strong>posterior</strong>. </p><p>The following figure shows training of a Bayesian network. The figure with the title &quot;Prior&quot; is obtained by using a prior distribution. From 1 to 3, the weight for the data (compared to the prior) is larger and larger. We can see the key idea of Bayesian methods is a trade-off game between how strongly we believe in our point estimation, and how eagerly we want to take the uncertainty exposed in the data into consideration. </p><table><tr><th style="text-align: right">Point Estimation</th><th style="text-align: right">Prior</th><th style="text-align: right">1</th><th style="text-align: right">2</th><th style="text-align: right">3</th></tr><tr><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bnn1.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/naive_bnn.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bnn3.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bnn4.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bnn2.png?raw=true" alt/></td></tr></table><pre><code class="language-julia">using ADCME
+using PyPlot
+
+
+x0 = rand(100)
+x0 = @. x0*0.4 + 0.3
+x1 = collect(LinRange(0, 1, 100))
+y0 = sin.(2π*x0)
+w = Variable(fc_init([1, 20, 20, 20, 1]))
+y = squeeze(fc(x0, [20, 20, 20, 1], w))
+loss = sum((y - y0)^2)
+
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+y1 = run(sess, y)
+plot(x0, y0, &quot;.&quot;, label=&quot;Data&quot;)
+x_dnn = run(sess,  squeeze(fc(x1, [20, 20, 20, 1], w)))
+plot(x1, x_dnn,  &quot;--&quot;, label=&quot;DNN Estimation&quot;)
+legend()
+w1 = run(sess, w)
+
+
+
+##############################
+
+μ = Variable(w1)
+ρ = Variable(zeros(length(μ)))
+σ = log(1+exp(ρ))
+
+function likelihood(z)
+    w = μ + σ * z
+    y = squeeze(fc(x0, [20, 20, 20, 1], w))
+    sum((y - y0)^2) - sum((w-μ)^2/(2σ^2)) + sum((w-w1)^2)
+end
+
+function inference(x)
+    z = tf.random_normal((length(σ),), dtype=tf.float64)
+    w = μ + σ * z
+    y = squeeze(fc(x, [20, 20, 20, 1], w))|&gt;squeeze
+end
+
+W = tf.random_normal((10, length(w)), dtype=tf.float64)
+L = constant(0.0)
+for i = 1:10
+    global L += likelihood(W[i])
+end
+
+y2 = inference(x1)
+
+
+opt = AdamOptimizer(0.01).minimize(L)
+init(sess)
+# run(sess, L)
+losses = []
+for i = 1:2000
+    _, l = run(sess, [opt, L])
+    push!(losses, l)
+    @info i, l
+end
+
+Y = zeros(100, 1000)
+for i = 1:1000
+    Y[:,i] = run(sess, y2)
+end
+
+for i = 1:1000
+    plot(x1, Y[:,i], &quot;--&quot;, color=&quot;gray&quot;, alpha=0.5)
+end
+plot(x1, x_dnn, label=&quot;DNN Estimation&quot;)
+plot(x0, y1, &quot;.&quot;, label=&quot;Data&quot;)
+legend()
+
+
+##############################
+# Naive Uncertainty Quantification 
+function inference_naive(x)
+    z = tf.random_normal((length(w1),), dtype=tf.float64)
+    w = w1 + log(2)*z
+    y = squeeze(fc(x, [20, 20, 20, 1], w))|&gt;squeeze
+end
+y3 = inference(x1)
+
+Y = zeros(100, 1000)
+for i = 1:1000
+    Y[:,i] = run(sess, y3)
+end
+
+for i = 1:1000
+    plot(x1, Y[:,i], &quot;--&quot;, color=&quot;gray&quot;, alpha=0.5)
+end
+plot(x1, x_dnn, label=&quot;DNN Estimation&quot;)
+plot(x0, y1, &quot;.&quot;, label=&quot;Data&quot;)
+legend()</code></pre><h2 id="Training-the-Neural-Network"><a class="docs-heading-anchor" href="#Training-the-Neural-Network">Training the Neural Network</a><a id="Training-the-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-Neural-Network" title="Permalink"></a></h2><p>One caveat here is that deep neural networks may be hard to train, and we may get stuck at a local minimum. But even in this case, we can get an uncertainty quantification. But is it valid? No. The Bayesian approach assumes that your prior is reasonable. If we get stuck at a bad local minimum <span>$w$</span>, and use a prior <span>$\mathcal{N}(w, \sigma I)$</span>, then the results are not reliable at all. Therefore, to obtain a reasonable uncertainty quantification estimation, we need to make sure that our point estimation is valid. </p><h2 id="Mathematical-Formulation"><a class="docs-heading-anchor" href="#Mathematical-Formulation">Mathematical Formulation</a><a id="Mathematical-Formulation-1"></a><a class="docs-heading-anchor-permalink" href="#Mathematical-Formulation" title="Permalink"></a></h2><p>Now let us do the math. </p><p>Bayesian neural networks are different from plain neural networks in that weights and biases in Bayesian neural networks are interpreted in a probabilistic manner. Instead of finding a point estimation of weights and biases, in Bayesian neural networks, a prior distribution is assigned to the weights and biases, and a posterior distribution is obtained from the data. It relies on the Bayes formula </p><p class="math-container">\[p(w|\mathcal{D}) = \frac{p(\mathcal{D}|w)p(w)}{p(\mathcal{D})}\]</p><p>Here <span>$\mathcal{D}$</span> is the data, e.g., the input-output pairs of the neural network <span>$\{(x_i, y_i)\}$</span>, <span>$w$</span> is the weights and biases of the neural network, and <span>$p(w)$</span> is the prior distribution. </p><p>If we have a full posterior distribution <span>$p(w|\mathcal{D})$</span>, we can conduct predictive modeling using </p><p class="math-container">\[p(y|x, \mathcal{D}) = \int p(y|x, w) p(w|\mathcal{D})d w\]</p><p>However, computing <span>$p(w|\mathcal{D})$</span> is usually intractable since we need to compute the normalized factor <span>$p(\mathcal{D}) = \int p(\mathcal{D}|w)p(w) dw$</span>, which requires us to integrate over all possible <span>$w$</span>. Traditionally, Markov chain Monte Carlo (MCMC) has been used to sample from <span>$p(w|\mathcal{D})$</span> without evaluating <span>$p(\mathcal{D})$</span>. However, MCMC can converge very slowly and requires a voluminous number of sampling, which can be quite expensive. </p><h2 id="Variational-Inference"><a class="docs-heading-anchor" href="#Variational-Inference">Variational Inference</a><a id="Variational-Inference-1"></a><a class="docs-heading-anchor-permalink" href="#Variational-Inference" title="Permalink"></a></h2><p>In Bayesian neural networks, the idea is to approximate <span>$p(w|\mathcal{D})$</span> using a parametrized family <span>$p(w|\theta)$</span>, where <span>$\theta$</span> is the parameters. This method is called <strong>variational inference</strong>. We minimize the KL divergeence between the true posterior and the approximate posterial to find the optimal <span>$\theta$</span></p><p class="math-container">\[\text{KL}(p(w|\theta)||p(w|\mathcal{D})) = \text{KL}(p(w|\theta)||p(W)) - \mathbb{E}_{p(w|\theta)}\log p(\mathcal{D}|w) + \log p(\mathcal{D})\]</p><p>Evaluating <span>$p(\mathcal{D})\geq 0$</span> is intractable, so we seek to minimize a lower bound of the KL divergence, which is known as <strong>variational free energy</strong></p><p class="math-container">\[F(\mathcal{D}, \theta) =  \text{KL}(p(w|\theta)||p(w)) - \mathbb{E}_{p(w|\theta)}\log p(\mathcal{D}|w)\]</p><p>In practice, thee variational free energy is approximated by the discrete samples </p><p class="math-container">\[F(\mathcal{D}, \theta) \approx  \frac{1}{N}\sum_{i=1}^N \left[\log p(w_i|\theta)) - \log p(w_i)  - \log p(\mathcal{D}|w_i)\right]\]</p><h2 id="Parametric-Family"><a class="docs-heading-anchor" href="#Parametric-Family">Parametric Family</a><a id="Parametric-Family-1"></a><a class="docs-heading-anchor-permalink" href="#Parametric-Family" title="Permalink"></a></h2><p>In Baysian neural networks, the parametric family is usually chosen to be the Gaussian distribution. For the sake of automatic differentiation, we usually parametrize <span>$w$</span> using </p><p class="math-container">\[w = \mu + \sigma \otimes z\qquad z \sim \mathcal{N}(0, I) \tag{1}\]</p><p>Here <span>$\theta = (\mu, \sigma)$</span>. The prior distributions for <span>$\mu$</span> and <span>$\sigma$</span> are given as hyperparameters. For example, we can use a mixture of Gaussians as prior </p><p class="math-container">\[\pi_1 \mathcal{N}(0, \sigma_1) + \pi_2 \mathcal{N}(0, \sigma_2)\]</p><p>The advantage of Equation 1 is that we can easily obtain the log probability <span>$\log p(w|\theta)$</span>. </p><p>Because <span>$\sigma$</span> should always be positive, we can instead parametrize another parameter <span>$\rho$</span> and transform <span>$\rho$</span> to <span>$\sigma$</span> using a softplus function </p><p class="math-container">\[\sigma = \log (1+\exp(\rho))\]</p><h2 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h2><p>Now let us consider a concrete example. The following example is adapted from <a href="http://krasserm.github.io/2019/03/14/bayesian-neural-networks/">this post</a>. </p><h3 id="Generating-Training-Data"><a class="docs-heading-anchor" href="#Generating-Training-Data">Generating Training Data</a><a id="Generating-Training-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-Training-Data" title="Permalink"></a></h3><p>We first generate some 1D training data </p><pre><code class="language-julia">using ADCME
+using PyPlot 
+using ProgressMeter
+using Statistics
+
+function f(x, σ)
+    ε = randn(size(x)...) * σ
+    return 10 * sin.(2π*x) + ε
+end
+
+batch_size = 32
+noise = 1.0
+
+X = reshape(LinRange(-0.5, 0.5, batch_size)|&gt;Array, :, 1)
+y = f(X, noise)
+y_true = f(X, 0.0)
+
+close(&quot;all&quot;)
+scatter(X, y, marker=&quot;+&quot;, label=&quot;Training Data&quot;)
+plot(X, y_true, label=&quot;Truth&quot;)
+legend()</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bnn_training_data.png?raw=true" alt/></p><h3 id="Construct-Bayesian-Neural-Network"><a class="docs-heading-anchor" href="#Construct-Bayesian-Neural-Network">Construct Bayesian Neural Network</a><a id="Construct-Bayesian-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Construct-Bayesian-Neural-Network" title="Permalink"></a></h3><pre><code class="language-julia">
+mutable struct VariationalLayer
+    units
+    activation
+    prior_σ1
+    prior_σ2
+    prior_π1
+    prior_π2
+    Wμ
+    bμ
+    Wρ
+    bρ
+    init_σ
+end
+
+function VariationalLayer(units; activation=relu, prior_σ1=1.5, prior_σ2=0.1,
+        prior_π1=0.5)
+    init_σ = sqrt(
+        prior_π1 * prior_σ1^2 + (1-prior_π1)*prior_σ2^2
+    )
+    VariationalLayer(units, activation, prior_σ1, prior_σ2, prior_π1, 1-prior_π1,
+                        missing, missing, missing, missing, init_σ)
+end
+
+function kl_loss(vl, w, μ, σ)
+    dist = ADCME.Normal(μ,σ)
+    return sum(logpdf(dist, w)-logprior(vl, w))
+end
+
+function logprior(vl, w)
+    dist1 = ADCME.Normal(constant(0.0), vl.prior_σ1)
+    dist2 = ADCME.Normal(constant(0.0), vl.prior_σ2)
+    log(vl.prior_π1*exp(logpdf(dist1, w)) + vl.prior_π2*exp(logpdf(dist2, w)))
+end
+
+function (vl::VariationalLayer)(x)
+    x = constant(x)
+    if ismissing(vl.bμ)
+        vl.Wμ = get_variable(vl.init_σ*randn(size(x,2), vl.units))
+        vl.Wρ = get_variable(zeros(size(x,2), vl.units))
+        vl.bμ = get_variable(vl.init_σ*randn(1, vl.units))
+        vl.bρ = get_variable(zeros(1, vl.units))
+    end
+    Wσ = softplus(vl.Wρ)
+    W = vl.Wμ + Wσ.*normal(size(vl.Wμ)...) 
+    bσ = softplus(vl.bρ)
+    b = vl.bμ + bσ.*normal(size(vl.bμ)...)
+    loss = kl_loss(vl, W, vl.Wμ, Wσ) + kl_loss(vl, b, vl.bμ, bσ)
+    out = vl.activation(x * W + b)
+    return out, loss 
+end
+
+function neg_log_likelihood(y_obs, y_pred, σ)
+    y_obs = constant(y_obs)
+    dist = ADCME.Normal(y_pred, σ)
+    sum(-logpdf(dist, y_obs))
+end
+
+ipt = placeholder(X)
+x, loss1 = VariationalLayer(20, activation=relu)(ipt)
+x, loss2 = VariationalLayer(20, activation=relu)(x)
+x, loss3 = VariationalLayer(1, activation=x-&gt;x)(x)
+
+loss_lf = neg_log_likelihood(y, x, noise)
+loss = loss1 + loss2 + loss3 + loss_lf</code></pre><h3 id="Optimization"><a class="docs-heading-anchor" href="#Optimization">Optimization</a><a id="Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization" title="Permalink"></a></h3><p>We use an ADAM optimizer to optimize the loss function. In this case, quasi-Newton methods that are typically used for deterministic function optimization are not appropriate because the loss function essentially involves stochasticity. </p><p>Another caveat is that because the neural network may have many local minimum, we need to run the optimizer multiple times in order to obtain a good local minimum. </p><pre><code class="language-julia">
+opt = AdamOptimizer(0.08).minimize(loss)
+sess = Session(); init(sess)
+@showprogress for i = 1:5000
+    run(sess, opt)
+end
+
+
+X_test = reshape(LinRange(-1.5,1.5,32)|&gt;Array, :, 1)
+y_pred_list = []
+@showprogress for i = 1:10000
+    y_pred = run(sess, x, ipt=&gt;X_test)
+    push!(y_pred_list, y_pred)
+end
+
+y_preds = hcat(y_pred_list...)
+
+y_mean = mean(y_preds, dims=2)[:]
+y_std = std(y_preds, dims=2)[:]
+
+close(&quot;all&quot;)
+plot(X_test, y_mean)
+scatter(X[:], y[:], marker=&quot;+&quot;)
+fill_between(X_test[:], y_mean-2y_std, y_mean+2y_std, alpha=0.5)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/bnn_prediction.png?raw=true" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../convnet/">« Convolutional Neural Network</a><a class="docs-footer-nextpage" href="../designpattern/">Design Pattern »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 24 November 2020 01:00">Tuesday 24 November 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
