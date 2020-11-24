@@ -23,7 +23,7 @@ y2 = fc(x, config, θ)
 ```
 
 !!! note
-    When you construct a neural network using `fc(x, config)` syntax, ADCME will constructs the weights and biases automatically for you and label the parameters (the default is `default`). In some cases, you may have multiple neural networks, and you can label the neural network manually using 
+    When you construct a neural network using `fc(x, config)` syntax, ADCME will construct the weights and biases automatically for you and label the parameters (the default is `default`). In some cases, you may have multiple neural networks, and you can label the neural network manually using 
 
     ```julia
     fc(x1, config1, "label1")
