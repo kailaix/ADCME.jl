@@ -32,7 +32,7 @@ Do you know...
 
 * [Presentation in SMS, Peking University 10/22/2020](https://kailaix.github.io/ADCMESlides/2020_10_22.pdf)
 
-* [Presentation in Berkeley, 11/17/2020](https://kailaix.github.io/ADCMESlides/2020_11_17.pdf); a relative comprehensive slide.
+* [Presentation in Berkeley, 11/17/2020](https://kailaix.github.io/ADCMESlides/2020_11_17.pdf); a relative comprehensive slide, see [here](https://kailaix.github.io/ADCMESlides/2020_12_3.pdf) for a short version. 
 
 * [WCCM 2020](https://kailaix.github.io/ADCMESlides/2020_11_18.pdf)
 
@@ -53,4 +53,4 @@ Do you know...
 ## Videos
 * [ADCME.jl -- Physics Based Machine Learning for Inverse Problems (中文)](https://www.bilibili.com/video/BV1va4y177fe)
 * [Data-Driven Inverse Modeling with Incomplete Observations](https://www.youtube.com/watch?v=0r9qekmZGqk&t=480s)
-
+* [AAAI Conference](https://studio.slideslive.com/web_recorder/share/20201126T052150Z__WCCM-ECCOMAS20__1328__data-driven-inverse-modeling-a?s=8f06e214-939f-467e-8899-bc66c2d64027)
