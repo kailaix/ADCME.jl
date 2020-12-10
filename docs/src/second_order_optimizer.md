@@ -46,9 +46,13 @@ Here $F_{i,j}(\theta)$ is the finite difference discretization of $\nabla \cdot 
 
 We apply 4 optimizers to solve Eq. 4. Because the optimization results depend on the initialization of the deep neural network, we use 5 different initial guess for DNNs. The result is shown below
 
-| Case        | 1 | 2 | 3 | 4 | 5 |
-|-------------|---|---|---|---|---|
-| Convergence Plots | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2_static.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23_static.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses233_static.png?raw=true)   |![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2333_static.png?raw=true)   | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23333_static.png?raw=true)  |
+| Case        | Convergence Plots | 
+|-------------|---|
+|1 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2_static.png?raw=true)|
+|2 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23_static.png?raw=true)|
+|3 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses233_static.png?raw=true)|
+|4 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2333_static.png?raw=true)|
+|5 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23333_static.png?raw=true)|
 
 We can see for all cases, the trust-region method provides a much more accurate result, and in general converges faster. The ADAM optimizer is the least competent, partially because it's a first-order optimizer and is not able to fully leverage the curvature information. The BFGS optimizers constructs an approximate Hessian that is SPD. The L-BFGS-B optimizer is an approximation to BFGS, where it uses only a limited number of previous iterates to construct the Hessian matrix. As mentioned, in the optimization problem involving deep neural networks, the slow down is mainly due to the saddle point, where the descent direction corresponds to the negative eigenvalues of the Hessian matrix. Because BFGS and L-BFGS-B ensure that the Hessian matrix is SPD, they cannot provide approximate guidance to escape the saddle point. This hypothesis is demonstrated in the following plot, where we show the distribution of Hessian eigenvalues at the last step for Case 2
 
@@ -89,16 +93,20 @@ $$\frac{\partial u}{\partial t} = \nabla \cdot (\kappa_\theta(x) \nabla u)) + f(
 
 We assume that we can observe the full field data of $u$ as snapshots. We again apply the residual minimization method to train the deep neural network. The following shows the convergence plots for different initial guesses of the DNNs. 
 
-| Case        | 1 | 2 | 3 | 4 | 5 |
-|-------------|---|---|---|---|---|
-| Convergence Plots | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2_dynamic.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23_dynamic.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses233_dynamic.png?raw=true)   |![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2333_dynamic.png?raw=true)   | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23333_dynamic.png?raw=true)  |
 
+| Case        | Convergence Plots | 
+|-------------|---|
+|1 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2_dynamic.png?raw=true)|
+|2 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23_dynamic.png?raw=true)|
+|3 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses233_dynamic.png?raw=true)|
+|4 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses2333_dynamic.png?raw=true)|
+|5 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23333_dynamic.png?raw=true)|
 We see that the trust-region is more competitive than the other methods. 
 
 
 ## Limitations 
 
-Despite many promising features of the trust region method, it is not without limitations, which we want to discuss here. The current trust-region method requires calculating the Hessian matrix. Firstly, computing the Hessian matrix can be technically difficult, especially when DNNs are coupled with a sophisticated numerical PDE solver. There are many existing techniques for computing the Hessian. The TensorFlow backend supports Hessian computation concurrently, but it requires users to implement rules for calculating "gradients of gradients". Additionally, TensorFlow uses forward propagation to evaluate the Hessian. This means that TensorFlow loops over each gradient component and calculating a row of Hessian at a time. This does not leverage the symmetry of Hessians and can be quite inefficient if the number of unknowns is large. Another approach, edge pushing algorithms, uses one backward pass to evaluate the Hessian. This approach takes advantage of the symmetry of Hessians. However, the implementation can be quite convolved and computations can be expensive in some scenarios. We will discuss it in more detail in another post. 
+Despite many promising features of the trust region method, it is not without limitations, which we want to discuss here. The current trust-region method requires calculating the Hessian matrix. Firstly, computing the Hessian matrix can be technically difficult, especially when DNNs are coupled with a sophisticated numerical PDE solver. There are many existing techniques for computing the Hessian. The TensorFlow backend supports Hessian computation concurrently, but it requires users to implement rules for calculating "gradients of gradients". Additionally, TensorFlow uses forward propagation to evaluate the Hessian. This means that TensorFlow loops over each gradient component and calculating a row of Hessian at a time. This does not leverage the symmetry of Hessians and can be quite inefficient if the number of unknowns is large. Another approach, edge pushing algorithms, uses one backward pass to evaluate the Hessian. This approach takes advantage of the symmetry of Hessians. However, the implementation can be quite convolved and computations can be expensive in some scenarios. We will discuss0 in more details in another post. 
 
 
 ## Conclusion
