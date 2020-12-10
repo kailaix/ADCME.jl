@@ -27,7 +27,7 @@ $$\begin{aligned}\min_{s} & \; m(s) \\ \text{s.t.} & \; \|s\|\leq \Delta_k\end{a
 
 In this work, we use the method proposed in [^trust-region] to solve Eq. 3 nearly exactly. 
 
-[^trust-region]: Cline, A. K., Moler, C. B., Stewart, G. W., Wilkinson, J. H. An estimate for the condition number of a matrix. 1979. SIAM Journal on Numerical Analysis, 16(2), 368-375.
+[^trust-region]: A.R. Conn, N.I. Gould, and P.L. Toint, "Trust region methods", Siam, pp. 169-200, 2000.
 
 ## Model Problem: Static Poisson's Equation
 

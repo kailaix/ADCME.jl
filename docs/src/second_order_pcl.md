@@ -67,7 +67,7 @@ Note the values of $\bar\Phi$ is already available in the gradient back-propagat
 Based on Eq. 5, we have the following algorithm for calculating the Hessian
 
 1. Initialize $H = 0$
-2. for $i = n-1, n-2,\ldots, 1$
+2. for $k = n-1, n-2,\ldots, 1$
    * Calculate $J = \nabla F_k$ and extract $\bar \Phi_{k+1}$ from the gradient back-propagation tape.
    * Calculate $Z = \nabla^2 (\bar\Phi_{k+1}^T F_k)$
    * $H \gets JHJ^T + Z$
