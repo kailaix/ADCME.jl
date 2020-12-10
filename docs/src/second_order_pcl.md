@@ -4,7 +4,7 @@ In this note, we describe the second order physics constrained learning (PCL) fo
 
 $$l(x) = F_n\circ F_{n-1}\circ \cdots \circ F_1(x) \tag{1}$$
 
-Here $l$ is a scalar function, which means $F_n$ is a scalar function. It is not hard to see that we can express any computational graph with a scalar output using Eq. 1. For convenience, given a fixed $k\in\{1,2,\ldots, n\}$, $we define $\Phi$, $F$ as follows
+Here $l$ is a scalar function, which means $F_n$ is a scalar function. It is not hard to see that we can express any computational graph with a scalar output using Eq. 1. For convenience, given a fixed $k\in\{1,2,\ldots, n\}$, we define $\Phi$, $F$ as follows
 
 $$l(x) = \underbrace{F_n\circ F_{n-1}\circ \cdots \circ F_k}_{\Phi} \circ \underbrace{F_{k-1}\cdots \circ F_1}_{F}(x)$$
 
