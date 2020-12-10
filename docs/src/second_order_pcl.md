@@ -75,3 +75,47 @@ Based on Eq. 5, we have the following algorithm for calculating the Hessian
 This algorithm only requires one backward pass and constructs the Hessian iteratively. Additionally, we can leverage the symmetry of the Hessian when we do the calculations in the second step. This algorithm also doesn't require looping over each components of the gradient. 
 
 However, the challenge here is that we need to calculate $\nabla F_k$ and $Z = \nabla^2 (\bar\Phi_{k+1}^T F_k)$. Developing a complete support of such calculations for all operators  can be a time-consuming task. But due to the benefit brought by the trust region method, we deem it to be a rewarding investment. 
+
+
+## Example: Developing Second Order PCL for a Sparse Linear Solver
+
+Here we consider an application of second order PCL for a sparse solver. We focus on the operator that takes the sparse entries of a matrix $A\in\mathbb{R}^{n\times n}$ as input, and outputs $u$
+
+$Au = f$
+
+Let $A = [a_{ij}]$, and some of $a_{ij}$ are zero. According to 2nd order PCL, we need to calculate $\frac{\partial u_k}{\partial a_{ij}}$ and $\frac{\partial^2 (y^T u)}{\partial a_{ij} \partial a_{rs}}$. 
+
+We consider a multi-index $l$ and $r$. We take the gradient with respect to $a_l$ on both sides of 
+
+$$a_{i1}u_1 + a_{i2}u_2 + \ldots + a_{in}u_n = f_i$$
+
+which leads to 
+
+$$a_{i1}^lu_1 + a_{i2}^lu_2 + \ldots + a_{in}^lu_n + a_{i1}u^l_1 + a_{i2}u^l_2 + \ldots + a_{in}u^l_n = 0\tag{6}$$
+
+Here the superscript indicates the derivative. 
+
+Eq. 6 leads to 
+
+$$u^l = -A^{-1}A^l u \tag{7}$$
+
+Note at most one entry in $A^l$ is nonzero, and therefore at most one entry in $A^l u$ is nonzero. Thus to calculate Eq. 7, we can calculate the inverse $A^{-1}$ first, and then $u^l$ can be obtained cheaply by taking a column from $A^{-1}$. The complexity will be $\mathcal{O}(n^3)$---the cost of inverting $A^{-1}$.
+
+Now take the derivative with respect to $a_r$ on both sides of Eq. 6, we have
+
+$$\begin{aligned}
+a_{i1}^lu_1^r + a_{i2}^lu_2^r + \ldots + a_{in}^lu_n^r + \\ a_{i1}^ru^l_1 + a_{i2}^ru^l_2 + \ldots + a_{in}^ru^l_n +\\ a_{i1}u^{rl}_1 + a_{i2}u^{rl}_2 + \ldots + a_{in}u^{rl}_n = 0
+\end{aligned}$$
+
+which leads to 
+
+$$Au^{rl} = -A^l u^r - A^r u^l$$
+
+Therefore, 
+
+$$(y^Tu)^{rl} = - y^TA^{-1}(A^l u^r + A^r u^l)$$
+
+We can calculate $z^T = y^TA^{-1}$ first with a cost $\mathcal{O}(n^2)$. Because $u^r$, $u^l$ has already been calculated and $A^l$, $A^r$ has at most one nonzero entry, $A^l u^r + A^r u^l$ has at most two nonzero entries. The calculation $z^T(A^l u^r + A^r u^l)$ can be done in $\mathcal{O}(1)$ and therefore the total cost is $\mathcal{O}(d^2)$, where $d$ is the number of nonzero entries. 
+
+
+Upon obtaining $\frac{\partial u_k}{\partial a_{ij}}$ and $\frac{\partial^2 (y^T u)}{\partial a_{ij} \partial a_{rs}}$, we can apply the recursive the formula to "back-propagate" the Hessian matrix. 
