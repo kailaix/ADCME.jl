@@ -28,7 +28,8 @@ gradient_checkpointing,
 zeros_like,
 ones_like,
 gradients_colocate,
-is_variable
+is_variable,
+jacobian
 
 """
     constant(value; kwargs...)
@@ -376,16 +377,44 @@ function gradients_colocate(loss::PyObject, xs::Union{PyObject, Array{PyObject}}
     return grads
 end
 
+@doc raw"""
+    jacobian(y::PyObject, x::PyObject)
+
+Computes the Jacobian matrix 
+$$J_{ij} = \frac{\partial y_i}{\partial x_j}$$
+"""
+function jacobian(y::PyObject, x::PyObject)
+    @assert length(size(y))==1
+    @assert length(size(x))==1
+    tfj = pyimport("tensorflow.python.ops.parallel_for.gradients")
+    tfj.jacobian(y, x)
+end
+
 function hessian_vector(f, xs, v; kwargs...)
     kwargs = jlargs(kwargs)
     gradients_impl = pyimport("tensorflow.python.ops.gradients_impl")
     gradients_impl._hessian_vector_product(f, [xs], [v]; kwargs...)[1]
 end
 
-"""
-`hessian` computes the hessian of a scalar function f with respect to vector inputs xs
+@doc raw"""
+    hessian(ys::PyObject, xs::PyObject; kwargs...)
+
+`hessian` computes the hessian of a scalar function f with respect to vector inputs xs. 
+
+# Example 
+```julia
+x = constant(rand(10))
+y = 0.5 * sum(x^2)
+o = hessian(y, x)
+
+sess = Session(); init(sess)
+run(sess, o) # should be an identity matrix
+```
 """
 function hessian(ys::PyObject, xs::PyObject; kwargs...)
+    if length(size(ys))==0 && length(size(xs))==1
+        return tf.hessians(ys, xs)[1]
+    end
     kwargs = jlargs(kwargs)
     s1 = size(ys)
     s2 = size(xs)
