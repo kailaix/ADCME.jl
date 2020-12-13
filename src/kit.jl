@@ -1,6 +1,6 @@
 export test_jacobian, linedata, lineview, meshdata, 
     meshview, gradview, jacview, PCLview, pcolormeshview,
-    animate, saveanim
+    animate, saveanim, test_hessian
 
 function require_pyplot()
     if !isdefined(Main, :PyPlot)
@@ -10,12 +10,12 @@ function require_pyplot()
 end
 
 """
-    test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0)
+    test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0, showfig::Bool = true)
 
 Testing the gradients of a vector function `f`:
 `y, J = f(x)` where `y` is a vector output and `J` is the Jacobian.
 """
-function test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0)
+function test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0, showfig::Bool = true)
     mp = require_pyplot()
     v0 = rand(Float64,size(x0))
     γs = scale ./10 .^(1:5)
@@ -27,19 +27,30 @@ function test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0)
         push!(err1, norm(f1-f0))
         push!(err2, norm(f1-f0-γs[i]*J*v0))
     end
-    mp.close("all")
-    mp.loglog(γs, err1, label="Finite Difference")
-    mp.loglog(γs, err2, label="Automatic Differentiation")
-    mp.loglog(γs, γs * 0.5*abs(err1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
-    mp.loglog(γs, γs.^2 * 0.5*abs(err2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
-    mp.plt.gca().invert_xaxis()
-    mp.legend()
-    mp.savefig("test_jacobian.png")
-    @info "Results saved to test_jacobian.png"
-    println("Finite difference: $err1")
-    println("Automatic differentiation: $err2")
+    if showfig
+        mp.close("all")
+        mp.loglog(γs, err1, label="Finite Difference")
+        mp.loglog(γs, err2, label="Automatic Differentiation")
+        mp.loglog(γs, γs * 0.5*abs(err1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
+        mp.loglog(γs, γs.^2 * 0.5*abs(err2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
+        mp.plt.gca().invert_xaxis()
+        mp.legend()
+        mp.savefig("test.png")
+        @info "Results saved to test_jacobian.png"
+        println("Finite difference: $err1")
+        println("Automatic differentiation: $err2")
+    end
     return err1, err2
 end
+
+
+"""
+    test_hessian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0)
+
+Testing the Hessian of a scalar function `f`:
+`g, H = f(x)` where `y` is a scalar output, `g` is a vector gradient output, and `H` is the Hessian.
+"""
+test_hessian(f::Function, x0::Array{Float64, 1}; kwargs...) = test_jacobian(f, x0;  kwargs...)
 
 
 function linedata(θ1, θ2=nothing; n::Integer = 10)
