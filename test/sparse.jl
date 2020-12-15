@@ -362,3 +362,20 @@ end
     u = trisolve(a,b,c,d)
     @test norm(run(sess, u)-x)<1e-3
 end
+
+@testset "compress" begin 
+    indices = [
+        1 1 
+        1 1
+        2 2
+        3 3
+    ]
+    v = [1.0;1.0;1.0;1.0]
+    A = SparseTensor(indices[:,1], indices[:,2], v, 3, 3)
+    Ac = compress(A)
+    sess = Session(); init(sess)
+
+
+    @test run(sess, Ac.o.indices) == [0 0;1 1;2 2]
+    @test run(sess, Ac.o.values) ≈ [2.0;1.0;1.0]
+end

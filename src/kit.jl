@@ -36,7 +36,7 @@ function test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0,
         mp.plt.gca().invert_xaxis()
         mp.legend()
         mp.savefig("test.png")
-        @info "Results saved to test_jacobian.png"
+        @info "Results saved to test.png"
         println("Finite difference: $err1")
         println("Automatic differentiation: $err2")
     end
