@@ -16,7 +16,7 @@ Testing the gradients of a vector function `f`:
 `y, J = f(x)` where `y` is a vector output and `J` is the Jacobian.
 """
 function test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0, showfig::Bool = true)
-    mp = require_pyplot()
+    
     v0 = rand(Float64,size(x0))
     γs = scale ./10 .^(1:5)
     err2 = Float64[]
@@ -28,6 +28,7 @@ function test_jacobian(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0,
         push!(err2, norm(f1-f0-γs[i]*J*v0))
     end
     if showfig
+        mp = require_pyplot()
         mp.close("all")
         mp.loglog(γs, err1, label="Finite Difference")
         mp.loglog(γs, err2, label="Automatic Differentiation")

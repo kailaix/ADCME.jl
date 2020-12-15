@@ -69,3 +69,29 @@ end
     err1, err2 = test_hessian(test_f, rand(length(x)); showfig = false)
     @test all(err1.>err2)   
 end
+
+@testset "pcl_compress" begin 
+    indices = [
+        1 1
+        1 1
+        1 1
+        2 2
+        3 3
+    ]
+    pl = placeholder(rand(5))
+    A = RawSparseTensor(constant(indices)-1, pl, 3, 3)
+    B = compress(A)
+    loss = sum(B.o.values^2)
+    g = gradients(loss, pl)
+    function test_f(x0)
+        G = run(sess, g, pl=>x0)
+        W = pcl_square_sum(3)
+        J = pcl_compress(indices)
+        H = pcl_linear_op(J, W)
+        G, H 
+    end
+
+    x0 = rand(length(pl))
+    err1, err2 = test_hessian(test_f, x0; showfig = false)
+    @test all(err1.>err2)   
+end

@@ -1,6 +1,6 @@
 # This is an implementation of second order physics constrained learning 
 
-export pcl_sparse_solve, pcl_square_sum, pcl_hessian, pcl_linear_op
+export pcl_sparse_solve, pcl_square_sum, pcl_hessian, pcl_linear_op, pcl_compress
 
 @doc raw"""
     pcl_sparse_solve(indices::Array{Int64, 2}, 
@@ -89,4 +89,26 @@ function pcl_hessian(y::PyObject, x::PyObject, loss::PyObject)
     dy = independent(gradients(loss, y))
     H = J' * W * J + hessian(dot(dy, y), x)
     return H, W
+end
+
+@doc raw"""
+    pcl_compress(indices::Array{Int64, 2})
+
+Computes the Jacobian matrix for `compress`. Assume that `compress` does the following transformation:
+```
+indices, values (v) --> new_indices, new_values (u)
+```
+This function computes 
+$$J_{ij} = \frac{\partial u_j}{\partial v_i}$$
+"""
+function pcl_compress(indices::Array{Int64, 2})
+    N = size(indices,1)
+    v = zeros(N)
+    nout = zeros(Int32,1)
+    indices = indices'[:] .- 1
+    out = @eval ccall((:pcl_SparseCompressor, $(ADCME.LIBADCME)), Ptr{Cdouble}, 
+        (Ptr{Clonglong}, Ptr{Cdouble}, Cint, Ptr{Cint}),
+         $indices, $v, Int32($N), $nout)
+    J = unsafe_wrap(Array, out, (N,Int64(nout[1])); own = true)
+    return J 
 end
