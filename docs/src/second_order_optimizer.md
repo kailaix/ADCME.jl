@@ -60,11 +60,12 @@ We can see for all cases, the trust-region method provides a much more accurate 
 |-------------|---|---|---|
 | Eigenvalue Distribution | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_lbfgs_eig.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_bfgs_eig.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_tr_eig.png?raw=true)|
 
-We also show the number of **negative** eigenvalues for the BFGS optimizer
+We also show the number of **negative** eigenvalues for the BFGS optimizer. Here we use a threshold $\epsilon=10^{-6}$: for a given eigenvalue $\lambda$, it is treated as "positive" if $\lambda>\epsilon \lambda_{\max}$, and "negative" if $\lambda < - \epsilon \lambda_{\max}$, otherwise zero. Here $\lambda_{\max}$ is the maximum eigenvalue. 
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_positive_eigvals.png?raw=true)
 
-We can see that the number of negative eigenvalues stays at around 150 after 1300 iterations. That's also where the BFGS optimizer starts to stagnate. This means that the Hessian matrix of the optimization problem is **never SPD** during the iteration of the BFGS optimizer. The non-SPD property is actually inconsistent with the local convexity assumption at stationary points  in the convergence theory of the BFGS optimizer!
+We can see that the number of positive eigenvalues stays at around 30 after 400 iterations. The negative eigenvalues vanish at around iteration 500. This means that the BFGS optimizer has a strong tendency to 
+annihilate the negative eigenvalues of the Hessian matrix. 
 
 We also analyze the direction of the search direction $p_k$ in the BFGS optimizer. We consider two values
 
