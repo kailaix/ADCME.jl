@@ -29,7 +29,7 @@ In this work, we use the method proposed in [^trust-region] to solve Eq. 3 nearl
 
 [^trust-region]: A.R. Conn, N.I. Gould, and P.L. Toint, "Trust region methods", Siam, pp. 169-200, 2000.
 
-## Model Problem: Static Poisson's Equation
+## Example: Static Poisson's Equation
 
 In this example, we consider the Poisson's equation 
 
@@ -85,7 +85,7 @@ There are two conclusions to draw from the plots
 1. The search direction of the BFGS optimizer deviates from the gradient descent method. 
 2. The search direction of the BFGS optimizer is not very correlated with the Cauchy point direction; this indicates the search direction poorly recognizes the negative curvature directions. 
 
-## Another Example: Heat Equation
+## Example: Heat Equation
 
 We consider a time-dependent PDE problem: the heat equation
 
@@ -103,6 +103,191 @@ We assume that we can observe the full field data of $u$ as snapshots. We again 
 |5 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23333_dynamic.png?raw=true)|
 We see that the trust-region is more competitive than the other methods. 
 
+## Example: FEM for Static Poisson's Equation
+
+Consider the Poisson's equation again. This time, the loss function is formulated as 
+
+$$L(\theta) = \sum_i (u_{obs}(x_i) - u_\theta(x_i))^2$$
+
+Here $u_\theta$ is the numerical solution to the Poisson's equation. The evaluation of $\nabla^2_\theta L(\theta)$ requires back-propagating the Hessian matrix through various operators including the sparse solver (see [this post](https://kailaix.github.io/ADCME.jl/dev/second_order_pcl/#Example:-Developing-Second-Order-PCL-for-a-Sparse-Linear-Solver) for how the back-propagation rule is implemented). 
+
+The following shows an example of the implementation, which is annotated for convenience. 
+
+```julia
+using AdFem 
+using PyPlot 
+using LinearAlgebra
+using JLD2
+
+# disable auth reordering so that the Hessian back-propagation works properly 
+ADCME.options.sparse.auto_reorder = false
+
+using Random; Random.seed!(233)
+sess = Session()
+
+function simulate(θ)
+
+    # The first part is a standard piece of codes for doing numerical simulation in ADCME 
+    global mmesh = Mesh(10,10,0.1)
+    x = gauss_nodes(mmesh)
+    Fsrc = eval_f_on_gauss_pts((x,y)->1.0, mmesh)
+    
+    global kappa = squeeze(fc(x, [20,20,20,1], θ)) + 0.5
+    A_orig = compute_fem_laplace_matrix1(kappa, mmesh)
+    F = compute_fem_source_term1(Fsrc, mmesh)
+    global bdnode = bcnode(mmesh)
+    global A, F = impose_Dirichlet_boundary_conditions(A_orig, F, bdnode, zeros(length(bdnode)))
+
+    @load "Data/fwd_data.jld2" sol 
+    SOL = sol 
+    
+    global sol = A\F
+
+    global loss = sum((sol-SOL)^2)
+
+    # We now calculate some extra tensors for use in Hessian back-propagation 
+
+    # We use the TensorFlow tf.hessians (hessian in ADCME) to calculate the Hessian of DNNs. Note this algorithm is different from second order PCL 
+    global H_dnn_pl, W_dnn_pl = pcl_hessian(kappa, θ, loss)
+    global dsol = gradients(loss, sol)
+    global dθ = gradients(loss, θ)
+
+    # We need the indices for sparse matrices in the Hessian back-propagation 
+    init(sess)
+    global indices_orig = run(sess, A_orig.o.indices) .+ 1
+    global indices = run(sess, A.o.indices) .+ 1
+
+end
+
+
+function calculate_hessian(θ0)
+    # Retrieve intermediate values. Note in an optimized implementation, these values should already be available in the "tape". However, because second order PCL is currently in development, we recalculate these values for simplicity 
+    A_vals, sol_vals, dsol_vals  = run(sess, [A.o.values, sol, dsol], θ=>θ0)
+
+    # SoPCL for `loss = sum((sol-SOL)^2)`
+    W = pcl_square_sum(length(sol))
+
+    # SoPCL for `sol = A\F` 
+    W = pcl_sparse_solve(indices, 
+        A_vals, 
+        sol_vals, 
+        W, 
+        dsol_vals)
+        
+    # SoPCL for `A, F = impose_Dirichlet_boundary_conditions(...)`
+    J = pcl_impose_Dirichlet_boundary_conditions(indices_orig, bdnode, size(indices,1))
+    W = pcl_linear_op(J, W)
+
+    # SoPCL for `A_orig = compute_fem_laplace_matrix1(kappa, mmesh)`
+    J = pcl_compute_fem_laplace_matrix1(mmesh)
+    W = pcl_linear_op(J, W)
+
+    # SoPCL for DNN
+    run(sess, H_dnn_pl, feed_dict=Dict(W_dnn_pl=>W, θ=>θ0))
+end
+
+function calculate_gradient(θ0)
+    run(sess, dθ, θ=>θ0)
+end
+
+function calculate_loss(θ0)
+    L = run(sess, loss, θ=>θ0)
+    @info "Loss = $L"
+    L
+end
+
+# The optimization step
+θ = placeholder(fc_init([2,20,20,20,1]))
+simulate(θ)
+res = opt.minimize(
+    calculate_loss,
+    θ0,
+    method = "trust-exact",
+    jac = calculate_gradient,
+    hess = calculate_hessian,
+    tol = 1e-12,
+    options = Dict(
+        "maxiter"=> 5000,
+        "gtol"=>0.0 # force the optimizer not to stop
+    )
+)
+```
+
+It is very important that before we perform the optimization, we carry out the Hessian test using the [`test_hessian`](@ref) function.
+
+```julia
+function test_f(θ0)
+    calculate_gradient(θ0), calculate_hessian(θ0)
+end
+θ0 = run(sess, θ)
+test_jacobian(test_f, θ0, scale=1e-3)
+```
+
+This should give us a plot as follows:
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/hessian_test.png?raw=true)
+
+Now let us consider the inverse problem. First we generate the observation using 
+
+$$\kappa(x) = \frac{1}{1+\|x\|_2^2}+1$$
+
+The observation is shown as below
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/sol.png?raw=true)
+
+We use the full field data for simplicity, although our method also applies to sparse observations. The following plots shows results where the trust region method performs significantly better than the BFGS and LBFGS method. 
+
+
+**Case 1**
+
+| Description         | Result |
+|--------------|---|
+| Loss         | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/loss2.png?raw=true) |
+| LBFGS        | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/lbfgs_2.png?raw=true) |
+| BFGS         | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/bfgs_2.png?raw=true) |
+| Trust Region | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/tr_2.png?raw=true)  |
+
+
+**Case 2**
+
+| Description         | Result |
+|--------------|---|
+| Loss         | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/loss2333.png?raw=true) |
+| LBFGS        | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/lbfgs_2333.png?raw=true) |
+| BFGS         | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/bfgs_2333.png?raw=true) |
+| Trust Region | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/tr_2333.png?raw=true)  |
+
+
+**Case 3**
+
+| Description         | Result |
+|--------------|---|
+| Loss         | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/loss23333.png?raw=true) |
+| LBFGS        | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/lbfgs_23333.png?raw=true) |
+| BFGS         | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/bfgs_23333.png?raw=true) |
+| Trust Region | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/tr_23333.png?raw=true)  |
+
+
+In the following plots, we show the absolute eigenvalue distributions of Hessians at the terminal point for Case 2. The red dashed line represents the level $10^{-6}\lambda_{\max}$, where $\lambda_{\max}$ is the maximum eigenvalue. 
+
+| LBFGS         | BFGS | Trust Region|
+|--------------|---|---|
+|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/lbfgs_eigs.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/bfgs_eigs.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/tr_eigs.png?raw=true)|
+
+Eigenvalues that lie below the red dashed line can be treated as zero. This means that for BFGS and the trust region method, the optimizers find local minima. In fact, we show 
+
+$$F(\alpha) = L(x^* + \alpha v)$$
+
+in the following plots, where $x^*$ is the converged point for LBFGS, $v$ is the eigenvector corresponding to either the minimum or maximum eigenvalues of the Hessian. The profile for the former case is quite flat, indicating that small perturbation along the eigenvector direction makes little change to the loss function. Thus, for LBFGS, we can also assume that a local minimum is found. 
+
+
+Interestingly, even though all optimizers find local minima. The final loss functions and errors are quite different. Trust methods perform much better in these cases compared to BFGS and LBFGS (in some other cases, BFGS may perform better). 
+
+| $\lambda_{\min}$         | $\lambda_{\max}$  |
+|--------------|---|
+|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/lbfgs_vmin.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_poisson/lbfgs_vmax.png?raw=true)|
+
+The problem itself is nonconvex and has many local minima---different from the common belief that in deep learning, stationary points are usually saddle points if they are not the global minimum. Trust region methods do not guarantee that we can find a global  minimum, or even a "good" local minimum. However, because trust region methods shows faster convergence and superior accuracy in many cases, it never harms to add trust region methods into the optimization tool box. Additionally, the Hessian calculated using the second order PCL is a powerful weapon for diagnosing the convergence and provides curvature information for more sophisticated optimizers. 
 
 ## Limitations 
 
