@@ -35,6 +35,7 @@ include("flow.jl")
 include("mpi.jl")
 include("toolchain.jl")
 include("rbf.jl")
+include("pcl.jl")
 # The default matplotlib backend does not work for MacOSX
 if !Sys.isapple()
     include("kit.jl")

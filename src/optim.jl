@@ -787,7 +787,8 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     callback::Union{Function, Missing}=missing,
     x_tol::Union{Missing, Float64} = missing,
     f_tol::Union{Missing, Float64} = missing,
-    g_tol::Union{Missing, Float64} = missing, kwargs...) where T<:Union{Nothing, PyObject}
+    g_tol::Union{Missing, Float64} = missing,
+    return_feval_loss::Bool = false, kwargs...) where T<:Union{Nothing, PyObject}
     
     vars = coalesce(vars, get_collection())
     grads = coalesce(grads, gradients(loss, vars))
@@ -824,6 +825,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     
     __loss = 0.0
     __losses = Float64[]
+    __feval_loss = Float64[]
     __iter = 0
     __value = nothing
     __ls_iter = 0
@@ -831,6 +833,7 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         run(sess, assign_ops, pl=>x)
         __loss = run(sess, loss)
         __ls_iter += 1
+        push!(__feval_loss, __loss)
         options.training.verbose && (println("iter $__ls_iter, current loss = $__loss"))
         return __loss
     end
@@ -858,6 +861,9 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         end
         kwargs_[:max_iter] = max_iter
         __losses = optimizer(f, g!, fg, x0; kwargs_...)
+        if return_feval_loss
+            __losses = (__losses, __feval_loss)
+        end
         return __losses
     end
 
@@ -891,6 +897,9 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
         f_tol = coalesce(f_tol, 1e-12),
         g_tol = coalesce(g_tol, 1e-12),
          kwargs...))
+
+    if return_feval_loss
+        __losses = (__losses, __feval_loss)
+    end
     return __losses
 end
-
