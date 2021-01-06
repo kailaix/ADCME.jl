@@ -53,10 +53,19 @@ void SparseCompressor::backward(double *grad_v, const double *grad_nv){
     }
 }
 
+#if defined(_MSC_VER)
+    //  Microsoft 
+    #define EXPORT __declspec(dllexport)
+    #define IMPORT __declspec(dllimport)
+#else
+    #define EXPORT
+    #define IMPORT
+#endif
+
 // computes the Jacobian matrix for SparseCompressor
 // compress is a linear operator 
 // J is a N x nout matrix 
-extern "C" double * pcl_SparseCompressor(const int64 *indices, const double *v, int N, int *nout){
+extern "C" EXPORT double * pcl_SparseCompressor(const int64 *indices, const double *v, int N, int *nout){
     SparseCompressor sc(indices, v, N);
     int k = 0;
     double *J = (double *)malloc(sizeof(double)*sc.nout*N);
