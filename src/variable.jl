@@ -273,7 +273,7 @@ function gradients(ys::PyObject, xs::PyObject; kwargs...)
     end
     if length(s1)==0
         ret = tf.gradients(ys, xs; kwargs...)
-        if ret != nothing
+        if !isnothing(ret) && !isnothing(ret[1])
             return tf.convert_to_tensor(ret[1])
         else
             return nothing

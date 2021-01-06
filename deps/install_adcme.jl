@@ -17,6 +17,18 @@ else
     INSTALLER = "Miniconda3-py37_4.8.3-Windows-x86_64.exe"
 end
 
+function check_install()
+    if Sys.iswindows()
+    else
+        for bin in ["unzip", "ninja"] 
+            if !isfile(joinpath("$(JULIA_ADCME_DIR)/.julia/adcme/bin"), bin)
+                return false 
+            end
+        end
+    end
+    return true
+end
+
 function install_conda()
     PWD = pwd()
     cd("$(JULIA_ADCME_DIR)/.julia/")
@@ -57,7 +69,8 @@ function install_conda_envs()
         platform = "osx"
     end
     if (platform == "linux-gpu" && occursin("tensorflow-gpu", read(`$CONDA list`, String))) ||
-        platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String)) 
+        platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String)) || 
+        check_install()
         return 
     end 
     run(setenv(`$CONDA env update -n base --file $platform.yml`, ENV_))

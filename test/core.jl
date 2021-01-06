@@ -181,7 +181,7 @@ end
 end
 
 @testset "mpi utils" begin 
-    @test has_mpi() == false 
+    @test_nowarn has_mpi() 
     try 
         get_mpi()
     catch
