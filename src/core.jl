@@ -298,7 +298,7 @@ Returns the MPI include directory and shared library.
 function get_mpi()
     if Sys.iswindows()
         if haskey(ENV, "MSMPI_INC") && haskey(ENV, "MSMPI_LIB64")
-            return ENV["MSMPI_INC"], ENV["MSMPI_LIB64"]
+            return ENV["MSMPI_INC"], joinpath(ENV["MSMPI_LIB64"], "msmpi.lib")
         else 
             return false 
         end
