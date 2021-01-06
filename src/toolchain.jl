@@ -22,7 +22,7 @@ PREFIXDIR
 export http_file, uncompress, git_repository, require_file, 
     link_file, make_directory, change_directory, require_library, get_library,
     run_with_env, get_conda, read_with_env, get_library_name, get_pip,
-    copy_file, require_cmakecache, require_import
+    copy_file, require_cmakecache, require_import, get_xml
 
 GFORTRAN = nothing
 CONDA = nothing
@@ -355,4 +355,25 @@ function require_import(s::Symbol)
         error("Package $s.jl must be imported in the main module using `import $s` or `using $s`")
     end
     @eval Main.$s
+end
+
+raw"""
+    get_xml()
+
+Returns the xml file for `conda install`. In case conda dependencies need to be reinstalled, run
+
+```
+run(`$(get_conda()) env update -n base --file $(get_xml())`)
+```
+"""
+function get_xml()
+    os = ""
+    if Sys.iswindows()
+        os = "windows"
+    elseif Sys.isapple()
+        os = "osx"
+    else 
+        os = "linux"
+    end 
+    return abspath(joinpath(@__DIR__, "..", "deps", "$(os).yml"))
 end
