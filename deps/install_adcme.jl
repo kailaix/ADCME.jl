@@ -68,11 +68,12 @@ function install_conda_envs()
     else
         platform = "osx"
     end
-    if (platform == "linux-gpu" && occursin("tensorflow-gpu", read(`$CONDA list`, String))) ||
-        platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String)) || 
+    if ((platform == "linux-gpu" && occursin("tensorflow-gpu", read(`$CONDA list`, String))) ||
+        (platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String)))) && 
         check_install()
         return 
     end 
+    @info "Installing conda dependencies..."
     run(setenv(`$CONDA env update -n base --file $platform.yml`, ENV_))
 end
 
