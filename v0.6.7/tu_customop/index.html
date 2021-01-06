@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Advanced: Custom Operators · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../videos_and_slides/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li><a class="tocitem" href="../tu_fem/">Numerical Scheme in ADCME: Finite Element Example</a></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li class="is-active"><a class="tocitem" href>Advanced: Custom Operators</a><ul class="internal"><li><a class="tocitem" href="#The-Need-for-Custom-Operators"><span>The Need for Custom Operators</span></a></li><li><a class="tocitem" href="#The-Philosophy-of-Implementing-Custom-Operators"><span>The Philosophy of Implementing Custom Operators</span></a></li><li><a class="tocitem" href="#Build-Custom-Operators"><span>Build Custom Operators</span></a></li><li><a class="tocitem" href="#Build-GPU-Custom-Operators"><span>Build GPU Custom Operators</span></a></li><li><a class="tocitem" href="#Batch-Build"><span>Batch Build</span></a></li><li><a class="tocitem" href="#Loading-Order"><span>Loading Order</span></a></li><li><a class="tocitem" href="#Error-Handling"><span>Error Handling</span></a></li><li><a class="tocitem" href="#Logging"><span>Logging</span></a></li><li><a class="tocitem" href="#Windows:-Load-Shared-Library"><span>Windows: Load Shared Library</span></a></li><li><a class="tocitem" href="#Miscellany"><span>Miscellany</span></a></li><li><a class="tocitem" href="#Troubleshooting"><span>Troubleshooting</span></a></li></ul></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li><a class="tocitem" href="../optim/">Study on Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li><li><a class="tocitem" href="../topopt/">Topological Optimization</a></li><li><a class="tocitem" href="../quadrature/">Numerical Integration</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorial</a></li><li class="is-active"><a href>Advanced: Custom Operators</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Advanced: Custom Operators</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/tu_customop.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Advanced:-Custom-Operators"><a class="docs-heading-anchor" href="#Advanced:-Custom-Operators">Advanced: Custom Operators</a><a id="Advanced:-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Advanced:-Custom-Operators" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>As a reminder, there are many built-in custom operators in <code>deps/CustomOps</code> and they are good resources for understanding custom operators. The following is a step-by-step instruction on how custom operators are implemented. </p></div></div><h2 id="The-Need-for-Custom-Operators"><a class="docs-heading-anchor" href="#The-Need-for-Custom-Operators">The Need for Custom Operators</a><a id="The-Need-for-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#The-Need-for-Custom-Operators" title="Permalink"></a></h2><p>Custom operators are ways to add missing features or improve performance critical components in ADCME. Typically users do not have to worry about custom operators. However, in the following situation custom opreators might be very useful</p><ul><li>Direct implementation in ADCME is inefficient, e.g., vectorizing some codes is difficult. </li><li>There are legacy codes users want to reuse, such as Fortran libraries or adjoint-state method solvers.  </li><li>Special acceleration techniques, such as checkpointing scheme, MPI-enabled linear solvers, and FPGA/GPU-accelerated codes. </li></ul><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom.png?raw=true" alt/></p><h2 id="The-Philosophy-of-Implementing-Custom-Operators"><a class="docs-heading-anchor" href="#The-Philosophy-of-Implementing-Custom-Operators">The Philosophy of Implementing Custom Operators</a><a id="The-Philosophy-of-Implementing-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#The-Philosophy-of-Implementing-Custom-Operators" title="Permalink"></a></h2><p>Usually the motivation for implementing custom operators is to enable gradient backpropagation for some performance critical operators. However, not all performance critical operators participate the automatic differentiation. Using terminologies from programming, these computations are &quot;constant expressions&quot;, which can be evaluated at compilation time (constant folding). Therefore, before we devote ourselves to implementating custom operators, we need to identify which operators need to be implemented as custom operators. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/forwardbackward.png?raw=true" alt="forwardbackward"/></p><p>This identification task can be done by sketching out the computational graph of your program. Assume your optimization outer loops update <span>$x$</span> repeatly, then we can track all downstream the operators that depend on this parameter <span>$x$</span>. We call the dependent operators &quot;tensor operations&quot;, because they are essentially TensorFlow operators that consume and output tensors. The dependent variables are called &quot;tensors&quot;. The counterpart of tensors and tensor operations are &quot;numerical arrays&quot; and &quot;numerical operations&quot;, respectively. The names seem a bit vague here but the essence is that numerical operations/arrays do no participate automatic differentiation during the optimization, so the values can be precomputed only once during the entire optimization process. </p><p>In ADCME, we can precompute all numerical quantities of numerical arrays using Julia. No TensorFlow operators or custom operators are needed. This procedure combines the best of the two worlds: the simple syntax and high performance computing environment provided by Julia, and the efficient AD capability provided by TensorFlow. The high performance computing for precomputing cannot be provided by Python, the main scripting language that TensorFlow or PyTorch supports. Readers migh suspect that such precomputing may not be significant in many tasks. Actually, the precomputing constitutes a large portion in scientific computing. For example, researchers assemble matrices, prepare geometries and construct preconditioners in a finite element program. These tasks are by no means trivial and cheap. The consideration for  performance in scientific computing actually forms the major motivation behind adopting Julia for the major language for ADCME. </p><h2 id="Build-Custom-Operators"><a class="docs-heading-anchor" href="#Build-Custom-Operators">Build Custom Operators</a><a id="Build-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Build-Custom-Operators" title="Permalink"></a></h2><p>In the following, we present an example of implementing a sparse solver for <span>$Au=b$</span> as a custom operator.</p><p><strong>Input</strong>: row vector <code>ii</code>, column vector<code>jj</code> and value vector <code>vv</code> for the sparse coefficient matrix <span>$A$</span>; row vector <code>kk</code> and value vector <code>ff</code> for the right hand side <span>$b$</span>; the coefficient matrix dimension is <span>$d\times d$</span></p><p><strong>Output</strong>: solution vector <span>$u\in \mathbb{R}^d$</span></p><p><strong>Step 1: Create and modify the template file</strong></p><p>The following command helps create the wrapper</p><pre><code class="language-julia">customop()</code></pre><p>There will be a <code>custom_op.txt</code> in the current directory. Modify the template file </p><pre><code class="language-txt">MySparseSolver
+int32 ii(?)
+int32 jj(?)
+double vv(?)
+int32 kk(?)
+double ff(?)
+int32 d()
+double u(?) -&gt; output</code></pre><p>The first line is the name of the operator. It should always be in the camel case. </p><p>The 2nd to the 7th lines specify the input arguments, the signature is <code>type</code>+<code>variable name</code>+<code>shape</code>. For the shape, <code>()</code> corresponds to a scalar, <code>(?)</code> to a vector and <code>(?,?)</code> to a matrix. The variable names must be in <em>lower cases</em>. Additionally, the supported types are: <code>int32</code>, <code>int64</code>, <code>float</code>, <code>double</code>, <code>bool</code> and <code>string</code>. </p><p>The last line is the output, denoted by <code>-&gt; output</code> (do not forget the whitespace before and after <code>-&gt;</code>).  </p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>If there are non-real type outputs, the corresponding top gradients input to the gradient kernel should be removed. </p></div></div><p><strong>Step 2: Implement the kernels</strong></p><p>Run <code>customop()</code> again and there will be <code>CMakeLists.txt</code>, <code>gradtest.jl</code>, <code>MySparseSolver.cpp</code> appearing in the current directory. <code>MySparseSolver.cpp</code> is the main wrapper for the codes and <code>gradtest.jl</code> is used for testing the operator and its gradients. <code>CMakeLists.txt</code> is the file for compilation. In the gradient back-propagation (<code>backward</code> below), we want to back-propagate the gradients from the output to the inputs, and the associated rule can be derived using adjoint-state methods. </p><p>Create a new file <code>MySparseSolver.h</code> and implement both the forward simulation and backward simulation (gradients)</p><pre><code class="language-cpp">#include &lt;eigen3/Eigen/Sparse&gt;
+#include &lt;eigen3/Eigen/SparseLU&gt;
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+using namespace std;
+typedef Eigen::SparseMatrix&lt;double&gt; SpMat; // declares a column-major sparse matrix type of double
+typedef Eigen::Triplet&lt;double&gt; T;
+
+SpMat A;
+
+void forward(double *u, const int *ii, const int *jj, const double *vv, int nv, const int *kk, const double *ff,int nf,  int d){
+    vector&lt;T&gt; triplets;
+    Eigen::VectorXd rhs(d); rhs.setZero();
+    for(int i=0;i&lt;nv;i++){
+      triplets.push_back(T(ii[i]-1,jj[i]-1,vv[i]));
+    }
+    for(int i=0;i&lt;nf;i++){
+      rhs[kk[i]-1] += ff[i];
+    }
+    A.resize(d, d);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    auto C = Eigen::MatrixXd(A);
+    Eigen::SparseLU&lt;SpMat&gt; solver;
+    solver.analyzePattern(A);
+    solver.factorize(A);
+    auto x = solver.solve(rhs);
+    for(int i=0;i&lt;d;i++) u[i] = x[i];
+}
+
+void backward(double *grad_vv, const double *grad_u, const int *ii, const int *jj, const double *u, int nv, int d){
+    Eigen::VectorXd g(d);
+    for(int i=0;i&lt;d;i++) g[i] = grad_u[i];
+    auto B = A.transpose();
+    Eigen::SparseLU&lt;SpMat&gt; solver;
+    solver.analyzePattern(B);
+    solver.factorize(B);
+    auto x = solver.solve(g);
+    // cout &lt;&lt; x &lt;&lt; endl;
+    for(int i=0;i&lt;nv;i++) grad_vv[i] = 0.0;
+    for(int i=0;i&lt;nv;i++){
+      grad_vv[i] -= x[ii[i]-1]*u[jj[i]-1];
+    }
+}</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>In this implementation we have used <code>Eigen</code> library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable <code>SpMat A;</code>. This is not recommend if you want to run the code concurrently, since the variable <code>A</code> must be overwritten by another concurrent thread. </p></div></div><p><strong>Step 3: Compile</strong></p><p>You should always compile your custom operator using the <a href="https://kailaix.github.io/ADCME.jl/dev/toolchain/">built-in toolchain</a> <code>ADCME.make</code> and <code>ADCME.cmake</code> to ensure compatibility such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:</p><table><tr><th style="text-align: right">Variable</th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right"><code>ADCME.CXX</code></td><td style="text-align: right">C++ Compiler</td></tr><tr><td style="text-align: right"><code>ADCME.CC</code></td><td style="text-align: right">C Compiler</td></tr><tr><td style="text-align: right"><code>ADCME.TF_LIB_FILE</code></td><td style="text-align: right"><code>libtensorflow_framework.so</code> location</td></tr><tr><td style="text-align: right"><code>ADCME.CMAKE</code></td><td style="text-align: right">Cmake binary location</td></tr><tr><td style="text-align: right"><code>ADCME.MAKE</code></td><td style="text-align: right">Make (Ninja for Unix systems) binary location</td></tr></table><p>ADCME will properly handle the environment variable for you. So we always recommend you to compile custom operators using ADCME functions:</p><p>First <code>cd</code> into your custom operator director (where <code>CMakeLists.txt</code> is located), create a directory <code>build</code> if it doesn&#39;t exist, <code>cd</code> into <code>build</code>, and do </p><pre><code class="language-julia-repl">julia&gt; using ADCME
+julia&gt; ADCME.cmake()
+julia&gt; ADCME.make()</code></pre><p>Based on your operation system, you will create <code>libMySparseSolver.{so,dylib,dll}</code>. This will be the dynamic library to link in <code>TensorFlow</code>. </p><p><strong>Step 4: Test</strong></p><p>Finally, you could use <code>gradtest.jl</code> to test the operator and its gradients (specify appropriate data in <code>gradtest.jl</code> first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. Note you need to modify this file first, e.g., creating data and modifying the function <code>scalar_function</code>. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom_op.png?raw=true" alt="custom_op"/></p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile <code>libtensorflow_framework.{so,dylib}</code>. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.</p></div></div><p>Please see <a href="https://github.com/kailaix/ADCME-CustomOp-Example">this repository</a> for an extra example. </p><h2 id="Build-GPU-Custom-Operators"><a class="docs-heading-anchor" href="#Build-GPU-Custom-Operators">Build GPU Custom Operators</a><a id="Build-GPU-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Build-GPU-Custom-Operators" title="Permalink"></a></h2><h3 id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)"><a class="docs-heading-anchor" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)">Install GPU-enabled TensorFlow (Linux and Windows)</a><a id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)-1"></a><a class="docs-heading-anchor-permalink" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)" title="Permalink"></a></h3><p>To use  CUDA in ADCME, we need to install a GPU-enabled version of TensorFlow. In ADCME, this is achieved by simply rebuilding ADCME with <code>GPU</code> environment variabe. </p><pre><code class="language-julia">using Pkg
+ENV[&quot;GPU&quot;] = 1
+Pkg.build(&quot;ADCME&quot;)</code></pre><p>This will install all GPU dependencies.</p><h3 id="Building-a-GPU-custom-operator"><a class="docs-heading-anchor" href="#Building-a-GPU-custom-operator">Building a GPU custom operator</a><a id="Building-a-GPU-custom-operator-1"></a><a class="docs-heading-anchor-permalink" href="#Building-a-GPU-custom-operator" title="Permalink"></a></h3><p>We consider a toy example where the custom operator is a function <span>$f: x\rightarrow 2x$</span>. To begin with, we create a <code>custom_op.txt</code> via <a href="../api/#ADCME.customop-Tuple{}"><code>customop</code></a></p><pre><code class="language-text">GpuTest
+double a(?)
+double b(?) -&gt; output</code></pre><p>Next, by running <code>customop()</code> again several template files are generated. We can then do the implementation in those files</p><p><strong>GpuTest.cpp</strong></p><pre><code class="language-c">#include &quot;tensorflow/core/framework/op_kernel.h&quot;
+#include &quot;tensorflow/core/framework/tensor_shape.h&quot;
+#include &quot;tensorflow/core/platform/default/logging.h&quot;
+#include &quot;tensorflow/core/framework/shape_inference.h&quot;
+#include&lt;cmath&gt;
+
+// Signatures for GPU kernels here 
+void return_double(int n, double *b, const double*a);
+using namespace tensorflow;
+
+
+REGISTER_OP(&quot;GpuTest&quot;)
+
+.Input(&quot;a : double&quot;)
+.Output(&quot;b : double&quot;)
+.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    
+        shape_inference::ShapeHandle a_shape;
+        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(0), 1, &amp;a_shape));
+
+        c-&gt;set_output(0, c-&gt;input(0));
+    return Status::OK();
+  });
+
+REGISTER_OP(&quot;GpuTestGrad&quot;)
+
+.Input(&quot;grad_b : double&quot;)
+.Input(&quot;b : double&quot;)
+.Input(&quot;a : double&quot;)
+.Output(&quot;grad_a : double&quot;);
+
+
+class GpuTestOpGPU : public OpKernel {
+private:
+  
+public:
+  explicit GpuTestOpGPU(OpKernelConstruction* context) : OpKernel(context) {
+
+  }
+
+  void Compute(OpKernelContext* context) override {    
+    DCHECK_EQ(1, context-&gt;num_inputs());
+    
+    
+    const Tensor&amp; a = context-&gt;input(0);
+    
+    
+    const TensorShape&amp; a_shape = a.shape();
+    
+    
+    DCHECK_EQ(a_shape.dims(), 1);
+
+    // extra check
+        
+    // create output shape
+    int n = a_shape.dim_size(0);
+    TensorShape b_shape({n});
+            
+    // create output tensor
+    
+    Tensor* b = NULL;
+    OP_REQUIRES_OK(context, context-&gt;allocate_output(0, b_shape, &amp;b));
+    
+    // get the corresponding Eigen tensors for data access
+    
+    auto a_tensor = a.flat&lt;double&gt;().data();
+    auto b_tensor = b-&gt;flat&lt;double&gt;().data();   
+
+    // implement your forward function here 
+
+    // TODO:
+    return_double(n, b_tensor, a_tensor);
+
+  }
+};
+REGISTER_KERNEL_BUILDER(Name(&quot;GpuTest&quot;).Device(DEVICE_GPU), GpuTestOpGPU);</code></pre><p><strong>GpuTest.cu</strong></p><pre><code class="language-c">#include &quot;cuda.h&quot;
+
+__global__ void return_double_(int n, double *b, const double*a){
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i&lt;n) b[i] = 2*a[i];
+}
+
+void return_double(int n, double *b, const double*a){
+    return_double_&lt;&lt;&lt;(n+255)/256, 256&gt;&gt;&gt;(n, b, a);
+}</code></pre><p><strong>CMakeLists.txt</strong></p><pre><code class="language-cmake">cmake_minimum_required(VERSION 3.5)
+project(TF_CUSTOM_OP)
+set (CMAKE_CXX_STANDARD 11)
+
+message(&quot;JULIA=${JULIA}&quot;)
+execute_process(COMMAND ${JULIA} -e &quot;import ADCME; print(ADCME.__STR__)&quot; OUTPUT_VARIABLE JL_OUT)
+
+
+
+list(GET JL_OUT 0 BINDIR)
+list(GET JL_OUT 1 LIBDIR)
+list(GET JL_OUT 2 TF_INC)
+list(GET JL_OUT 3 TF_ABI)
+list(GET JL_OUT 4 PREFIXDIR)
+list(GET JL_OUT 5 CC)
+list(GET JL_OUT 6 CXX)
+list(GET JL_OUT 7 CMAKE)
+list(GET JL_OUT 8 MAKE)
+list(GET JL_OUT 9 GIT)
+list(GET JL_OUT 10 PYTHON)
+list(GET JL_OUT 11 TF_LIB_FILE)
+list(GET JL_OUT 12 LIBCUDA)
+list(GET JL_OUT 13 CUDA_INC)
+
+message(&quot;Python path=${PYTHON}&quot;)
+message(&quot;PREFIXDIR=${PREFIXDIR}&quot;)
+message(&quot;TF_INC=${TF_INC}&quot;)
+message(&quot;TF_ABI=${TF_ABI}&quot;)
+message(&quot;TF_LIB_FILE=${TF_LIB_FILE}&quot;)
+
+
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
+  set(CMAKE_CXX_FLAGS &quot;-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}&quot;)
+endif()
+
+set(CMAKE_BUILD_TYPE Release)
+if(MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE &quot;-DNDEBUG&quot;)
+else()
+set(CMAKE_CXX_FLAGS_RELEASE &quot;-O3 -DNDEBUG&quot;)
+endif()
+include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
+
+
+find_package(CUDA QUIET REQUIRED)
+set(CMAKE_CXX_FLAGS &quot;-std=c++11 ${CMAKE_CXX_FLAGS}&quot;)
+set(CMAKE_CXX_FLAGS &quot;-O3 ${CMAKE_CXX_FLAGS}&quot;)
+set(CMAKE_CXX_FLAGS &quot;-shared ${CMAKE_CXX_FLAGS}&quot;)
+set(CMAKE_CXX_FLAGS &quot;-fPIC ${CMAKE_CXX_FLAGS}&quot;)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
+SET(CUDA_PROPAGATE_HOST_FLAGS ON)
+
+add_definitions(-DGOOGLE_CUDA)
+message(&quot;Compiling GPU-compatible custom operator!&quot;)
+cuda_add_library(GpuTest SHARED GpuTest.cpp GpuTest.cu)
+
+
+set_property(TARGET GpuTest PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(GpuTest ${TF_LIB_FILE})
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set_target_properties(GpuTest PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)</code></pre><p>We can then compile the operator on a system where <code>nvcc</code> is available:</p><pre><code class="language-julia">change_directory(&quot;build&quot;)
+ADCME.cmake()
+ADCME.make()</code></pre><h3 id="Running-a-GPU-custom-operator"><a class="docs-heading-anchor" href="#Running-a-GPU-custom-operator">Running a GPU custom operator</a><a id="Running-a-GPU-custom-operator-1"></a><a class="docs-heading-anchor-permalink" href="#Running-a-GPU-custom-operator" title="Permalink"></a></h3><p>We can now run a GPU operator by loading the shared library</p><pre><code class="language-julia">using ADCME
+
+function gpu_test(a)
+    gpu_test_ = load_op_and_grad(&quot;$(@__DIR__)/build/libGpuTest&quot;,&quot;gpu_test&quot;)
+    a = convert_to_tensor([a], [Float64]); a = a[1]
+    gpu_test_(a)
+end
+
+# TODO: specify your input parameters
+a = [1.0;3.0;-1.0]
+u = gpu_test(a)
+sess = Session(); init(sess)
+run(sess, u)</code></pre><p>If we run the file on a system without GPU resources, we will get the following error </p><pre><code class="language-text"> &lt;class &#39;tensorflow.python.framework.errors_impl.InvalidArgumentError&#39;&gt;</code></pre><p>If we have GPU resources, the kernel will run correctly with the output</p><pre><code class="language-julia">2.0
+6.0
+-2.0</code></pre><h2 id="Batch-Build"><a class="docs-heading-anchor" href="#Batch-Build">Batch Build</a><a id="Batch-Build-1"></a><a class="docs-heading-anchor-permalink" href="#Batch-Build" title="Permalink"></a></h2><p>At some point, you might have a lot of custom operators. Building one-by-one will take up too much time. To reduce the building time, you might want to build all the operators all at once concurrently. To this end, you can consider batch build by using a common CMakeLists.txt. The commands in the CMakeLists.txt are the same as a typical custom operator, except that the designated libraries are different</p><pre><code class="language-cmake"># ... The same as a typical CMake script ...
+
+# Specify all the library paths and library names. 
+set(LIBDIR_NAME VolumetricStrain ComputeVel DirichletBd
+    FemStiffness FemStiffness1 SpatialFemStiffness
+    SpatialVaryingTangentElastic Strain Strain1
+    StrainEnergy StrainEnergy1)
+set(LIB_NAME VolumetricStrain ComputeVel DirichletBd
+    FemStiffness UnivariateFemStiffness SpatialFemStiffness
+    SpatialVaryingTangentElastic StrainOp StrainOpUnivariate
+    StrainEnergy StrainEnergyUnivariate)
+
+# Copy and paste the following lines (no modification is required)
+list(LENGTH &quot;LIBDIR_NAME&quot; LIBLENGTH)
+message(&quot;Total number of libraries to make: ${LIBLENGTH}&quot;)
+MATH(EXPR LIBLENGTH &quot;${LIBLENGTH}-1&quot;)
+foreach(IDX RANGE 0 ${LIBLENGTH})
+  list(GET LIBDIR_NAME ${IDX} _LIB_DIR)
+  list(GET LIB_NAME ${IDX} _LIB_NAME)
+  message(&quot;Compiling ${IDX}th library: ${_LIB_DIR}==&gt;${_LIB_NAME}&quot;)
+  file(MAKE_DIRECTORY ${_LIB_DIR}/build)
+  add_library(${_LIB_NAME} SHARED ${_LIB_DIR}/${_LIB_NAME}.cpp)
+  set_property(TARGET ${_LIB_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(${_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${_LIB_DIR}/build)
+  target_link_libraries(${_LIB_NAME} ${TF_LIB_FILE})
+endforeach(IDX)</code></pre><h2 id="Loading-Order"><a class="docs-heading-anchor" href="#Loading-Order">Loading Order</a><a id="Loading-Order-1"></a><a class="docs-heading-anchor-permalink" href="#Loading-Order" title="Permalink"></a></h2><p>To ensure that TensorFlow can find all the registered symbols, it is recommended that you should always load the shared libraries first if you also run <code>ccall</code> on the shared library. This can be done using <a href="../api/#ADCME.load_library-Tuple{String}"><code>load_library</code></a> to obtain a handle to the shared library. Then you can use the handle in <a href="../api/#ADCME.load_op_and_grad-Tuple{Union{String, PyCall.PyObject},String}"><code>load_op_and_grad</code></a> or <a href="../api/#ADCME.load_op-Tuple{Union{String, PyCall.PyObject},String}"><code>load_op</code></a>. For example</p><pre><code class="language-julia">lib = load_library(&quot;path/to/my/library&quot;)
+my_custom_op = load_op_and_grad(lib, &quot;my_custom_op&quot;)</code></pre><h2 id="Error-Handling"><a class="docs-heading-anchor" href="#Error-Handling">Error Handling</a><a id="Error-Handling-1"></a><a class="docs-heading-anchor-permalink" href="#Error-Handling" title="Permalink"></a></h2><p>Sometimes we might encounter error in C++ kernels and we want to propagate the error to the Julia interface. This is done by <code>OP_REQUIRES_OK</code>. Its syntax is</p><pre><code class="language-c">OP_REQUIRES_OK(context, status)</code></pre><p>where <code>context</code> is either a <code>OpKernelConstruction</code> or a <code>OpKernelContext</code>, and <code>status</code> can be created using </p><pre><code class="language-c">Status(error::Code::ERROR_CODE, message)</code></pre><p>Here <code>ERROR_CODE</code> is one of the following:</p><pre><code class="language-c">OK = 0,
+CANCELLED = 1,
+UNKNOWN = 2,
+INVALID_ARGUMENT = 3,
+DEADLINE_EXCEEDED = 4,
+NOT_FOUND = 5,
+ALREADY_EXISTS = 6,
+PERMISSION_DENIED = 7,
+UNAUTHENTICATED = 16,
+RESOURCE_EXHAUSTED = 8,
+FAILED_PRECONDITION = 9,
+ABORTED = 10,
+OUT_OF_RANGE = 11,
+UNIMPLEMENTED = 12,
+INTERNAL = 13,
+UNAVAILABLE = 14,
+DATA_LOSS = 15,
+DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_ = 20,
+Code_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits&lt;::PROTOBUF_NAMESPACE_ID::int32&gt;::min(),
+Code_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits&lt;::PROTOBUF_NAMESPACE_ID::int32&gt;::max()</code></pre><p><code>message</code> is a string. </p><p>For example, </p><pre><code class="language-c">OP_REQUIRES_OK(context, 
+        Status(error::Code::UNAVAILABLE, &quot;Sparse solver type not supported.&quot;));</code></pre><h2 id="Logging"><a class="docs-heading-anchor" href="#Logging">Logging</a><a id="Logging-1"></a><a class="docs-heading-anchor-permalink" href="#Logging" title="Permalink"></a></h2><p>TensorFlow has a C++ level logging system. We can conveniently log messages to specific streams using the folloing syntax</p><pre><code class="language-c">VLOG(INFO) &lt;&lt; message;
+VLOG(WARNING) &lt;&lt; message;
+VLOG(ERROR) &lt;&lt; message;
+VLOG(FATAL) &lt;&lt; message;
+VLOG(NUM_SEVERITIES) &lt;&lt; message;</code></pre><h2 id="Windows:-Load-Shared-Library"><a class="docs-heading-anchor" href="#Windows:-Load-Shared-Library">Windows: Load Shared Library</a><a id="Windows:-Load-Shared-Library-1"></a><a class="docs-heading-anchor-permalink" href="#Windows:-Load-Shared-Library" title="Permalink"></a></h2><p>Sometimes you might encounter <code>NotFoundError()</code> when using <code>tf.load_op_library</code> on Windows system, despite that the library you referred does exist. You can then check using <code>Libdl</code></p><pre><code class="language-julia">using Libdl
+dlopen(&lt;MySharedLibrary.dll&gt;)</code></pre><p>and you still get an error</p><pre><code class="language-none">ERROR: could not load library &quot;MySharedLibrary.dll&quot;
+The specified module could not be found. </code></pre><p>This is annoying. The reason is that when you load this shared library on windows, the system looks for all its dependencies. If at least one of the dependent library is not in the path, then the error occurs. To solve this problem, you need a dependency walker, such as <a href="https://gamejolt.com/games/die-exe/36157">die.exe</a>. </p><p>For example, in the following right panel we see a lot of dynamic libraries. They must be in the system path so that we can load the current dynamic library (<code>dlopen(...)</code>). </p><table><tr><th style="text-align: right">Main Window</th><th style="text-align: right">Import Window</th></tr><tr><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/die1.png?raw=true" alt/></td><td style="text-align: right"><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/die2.png?raw=true" alt/></td></tr></table><h2 id="Miscellany"><a class="docs-heading-anchor" href="#Miscellany">Miscellany</a><a id="Miscellany-1"></a><a class="docs-heading-anchor-permalink" href="#Miscellany" title="Permalink"></a></h2><h3 id="Mutable-Inputs"><a class="docs-heading-anchor" href="#Mutable-Inputs">Mutable Inputs</a><a id="Mutable-Inputs-1"></a><a class="docs-heading-anchor-permalink" href="#Mutable-Inputs" title="Permalink"></a></h3><p>Sometimes we want to modify tensors in place. In this case we can use mutable inputs. Mutable inputs must be <a href="../api/#ADCME.Variable-Tuple{Any}"><code>Variable</code></a> and it must be forwarded to one of the output. We consider implement a <code>my_assign</code> operator, with signature</p><pre><code class="language-none">my_assign(u::PyObject, v::PyObject)::PyObject</code></pre><p>Here <code>u</code> is a <code>Variable</code> and we copy the data from <code>v</code> to <code>u</code>. In the <code>MyAssign.cpp</code> file, we modify the input and output specifications to </p><pre><code class="language-c">.Input(&quot;u : Ref(double)&quot;)
+.Input(&quot;v : double&quot;)
+.Output(&quot;w : Ref(double)&quot;)</code></pre><p>In addition, the input tensor is obtained through</p><pre><code class="language-c">Tensor u = context-&gt;mutable_input(0, true);</code></pre><p>The second argument <code>lock_held</code> specifies whether the input mutex is acquired (false) before the operation. Note the output must be a <code>Tensor</code> instead of a reference. </p><p>To forward the input, use</p><pre><code class="language-c">context-&gt;forward_ref_input_to_ref_output(0,0);</code></pre><p>We use the following code snippet to test the program</p><pre><code class="language-julia">my_assign = load_op(&quot;./build/libMyAssign&quot;,&quot;my_assign&quot;)
+u = Variable([0.1,0.2,0.3])
+v = constant(Array{Float64}(1:3))
+u2 = u^2
+w = my_assign(u,v)
+sess = tf.Session()
+init(sess)
+@show run(sess, u)
+@show run(sess, u2)
+@show run(sess, w)
+@show run(sess, u2)</code></pre><p>The output is </p><pre><code class="language-none">[0.1,0.2,0.3]
+[0.1,0.04,0.09]
+[1.0,2.0,3.0]
+[1.0,4.0,9.0]</code></pre><p>We can see that the tensors depending on <code>u</code> are also aware of the assign operator. The complete programs can be downloaded here: <a href="https://kailaix.github.io/ADCME.jl/dev/assets/Codes/Mutables/CMakeLists.txt">CMakeLists.txt</a>, <a href="https://kailaix.github.io/ADCME.jl/dev/assets/Codes/Mutables/MyAssign.cpp">MyAssign.cpp</a>, <a href="https://kailaix.github.io/ADCME.jl/dev/assets/Codes/Mutables/gradtest.jl">gradtest.jl</a>.</p><h3 id="Third-party-Plugins"><a class="docs-heading-anchor" href="#Third-party-Plugins">Third-party Plugins</a><a id="Third-party-Plugins-1"></a><a class="docs-heading-anchor-permalink" href="#Third-party-Plugins" title="Permalink"></a></h3><p>ADCME also allows third-party custom operators hosted on Github. To build your own custom operators, implement your own custom operators in a Github repository. </p><p>Users are free to arrange other source files or other third-party libraries. </p><p>Upon using those libraries in ADCME, users first download those libraries to <code>deps</code> directory via</p><pre><code class="language-julia">pth = install(&quot;OTNetwork&quot;)</code></pre><p><code>pth</code> is the dynamic library product generated with source codes in <code>OTNetwork</code>. The official plugins are hosted on <code>https://github.com/ADCMEMarket</code>. To get access to the custom operators in ADCME, use</p><pre><code class="language-julia">op = load_op_and_grad(pth, &quot;ot_network&quot;; multiple=true)</code></pre><ol><li>https://on-demand.gputechconf.com/ai-conference-2019/T1-3<em>Minseok%20Lee</em>Adding%20custom%20CUDA%20C++%20Operations%20in%20Tensorflow%20for%20boosting%20BERT%20Inference.pdf)</li></ol><h2 id="Troubleshooting"><a class="docs-heading-anchor" href="#Troubleshooting">Troubleshooting</a><a id="Troubleshooting-1"></a><a class="docs-heading-anchor-permalink" href="#Troubleshooting" title="Permalink"></a></h2><p>Here are some common errors you might encounter during custom operator compilation:</p><p><strong>Q: The cmake output for the Julia path is empty.</strong></p><pre><code class="language-text">Julia=</code></pre><p><strong>A:</strong> Check whether <code>which julia</code> outputs the Julia location you are using. </p><p><strong>Q: The cmake output for Python path, Eigen path, etc., is empty.</strong></p><pre><code class="language-text">Python path=
+PREFIXDIR=
+TF_INC=
+TF_ABI=
+TF_LIB_FILE=</code></pre><p><strong>A:</strong> Update ADCME to the latest version and check whether or not the ADCME compiler string is empty</p><pre><code class="language-julia">using ADCME
+ADCME.__STR__</code></pre><p><strong>Q: Julia package precompilation errors that seem not linked to ADCME.</strong></p><p><strong>A:</strong> Remove the corresponding packages using <code>using Pkg; Pkg.rm(XXX)</code> and reinstall those packages. </p><p><strong>Q: Precompilation error linked to ADCME</strong></p><pre><code class="language-text">ERROR: LoadError: ADCME is not properly built; run `Pkg.build(&quot;ADCME&quot;)` to fix the problem.</code></pre><p><strong>A:</strong> Build ADCME using <code>Pkg.build(&quot;ADCME&quot;)</code>. Exit Julia and open Julia again. Check whether <code>deps.jl</code> exists in the <code>deps</code> directory of your Julia package (optional).</p><p><strong>Q: On Mac, the PyPlot package gives the warning: PyPlot is using tkagg backend, which is known to cause crashes on MacOS (#410); use the MPLBACKEND environment variable to request a different backend.</strong></p><p><strong>A:</strong> </p><pre><code class="language-julia">using ADCME
+using Pkg
+CONDA = get_conda()
+run(`$CONDA install -y pyqt`)
+Pkg.build(&quot;PyPlot&quot;)</code></pre><p>This will install a working backend for PyPlot. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tu_implicit/">« Advanced: Automatic Differentiation for Implicit Operators</a><a class="docs-footer-nextpage" href="../tu_debug/">Advanced: Debugging and Profiling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 6 January 2021 06:59">Wednesday 6 January 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
