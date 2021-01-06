@@ -107,6 +107,34 @@ We assume that we can observe the full field data of $u$ as snapshots. We again 
 |5 | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/losses23333_dynamic.png?raw=true)|
 We see that the trust-region is more competitive than the other methods. 
 
+We also show the eigenvalue distribution of the Hessian matrices for Case 3. 
+
+| ADAM        | BFGS | LBFGS| Trust Region |
+|-------------|---| --| --| 
+|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_ADAM_eig.png?raw=true)| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_BFGS_eig.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_LBFGS_eig.png?raw=true)| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_TrustRegion_eig.png?raw=true)|
+|50|31|22|35|
+
+The eigenvalues of Hessian matrices are nonnegative except for the ADAM case, where the optimizer does not converge to a satisfactory local minimum after 5000 iterations. Hence, in what follows, we omit the discussion of ADAM optimizers. 
+
+The third row show the number of positive eigenvalues using the criterion mentioned before. We again see that among all three methods---BFGS, LBFGS, and trust region---the smaller loss function at the last step is associated with a larger number of positive eigenvalues. 
+
+We can interpret the eigenvalues associated with zero eigenvalues as "inactive directions", in the sense that given the gradient norm is small, perturbation in the direction of zero eigenvalues almost does not change the loss function values. In other words, the local minimum found by trust region methods has more active directions than BFGS and LBFGS. The active directions can also be viewed as "effective degrees of freedoms (DOFs)", and thus we conclude trust region methods find a local minimum with smaller loss function due to more effective DOFs. 
+
+The readers may wonder why different local minimums have different effective DOFs. To answer this question, we show the cumulative distribution of the maginitude of weights and biases in the following plot
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/weight_dist.png?raw=true)
+
+The plot shows that BFGS and LBFGS outweight trust region methods in terms of large weights and biases (in terms of maginitudes). Because we use $\tanh$ as activation values, for fixed intermediate activation values, large weights and biases are more likely to cause saturation of activation values, i.e., the inputs to $\tanh$ is large or small and thus the outputs are close to 1. To illustrate the idea, consider a simple function 
+
+$$y = w_1 \tanh(w_2 x + b_2) + b_1$$
+
+Given a reasonable $x$ (e.g., $x\approx 0.1$), if $|w_2|$ or $|b_2|$ is large, $y \approx b_1 \pm w_1$, and thus the effective DOF is 2; if $w_2$ and $b_2$ is close to 0, $y\approx w_1 w_2 x + w_1 b_2 + b_1$, perturbation of all four parameters $w_1$, $w_2$, $b_1$, $b_2$ may contribute to the change of $y$, and thus the effective DOF is 4. In sum, trust region methods yield weights and biases with smaller magnitudes compared to BFGS/LBFGS in general, and thus achieve more effective DOFs. 
+
+How can trust region methods manage the magnitudes of the weights and biases? The benefit is intrinsic to how the trust region method works: it only searches for "optimal solution" with a small neighborhood of the current state. However, BFGS and LBFGS searches for "optimal solution" along a direction aggressively. Given so many local minima, it is very likely that BFGS and LBFGS get trapped in a local minimum with smaller effective DOFs. In this perspective, trust region methods are useful methods for avoiding (instead of "escaping") bad local minima. 
+
+
+
+
 ## Example: FEM for Static Poisson's Equation
 
 Consider the Poisson's equation again. This time, the loss function is formulated as 
