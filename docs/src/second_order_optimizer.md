@@ -110,7 +110,7 @@ We see that the trust-region is more competitive than the other methods.
 We also show the eigenvalue distribution of the Hessian matrices for Case 3. 
 
 | ADAM        | BFGS | LBFGS| Trust Region |
-|-------------|---| --| --| 
+|---|---|---|---| 
 |![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_ADAM_eig.png?raw=true)| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_BFGS_eig.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_LBFGS_eig.png?raw=true)| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/dynamic_TrustRegion_eig.png?raw=true)|
 |50|31|22|35|
 

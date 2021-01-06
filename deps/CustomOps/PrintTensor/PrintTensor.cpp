@@ -71,7 +71,7 @@ public:
     // get the corresponding Eigen tensors for data access
     
     auto in_tensor = in.flat<double>().data();
-    string info_tensor = string(*info.flat<string>().data());
+    string info_tensor = string(info.flat<tstring>().data()->c_str());
     auto out_tensor = out->flat<double>().data();   
 
     // implement your forward function here 
@@ -131,7 +131,6 @@ public:
     // get the corresponding Eigen tensors for data access
     
     auto in_tensor = in.flat<double>().data();
-    auto info_tensor = string(*info.flat<string>().data());
     auto grad_out_tensor = grad_out.flat<double>().data();
     auto out_tensor = out.flat<double>().data();
     auto grad_in_tensor = grad_in->flat<double>().data();   

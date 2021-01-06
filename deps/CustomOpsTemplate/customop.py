@@ -173,11 +173,11 @@ def ForwardOutput():
 ForwardGetData_T1 = Template("""
     auto ${name}_tensor = ${name}.flat<${tp}>().data();""")
 ForwardGetData_T12 = Template("""
-    string ${name}_tensor = string(*${name}.flat<${tp}>().data());""")
+    string ${name}_tensor = string(${name}.flat<tstring>().data()->c_str());""")
 ForwardGetData_T2 = Template("""
     auto ${name}_tensor = ${name}->flat<${tp}>().data();""")
 ForwardGetData_T3 = Template("""
-    string ${name}_tensor = string(*${name}->flat<${tp}>().data());""")
+    string ${name}_tensor = string(${name}->flat<tstring>().data()->c_str());""")
 def ForwardGetData():
     s = ""
     for i in range(len(inputs)):
