@@ -1,8 +1,5 @@
 # PDE/ODE Solvers
 
-!!! info
-    The PDE/ODE solver features are currently under heavy development. We aim to provide a complete set of built-in PDE/ODE solvers.
-
 ## Runge Kutta Method
 The Runge Kutta method is one of the workhorses for solving ODEs. The method is a higher order interpolation to the derivatives. The system of ODE has the form
 ```math
@@ -140,3 +137,81 @@ subplot(133); plot_trajectory(20.0,30.0)
 ```
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/threebody.png?raw=true)
+
+
+## Explicit Newmark Scheme
+
+[`ExplicitNewmark`](@ref) provides an explicit Newmark integrator for 
+
+$$M \ddot{\mathbf{d}} + Z_1 \dot{\mathbf{d}} + Z_2 \mathbf{d} + f = 0$$
+
+The numerical scheme is given by 
+
+$$\left(\frac{1}{\Delta t^2} M + \frac{1}{2\Delta t}Z_1\right)d^{n+1} = \left(\frac{2}{\Delta t^2} M - \frac{1}{2\Delta t}Z_2\right)d^n - \left(\frac{1}{\Delta t^2} M - \frac{1}{2\Delta t}Z_1\right) d^{n-1} - f^n$$
+
+We consider an example:
+
+$$\mathbf{d} = \begin{bmatrix}e^{-t}\\ e^{-2t}\end{bmatrix}$$
+
+and 
+
+$$M = \begin{bmatrix}1 & 2\\3 &4 \end{bmatrix}\qquad Z_1 = \begin{bmatrix}5 & 6\\7 &8 \end{bmatrix}\qquad Z_2 =\begin{bmatrix}9 & 10\\11 &12 \end{bmatrix} $$
+
+The function $f$ is given by 
+
+$$f(t) = -\begin{bmatrix}5e^{-t} + 6e^{-2t}\\ 7 e^{-t} + 12 e^{-2t}\end{bmatrix}$$
+
+We can carry out the simulation using the following codes:
+
+```julia
+using ADCME 
+using PyPlot 
+
+M = Float64[1 2;3 4]
+Z1 = Float64[5 6;7 8]
+Z2 = Float64[9 10;11 12]
+
+NT = 200
+Δt = 1/NT 
+
+F = zeros(NT+1, 2)
+for i = 1:NT+1
+    t = (i-1)*Δt 
+    F[i,1] = -(5exp(-t) + 6exp(-2t))
+    F[i,2] = -(7exp(-t) + 12exp(-2t))
+end 
+F = constant(F)
+
+en = ExplicitNewmark(M, Z1, Z2, Δt)
+
+function condition(i, d)
+    i<=NT
+end
+
+function body(i, d)
+    d0 = read(d, i-1)
+    d1 = read(d, i)
+    d2 = step(en, d0, d1, F[i-1])
+    i+1, write(d, i+1, d2)
+end
+
+d = TensorArray(NT+1)
+d = write(d, 1, [1.0;1.0])
+d = write(d, 2, [exp(-Δt);exp(-2Δt)])
+i = constant(2, dtype = Int32)
+_, d = while_loop(condition, body, [i, d])
+d = stack(d)
+
+sess = Session(); init(sess)
+D = run(sess, d)
+ts = (0:NT)*Δt
+close("all")
+plot(ts, D[:, 1], "b.")
+plot(ts, D[:,2], "g.")
+plot(ts, exp.(-ts), "r--")
+plot(ts, exp.(-2ts), "r--")
+xlabel("t"); ylabel("y")
+savefig("ode_solution.png")
+```
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ode_solution.png?raw=true)
