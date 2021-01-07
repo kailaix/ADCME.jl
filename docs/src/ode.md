@@ -215,3 +215,81 @@ savefig("ode_solution.png")
 ```
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ode_solution.png?raw=true)
+
+
+## Build Your Own Solvers
+
+Sometimes it is helpful to build your own ODE/PDE solvers. The basic routine is 
+
+1. Implement the one step state transition function;
+2. Use [`while_loop`](@ref) to build the time integrator. 
+
+As an example, we build a second-order Runge-Kutta scheme for 
+
+$$\dot{\mathbf{d}} + \beta \mathbf{d} = \mathbf{t}$$
+
+The numerical scheme is
+
+$$\begin{aligned}h_1 &= -\beta \mathbf{d}^n + \mathbf{t}^n\\ h_2 &= -\beta(\mathbf{d}^n + \Delta t h_1) + \mathbf{t}^n\\ \mathbf{d}^{n+1} &= \mathbf{d}^n + \frac{\Delta t}{2}(h_1 + h_2)\end{aligned}$$
+
+The state transition function has the following form 
+
+```julia
+function rk_one_step(d2, t)
+    h1 = -β*d2 + t 
+    h2 = -β*(d2+Δt*h1)+t 
+    d2 + Δt/2*(h1+h2)
+end
+```
+
+Now consider an analytical solution 
+
+$$\mathbf{d} = \begin{bmatrix}e^{-t}\\e^{-2t}\end{bmatrix}, \quad \beta = 2$$
+
+Then we have 
+
+$$\mathbf{t} = \begin{bmatrix}e^{-t}\\0\end{bmatrix}$$
+
+The main code is as follows
+
+```julia
+using ADCME
+using PyPlot
+
+NT = 100
+Δt = 1/NT 
+ts = Array((0:NT)*Δt)
+t = constant([exp.(-ts) zeros(NT+1)])
+β = 2.0
+
+
+
+function condition(i, d)
+    i<=NT
+end
+
+function body(i, d)
+    d0 = read(d, i)
+    d1 = rk_one_step(d0, t[i])
+    i+1, write(d, i+1, d1) 
+end
+
+d = TensorArray(NT+1)
+d = write(d, 1, ones(2))
+i = constant(1, dtype = Int32)
+_, d = while_loop(condition, body, [i, d])
+d = stack(d)
+
+sess = Session(); init(sess)
+D = run(sess, d)
+
+close("all")
+plot(ts, D[:,1], "y.")
+plot(ts, D[:,2], "g.")
+plot(ts, exp.(-ts), "r--")
+plot(ts, exp.(-2ts), "r--")
+xlabel("t"); ylabel("y")
+savefig("ode_solution2.png")
+```
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ode_solution2.png?raw=true)
