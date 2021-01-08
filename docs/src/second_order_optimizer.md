@@ -133,6 +133,17 @@ Given a reasonable $x$ (e.g., $x\approx 0.1$), if $|w_2|$ or $|b_2|$ is large, $
 How can trust region methods manage the magnitudes of the weights and biases? The benefit is intrinsic to how the trust region method works: it only searches for "optimal solution" with a small neighborhood of the current state. However, BFGS and LBFGS searches for "optimal solution" along a direction aggressively. Given so many local minima, it is very likely that BFGS and LBFGS get trapped in a local minimum with smaller effective DOFs. In this perspective, trust region methods are useful methods for avoiding (instead of "escaping") bad local minima. 
 
 
+| ADAM        | BFGS | LBFGS| Trust Region |
+|---|---|---|---| 
+|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_dynamic_ADAM_eig.png?raw=true)| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_dynamic_BFGS_eig.png?raw=true) | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_dynamic_LBFGS_eig.png?raw=true)| ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_dynamic_TrustRegion_eig.png?raw=true)|
+|132|34|41|38|
+
+In the above plot, we show the eigenvalue distribution of the Hessian matrix for 
+
+$$l(\theta) = \sum_{i=1}^n (\kappa_\theta(x_i) - \kappa_i)$$
+
+Here $\kappa_i$ is the true $\kappa$ value at location $x_i$ ($x_i$ is the Gauss quadrature point), and $\kappa_\theta(x_i)$ is the DNN estimate. We get rid of the PDE out of the loss function. The pattern of the eigenvalue distribution---a few positive eigenvalues accompanied by zero eigenvalues---still persists. The difference is that the number of positive eigenvalues are slightly larger than the loss function that couples DNNs and PDEs.This implies that PDEs restricts effective DOFs. We attribute the diminished effective DOFs to the physical constraints imposed by PDEs. 
+
 
 
 ## Example: FEM for Static Poisson's Equation

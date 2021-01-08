@@ -434,7 +434,7 @@ struct ExplicitNewmark
 end 
 
 function Base.:show(io::IO, en::ExplicitNewmark)
-    print("ExplicitNewmark(DOF=$(size(en.A, 1)))")
+    print("ExplicitNewmark(DOF=$(size(en.B, 1)))")
 end
 
 function Base.:step(en::ExplicitNewmark, d0::Union{Array{Float64, 1}, PyObject}, d1::Union{Array{Float64, 1}, PyObject}, f::Union{Array{Float64, 1}, PyObject})
