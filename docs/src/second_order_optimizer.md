@@ -60,6 +60,19 @@ We can see for all cases, the trust-region method provides a much more accurate 
 |-------------|---|---|---|
 | Eigenvalue Distribution | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_lbfgs_eig.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_bfgs_eig.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/static_tr_eig.png?raw=true)|
 
+
+In the following, we show the eigenvalue distribution of the Hessian matrix for 
+
+$$l(\theta) = \sum_{i=1}^n (\kappa_\theta(u_i) - \kappa_i)^2$$
+
+We can see that the Hessian possesses some negative eigenvalues. This implies that the DNN and DNN-FEM loss functions indeed have different curvature structures at the local minimum. The structure is altered by the PDE constraint. 
+
+
+| Optimizer        | L-BFGS-B | BFGS | Trust Region |
+|-------------|---|---|---|
+| Eigenvalue Distribution | ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_static_lbfgs_eig.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_static_bfgs_eig.png?raw=true)|![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/nn_static_tr_eig.png?raw=true)|
+
+
 We also show the number of **negative** eigenvalues for the BFGS and trust region optimizer. Here we use a threshold $\epsilon=10^{-6}$: for a given eigenvalue $\lambda$, it is treated as "positive" if $\lambda>\epsilon \lambda_{\max}$, and "negative" if $\lambda < - \epsilon \lambda_{\max}$, otherwise zero. Here $\lambda_{\max}$ is the maximum eigenvalue. 
 
 | BFGS | Trust Region |
@@ -140,7 +153,7 @@ How can trust region methods manage the magnitudes of the weights and biases? Th
 
 In the above plot, we show the eigenvalue distribution of the Hessian matrix for 
 
-$$l(\theta) = \sum_{i=1}^n (\kappa_\theta(x_i) - \kappa_i)$$
+$$l(\theta) = \sum_{i=1}^n (\kappa_\theta(x_i) - \kappa_i)^2$$
 
 Here $\kappa_i$ is the true $\kappa$ value at location $x_i$ ($x_i$ is the Gauss quadrature point), and $\kappa_\theta(x_i)$ is the DNN estimate. We get rid of the PDE out of the loss function. The pattern of the eigenvalue distribution---a few positive eigenvalues accompanied by zero eigenvalues---still persists. The difference is that the number of positive eigenvalues are slightly larger than the loss function that couples DNNs and PDEs.This implies that PDEs restricts effective DOFs. We attribute the diminished effective DOFs to the physical constraints imposed by PDEs. 
 
