@@ -33,13 +33,13 @@ In this work, we use the method proposed in [^trust-region] to solve Eq. 3 nearl
 
 In this example, we consider the Poisson's equation 
 
-$$\nabla \cdot (\kappa_\theta(x) \nabla u)) = f(x), \;x\in \Omega, \; x\in \partial\Omega$$
+$$\nabla \cdot (\kappa_\theta(u) \nabla u)) = f(x), \;x\in \Omega, \; x\in \partial\Omega$$
 
-Here $\kappa_\theta(x)$ is a deep neural network and $\theta$ is the weights and biases. We discretize $\Omega$ using a uniform grid. Assume we can observe the full field data $u_{obs}$ on the grid points. We can then train the deep neural network using the residual minimization method [^residual-minimization]
+Here $\kappa_\theta(u)$ is a deep neural network and $\theta$ is the weights and biases. We discretize $\Omega$ using a uniform grid. Assume we can observe the full field data $u_{obs}$ on the grid points. We can then train the deep neural network using the residual minimization method [^residual-minimization]
 
 $$\min_\theta \sum_{i,j} (F_{i,j}(\theta) - f_{i,j})^2 \tag{4}$$
 
-Here $F_{i,j}(\theta)$ is the finite difference discretization of $\nabla \cdot (\kappa_\theta(x) \nabla u_{obs}))$ at the grid points. In our benchmark, we add 10% uniform random noise to $f$ and $u_{obs}$ to make the problem more challenging.  
+Here $F_{i,j}(\theta)$ is the finite difference discretization of $\nabla \cdot (\kappa_\theta(u_{obs}) \nabla u_{obs}))$ at the grid points. In our benchmark, we add 10% uniform random noise to $f$ and $u_{obs}$ to make the problem more challenging.  
 
 [^residual-minimization]: Huang, Daniel Z., et al. "Learning constitutive relations from indirect observations using deep neural networks." Journal of Computational Physics (2020): 109491.
 
