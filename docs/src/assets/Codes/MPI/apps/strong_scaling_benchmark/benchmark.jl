@@ -17,7 +17,7 @@ function ufunc(x, y)
 end
 
 n = Int64(round(sqrt(parse(Int64, ARGS[1]))))
-mc = MPIConfig(2400÷n)
+mc = MPIConfig(1800÷n)
 global_to_local, local_to_global = dofmap(mc)
 X, Y = get_xy(mc)
 f_local = rhs.(X, Y)
