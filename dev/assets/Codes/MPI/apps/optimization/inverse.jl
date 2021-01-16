@@ -44,9 +44,6 @@ end
 
 function calculate_loss(x)
     L = run(sess, loss, θ=>x)
-    if mpi_rank()==0
-        @info "Loss = $L"
-    end
     L 
 end
 
@@ -54,10 +51,22 @@ function calculate_gradients(G, x)
     G[:] = run(sess, g, θ=>x)
 end
 
+
+losses  = Float64[]
+function step_callback(x)
+    @info "Loss = $x"
+    push!(losses, x)
+end
+
+
 initial_x = run(sess, θ)
 options = Options()
-result = ADOPT.mpi_optimize(calculate_loss, calculate_gradients, initial_x, LBFGS(), options)
+result = ADOPT.mpi_optimize(calculate_loss, calculate_gradients, initial_x, LBFGS(), options; step_callback = step_callback)
 
+if mpi_rank()==0
+    minimizer = result.minimizer
+    @save "result.jld2" result losses
+end
 
 if mpi_size()>1
     mpi_finalize()
