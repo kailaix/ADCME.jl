@@ -9,6 +9,7 @@ namespace PoissonMPI{
    #include <algorithm>
 
    #define kext(i,j) kext[(i)*(n+2) + (j)]
+   #define uext(i,j) uext[(i)*(n+2) + (j)]
    #define colext(i,j) colext[(i)*(n+2) + (j)]
 
    void GetPoissonMatrixForward(
@@ -47,9 +48,28 @@ namespace PoissonMPI{
 
 
        }
-    
-    
-  }
+     }
 
+      
+       #define xgrad(i,j) xgrad[((i)-1)*n + ((j)-1)]
+       void GetPoissonGrad(
+         double *kext, 
+        const double *xgrad, const double *uext, int N, int n){
 
+         memset(kext, 0, sizeof(double)*(n+2)*(n+2));
+         for(int i = 1; i < n+1; i++){
+           for(int j = 1; j < n+1; j++){
+             kext(i+1, j) += xgrad(i, j) * (uext(i+1, j) - uext(i, j));
+             kext(i-1, j) += xgrad(i, j) * (uext(i-1, j) - uext(i, j));
+             kext(i, j+1) += xgrad(i, j) * (uext(i, j+1) - uext(i, j));
+             kext(i, j-1) += xgrad(i, j) * (uext(i, j-1) - uext(i, j));
+             kext(i, j) += xgrad(i, j) * (-4*uext(i, j) + uext(i+1, j) + \
+                                  uext(i-1, j) + uext(i, j+1) + uext(i, j-1));
+            // printf("xgrad(%d,%d)=%f, uext = %f\n", i, j, xgrad(i,j), uext(i,j));
+           }
+         }
+
+       }
+    
+  
 }

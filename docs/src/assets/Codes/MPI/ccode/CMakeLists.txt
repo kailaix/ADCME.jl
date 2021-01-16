@@ -68,8 +68,10 @@ if (_nvidia_smi AND UNIX)
 else()
   add_library(GetPoissonMatrix SHARED GetPoissonMatrix.cpp)
 endif()
+
 find_library(hypre HYPRE HINTS ${LIBDIR})
 message("hypre: ${hypre}")
+
 
 set_property(TARGET GetPoissonMatrix PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(GetPoissonMatrix ${TF_LIB_FILE} ${hypre})

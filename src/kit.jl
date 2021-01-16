@@ -1,4 +1,4 @@
-export test_jacobian, linedata, lineview, meshdata, 
+export test_jacobian, test_gradients, linedata, lineview, meshdata, 
     meshview, gradview, jacview, PCLview, pcolormeshview,
     animate, saveanim, test_hessian
 
@@ -7,6 +7,42 @@ function require_pyplot()
         error("You must load PyPlot to use this function, e.g., `using PyPlot` or `import PyPlot`")
     end
     Main.PyPlot
+end
+
+
+"""
+    test_gradients(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0, showfig::Bool = true)
+
+Testing the gradients of a vector function `f`:
+`y, J = f(x)` where `y` is a scalar output and `J` is the vector gradient.
+"""
+function test_gradients(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0, showfig::Bool = true)
+    
+    v0 = rand(Float64,length(x0))
+    γs = scale ./10 .^(1:5)
+    err2 = Float64[]
+    err1 = Float64[]
+    f0, J = f(x0)
+    for i = 1:5
+        f1, _ = f(x0+γs[i]*v0)
+        push!(err1, abs(f1-f0))
+        push!(err2, abs(f1-f0-γs[i]*sum(J.*v0)))
+    end
+    if showfig
+        mp = require_pyplot()
+        mp.close("all")
+        mp.loglog(γs, err1, label="Finite Difference")
+        mp.loglog(γs, err2, label="Automatic Differentiation")
+        mp.loglog(γs, γs * 0.5*abs(err1[1])/γs[1], "--",label="\$\\mathcal{O}(\\gamma)\$")
+        mp.loglog(γs, γs.^2 * 0.5*abs(err2[1])/γs[1]^2, "--",label="\$\\mathcal{O}(\\gamma^2)\$")
+        mp.plt.gca().invert_xaxis()
+        mp.legend()
+        mp.savefig("test.png")
+        @info "Results saved to test.png"
+        println("Finite difference: $err1")
+        println("Automatic differentiation: $err2")
+    end
+    return err1, err2
 end
 
 """
