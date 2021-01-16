@@ -53,22 +53,7 @@ endif()
 
 include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC} ${LIBDIR}/../include)
 
-find_program(_nvidia_smi "nvidia-smi")
-if (_nvidia_smi AND UNIX)
-  find_package(CUDA QUIET REQUIRED)
-  SET(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-  SET(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
-  SET(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
-  SET(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
-  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
-  SET(CUDA_PROPAGATE_HOST_FLAGS ON)
-  add_definitions(-DGOOGLE_CUDA)
-  message("Compiling GPU-compatible custom operator!")
-  cuda_add_library(GetPoissonMatrix SHARED GetPoissonMatrix.cpp GetPoissonMatrix.cu)
-else()
-  add_library(GetPoissonMatrix SHARED GetPoissonMatrix.cpp)
-endif()
-
+add_library(GetPoissonMatrix SHARED GetPoissonMatrix.cpp)
 find_library(hypre HYPRE HINTS ${LIBDIR})
 message("hypre: ${hypre}")
 
