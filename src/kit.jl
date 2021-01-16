@@ -16,7 +16,8 @@ end
 Testing the gradients of a vector function `f`:
 `y, J = f(x)` where `y` is a scalar output and `J` is the vector gradient.
 """
-function test_gradients(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0, showfig::Bool = true)
+function test_gradients(f::Function, x0::Array{Float64, 1}; 
+    scale::Float64 = 1.0, showfig::Bool = true, mpi::Bool = false)
     
     v0 = rand(Float64,length(x0))
     γs = scale ./10 .^(1:5)
@@ -28,7 +29,10 @@ function test_gradients(f::Function, x0::Array{Float64, 1}; scale::Float64 = 1.0
         push!(err1, abs(f1-f0))
         push!(err2, abs(f1-f0-γs[i]*sum(J.*v0)))
     end
-    if showfig
+    if showfig 
+        if mpi && mpi_rank()>0
+            return 
+        end
         mp = require_pyplot()
         mp.close("all")
         mp.loglog(γs, err1, label="Finite Difference")
