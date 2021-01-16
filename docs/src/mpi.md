@@ -42,14 +42,6 @@ Just like when it is difficult to use automatic differentiation to implement a f
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpiadjoint.png?raw=true)
 
-Another limitation for ADCME is that currently, for performance, we need to set the total number of threads per MPI process to be 1
-```julia
-config = tf.ConfigProto(inter_op_parallelism_threads=1)
-sess = Session(config = config)
-```
-Otherwise, there will be significant cost for synchronization between different threads for the MPI operation kernel. Setting `inter_op_parallelism_threads=1` limits ADCME to execute one kernel at a time, although each kernel can still utilize multiple threads. One solution is to use a specialized executed policy for MPI kernels---they should always executed by one thread. Nevertheless, the optimal policy is application dependent and the current model fits a broad range of applications. 
-
-
 
 
 ## Implementing Custom Operators using MPI

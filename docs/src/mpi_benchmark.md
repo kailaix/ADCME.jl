@@ -50,6 +50,21 @@ Here $\kappa(x, y)$ is approximated by a neural network $\kappa_\theta(x,y) = \m
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/poisson_cg.png?raw=true) 
 
 
+The domain decomposition is as follows:
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpi/grid.png?raw=true) 
+
+The domain $[0,1]^2$ is divided into $N\times N$ blocks, and each block contains $n\times n$ degrees of freedom. The domain is padded with boundary nodes, which are eliminated from the discretized equation. The grid size is 
+
+$$h = \frac{1}{Nn+1}$$
+
+We use a finite difference method for discretizing the Poisson's equation, which has the following form
+
+$$\begin{aligned}(\kappa_{i+1, j}+\kappa_{ij})u_{i+1,j} + (\kappa_{i-1, j}+\kappa_{ij})u_{i-1,j} &\\ 
++ (\kappa_{i,j+1}+\kappa_{ij})u_{i,j+1} + (\kappa_{i, j-1}+\kappa_{ij})u_{i,j-1} &\\ 
+-(\kappa_{i+1, j}+\kappa_{i-1, j}+\kappa_{i,j+1}+\kappa_{i, j-1}+4\kappa_{ij})u_{ij} &\\ 
+= 2h^2f_{ij}
+\end{aligned}$$
 
 We show the strong scaling with a fixed problem size $1800 \times 1800$ (mesh size, which implies the matrix size is around 32 million). We also show the weak scaling where each MPI processor owns a $300\times 300$ block. For example, a problem with 3600 processors has the problem size $90000\times 3600 \approx 0.3$ billion.
 
