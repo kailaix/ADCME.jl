@@ -15,6 +15,9 @@ mutable struct MPIConfig
     function MPIConfig(n::Int64)
         r = mpi_size()
         m = Int64(round(sqrt(r)))
+        if m^2 != r 
+            error("$r must be a squared number")
+        end
         h = 1/(n*m+1)
         new(n, m, h)
     end

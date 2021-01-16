@@ -1,4 +1,5 @@
-include("../mpiops.jl")
+include("../../ccode/mpiops.jl")
+using ADOPT 
 
 mpi_init()
 
@@ -15,34 +16,48 @@ function ufunc(x, y)
     x * (1-x) * y * (1-y)
 end
 
-mc = MPIConfig(50)
+mc = MPIConfig(300)
 global_to_local, local_to_global = dofmap(mc)
 X, Y = get_xy(mc)
 f_local = rhs.(X, Y)
 using Random; Random.seed!(233)
 θ = Variable(fc_init([2,20,20,20,1]))
 θ_shared = mpi_bcast(θ)
-κ_local = (fc([X'[:] Y'[:]], [20,20,20,1], θ_shared) + 5.0)|>squeeze
+κ_local = abs(fc([X'[:] Y'[:]], [20,20,20,1], θ_shared) + 5.0)|>squeeze
 κ_local = reshape(κ_local, (mc.n, mc.n))
 u_local = poisson_solver(κ_local, f_local, mc)
-u = mpi_gather(u_local)[global_to_local]
 
-loss = sum(u^2)
+@load "data/$(mpi_size())_$(mpi_rank()).jld2" U 
+
+loss = sum(mpi_sum((u_local - U)^2))
 g = gradients(loss, θ)
+
 
 sess = Session(); init(sess)
 
+
+L = run(sess, loss)
+
+if mpi_rank()==0
+    @info "Initial loss = $L"
+end 
+
 function calculate_loss(x)
-    run(sess, loss, θ=>x)
+    L = run(sess, loss, θ=>x)
+    if mpi_rank()==0
+        @info "Loss = $L"
+    end
+    L 
 end
 
-function calculate_gradients(x)
-    run(sess, g, θ=>x)
+function calculate_gradients(G, x)
+    G[:] = run(sess, g, θ=>x)
 end
 
-f(x) = (calculate_loss(x), calculate_gradients(x))
+initial_x = run(sess, θ)
+options = Options()
+result = ADOPT.mpi_optimize(calculate_loss, calculate_gradients, initial_x, LBFGS(), options)
 
-test_gradients(f, run(sess, θ), mpi=true)
 
 if mpi_size()>1
     mpi_finalize()
