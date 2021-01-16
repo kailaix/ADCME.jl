@@ -1,4 +1,4 @@
-salloc --nodes=20
+# salloc --nodes=20
 
 for n in 1 4 9 16 25 36 49 64
 do 
