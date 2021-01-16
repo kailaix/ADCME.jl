@@ -1,0 +1,7 @@
+GetPoissonMatrix
+double kext(?,?)
+int64 colext(?,?)
+int64 colssize()
+double deps()
+int64 cols(?) -> output 
+double vals(?) -> output
