@@ -108,6 +108,13 @@ The following plots show the speedup and efficiency
 
 We can see that the 4 cores have smaller runtime compared to 1 core. 
 
+Interested readers can go to [here](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/MPI) for implementations. To compile the codes, make sure that MPI and Hypre is available (see [`install_openmpi`](@ref) and [`install_hypre`](@ref)) and run the following script:
+```julia
+using ADCME 
+change_directory("ccode/build")
+ADCME.cmake()
+ADCME.make()
+```
 
 
 ## Acoustic Seismic Inversion
