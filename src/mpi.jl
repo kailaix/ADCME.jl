@@ -269,12 +269,12 @@ function mpi_sendrecv(a::Union{Array{Float64}, Float64, PyObject}, dest::Int64, 
 end
 
 """
-    mpi_gather(u::Union{Array{Float64, 1}, PyObject})
+    mpi_gather(u::Union{Array{Float64, 1}, PyObject}, deps::Union{Missing, PyObject} = missing)
 
 Gathers all the vectors from different processes to the root process. The function returns 
 a long vector which concatenates of local vectors in the order of process IDs. 
 """
-function mpi_gather(u::Union{Array{Float64, 1}, PyObject})
+function mpi_gather(u::Union{Array{Float64, 1}, PyObject}, deps::Union{Missing, PyObject} = missing)
     mpigather_ = load_system_op("mpigather")
     u = convert_to_tensor(Any[u], [Float64]); u = u[1]
     out = mpigather_(u)
@@ -408,7 +408,7 @@ We have
 ```julia
 rows = Int32[0;1]
 ncols = Int32[2;3]
-cols = Int32[0;3;5;6;7]
+cols = Int32[0;3;1,2,3]
 values = [1.;1.;1.;2.;1.]
 iupper = ilower + 2
 ```
@@ -462,6 +462,10 @@ function mpi_SparseTensor(rows::Union{Array{Int32,1}, PyObject}, ncols::Union{Ar
     @assert ilower <= iupper 
     @assert iupper <= N
     oplibpath = load_plugin_MPITensor()
+    rows, ncols, cols, vals = convert_to_tensor(
+        [rows, ncols, cols, vals],
+        [Int32, Int32, Int32, Float64]
+    )
     mpi_SparseTensor(rows, ncols, cols, vals, ilower, iupper, N, oplibpath)
 end
 
@@ -484,6 +488,7 @@ end
 
 function LinearAlgebra.:\(sp::mpi_SparseTensor, b::Union{Array{Float64, 1}, PyObject})
     b = constant(b)
+    @assert length(b)==sp.iupper - sp.ilower + 1
     out = mpi_tensor_solve(sp.oplibpath, sp.rows,sp.ncols,
                 sp.cols,sp.values,b,
                 sp.ilower,sp.iupper,options.mpi.solver, options.mpi.printlevel)
