@@ -55,8 +55,35 @@ function poisson_solver(κ_local, f_local, mc::MPIConfig)
     h = mc.h
     f_local = constant(f_local)
     rhs = 2*h^2*reshape(f_local, (-1,))
-    global A = get_poisson_matrix(κ_ext, mc; deps = f_local[1,1])
-    A\rhs 
+
+    poisson_linear_solver(κ_ext, rhs, mc)
+end
+
+function poisson_linear_solver(κ_ext, rhs, mc)
+    function forward(κ_ext)
+        A = get_poisson_matrix(κ_ext, mc)
+        A\rhs 
+    end
+
+    function backward(du, u, κ_ext)
+        A = get_poisson_matrix(κ_ext, mc)
+        B = A'
+        x = -(B\du)
+        x = reshape(x, (mc.n, mc.n))
+        u = reshape(u, (mc.n, mc.n))
+        uext = mpi_halo_exchange(u, mc.N, mc.N; fill_value = 0.0)
+        out = get_poisson_grad(x, uext, mc.N)
+        set_shape(out, (mc.n+2, mc.n+2))
+    end
+
+    register(forward, backward)(κ_ext)
+end
+
+
+function get_poisson_grad(x,uext,N)
+    get_poisson_grad_ = load_op_and_grad("$(@__DIR__)/build/libGetPoissonMatrix","get_poisson_grad")
+    x,uext,cn = convert_to_tensor(Any[x,uext,N], [Float64,Float64,Int64])
+    get_poisson_grad_(x,uext,cn)
 end
 
 function dofmap(mc::MPIConfig)
