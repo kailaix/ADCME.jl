@@ -13,7 +13,7 @@
 
 The ADCME library (**A**utomatic **D**ifferentiation Library for **C**omputational and **M**athematical **E**ngineering) aims at general and scalable inverse modeling in scientific computing with gradient-based optimization techniques. It is built on the deep learning framework, **graph-mode [TensorFlow](https://www.tensorflow.org/)**, which provides the automatic differentiation and parallel computing backend. The dataflow model adopted by the framework makes it suitable for high performance computing and inverse modeling in scientific computing. The design principles and methodologies are summarized in the [slides](https://kailaix.github.io/ADCMESlides/ADCME.pdf).
 
-Check out more about [slides and videos on ADCME](https://kailaix.github.io/ADCME.jl/dev/resources/)!
+Check out more about [slides and videos on ADCME](https://kailaix.github.io/ADCME.jl/dev/videos_and_slides/)!
 
 | [Install ADCME and Get Started (Windows, Mac, and Linux)](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww)                                | [Scientific Machine Learning for Inverse Modeling](https://www.youtube.com/playlist?list=PLKBz8ohiA3In-ZlvBKbvj_TIQEaboGC9_)             | [Solving Inverse Modeling Problems with ADCME](https://www.youtube.com/playlist?list=PLKBz8ohiA3ImaNykOv56ONnCofEQMg3B8)                 | ...**more** on [ADCME Youtube Channel](https://www.youtube.com/channel/UCeaZFluNatYpkIYcq2TTklw/playlists)!                        |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
