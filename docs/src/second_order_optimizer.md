@@ -87,7 +87,7 @@ We also analyze the direction of the search direction $p_k$ in the BFGS optimize
 
 $$\begin{aligned}\cos(\theta_1) &= \frac{-p_k^T g_k}{\|p_k\|\|g_k\|} \\ \cos(\theta_2) &= \frac{p_k^T q_k}{\|p_k\|\|q_k\|}\end{aligned}$$
 
-Here $q_k$ is the direction for the **Cauchy point**, which is the descent direction in the trust-region method
+Here $q_k$ is the direction for the **Newton point**
 
 $$q_k = -H_k^{-1}g_k$$
 
