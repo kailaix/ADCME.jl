@@ -87,7 +87,7 @@ We also analyze the direction of the search direction $p_k$ in the BFGS optimize
 
 $$\begin{aligned}\cos(\theta_1) &= \frac{-p_k^T g_k}{\|p_k\|\|g_k\|} \\ \cos(\theta_2) &= \frac{p_k^T q_k}{\|p_k\|\|q_k\|}\end{aligned}$$
 
-Here $q_k$ is the direction for the **Newton point**
+Here $q_k$ is the direction for the **Newton's point**
 
 $$q_k = -H_k^{-1}g_k$$
 
@@ -100,7 +100,7 @@ The two quantities are shown in the following plots (since the trust-region meth
 There are two conclusions to draw from the plots
 
 1. The search direction of the BFGS optimizer deviates from the gradient descent method. 
-2. The search direction of the BFGS optimizer is not very correlated with the Newton point direction; this indicates the search direction poorly recognizes the negative curvature directions. 
+2. The search direction of the BFGS optimizer is not very correlated with the Newton's point direction; this indicates the search direction poorly recognizes the negative curvature directions. 
 
 ## Example: Heat Equation
 
@@ -347,7 +347,7 @@ The problem itself is nonconvex and has many local minima---different from the c
 
 ## Limitations 
 
-Despite many promising features of the trust region method, it is not without limitations, which we want to discuss here. The current trust-region method requires calculating the Hessian matrix. Firstly, computing the Hessian matrix can be technically difficult, especially when DNNs are coupled with a sophisticated numerical PDE solver. There are many existing techniques for computing the Hessian. The TensorFlow backend supports Hessian computation concurrently, but it requires users to implement rules for calculating "gradients of gradients". Additionally, TensorFlow uses forward propagation to evaluate the Hessian. This means that TensorFlow loops over each gradient component and calculating a row of Hessian at a time. This does not leverage the symmetry of Hessians and can be quite inefficient if the number of unknowns is large. Another approach, edge pushing algorithms, uses one backward pass to evaluate the Hessian. This approach takes advantage of the symmetry of Hessians. However, the implementation can be quite convolved and computations can be expensive in some scenarios. We will discuss0 in more details in another post. 
+Despite many promising features of the trust region method, it is not without limitations, which we want to discuss here. The current trust-region method requires calculating the Hessian matrix. Firstly, computing the Hessian matrix can be technically difficult, especially when DNNs are coupled with a sophisticated numerical PDE solver. There are many existing techniques for computing the Hessian. The TensorFlow backend supports Hessian computation concurrently, but it requires users to implement rules for calculating "gradients of gradients". Additionally, TensorFlow uses reverse-mode automatic differentiation to evaluate the Hessian. This means that TensorFlow loops over each gradient component and calculating a row of Hessian at a time. This does not leverage the symmetry of Hessians and can be quite inefficient if the number of unknowns is large. Another approach, the edge pushing algorithm, uses one backward pass to evaluate the Hessian. This approach takes advantage of the symmetry of Hessians. However, the implementation can be quite convolved and computations can be expensive in some scenarios. We will cover this topic in more details in [another post](https://kailaix.github.io/ADCME.jl/dev/second_order_pcl/#Second-Order-Physics-Constrained-Learning). 
 
 
 ## Conclusion
