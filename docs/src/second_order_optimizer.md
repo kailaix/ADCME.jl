@@ -100,7 +100,7 @@ The two quantities are shown in the following plots (since the trust-region meth
 There are two conclusions to draw from the plots
 
 1. The search direction of the BFGS optimizer deviates from the gradient descent method. 
-2. The search direction of the BFGS optimizer is not very correlated with the Cauchy point direction; this indicates the search direction poorly recognizes the negative curvature directions. 
+2. The search direction of the BFGS optimizer is not very correlated with the Newton point direction; this indicates the search direction poorly recognizes the negative curvature directions. 
 
 ## Example: Heat Equation
 
