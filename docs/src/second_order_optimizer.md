@@ -143,6 +143,11 @@ $$y = w_1 \tanh(w_2 x + b_2) + b_1$$
 
 Given a reasonable $x$ (e.g., $x\approx 0.1$), if $|w_2|$ or $|b_2|$ is large, $y \approx b_1 \pm w_1$, and thus the effective DOF is 2; if $w_2$ and $b_2$ is close to 0, $y\approx w_1 w_2 x + w_1 b_2 + b_1$, perturbation of all four parameters $w_1$, $w_2$, $b_1$, $b_2$ may contribute to the change of $y$, and thus the effective DOF is 4. In sum, trust region methods yield weights and biases with smaller magnitudes compared to BFGS/LBFGS in general, and thus achieve more effective DOFs. 
 
+This conjecture is confirmed by the following plot, which shows the histogram of the intermediate activation values. We fixed the input $x = (0.5,0.5)$ (the midpoint of the computational domain), and collected all the outputs of the $\tanh$ function within the DNN. The figure shows that compared to the trust region method, the activation values of ADAM, BFGS and LBFGS are more concentrated near the extreme values $-1$ and $1$. 
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/activation_dist.png?raw=true)
+
+
 How can trust region methods manage the magnitudes of the weights and biases? The benefit is intrinsic to how the trust region method works: it only searches for "optimal solution" with a small neighborhood of the current state. However, BFGS and LBFGS searches for "optimal solution" along a direction aggressively. Given so many local minima, it is very likely that BFGS and LBFGS get trapped in a local minimum with smaller effective DOFs. In this perspective, trust region methods are useful methods for avoiding (instead of "escaping") bad local minima. 
 
 
