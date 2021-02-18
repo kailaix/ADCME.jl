@@ -1,0 +1,5 @@
+RollingFunctions
+double u(?)
+int64 window()
+string op()
+double out(?) -> output

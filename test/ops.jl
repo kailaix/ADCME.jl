@@ -473,3 +473,19 @@ end
     sol = solve_batch(a, b)
     @test run(sess, sol) ≈ (a\b')'
 end
+
+@testset "rolling functions" begin 
+    n = 10
+    window = 9
+    # TODO: specify your input parameters
+    inu = rand(n)
+    for ops in [(rollsum, sum), (rollmean, mean), (rollstd, std), (rollvar, var)]
+        @info ops
+        u = ops[1](inu,window)
+        out = zeros(n-window+1)
+        for i = window:n
+            out[i-window+1] = ops[2](inu[i-window+1:i])
+        end
+        @test maximum(abs.(run(sess, u)-out )) < 1e-8
+    end
+end

@@ -70,7 +70,8 @@ tr,
 tril, 
 triu,
 solve_batch,
-swish, hard_sigmoid, hard_swish, concat_elu, concat_hard_swish, concat_relu, fourier
+swish, hard_sigmoid, hard_swish, concat_elu, concat_hard_swish, concat_relu, fourier,
+rollmean, rollsum, rollvar, rollstd
 
 
 @doc raw"""
@@ -1262,3 +1263,31 @@ function fourier(x, terms::Int64=10)
     end
     hcat(list...)
 end
+
+function __rollfunction(u, window::Int64, op)
+    rolling_functions_ = load_op_and_grad(libadcme,"rolling_functions")
+    u,window_ = convert_to_tensor(Any[u,window], [Float64,Int64])
+    out = rolling_functions_(u,window_,op)
+    if !isnothing(length(u))
+        set_shape(out, (length(u) - window + 1,))
+    else
+        out 
+    end
+end
+
+function rollmean(u, window::Int64)
+    __rollfunction(u, window, "mean")
+end
+
+function rollsum(u, window::Int64)
+    __rollfunction(u, window, "sum")
+end
+
+function rollvar(u, window::Int64)
+    __rollfunction(u, window, "var")
+end
+
+function rollstd(u, window::Int64)
+    __rollfunction(u, window, "std")
+end
+

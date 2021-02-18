@@ -85,6 +85,7 @@ add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp
   RadialBasisFunction/Functions.cpp RadialBasisFunction/RadialBasisFunction.cpp 
   RadialBasisFunction/Impl.cpp InterpDimOne/InterpDimOne.cpp
   SparseCompress/SparseCompress.cpp
+  RollingFunctions/RollingFunctions.cpp
   ${MPI_OPS})
 
 set_property(TARGET adcme PROPERTY POSITION_INDEPENDENT_CODE ON)
