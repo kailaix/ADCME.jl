@@ -46,3 +46,5 @@ docs/src/assets/mcmc
 test/*.gif
 test/*.png
 docs/src/assets/Codes/OptimizationResearch/*
+
+Manifest.toml
