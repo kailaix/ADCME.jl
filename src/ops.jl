@@ -1267,6 +1267,11 @@ end
 function __rollfunction(u, window::Int64, op)
     rolling_functions_ = load_op_and_grad(libadcme,"rolling_functions")
     u,window_ = convert_to_tensor(Any[u,window], [Float64,Int64])
+
+    @assert isnothing(size(u)) || length(size(u))==1
+    @assert length(size(u))>=window
+    @assert window>1 
+
     out = rolling_functions_(u,window_,op)
     if !isnothing(length(u))
         set_shape(out, (length(u) - window + 1,))
