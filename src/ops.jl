@@ -1275,18 +1275,77 @@ function __rollfunction(u, window::Int64, op)
     end
 end
 
+@doc raw"""
+    rollmean(u, window::Int64)
+
+Returns the rolling mean given a window size `m`
+
+$$o_k = \frac{\sum_{i=k}^{k+m-1} u_i}{m}$$
+
+## Rolling functions in ADCME:
+- [`rollmean`](@ref): rolling mean 
+- [`rollsum`](@ref): rolling sum 
+- [`rollvar`](@ref): rolling variance 
+- [`rollstd`](@ref): rolling standard deviation
+"""
 function rollmean(u, window::Int64)
     __rollfunction(u, window, "mean")
 end
 
+@doc raw"""
+    rollsum(u, window::Int64)
+
+Returns the rolling sum given a window size `m`
+
+$$o_k = \sum_{i=k}^{k+m-1} u_i$$
+
+
+## Rolling functions in ADCME:
+- [`rollmean`](@ref): rolling mean 
+- [`rollsum`](@ref): rolling sum 
+- [`rollvar`](@ref): rolling variance 
+- [`rollstd`](@ref): rolling standard deviation
+"""
 function rollsum(u, window::Int64)
     __rollfunction(u, window, "sum")
 end
 
+@doc raw"""
+    rollvar(u, window::Int64)
+
+Returns the rolling variance given a window size `m`
+
+$$o_k = \frac{\sum_{i=k}^{k+m-1} (u_i - m_i)^2}{m-1}$$
+
+Here $m_i$ is the rolling mean computed using [`rollmean`](@ref)
+
+
+## Rolling functions in ADCME:
+- [`rollmean`](@ref): rolling mean 
+- [`rollsum`](@ref): rolling sum 
+- [`rollvar`](@ref): rolling variance 
+- [`rollstd`](@ref): rolling standard deviation
+"""
 function rollvar(u, window::Int64)
     __rollfunction(u, window, "var")
 end
 
+@doc raw"""
+    rollstd(u, window::Int64)
+
+Returns the rolling standard deviation given a window size `m`
+
+$$o_k = \sqrt{\frac{\sum_{i=k}^{k+m-1} (u_i - m_i)^2}{m-1}}$$
+
+Here $m_i$ is the rolling mean computed using [`rollmean`](@ref)
+
+
+## Rolling functions in ADCME:
+- [`rollmean`](@ref): rolling mean 
+- [`rollsum`](@ref): rolling sum 
+- [`rollvar`](@ref): rolling variance 
+- [`rollstd`](@ref): rolling standard deviation
+"""
 function rollstd(u, window::Int64)
     __rollfunction(u, window, "std")
 end
