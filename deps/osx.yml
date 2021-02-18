@@ -11,8 +11,8 @@ dependencies:
   - certifi=2020.6.20=py37hc8dfbb8_0
   - cffi=1.14.0=py37hc512035_1
   - chardet=3.0.4=py37_1003
-  - clang=10.0.1=default_hf57f61e_0
-  - clangxx=10.0.1=default_hf57f61e_0
+  - clang
+  - clangxx
   - cloudpickle=1.5.0=py_0
   - conda=4.8.4=py37hc8dfbb8_2
   - conda-package-handling=1.6.1=py37h1de35cc_0
@@ -32,8 +32,6 @@ dependencies:
   - ld64_osx-64=530=h3c32e8a_4
   - libblas=3.8.0=17_openblas
   - libcblas=3.8.0=17_openblas
-  - libclang-cpp10=10.0.1=default_hf57f61e_0
-  - libcxx=10.0.0=1
   - libedit=3.1.20181209=hb402a30_0
   - libffi=3.3=h0a44026_1
   - libgcc=4.8.5=1
