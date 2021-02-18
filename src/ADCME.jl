@@ -99,5 +99,6 @@ module ADCME
     include("kit.jl")
     include("rbf.jl")
     include("pcl.jl")
+    include("sqlite.jl")
 end
 

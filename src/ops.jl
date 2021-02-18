@@ -1269,7 +1269,7 @@ function __rollfunction(u, window::Int64, op)
     u,window_ = convert_to_tensor(Any[u,window], [Float64,Int64])
 
     @assert isnothing(size(u)) || length(size(u))==1
-    @assert length(size(u))>=window
+    @assert length(u)>=window
     @assert window>1 
 
     out = rolling_functions_(u,window_,op)
