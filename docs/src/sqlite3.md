@@ -7,6 +7,9 @@ If you have a massive number of simulations and results from different simulatio
 
 Database allows simulation parameters and results to be stored in a permanent storage, and  records can be inserted, queried, updated, and deleted as we proceed in our research. Specifically, databases are usually designed in a way that we can concurrently read and write in a transactional manner, which ensures that the reads are writes are done correctly even in the case of data conflicts. This characteristic is very useful for parallel simulations. Another important feature of databases is "indexing". By indexing tables, we can manipute tables in a more efficient way. 
 
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/sqlite.png?raw=true)
+
+
 SQL is a standad language for accessing and manipulating databases. The four main operations in SQLs are: create, insert, update, and delete. More advanced commands include `where`, `groupby`, `join`, etc. In ADCME, we implemented an interface to SQLite, a relational database management system contained in a C library. SQLite provides basic SQL engines, which is compliant to the SQL standard. One particular feature of SQLite is that the database is a single file or in-memory. This simplifies the client and server SQL logic, but bears the limitation of scalability. Nevertheless, SQLite is more than sufficient to store and manipulate our simulation parameters and results (typically a link to the data folder). 
 
 The introduction primarily focuses on some commonly used features of database management in ADCME. 

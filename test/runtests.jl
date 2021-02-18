@@ -8,8 +8,8 @@ using SparseArrays
 using Test
 using Random
 
-conda = get_conda()
-run_with_env(`$conda install -y -c anaconda matplotlib`)
+PIP = get_pip()
+run_with_env(`$PIP install matplotlib`)
 using PyPlot
 
 
