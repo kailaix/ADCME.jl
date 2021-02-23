@@ -7,6 +7,28 @@ mutable struct Database
     filename::String 
 end
 
+"""
+    Database(filename::Union{Missing, String} = missing; 
+        commit_after_execute::Bool = true)
+
+Creates a database from `filename`. If `filename` is not provided, an in-memory database is created. 
+If `commit_after_execute` is false, no commit operation is performed after each [`execute`](@ref).
+
+- do block syntax:
+```julia 
+Database() do db
+    execute(db, "create table mytable (a real, b real)")
+end
+```
+The database is automatically closed after execution. Therefore, if execute is a query operation, 
+users need to store the results in a global variable. 
+
+- Query meta information 
+```julia 
+keys(db) # all tables 
+keys(db, "mytable") # all column names in `db.mytable` 
+```
+"""
 function Database(filename::Union{Missing, String} = missing; 
     commit_after_execute::Bool = true)
     filename = coalesce(filename, ":memory:")
@@ -16,6 +38,23 @@ function Database(filename::Union{Missing, String} = missing;
     Database(conn, c, sqlite3, commit_after_execute, filename)
 end
 
+function Database(f::Function, args...; kwargs...)
+    db = Database(args...;kwargs...)
+    out = f(db)
+    close(db)
+    out 
+end
+
+"""
+    execute(db::Database, sql::String, args...)
+
+Executes the SQL statement `sql` in `db`. Users can also use the do block syntax. 
+```julia 
+execute(db) do 
+    "create table mytable (a real, b real)"
+end
+```
+"""
 function execute(db::Database, sql::String, args...)
     if length(args)>=1
         db.c.executemany(sql, args[1])
@@ -28,9 +67,20 @@ function execute(db::Database, sql::String, args...)
     db.c
 end
 
+function execute(f::Function, db::Database; kwargs...)
+    sql = f()
+    execute(db, sql; kwargs...)
+end
+
+"""
+    commit(db::Database)
+
+Commits changes to `db`.
+"""
 function commit(db::Database)
     db.conn.commit()
 end
+
 
 function Base.:close(db::Database)
     commit(db)

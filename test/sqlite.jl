@@ -34,3 +34,43 @@
     commit(db)
     close(db)
 end
+
+
+@testset "sqlite do syntax" begin 
+    db = Database("temp.db")
+    execute(db) do 
+"""
+CREATE TABLE simulation_parameters (
+    desc text,
+    rho real, 
+    gamma real, 
+    dt real, 
+    h real 
+    )
+"""
+    end 
+
+    @test "simulation_parameters" in keys(db)
+    
+    close(db)
+    rm("temp.db", force=true)
+
+    Database("temp.db") do db 
+        execute(db) do 
+            """
+                CREATE TABLE simulation_parameters (
+                    desc text,
+                    rho real, 
+                    gamma real, 
+                    dt real, 
+                    h real 
+                    )
+            """
+        end
+    end
+
+    db = Database("temp.db")
+    @test "simulation_parameters" in keys(db)
+    close(db)
+    rm("temp.db", force=true)
+end
