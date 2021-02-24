@@ -54,10 +54,27 @@ execute(db) do
     "create table mytable (a real, b real)"
 end
 ```
+
+`execute` can also be used to insert a batch of records
+```julia 
+t1 = rand(10)
+t2 = rand(10)
+param = collect(zip(t1, t2))
+execute(db, "INSERT TO mytable VALUES (?,?)", param)
+```
+or 
+```julia
+execute(db, "INSERT TO mytable VALUES (?,?)", t1, t2)
+```
 """
 function execute(db::Database, sql::String, args...)
     if length(args)>=1
-        db.c.executemany(sql, args[1])
+        if length(args)>1
+            param = collect(zip(args...))
+        else
+            param = args[1]
+        end
+        db.c.executemany(sql, param)
     else
         db.c.execute(sql)
     end
@@ -104,4 +121,14 @@ function Base.:keys(db::Database, table::String)
         push!(columns, r[1])
     end
     columns
+end
+
+function Base.:delete!(db::Database, table::String)
+    execute(db, "drop table $table")
+    commit(db)
+end
+
+function Base.:getindex(db::Database, table::String)
+    c = execute(db, "select * from $table")
+    collect(c)
 end
