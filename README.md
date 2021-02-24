@@ -55,13 +55,13 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 |---------| ----- |-----|-----------------|
 | Linux   |✔ |  ✔   | ✔               |
 | MacOS   |✔ |  ✕   | ✔               |
-| Windows* | ✔ | ✔   | ✔               |
+| Windows | ✔ | ✔   | ✔               |
 
 
-❗ FOR WINDOWS USERS: Please first install the [Microsoft Visual Studio 15 (2017)](https://visualstudio.microsoft.com/vs/older-downloads/) compiler and select **Desktop Development with C++**. See [the instruction](https://kailaix.github.io/ADCME.jl/dev/) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for details. 
+❗ FOR WINDOWS USERS: See [the instruction](https://kailaix.github.io/ADCME.jl/dev/windows_installation.md) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for installation details. 
 
 
-2. Install `ADCME`
+1. Install `ADCME`
 ```
 using Pkg
 Pkg.add("ADCME")
