@@ -240,7 +240,7 @@ else
     adding("CMAKE", cmake)
 end
 if Sys.iswindows()
-    adding("MAKE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild")
+    adding("MAKE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild.exe")
 else 
     adding("MAKE", joinpath(BINDIR, "make"))
 end 
