@@ -55,3 +55,21 @@ function Base.:keys(db::Database, table::String)
     end
     columns
 end
+
+
+function Base.:push!(db::Database, table::String, nts::NamedTuple...)
+    v1 = []
+    v2 = []
+    for nt in nts         
+        cols = propertynames(nt)
+        push!(v1, join(["\"$c\"" for c in cols], ","))
+        push!(v2, join([isnothing(nt[i]) ? "NULL" : "\"$(nt[i])\"" for i = 1:length(nt)], ","))
+    end
+    v1 = join(v1, ",")
+    v2 = join(v2, ",")
+   execute(db, 
+"""
+    INSERT OR REPLACE INTO $table ($v1) VALUES ($v2)
+"""
+   ) 
+end
