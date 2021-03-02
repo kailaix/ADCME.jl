@@ -58,29 +58,32 @@ Static computational graph (graph-mode AD) enables compilation time optimization
 | Windows | ✔ | ✔   | ✔               |
 
 
+
+
 1. Install `ADCME`
 ```
 using Pkg
 Pkg.add("ADCME")
 ```
 
-Note: if you are using Windows OS, please first install the [Microsoft Visual Studio 15 (2017)](https://visualstudio.microsoft.com/vs/older-downloads/) compiler and select **Desktop Development with C++**. See [the instruction](https://kailaix.github.io/ADCME.jl/dev/) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for details. 
+❗ FOR WINDOWS USERS: See [the instruction](https://kailaix.github.io/ADCME.jl/dev/windows_installation.md) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for installation details. 
 
-3. (Optional) Test `ADCME.jl`
+
+2. (Optional) Test `ADCME.jl`
 ```julia
 using Pkg
 Pkg.test("ADCME")
 ```
 See [Troubleshooting](https://kailaix.github.io/ADCME.jl/dev/tu_customop/#Troubleshooting-1) if you encounter any compilation problems.
 
-4. (Optional) To enable GPU support, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file), and then type 
+3. (Optional) To enable GPU support, make sure `nvcc` is available from your environment (e.g., type `nvcc` in your shell and you should get the location of the executable binary file), and then type 
 ```julia
 ENV["GPU"] = 1
 Pkg.build("ADCME")
 ```
 
 
-5. (Optional) Check the health of your installed ADCME and install missing dependencies or fixing incorrect paths. 
+4. (Optional) Check the health of your installed ADCME and install missing dependencies or fixing incorrect paths. 
 ```julia
 using ADCME 
 doctor()

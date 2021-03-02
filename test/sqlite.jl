@@ -34,3 +34,60 @@
     commit(db)
     close(db)
 end
+
+@testset "execute many" begin 
+    db = Database()
+    execute(db, 
+"""
+CREATE TABLE temp (
+    t1 real, 
+    t2 real 
+)
+""")
+    execute(db, "INSERT INTO temp VALUES (?,?)", rand(10), rand(10))
+    @test length(db["temp"])==10
+end
+
+
+@testset "sqlite do syntax" begin 
+    db = Database("temp.db")
+    execute(db) do 
+"""
+CREATE TABLE simulation_parameters (
+    desc text,
+    rho real, 
+    gamma real, 
+    dt real, 
+    h real 
+    )
+"""
+    end 
+
+    @test "simulation_parameters" in keys(db)
+    
+    close(db)
+    rm("temp.db", force=true)
+
+    Database("temp.db") do db 
+        execute(db) do 
+            """
+                CREATE TABLE simulation_parameters (
+                    desc text,
+                    rho real, 
+                    gamma real, 
+                    dt real, 
+                    h real 
+                    )
+            """
+        end
+    end
+
+    @test length(db["simulation_parameters"])==0
+    delete!(db, "simulation_parameters")
+    @test_throws PyCall.PyError keys(db, "simulation_parameters")
+
+    db = Database("temp.db")
+    @test "simulation_parameters" in keys(db)
+    close(db)
+    rm("temp.db", force=true)
+end

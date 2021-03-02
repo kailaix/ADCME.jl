@@ -489,3 +489,26 @@ end
         @test maximum(abs.(run(sess, u)-out )) < 1e-8
     end
 end
+
+
+@testset "logits" begin 
+    logits = [
+        0.124575  0.511463   0.945934
+        0.538054  0.0749339  0.187802
+        0.355604  0.052569   0.177009
+        0.896386  0.546113   0.456832
+    ]
+    labels = [2;1;2;3]
+    out = softmax_cross_entropy_with_logits(logits, labels)
+    o1 = run(sess, out)
+
+
+    labels = [0 1 0
+          1 0 0
+          0 1 0
+          0 0 1]
+    out = softmax_cross_entropy_with_logits(logits, labels)
+    o2 = run(sess, out)
+      
+    @test o1≈o2
+end

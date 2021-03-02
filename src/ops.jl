@@ -71,7 +71,8 @@ tril,
 triu,
 solve_batch,
 swish, hard_sigmoid, hard_swish, concat_elu, concat_hard_swish, concat_relu, fourier,
-rollmean, rollsum, rollvar, rollstd
+rollmean, rollsum, rollvar, rollstd,
+softmax_cross_entropy_with_logits
 
 
 @doc raw"""
@@ -1355,3 +1356,45 @@ function rollstd(u, window::Int64)
     __rollfunction(u, window, "std")
 end
 
+"""
+    softmax_cross_entropy_with_logits(logits::Union{Array, PyObject}, labels::Union{Array, PyObject})
+
+Computes softmax cross entropy between `logits` and `labels`
+
+`logits` is typically the output of a linear layer. For example,
+
+```
+logits = [
+    0.124575  0.511463   0.945934
+    0.538054  0.0749339  0.187802
+    0.355604  0.052569   0.177009
+    0.896386  0.546113   0.456832
+]
+labels = [2;1;2;3]
+```
+
+!!! info 
+    The values of `labels` are from  {1,2,...,`num_classes`}. Here `num_classes` is the number of columns in `logits`.
+
+The predicted labels associated with `logits` is 
+```
+argmax(softmax(logits), dims = 2)
+```
+
+Labels can also be one hot vectors 
+```
+labels = [0 1
+          1 0
+          0 1
+          0 1]
+```
+"""
+function softmax_cross_entropy_with_logits(logits::Union{Array, PyObject}, labels::Union{Array, PyObject})
+    logits = convert_to_tensor(logits, dtype = Float64)
+    labels = convert_to_tensor(labels, dtype = Int64) 
+    if ndims(labels)==1
+        tf.nn.sparse_softmax_cross_entropy_with_logits(logits = logits, labels = labels - 1)
+    else
+        tf.nn.softmax_cross_entropy_with_logits(logits = logits, labels = labels)
+    end
+end

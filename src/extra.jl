@@ -637,7 +637,7 @@ Pkg.build("PyCall")
         if Sys.iswindows()
             run(`cmd /c where julia`)
         else 
-            run(`which julia`)
+            read(`which julia`)
         end
     catch
         c = false
@@ -780,9 +780,23 @@ and `nvcc` is in your path.""")
     end
 
     
+    depsfile = abspath(joinpath(@__DIR__, "../deps/deps.jl"))
+    println("============================================================\n$(depsfile)\n============================================================")
+    println(read(depsfile, String))
 
-    println("Dependency file is located at: $(joinpath(@__DIR__, "../deps/deps.jl"))")
-    
+    @assert isdir(ADCME.BINDIR)
+    @assert isdir(ADCME.LIBDIR)
+    @assert isdir(ADCME.TF_INC)
+    @assert isdir(ADCME.PREFIXDIR)
+    if !Sys.iswindows()
+        @assert isfile(ADCME.CC) || islink(ADCME.CC)
+        @assert isfile(ADCME.CXX) || islink(ADCME.CXX)
+        @assert isfile(ADCME.NINJA)
+    end
+    @assert isfile(ADCME.CMAKE)
+    @assert isfile(ADCME.MAKE)
+    @assert isfile(ADCME.TF_LIB_FILE) || islink(ADCME.TF_LIB_FILE)
+    @assert isdir(ADCME.INCDIR)
 end
 
 
