@@ -1029,3 +1029,10 @@ function get_library_symbols(files::Union{String, PyObject})
     files = keys(files)
     filter(x->islowercase(String(x)[1]) && String(x)!="tf_export" && !(occursin("fallback", String(x))) && String(x)!="deprecated_endpoints", files)
 end
+
+
+function Base.:NamedTuple(df::PyObject)
+    names = tuple(Symbol.(df.index.tolist())...)
+    vals = tuple(df.values...)
+    NamedTuple{names}(vals)
+end
