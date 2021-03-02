@@ -139,6 +139,8 @@ function Base.:push!(db::Database, table::String, nts::NamedTuple...)
     INSERT OR REPLACE INTO $table ($v1) VALUES ($v2)
 """
    ) 
+end
+
 function Base.:delete!(db::Database, table::String)
     execute(db, "drop table $table")
     commit(db)
