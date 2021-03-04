@@ -40,3 +40,5 @@ $$\lambda > 10^{-6} \lambda_{\max}$$
 Here $\lambda_{\max}$ is the maximum eigenvalue. 
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/second_order_optimizer/hessian_eigenvalue_rank.png?raw=true)
+
+We can see when the dataset size is small, the Hessian rank is the same as the dataset size. The rank reaches plateau when the datasize increases to 6.  
