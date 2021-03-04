@@ -33,9 +33,14 @@ function Database(filename::Union{Missing, String} = missing;
     commit_after_execute::Bool = true)
     filename = coalesce(filename, ":memory:")
     sqlite3 = pyimport("sqlite3")
-    conn = sqlite3.connect(filename)
-    c = conn.cursor()
-    Database(conn, c, sqlite3, commit_after_execute, filename)
+    db = Database(PyNULL(), PyNULL(), sqlite3, commit_after_execute, filename)
+    db
+end
+
+function connect(db::Database)
+    sqlite3 = pyimport("sqlite3")
+    db.conn = sqlite3.connect(db.filename)
+    db.c = db.conn.cursor()
 end
 
 function Database(f::Function, args...; kwargs...)
@@ -68,6 +73,7 @@ execute(db, "INSERT TO mytable VALUES (?,?)", t1, t2)
 ```
 """
 function execute(db::Database, sql::String, args...)
+    connect(db)
     if length(args)>=1
         if length(args)>1
             param = collect(zip(args...))
@@ -100,8 +106,12 @@ end
 
 
 function Base.:close(db::Database)
-    commit(db)
-    db.conn.close()
+    if !(db.conn==PyNULL())
+        db.c.close()
+        db.conn.close()
+        db.c = PyNULL()
+        db.conn = PyNULL()
+    end
 end
 
 function Base.:keys(db::Database)
@@ -121,6 +131,25 @@ function Base.:keys(db::Database, table::String)
         push!(columns, r[1])
     end
     columns
+end
+
+
+function Base.:push!(db::Database, table::String, nts::NamedTuple...)
+    v1 = []
+    v2 = []
+    for nt in nts         
+        cols = propertynames(nt)
+        push!(v1, join(["\"$c\"" for c in cols], ","))
+        push!(v2, join([isnothing(nt[i]) ? "NULL" : "\"$(nt[i])\"" for i = 1:length(nt)], ","))
+    end
+    v1 = join(v1, ",")
+    v2 = join(v2, ",")
+   execute(db, 
+"""
+    INSERT OR REPLACE INTO $table ($v1) VALUES ($v2)
+"""
+   ) 
+   close(db)
 end
 
 function Base.:delete!(db::Database, table::String)
