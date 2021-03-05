@@ -4,7 +4,7 @@ It has been observed empirically that the converged weights and biases of DNNs a
 
 Let us consider a scalar-valued DNN $f(x, \theta)$, where $x$ is a $d$-dimensional input and $\theta$ is the weights and biases. The initial guess is $\theta_0$. Then we have 
 
-$$f(x, \theta) \approx f(x, \theta_0) + \nabla_\theta f(x, \theta_0) (\theta - \theta_0)\tag{1}$$
+$$f(x, \theta) \approx f(x, \theta_0) + \nabla_\theta f(x, \theta_0)^T (\theta - \theta_0)\tag{1}$$
 
 Consider a quadratic loss function 
 
@@ -16,7 +16,7 @@ $$L(\theta) \approx \sum_{i=1}^m (f(x_i, \theta_0) + \nabla_\theta f(x_i, \theta
 
 Eq. 2 is a quadratic function of $\theta$, and the Hessian matrix is given by 
 
-$$H = \frac{1}{2}\sum_{i=1}^m \nabla_\theta f(x_i, \theta_0) \nabla_\theta f(x_i, \theta_0)^T$$
+$$H = \sum_{i=1}^m \nabla_\theta f(x_i, \theta_0) \nabla_\theta f(x_i, \theta_0)^T$$
 
 Let us consider $\nabla_\theta f(x_i, \theta_0) \nabla_\theta f(x_i, \theta_0)^T$, which is a rank-one matrix. Therefore, one straight-forward corollary is 
 
