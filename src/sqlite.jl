@@ -107,15 +107,18 @@ end
 
 function Base.:close(db::Database)
     if !(db.conn==PyNULL())
+        commit(db)
         db.c.close()
         db.conn.close()
         db.c = PyNULL()
         db.conn = PyNULL()
     end
+    nothing 
 end
 
 function Base.:keys(db::Database)
     ret = execute(db, "select name from sqlite_master")|>collect
+    close(db)
     tables = String[]
     for k = 1:length(ret)
         push!(tables, ret[k][1])
@@ -126,6 +129,7 @@ end
 function Base.:keys(db::Database, table::String)
     execute(db, "select * from $table limit 1")
     ret = db.c.description
+    close(db)
     columns = String[]
     for r in ret 
         push!(columns, r[1])
@@ -154,10 +158,12 @@ end
 
 function Base.:delete!(db::Database, table::String)
     execute(db, "drop table $table")
-    commit(db)
+    close(db)
 end
 
 function Base.:getindex(db::Database, table::String)
     c = execute(db, "select * from $table")
-    collect(c)
+    out = collect(c)
+    close(db)
+    out 
 end
