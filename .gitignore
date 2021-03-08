@@ -48,3 +48,4 @@ test/*.png
 docs/src/assets/Codes/OptimizationResearch/*
 
 Manifest.toml
+*.db
