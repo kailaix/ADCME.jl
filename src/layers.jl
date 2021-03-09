@@ -238,7 +238,7 @@ random initializers are provided
 - `xavier` (default). It is useful for `tanh` fully connected neural network. 
 
 ```
-W^l_i \sim \mathcal{N}\left(0, \sqrt{\frac{1}{n_{l-1}}\right)
+W^l_i \sim \mathcal{N}\left(0, \sqrt{\frac{1}{n_{l-1}}}\right)
 ```
 
 
