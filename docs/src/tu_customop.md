@@ -634,15 +634,3 @@ ERROR: LoadError: ADCME is not properly built; run `Pkg.build("ADCME")` to fix t
 ```
 
 **A:** Build ADCME using `Pkg.build("ADCME")`. Exit Julia and open Julia again. Check whether `deps.jl` exists in the `deps` directory of your Julia package (optional).
-
-**Q: On Mac, the PyPlot package gives the warning: PyPlot is using tkagg backend, which is known to cause crashes on MacOS (#410); use the MPLBACKEND environment variable to request a different backend.**
-
-**A:** 
-```julia
-using ADCME
-using Pkg
-CONDA = get_conda()
-run(`$CONDA install -y pyqt`)
-Pkg.build("PyPlot")
-```
-This will install a working backend for PyPlot. 
