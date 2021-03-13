@@ -328,7 +328,20 @@ function Base.:precompile(force::Bool=false)
     end
     change_directory("build")
     require_cmakecache() do 
-        ADCME.cmake()
+        if Sys.isapple()
+            try
+                ADCME.cmake()
+            catch 
+                @info "Use system clang..."
+                mv(joinpath(BINDIR, "clang"), joinpath(BINDIR, "clang_original"))
+                mv(joinpath(BINDIR, "clang++"), joinpath(BINDIR, "clang++_original"))
+                symlink("/usr/bin/clang",joinpath(BINDIR, "clang"))
+                symlink("/usr/bin/clang++",joinpath(BINDIR, "clang++"))
+                ADCME.cmake()
+            end
+        else
+            ADCME.cmake()
+        end
     end
     require_library("adcme") do 
         ADCME.make()
