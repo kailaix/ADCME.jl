@@ -617,18 +617,6 @@ julia> ]
 pkg> build ADCME""")
     end 
 
-    c = (tfp.__version__[1:5]=="0.8.0")
-    if c 
-        yes("TensorFlow-Probability version")
-    else
-        no("TensorFlow-Probability version", 
-"""Your TensorFlow-Probability version is $(tfp.__version__). ADCME is only tested against 0.8.0.""",
-"""Set ENV["FORCE_REINSTALL_ADCME"] = 1 and rebuild ADCME
-julia> ENV["FORCE_REINSTALL_ADCME"] = 1
-julia> ]
-pkg> build ADCME""")
-    end 
-
 
 
     c = (PyCall.python==ADCME.PYTHON)
