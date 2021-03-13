@@ -68,6 +68,8 @@ Pkg.add("ADCME")
 
 ❗ FOR WINDOWS USERS: See [the instruction](https://kailaix.github.io/ADCME.jl/dev/windows_installation.md) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for installation details. 
 
+❗ FOR MACOS USERS: See this [troubleshooting list](https://github.com/kailaix/ADCME.jl/blob/master/docs/src/index.md#troubleshooting-for-macosx) for potential installation and compilation problems on Mac.
+
 
 2. (Optional) Test `ADCME.jl`
 ```julia
