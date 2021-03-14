@@ -56,11 +56,11 @@ Pkg.add("ADCME")
     print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
     ```
     
-## Troubleshooting for MacOSX
+## Troubleshooting for MacOS
     
 Here are some common problems you may encounter on a Mac computer:
 
-- You may get stuck at building ADCME. It is a [known issue](https://github.com/kailaix/ADCME.jl/issues/64) for some combinations of specific MacOSX and Julia versions. You can verify this by checking whether the following step gets stuck:
+- You may get stuck at building ADCME. It is a [known issue](https://github.com/kailaix/ADCME.jl/issues/64) for some combinations of specific MacOS and Julia versions. You can verify this by checking whether the following step gets stuck:
 
 ```julia
 using PyCall
