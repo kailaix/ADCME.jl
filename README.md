@@ -66,7 +66,7 @@ using Pkg
 Pkg.add("ADCME")
 ```
 
-❗ FOR WINDOWS USERS: See [the instruction](https://kailaix.github.io/ADCME.jl/dev/windows_installation.md) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for installation details. 
+❗ FOR WINDOWS USERS: See [the instruction](https://kailaix.github.io/ADCME.jl/dev/windows_installation/) or [the video](https://www.youtube.com/playlist?list=PLKBz8ohiA3IlrCI0VO4cRYZp2S6SYG1Ww) for installation details. 
 
 ❗ FOR MACOS USERS: See this [troubleshooting list](https://kailaix.github.io/ADCME.jl/dev/#Troubleshooting-for-MacOSX) for potential installation and compilation problems on Mac.
 
