@@ -37,7 +37,7 @@ Start building your forward and inverse modeling using ADCME today!
 
 | Documentation                                                | Tutorial                                                     | Applications                                                     |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [![](https://img.shields.io/badge/-Documentation-blue)](https://kailaix.github.io/ADCME.jl/dev) | [![](https://img.shields.io/badge/-Tutorial-green)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
+| [![](https://img.shields.io/badge/-Documentation-blue)](https://kailaix.github.io/ADCME.jl/latest/) | [![](https://img.shields.io/badge/-Tutorial-green)](https://kailaix.github.io/ADCME.jl/dev/tutorial/) | [![](https://img.shields.io/badge/-Applications-orange)](https://kailaix.github.io/ADCME.jl/dev/apps) |
 
 ## Graph-mode TensorFlow for High Performance Scientific Computing
 
