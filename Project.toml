@@ -1,7 +1,7 @@
 name = "ADCME"
 uuid = "07b341a0-ce75-57c6-b2de-414ffdc00be5"
 authors = ["Kailai Xu <kailaix@hotmail.com>"]
-version = "0.7.0"
+version = "0.7.1"
 
 [deps]
 CMake = "631607c0-34d2-5d66-819e-eb0f9aa2061a"
@@ -23,7 +23,7 @@ FFTW = "1"
 MAT = "0.5,0.6,0.7,0.8,0.9,0.10"
 PyCall = "1.91,1.92"
 SpecialFunctions = "0.10,1"
-julia = "1"
+julia = "^1.3"
 
 [extras]
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
