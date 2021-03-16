@@ -68,11 +68,32 @@ function install_conda_envs()
     else
         platform = "osx"
     end
-    if ((platform == "linux-gpu" && occursin("tensorflow-gpu", read(`$CONDA list`, String))) ||
-        (platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String)))) && 
-        check_install()
-        return 
-    end 
+
+    if check_install()
+        if (platform in ["windows", "linux", "osx"] && occursin("tensorflow", read(`$CONDA list`, String))) 
+            return 
+        end
+
+        if platform == "linux-gpu" 
+            if occursin("tensorflow-gpu", read(`$CONDA list`, String)) 
+                return 
+            elseif occursin("tensorflow", read(`$CONDA list`, String))
+                @error """You have already installed tensorflow-cpu. In order to install tensorflow-gpu, try the following steps:
+- Quit Julia and remove the directory 
+
+$(JULIA_ADCME_DIR)/.julia/adcme
+
+- In Julia, run the following command
+
+```
+ENV["GPU"] = 1
+using Pkg; Pkg.build("ADCME")
+```
+"""
+            end
+        end 
+
+    end
     @info "Installing conda dependencies..."
     run(setenv(`$CONDA env update -n base --file $platform.yml`, ENV_))
 end
