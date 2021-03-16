@@ -203,7 +203,7 @@ end
 ```
 
 
-
+See more machine learning codes in ADCME [here](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/ML).
 
 ## Contributing
 
