@@ -202,9 +202,6 @@ for i = 1:10
 end
 ```
 
-
-See more machine learning codes in ADCME [here](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/ML).
-
 ## Contributing
 
 Contribution and suggestions are always welcome. In addition, we are also looking for research collaborations. You can submit issues for suggestions, questions, bugs, and feature requests, or submit pull requests to contribute directly. You can also contact the authors for research collaboration. 

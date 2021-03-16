@@ -14,7 +14,7 @@ pages = Any[
             "options.md", "mcmc.md", "mpi.md", "mpi_benchmark.md", "multithreading.md", "rbf.md", "topopt.md", "quadrature.md",
             "sqlite3.md", "hessian.md"],
     "Physics Informed Machine Learning" => ["fdtd.md"],
-    "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md"],
+    "Deep Learning Schemes" => ["vae.md", "flow.md", "convnet.md", "bnn.md", "reinforcement_learning.md"],
     "Developer Guide" => ["designpattern.md", "toolchain.md", "installmpi.md", "windows_installation.md"],
     "Applications" => ["apps.md", "apps_ana.md", "apps_levy.md", 
             "apps_constitutive_law.md", "apps_ad.md", "apps_adseismic.md", "apps_nnfem.md"],
