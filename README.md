@@ -83,6 +83,7 @@ See [Troubleshooting](https://kailaix.github.io/ADCME.jl/dev/tu_customop/#Troubl
 ENV["GPU"] = 1
 Pkg.build("ADCME")
 ```
+You can check the status with `using ADCME; gpu_info()`. 
 
 
 4. (Optional) Check the health of your installed ADCME and install missing dependencies or fixing incorrect paths. 

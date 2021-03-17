@@ -45,6 +45,10 @@ function gpu_info()
     if length(ADCME.CUDA_INC)==0
         println("\nTips: ADCME is not configured to use GPUs. See https://kailaix.github.io/ADCME.jl/latest/tu_customop/#Install-GPU-enabled-TensorFlow-(Linux-and-Windows) for instructions.")
     end
+
+    if dcount==0
+        println("\nTips: No GPU resources found. Do you have access to GPUs?")
+    end
 end
 
 """
@@ -53,6 +57,9 @@ end
 Returns the compiler information for GPUs. 
 """
 function get_gpu()
+    NVCC = missing 
+    CUDALIB = missing 
+    CUDAINC = missing 
     try 
         NVCC = strip(String(read(`which nvcc`)))
         CUDALIB = abspath(joinpath(NVCC, "../../lib64"))
@@ -65,9 +72,6 @@ Implied CUDAINC: $CUDAINC
 """
         end
     catch
-        NVCC = missing 
-        CUDALIB = missing 
-        CUDAINC = missing 
     end
     if length(ADCME.LIBCUDA)>0
         CUDATOOLKIT = split(ADCME.LIBCUDA, ":")[1]
