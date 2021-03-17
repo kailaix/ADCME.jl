@@ -72,7 +72,7 @@ function get_gpu()
     CUDALIB = missing 
     CUDAINC = missing 
     CUDATOOLKIT = missing 
-    CUDANN = missing
+    CUDNN = missing
     try 
         NVCC = strip(String(read(`which nvcc`)))
         CUDALIB = abspath(joinpath(NVCC, "../../lib64"))
