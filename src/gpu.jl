@@ -71,6 +71,8 @@ function get_gpu()
     NVCC = missing 
     CUDALIB = missing 
     CUDAINC = missing 
+    CUDATOOLKIT = missing 
+    CUDANN = missing
     try 
         NVCC = strip(String(read(`which nvcc`)))
         CUDALIB = abspath(joinpath(NVCC, "../../lib64"))
@@ -87,9 +89,7 @@ Implied CUDAINC: $CUDAINC
     if length(ADCME.LIBCUDA)>0
         CUDATOOLKIT = split(ADCME.LIBCUDA, ":")[1]
         CUDNN = split(ADCME.LIBCUDA, ":")[2]
-    else 
-        CUDATOOLKIT = missing 
-        CUDANN = missing
+    else  
     end
     return (NVCC=NVCC, LIB=CUDALIB, INC=CUDAINC, TOOLKIT=CUDATOOLKIT, CUDNN=CUDNN)
 end
