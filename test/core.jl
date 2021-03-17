@@ -137,6 +137,8 @@ end
 
 @testset "has_gpu" begin
     @test has_gpu() in [true, false]
+    @test_nowarn gpu_info()
+    @test_nowarn get_gpu()
 end
 
 @testset "timeline" begin

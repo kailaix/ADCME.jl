@@ -100,5 +100,6 @@ module ADCME
     include("rbf.jl")
     include("pcl.jl")
     include("sqlite.jl")
+    include("gpu.jl")
 end
 

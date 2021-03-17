@@ -102,7 +102,7 @@ Pages   = ["mpi.jl"]
 
 ```@autodocs
 Modules = [ADCME]
-Pages   = ["toolchain.jl"]
+Pages   = ["toolchain.jl", "gpu.jl"]
 ```
 
 

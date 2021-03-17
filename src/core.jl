@@ -3,7 +3,6 @@ reset_default_graph,
 get_collection,
 enable_eager_execution,
 control_dependencies,
-has_gpu,
 while_loop,
 if_else,
 stop_gradient,
@@ -243,22 +242,6 @@ function if_else(condition::Union{PyObject,Array,Bool}, fn1, fn2, args...;kwargs
     end
 end
 
-"""
-    has_gpu()
-
-Checks if GPU is available.
-
-!!! note
-    ADCME will use GPU automatically if GPU is available. To disable GPU, set the environment variable `ENV["CUDA_VISIBLE_DEVICES"]=""` before importing ADCME 
-"""
-function has_gpu()
-    s = tf.test.gpu_device_name()
-    if length(s)==0
-        return false
-    else
-        return true
-    end
-end
 
 """
     has_mpi(verbose::Bool = true)
