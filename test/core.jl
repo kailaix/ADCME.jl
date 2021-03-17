@@ -137,8 +137,8 @@ end
 
 @testset "has_gpu" begin
     @test has_gpu() in [true, false]
-    @test_nowarn gpu_info()
-    @test_nowarn get_gpu()
+    @test isnothing(gpu_info())
+    @test isa(get_gpu(), NamedTuple)
 end
 
 @testset "timeline" begin
