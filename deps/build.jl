@@ -50,7 +50,7 @@ ENVDIR = joinpath(JULIA_ADCME_DIR, ".julia", "adcme")
 VER = haskey(Pkg.installed(),"ADCME")  ? Pkg.installed()["ADCME"] : "NOT_INSTALLED"
 @info """Your Julia version is $VERSION, current ADCME version is $VER, ADCME dependencies installation path: $ENVDIR"""
 
-@info " --------------- (1/6) Install Tensorflow Dependencies  --------------- "
+@info " --------------- (1/7) Install Tensorflow Dependencies  --------------- "
 FORCE_REINSTALL_ADCME = haskey(ENV, "FORCE_REINSTALL_ADCME") && ENV["FORCE_REINSTALL_ADCME"] in [1, "1"]
 include("install_adcme.jl")
 
@@ -62,7 +62,7 @@ PYTHON = joinpath(BINDIR, "python")
 if Sys.iswindows()
     PYTHON = abspath(joinpath(ENVDIR, "python.exe"))
 end
-@info " --------------- (2/6) Check Python Version  --------------- "
+@info " --------------- (2/7) Check Python Version  --------------- "
 
 !haskey(Pkg.installed(), "PyCall") && Pkg.add("PyCall")
 ENV["PYTHON"]=PYTHON
@@ -73,7 +73,7 @@ PyCall Python version: $(PyCall.python)
 Conda Python version: $PYTHON
 """
 
-@info " --------------- (3/6) Looking for TensorFlow Dynamic Libraries --------------- "
+@info " --------------- (3/7) Looking for TensorFlow Dynamic Libraries --------------- "
 tf = pyimport("tensorflow")
 core_path = abspath(joinpath(tf.sysconfig.get_compile_flags()[1][3:end], ".."))
 lib = readdir(core_path)
@@ -93,7 +93,7 @@ if Sys.iswindows()
     end
 end
 
-@info " --------------- (4/6) Preparing Custom Operator Environment --------------- "
+@info " --------------- (4/7) Preparing Custom Operator Environment --------------- "
 LIBDIR = abspath("$ENVDIR/lib/Libraries")
 
 if !isdir(LIBDIR)
@@ -132,9 +132,15 @@ else
     PIP = "$(JULIA_ADCME_DIR)/.julia/adcme/bin/pip"
 end
 
+@info " --------------- (5/7) Install Python Dependencies --------------- "
+
 # install matplotlib 
-if !occursin("matplotlib", read(`$PIP list`, String))
+pkgs = read(`$PIP list`, String)
+if !occursin("matplotlib", pkgs)
     run(`$PIP install matplotlib`)
+end
+if !occursin("plotly", pkgs)
+    run(`$PIP install plotly==4.14.3`)
 end
 
 # If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
@@ -155,7 +161,7 @@ end
 LIBCUDA = ""
 CUDA_INC = ""
 if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
-    @info " --------------- (5/6) Installing GPU Dependencies --------------- "
+    @info " --------------- (6/7) Installing GPU Dependencies --------------- "
     
     NVCC = readlines(pipeline(`which nvcc`))[1]
     s = join(readlines(pipeline(`nvcc --version`)), " ")
@@ -198,10 +204,10 @@ if Sys.islinux() && haskey(ENV, "GPU") && ENV["GPU"] in ["1", 1]
     CUDA_INC = joinpath(splitdir(splitdir(NVCC)[1])[1], "include")    
 
 else
-    @info " --------------- (5/6) Skipped: Installing GPU Dependencies  --------------- "
+    @info " --------------- (6/7) Skipped: Installing GPU Dependencies  --------------- "
 end
 
-@info """ --------------- (6/6) Write Dependency Files  --------------- """
+@info """ --------------- (7/7) Write Dependency Files  --------------- """
 
 s = ""
 t = []
