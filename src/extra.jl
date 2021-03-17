@@ -793,9 +793,10 @@ and `nvcc` is in your path.""")
         @assert isfile(ADCME.CC) || islink(ADCME.CC)
         @assert isfile(ADCME.CXX) || islink(ADCME.CXX)
         @assert isfile(ADCME.NINJA)
+    else 
+        @assert isfile(ADCME.MAKE)
     end
     @assert isfile(ADCME.CMAKE)
-    @assert isfile(ADCME.MAKE)
     @assert isfile(ADCME.TF_LIB_FILE) || islink(ADCME.TF_LIB_FILE)
     @assert isdir(ADCME.INCDIR)
 end
