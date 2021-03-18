@@ -47,8 +47,8 @@ export to_html
 Exports the figure `fig` to an HTML file. 
 """
 function to_html(fig::PyObject, filename::String, args...;
-        include_plotlyjs = "cnd",
-        include_mathjax = "cnd",
+        include_plotlyjs = "cdn",
+        include_mathjax = "cdn",
         full_html = true,
         kwargs...)
     open(filename, "w") do io 
