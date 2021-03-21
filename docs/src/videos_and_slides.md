@@ -37,6 +37,11 @@ Do you know...
 * [WCCM 2020 (23 Pages)](https://kailaix.github.io/ADCMESlides/2020_11_27.pdf)
 
 * [SIAM CSE21 (21 Pages)](https://kailaix.github.io/ADCMESlides/2020_2_19.pdf)
+
+
+* [AAAI MLPS 2021 (22 Pages)](https://kailaix.github.io/ADCMESlides/2021_3_9.pdf)
+
+
 ## Instruction on Installing ADCME 
 
 1. [Installing ADCME (Windows)](https://www.youtube.com/watch?v=Vsc_dpyOD6k)
