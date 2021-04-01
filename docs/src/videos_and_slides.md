@@ -41,6 +41,8 @@ Do you know...
 
 * [AAAI MLPS 2021 (22 Pages)](https://kailaix.github.io/ADCMESlides/2021_3_9.pdf)
 
+* [Ph.D. Oral Defense (~50 Pages)](https://kailaix.github.io/ADCMESlides/oral_defense.pdf)
+
 
 ## Instruction on Installing ADCME 
 
