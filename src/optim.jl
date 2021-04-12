@@ -282,7 +282,8 @@ BFGS!(sess, loss, bounds=Dict(x=>[1.0,3.0]))
     ```
 """->
 function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000; 
-    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, method::String = "L-BFGS-B", kwargs...)
+    vars::Array{PyObject}=PyObject[], callback::Union{Function, Nothing}=nothing, 
+    method::String = "L-BFGS-B", kwargs...)
     __cnt = 0
     __loss = 0
     __var = nothing
@@ -311,6 +312,11 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
         kwargs[:var_to_bounds] = kwargs[:bounds]
         delete!(kwargs, :bounds)
     end
+    feed_dict = nothing
+    if haskey(kwargs, :feed_dict)
+        feed_dict = kwargs[:feed_dict]
+        delete!(kwargs, :feed_dict)
+    end
     if haskey(kwargs, :var_to_bounds)
         desc = "`bounds` or `var_to_bounds` keywords of `BFGS!` only accepts dictionaries whose keys are Variables"
         for (k,v) in kwargs[:var_to_bounds]
@@ -324,7 +330,10 @@ function BFGS!(sess::PyObject, loss::PyObject, max_iter::Int64=15000;
     end
     opt = ScipyOptimizerInterface(loss, method=method,options=Dict("maxiter"=> max_iter, "ftol"=>1e-12, "gtol"=>1e-12); kwargs...)
     @info "Optimization starts..."
-    ScipyOptimizerMinimize(sess, opt, loss_callback=print_loss, step_callback=step_callback, fetches=[loss, vars...])
+    ScipyOptimizerMinimize(sess, opt, 
+        loss_callback=print_loss, step_callback=step_callback, 
+        fetches=[loss, vars...],
+        feed_dict = feed_dict)
     out
 end
 

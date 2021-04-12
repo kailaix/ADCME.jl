@@ -139,9 +139,7 @@ pkgs = read(`$PIP list`, String)
 if !occursin("matplotlib", pkgs)
     run(`$PIP install matplotlib`)
 end
-if !occursin("plotly", pkgs)
-    run(`$PIP install plotly==4.14.3`)
-end
+
 
 # If the system has `nvcc` but "GPU" is not specified, warn the users to build with 
 # ENV["GPU"] = 1

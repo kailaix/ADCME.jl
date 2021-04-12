@@ -51,7 +51,6 @@ module ADCME
     function __init__()
         global AUTO_REUSE, GLOBAL_VARIABLES, TRAINABLE_VARIABLES, UPDATE_OPS, DTYPE, libadcme
         copy!(tf, pyimport("tensorflow"))
-        copy!(plotly, pyimport("plotly"))
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         try
             copy!(tfp, pyimport("tensorflow_probability"))
