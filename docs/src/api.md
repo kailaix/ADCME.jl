@@ -81,6 +81,7 @@ Pages   = ["ode.jl"]
 ## Function Approximators
 ```@docs
 RBF2D
+RBF3D
 interp1
 ```
 
