@@ -1,4 +1,4 @@
-export RBF2D, interp1
+export RBF2D, interp1, RBF3D
 
 @doc raw"""
     function RBF2D(xc::Union{PyObject, Array{Float64, 1}}, yc::Union{PyObject, Array{Float64, 1}}; 
@@ -96,4 +96,82 @@ function interp1(x::Union{Array{Float64, 1}, PyObject},v::Union{Array{Float64, 1
     interp_dim_one_ = load_system_op("interp_dim_one")
     x,v,xq = convert_to_tensor(Any[x,v,xq], [Float64,Float64,Float64])
     out = interp_dim_one_(x,v,xq)
+end
+
+@doc raw"""
+    RBF3D(xc::Union{PyObject, Array{Float64, 1}}, yc::Union{PyObject, Array{Float64, 1}},
+        zc::Union{PyObject, Array{Float64, 1}}; 
+        c::Union{PyObject, Array{Float64, 1}, Missing} = missing, 
+        eps::Union{PyObject, Array{Float64, 1}, Real, Missing} = missing,
+        d::Union{PyObject, Array{Float64, 1}} = zeros(0), 
+        kind::Int64 = 0)
+
+Constructs a radial basis function representation on a 3D domain
+
+$$f(x, y, z) = \sum_{i=1}^N c_i \phi(r; \epsilon_i) + d_0 + d_1 x + d_2 y + d_3 z$$
+
+Here `d` can be either 0, 1 (only $d_0$ is present), or 4 ($d_0$, $d_1$, $d_2$, and $d_3$ are all present).
+
+`kind` determines the type of radial basis functions 
+
+* 0:Gaussian
+
+$$\phi(r; \epsilon) = e^{-(\epsilon r)^2}$$
+
+* 1:Multiquadric
+
+$$\phi(r; \epsilon) = \sqrt{1+(\epsilon r)^2}$$
+
+* 2:Inverse quadratic
+
+$$\phi(r; \epsilon) = \frac{1}{1+(\epsilon r)^2}$$
+
+* 3:Inverse multiquadric
+
+$$\phi(r; \epsilon) = \frac{1}{\sqrt{1+(\epsilon r)^2}}$$
+
+Returns a callable struct, i.e. to evaluates the function at locations $(x, y, z)$ (`x`, `y`, and `z` are all vectors), run 
+```julia
+rbf(x, y, z)
+```
+"""
+mutable struct RBF3D
+    xc::PyObject
+    yc::PyObject
+    zc::PyObject
+    eps::PyObject
+    c::PyObject
+    d::PyObject
+    kind::Int64
+
+    function RBF3D(xc::Union{PyObject, Array{Float64, 1}}, yc::Union{PyObject, Array{Float64, 1}},
+            zc::Union{PyObject, Array{Float64, 1}}; 
+            c::Union{PyObject, Array{Float64, 1}, Missing} = missing, 
+            eps::Union{PyObject, Array{Float64, 1}, Real, Missing} = missing,
+            d::Union{PyObject, Array{Float64, 1}} = zeros(0), 
+            kind::Int64 = 0)
+        if isa(eps, Real) 
+            eps = eps * ones(length(xc))
+        end
+        c = coalesce(c, Variable(zeros(length(xc))))
+        eps = coalesce(eps, ones(length(xc)))
+        @assert length(xc)==length(yc)==length(zc)==length(c)==length(eps)
+        @assert length(d) in [0,1,4]
+        new(constant(xc), constant(yc), constant(zc), constant(eps), constant(c), constant(d), kind)
+    end
+end
+
+
+function (o::RBF3D)(x,y,z)
+    radial_basis_function_ = load_op_and_grad(libadcme,"radial_basis_function_three_d")
+    x,y,z,xc,yc,zc,eps,c,d,kind = convert_to_tensor(Any[x,y,z,o.xc,o.yc,o.zc, o.eps,o.c,o.d,o.kind], [Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Int64])
+    out = radial_basis_function_(x,y,z,xc,yc,zc,eps,c,d,kind)
+    set_shape(out, (length(x,)))
+end
+
+function Base.:show(io::IO, o::RBF3D)
+    ct = hasproperty(o.c, :trainable) && o.c.trainable
+    et = hasproperty(o.eps, :trainable) && o.eps.trainable
+    dt = hasproperty(o.d, :trainable) && o.d.trainable
+    print("RadialBasisFunction(NumOfCenters=$(length(o.xc)),NumOfAdditionalTerm=$(length(o.d)),CoeffIsVariable=$(ct),ShapeIsVariable=$(et),AdditionalTermIsVariable=$dt)")
 end
