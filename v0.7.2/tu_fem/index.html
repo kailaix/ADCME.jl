@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Numerical Scheme in ADCME: Finite Element Example · ADCME</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ADCME logo"/></a><div class="docs-package-name"><span class="docs-autofit">ADCME</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../tutorial/">Overview</a></li><li><a class="tocitem" href="../videos_and_slides/">Video Lectures and Slides</a></li><li><a class="tocitem" href="../tu_whatis/">What is ADCME? Computational Graph, Automatic Differentiation &amp; TensorFlow</a></li><li><a class="tocitem" href="../tu_basic/">ADCME Basics: Tensor, Type, Operator, Session &amp; Kernel</a></li><li><a class="tocitem" href="../tu_optimization/">PDE Constrained Optimization</a></li><li><a class="tocitem" href="../tu_sparse/">Sparse Linear Algebra</a></li><li><a class="tocitem" href="../tu_fd/">Numerical Scheme in ADCME: Finite Difference Example</a></li><li class="is-active"><a class="tocitem" href>Numerical Scheme in ADCME: Finite Element Example</a><ul class="internal"><li><a class="tocitem" href="#Poisson&#39;s-Problem:-Vectorized-Implementation"><span>Poisson&#39;s Problem: Vectorized Implementation</span></a></li><li><a class="tocitem" href="#Poisson&#39;s-Problem:-Custom-Operators"><span>Poisson&#39;s Problem: Custom Operators</span></a></li><li><a class="tocitem" href="#Summary"><span>Summary</span></a></li></ul></li><li><a class="tocitem" href="../tu_inv/">Inverse Modeling with ADCME</a></li><li><a class="tocitem" href="../tu_recipe/">Inverse Modeling Recipe</a></li><li><a class="tocitem" href="../tu_nn/">Combining Neural Networks with Numerical Schemes</a></li><li><a class="tocitem" href="../tu_implicit/">Advanced: Automatic Differentiation for Implicit Operators</a></li><li><a class="tocitem" href="../tu_customop/">Advanced: Custom Operators</a></li><li><a class="tocitem" href="../tu_debug/">Advanced: Debugging and Profiling</a></li><li><a class="tocitem" href="../exercise/">Exercise: Inverse Modeling with ADCME</a></li></ul></li><li><span class="tocitem">Resources</span><ul><li><a class="tocitem" href="../newton_raphson/">Newton Raphson</a></li><li><a class="tocitem" href="../parallel/">Parallel Computing</a></li><li><a class="tocitem" href="../optimizers/">Optimizers</a></li><li><a class="tocitem" href="../optim/">Study on Optimizers</a></li><li><a class="tocitem" href="../ode/">PDE/ODE Solvers</a></li><li><a class="tocitem" href="../global/">Shared Memory Across Kernels</a></li><li><a class="tocitem" href="../julia_customop/">Julia Custom Operators</a></li><li><a class="tocitem" href="../nn/">Neural Networks</a></li><li><a class="tocitem" href="../ot/">Optimal Transport</a></li><li><a class="tocitem" href="../resource_manager/">Resource Manager</a></li><li><a class="tocitem" href="../alphascheme/">Generalized α Scheme</a></li><li><a class="tocitem" href="../factorization/">Direct Methods for Sparse Matrices</a></li><li><a class="tocitem" href="../customopt/">Custom Optimizer</a></li><li><a class="tocitem" href="../options/">Global Options</a></li><li><a class="tocitem" href="../mcmc/">Uncertainty Quantification of Neural Networks in Physics Informed Learning using MCMC</a></li><li><a class="tocitem" href="../mpi/">Distributed Scientific Machine Learning using MPI</a></li><li><a class="tocitem" href="../mpi_benchmark/">MPI Benchmarks</a></li><li><a class="tocitem" href="../multithreading/">Understand the Multi-threading Model</a></li><li><a class="tocitem" href="../rbf/">Radial Basis Functions</a></li><li><a class="tocitem" href="../topopt/">Topological Optimization</a></li><li><a class="tocitem" href="../quadrature/">Numerical Integration</a></li><li><a class="tocitem" href="../sqlite3/">Introducing ADCME Database and SQL Integration: an Efficient Approach to Simulation Data Management</a></li><li><a class="tocitem" href="../hessian/">The Mathematical Structure of DNN Hessians</a></li><li><a class="tocitem" href="../plotly/">Visualization with Plotly</a></li></ul></li><li><span class="tocitem">Physics Informed Machine Learning</span><ul><li><a class="tocitem" href="../fdtd/">Finite-difference Time-domain for Electromagnetics and Seismic Inversion</a></li></ul></li><li><span class="tocitem">Deep Learning Schemes</span><ul><li><a class="tocitem" href="../vae/">Variational Autoencoder</a></li><li><a class="tocitem" href="../flow/">Normalizing Flows</a></li><li><a class="tocitem" href="../convnet/">Convolutional Neural Network</a></li><li><a class="tocitem" href="../bnn/">Bayesian Neural Networks</a></li><li><a class="tocitem" href="../reinforcement_learning/">Reinforcement Learning Basics: Q-learning and SARSA</a></li></ul></li><li><span class="tocitem">Developer Guide</span><ul><li><a class="tocitem" href="../designpattern/">Design Pattern</a></li><li><a class="tocitem" href="../toolchain/">Built-in Toolchain for Third-party Libraries</a></li><li><a class="tocitem" href="../installmpi/">Configure MPI for Distributed Computing</a></li><li><a class="tocitem" href="../windows_installation/">Install ADCME on Windows</a></li></ul></li><li><span class="tocitem">Applications</span><ul><li><a class="tocitem" href="../apps/">Overview</a></li><li><a class="tocitem" href="../apps_ana/">Adversarial Numerical Analysis</a></li><li><a class="tocitem" href="../apps_levy/">Calibrating Multivariate Lévy Processes with Neural Networks</a></li><li><a class="tocitem" href="../apps_constitutive_law/">Learning Constitutive Relations from Indirect Observations Using Deep Neural Networks</a></li><li><a class="tocitem" href="../apps_ad/">Intelligent Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_adseismic/">General Seismic Inversion using Automatic Differentiation</a></li><li><a class="tocitem" href="../apps_nnfem/">Symmetric Positive Definite Neural Networks (SPD-NN)</a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorial</a></li><li class="is-active"><a href>Numerical Scheme in ADCME: Finite Element Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Numerical Scheme in ADCME: Finite Element Example</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kailaix/ADCME.jl/blob/master/docs/src/tu_fem.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Numerical-Scheme-in-ADCME:-Finite-Element-Example"><a class="docs-heading-anchor" href="#Numerical-Scheme-in-ADCME:-Finite-Element-Example">Numerical Scheme in ADCME: Finite Element Example</a><a id="Numerical-Scheme-in-ADCME:-Finite-Element-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Numerical-Scheme-in-ADCME:-Finite-Element-Example" title="Permalink"></a></h1><p>The purpose of this tutorial is to show how to work with the finite element method (FEM) in ADCME. The tutorial is divided into two part:</p><ul><li>In the first part, we implement a finite element code for a time independent Poisson&#39;s equation in 1D and 2D. We present two styles of implementing a finite element code: using vectorized expression and low level C++ implementation using custom operators. The first approach is elegant and only uses ADCME syntax. The second approach is more flexible and allows for efficient optimization. However, the limitation is that you are responsible to calculate the sensititity of your finite element sensitivity matrix. </li></ul><ul><li>The second part is about solving a time dependent problem. Here we use finite element methods for the spatial discretization and a backward Euler for time integration. The custom operator approach is used. In this example, you will understand how <a href="../api/#ADCME.while_loop-Tuple{Union{Function, PyCall.PyObject},Function,Union{PyCall.PyObject, Array{Any,N} where N, Array{PyCall.PyObject,N} where N}}"><code>while_loop</code></a> can help avoid creating a computational graph for each time step. This is important because for many applications the number of time steps can be enormous.</li></ul><h2 id="Poisson&#39;s-Problem:-Vectorized-Implementation"><a class="docs-heading-anchor" href="#Poisson&#39;s-Problem:-Vectorized-Implementation">Poisson&#39;s Problem: Vectorized Implementation</a><a id="Poisson&#39;s-Problem:-Vectorized-Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Poisson&#39;s-Problem:-Vectorized-Implementation" title="Permalink"></a></h2><p>Let us consider the following Poisson&#39;s equation in <span>$(0,1)$</span>:</p><p class="math-container">\[(\kappa(x) u&#39;(x))&#39; = f(x)\qquad u(0) = u(1) = 0\tag{1}\]</p><p>To make the problem more interesting, we make <span>$\kappa$</span> parameterized by <code>a</code>, which is constructed using <a href="../api/#ADCME.constant-Tuple{Any}"><code>constant</code></a> so we can keep track of the dependencies of intermediate values on <code>a</code>. </p><p class="math-container">\[\kappa(x) = \frac{1}{1+x^2}, \ u(x) = x(1-x)\]</p><p>and <span>$f(x)$</span> can be calculated according to Equation 1. We use the finite element method with a linear basis to solve Equation 1: find <span>$u\in H_0^1((0,1))$</span>, such that </p><p class="math-container">\[\int_0^1 \kappa(x) u&#39;(x) v&#39;(x) dx = \int_0^1 f(x) v(x) dx \quad \forall v\in H_0^1((0,1))\]</p><p>We consider a uniform grid with <span>$n$</span> intervals of equal lengths. The common approach for assembling the finite element matrix <span>$A$</span> is to iterate over elements and compute the contribution  <span>$\int_E \kappa(x) \phi&#39;_i(x)\phi&#39;_j(x) dx$</span> and add it to the entry <span>$A_{ij}$</span>; here <span>$\phi_i(x)$</span> is the basis function associated with node <span>$i$</span>. </p><p>The integration is usually done with numerical integration. Here we consider the Gauss quadrature. Consider the <span>$i$</span>-th element, the local stiffness matrix is </p><p class="math-container">\[L_i = \sum_{k=1}^G h\begin{bmatrix} \frac{w_k\kappa(x_k)}{h^2} &amp; -\frac{w_k\kappa(x_k)}{h^2} \\ -\frac{w_k\kappa(x_k)}{h^2} &amp; \frac{w_k\kappa(x_k)}{h^2} \end{bmatrix} = \begin{bmatrix} 1 &amp; -1\\ -1 &amp; 1 \end{bmatrix}\frac{\sum_{k=1}^G w_k\kappa(x_k)}{h} $$
+
+Here $(\xi_k, w_k)$ are Gauss quadrature points and weights on $[0,1]$, and 
+
+$$x_k = (1-\xi_k) (i-1)h + \xi_k ih\]</p><p>The corresponding DOF (degrees of freedom) matrix, i.e., the mapping of local index to global index, is </p><p class="math-container">\[D_i = \begin{bmatrix}(i,i) &amp; (i,i+1) \\ (i+1, i) &amp; (i+1, i+1)\end{bmatrix}\]</p><pre><code class="language-julia">xk = zeros(n, length(ξ))
+for i = 1:length(ξ)
+    xk[:,i] = x[1:end-1] * (1-ξ[i]) + x[2:end] * ξ[i]
+end
+xk = constant(xk) # convert xk from Julia array to tensor
+s = kappa(xk) * w / h
+i0 = Array(1:n)
+i1 = Array(2:n+1)
+II = [i0;i0;i1;i1]
+JJ = [i0;i1;i0;i1]
+VV = [s;-s;-s;s]
+A = SparseTensor(II, JJ, VV, n+1, n+1)</code></pre><p>The right hand side <span>$\int_\Omega f(x) v(x) dx$</span> can be computed in a similar fashion: the local contribution <span>$l_i$</span> and DOF <span>$d_i$</span> are </p><p class="math-container">\[l_i = \sum_{k=1}^G h\begin{bmatrix}
+    w_k f(x_k) (1-\xi_k)\\ 
+    w_k f(x_k) \xi_k\\ 
+\end{bmatrix}\qquad d_i = \begin{bmatrix}
+    i\\ 
+    i+1
+\end{bmatrix}\]</p><p>This is done with </p><pre><code class="language-julia">rhs = zeros(n+1)
+s = [f(xk) * (w .* (1 .-ξ)); f(xk) * (w .* ξ)] * h
+rhs = -vector([i0;i1], s, n+1)</code></pre><h3 id="Full-Code-Listing"><a class="docs-heading-anchor" href="#Full-Code-Listing">Full Code Listing</a><a id="Full-Code-Listing-1"></a><a class="docs-heading-anchor-permalink" href="#Full-Code-Listing" title="Permalink"></a></h3><pre><code class="language-julia">using ADCME
+
+function kappa(x)
+    return 1/(1+a*x^2)
+end
+
+function f(x)
+    return -2*a*x .* (1 - 2*x) ./(a*x^2 + 1)^2 - 2/(a*x^2 + 1)
+end
+
+function uexact(x)
+    return x*(1-x)
+end
+
+n = 100
+h = 1/n 
+x = Array(LinRange(0, 1, n+1))
+a = constant(1.0)
+ξ = [0.1127016653792583; 0.5;0.8872983346207417]
+w = [5/18; 4/9; 5/18]
+
+xk = zeros(n, length(ξ))
+for i = 1:length(ξ)
+    xk[:,i] = x[1:end-1] * (1-ξ[i]) + x[2:end] * ξ[i]
+end
+
+xk = constant(xk) # convert xk from Julia array to tensor
+
+# Assemble left hand side 
+s = kappa(xk) * w / h
+i0 = Array(1:n)
+i1 = Array(2:n+1)
+II = [i0;i0;i1;i1]
+JJ = [i0;i1;i0;i1]
+VV = [s;-s;-s;s]
+A = SparseTensor(II, JJ, VV, n+1, n+1)
+
+
+# Assemble right hand side 
+rhs = zeros(n+1)
+s = [f(xk) * (w .* (1 .-ξ)); f(xk) * (w .* ξ)] * h
+rhs = -vector([i0;i1], s, n+1)
+
+# Impose boundary condition using static condensation 
+A = A[2:end-1, 2:end-1]
+rhs = rhs[2:end-1]
+
+# Solve 
+sol = A\rhs
+sess = Session(); init(sess)
+
+solution = run(sess, sol)</code></pre><p>The result for <span>$a=1$</span> is shown below</p><center><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/poisson.png?raw=true" width="50%"></center><h2 id="Poisson&#39;s-Problem:-Custom-Operators"><a class="docs-heading-anchor" href="#Poisson&#39;s-Problem:-Custom-Operators">Poisson&#39;s Problem: Custom Operators</a><a id="Poisson&#39;s-Problem:-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Poisson&#39;s-Problem:-Custom-Operators" title="Permalink"></a></h2><p>Vectorized implementation is great and elegant when we can easily figure out the mathematical formula. However, for more complicated problems and modular development, it is awkward to reason about vectorization each time. A preferred approach is to loop over elements and focus on calculating local contribution. However, a direct for loop will create a large computational graph and will not be able to take advantage of efficient implementation (e.g., parallel computing). </p><p>In what follows, we consider another approach: custom operator. To motivate our method, we consider a 2D Poisson&#39;s equation in a domain <span>$\Omega$</span></p><p class="math-container">\[\nabla \cdot (\kappa(x) \nabla u) = f(x)\qquad u(x) = 0, x\in \partial\Omega\]</p><p>The weak formulation is given by </p><p class="math-container">\[\int_\Omega \kappa(x) \nabla u \cdot \nabla v dx = - \int_\Omega f(x) v(x) dx\quad \forall v \in H_0^1(\Omega)\]</p><p>The strategy is to implement two custom operators, one for computing the stiffness matrix, and the other for computing the right hand side. We suggest readers to use our <a href="https://github.com/kailaix/AdFem.jl">AdFem</a> library instead of their own. the AdFem library is built on ADCME and contains a rich set of custom operators that allow users to implement FEM fairly easily. </p><pre><code class="language-julia">using AdFem 
+using PyPlot 
+
+mmesh = Mesh(50, 50, 1/50)
+
+function kappa(x, y)
+    return 1/(1+a*(x^2+y^2))
+end
+
+function ffun(x, y)
+    return -2*x*(1 - x)/(x^2 + y^2 + 1) - 2*x*(-x*y*(1 - y) + y*(1 - x)*(1 - y))/(x^2 + y^2 + 1)^2 - 2*y*(1 - y)/   (x^2 + y^2 + 1) - 2*y*(-x*y*(1 - x) + x*(1 - x)*(1 - y))/(x^2 + y^2 + 1)^2
+end
+
+a = constant(1.0)
+κ = eval_f_on_gauss_pts(kappa, mmesh, tensor_input = true)
+fv = eval_f_on_gauss_pts(ffun, mmesh, tensor_input = true)
+A = compute_fem_laplace_matrix1(κ, mmesh)
+rhs = -compute_fem_source_term1(fv, mmesh)
+
+bd = bcnode(mmesh)
+A, rhs = impose_Dirichlet_boundary_conditions(A, rhs, bd, zeros(length(bd)))
+sol = A\rhs 
+
+sess = Session(); init(sess)
+U = run(sess, sol)
+
+close(&quot;all&quot;)
+figure(figsize = (15, 5))
+subplot(131)
+visualize_scalar_on_fem_points(U, mmesh)
+subplot(132)
+xy = fem_nodes(mmesh)
+x, y = xy[:,1], xy[:,2]
+visualize_scalar_on_fem_points((@. x*(1-x)*y*(1-y)), mmesh)
+subplot(133)
+visualize_scalar_on_fem_points(abs.(U - (@. x*(1-x)*y*(1-y))), mmesh)
+savefig(&quot;poisson2d.png&quot;)</code></pre><center><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/poisson2d.png?raw=true" width="50%"></center><h2 id="Summary"><a class="docs-heading-anchor" href="#Summary">Summary</a><a id="Summary-1"></a><a class="docs-heading-anchor-permalink" href="#Summary" title="Permalink"></a></h2><p>Finite element analysis is a powerful tool in numerical PDEs. However, it is more conceptually sophisticated than the finite difference method and requires more implementation efforts. The important lesson we learned from this tutorial is how to separate the computation into pure Julia and ADCME C++ kernels, and how complex numerical schemes can be implemented in ADCME. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tu_fd/">« Numerical Scheme in ADCME: Finite Difference Example</a><a class="docs-footer-nextpage" href="../tu_inv/">Inverse Modeling with ADCME »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 17 May 2021 01:05">Monday 17 May 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
