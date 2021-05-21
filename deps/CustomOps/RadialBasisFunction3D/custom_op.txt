@@ -1,0 +1,12 @@
+RadialBasisFunctionThreeD
+double x(?)
+double y(?)
+double z(?)
+double xc(?)
+double yc(?)
+double zc(?)
+double eps()
+double c(?)
+double d(?)
+int64 kind()
+double out(?) -> output

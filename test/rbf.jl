@@ -37,3 +37,81 @@ end
                     1.930560200260898
                     1.972130181835701]) < 1e-10
 end
+
+
+@testset "rbf3d" begin 
+
+    function f0(r, e)
+        return exp(-(e*r)^2)
+    end
+
+    function f1(r, e)
+        return sqrt((1+(e*r)^2))
+    end
+
+    function f2(r, e)
+        return 1/(1+(e*r)^2)
+    end
+
+    function f3(r, e)
+        return 1/sqrt(1+(e*r)^2)
+    end
+
+    fs = [f0, f1, f2, f3]
+    nc = 100
+    n = 10
+    xc = rand(nc)
+    yc = rand(nc)
+    zc = rand(nc)
+    x = rand(n)
+    y = rand(n)
+    z = rand(n)
+    c = rand(nc)
+    d = rand(4)
+    e = rand(nc)
+
+    for kind = 1:4
+        out = zeros(n)
+        for i = 1:n 
+            r = @. sqrt((x[i] - xc)^2 + (y[i] - yc)^2 + (z[i] - zc)^2)
+            out[i] = sum(c .* fs[kind].(r, e)) + d[1] + d[2] * x[i] + d[3] * y[i] + d[4] * z[i]
+        end
+
+        rbf = RBF3D(xc, yc, zc, c = c, eps = e, d = d, kind = kind - 1)
+        o = rbf(x,y,z)
+
+        o_ = run(sess, o)
+
+        @test maximum(abs.(out .- o_)) < 1e-8
+    end
+
+    for kind = 1:4
+        out = zeros(n)
+        for i = 1:n 
+            r = @. sqrt((x[i] - xc)^2 + (y[i] - yc)^2 + (z[i] - zc)^2)
+            out[i] = sum(c .* fs[kind].(r, e)) + d[1]
+        end
+
+        rbf = RBF3D(xc, yc, zc, c = c, eps = e, d = d[1:1], kind = kind - 1)
+        o = rbf(x,y,z)
+
+        o_ = run(sess, o)
+
+        @test maximum(abs.(out .- o_)) < 1e-8
+    end
+
+    for kind = 1:4
+        out = zeros(n)
+        for i = 1:n 
+            r = @. sqrt((x[i] - xc)^2 + (y[i] - yc)^2 + (z[i] - zc)^2)
+            out[i] = sum(c .* fs[kind].(r, e))
+        end
+
+        rbf = RBF3D(xc, yc, zc, c = c, eps = e, kind = kind - 1)
+        o = rbf(x,y,z)
+
+        o_ = run(sess, o)
+
+        @test maximum(abs.(out .- o_)) < 1e-8
+    end
+end

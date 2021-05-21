@@ -158,3 +158,37 @@ We see we get much better result by freeing up all variables.
 | Approximation        | Difference           |
 | ------------- |:-------------:|
 | ![](https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf3_compare.png)      | ![](https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/ADCME/rbf3_diff.png) |
+
+## 3D Radial Basis Function
+
+ADCME also provides RBFs on a 3D domain. The usage of [`RBF3D`](@ref) is similar to [`RBF2D`](@ref). 
+
+```julia
+xc, yc, zc, c = rand(50), rand(50), rand(50), rand(50)
+d = rand(4)
+e = rand(50)
+rbf = RBF3D(xc, yc, zc; c = c, d = d, eps = e)
+
+x, y, z = rand(10), rand(10), rand(10)
+v = rbf(x,y,z)
+
+sess = Session()
+run(sess, v)
+```
+
+Here `xc`, `yc`, and `zc` are the centers; `e` and `d` are hyper-parameters for radial basis functions (see API documentation for [`RBF3D`](@ref)). These parameter are trainable, e.g., we elect to train `xc`, `yc`, `zc` and `e`, and set $d=0$ (no linear affine term)
+```julia
+xc, yc, zc, c = Variable(rand(50)), Variable(rand(50)), Variable(rand(50)), Variable(rand(50))
+e = Variable(rand(50))
+rbf = RBF3D(xc, yc, zc; c = c, eps = e)
+
+# ... (details ommited)
+
+v = rbf(x, y, z)
+loss = sum((v-vobs)^2)
+sess = Session(); init(sess)
+BFGS!(sess, loss)
+```
+
+
+

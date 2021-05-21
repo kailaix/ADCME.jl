@@ -84,6 +84,7 @@ add_library(adcme SHARED OT/SinkhornKnopp/SinkhornKnopp.cpp OT/src/sinkhorn.cpp
   SleepFor/SleepFor.cpp
   RadialBasisFunction/Functions.cpp RadialBasisFunction/RadialBasisFunction.cpp 
   RadialBasisFunction/Impl.cpp InterpDimOne/InterpDimOne.cpp
+  RadialBasisFunction3D/Impl.cpp RadialBasisFunction3D/RadialBasisFunctionThreeD.cpp 
   SparseCompress/SparseCompress.cpp
   RollingFunctions/RollingFunctions.cpp
   ${MPI_OPS})

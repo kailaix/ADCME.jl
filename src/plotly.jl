@@ -32,6 +32,11 @@ fig.show()
 ```
 """
 function Plot(rows::Int64 = 1, cols::Int64 = 1, args...; kwargs...)
+    pkgs = read(`$PIP list`, String)
+    if !occursin("plotly", pkgs)
+        run(`$PIP install plotly==4.14.3`)
+    end
+    copy!(plotly, "plotly")
     spt = pyimport("plotly.subplots")
     spt.make_subplots(rows = rows, cols = cols, args...;kwargs...)
 end

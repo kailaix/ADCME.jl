@@ -49,3 +49,5 @@ docs/src/assets/Codes/OptimizationResearch/*
 
 Manifest.toml
 *.db
+docs/src/assets/Codes/AIM/*.png
+docs/src/assets/Codes/AIM/*.tex
