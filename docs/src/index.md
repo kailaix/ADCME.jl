@@ -55,6 +55,14 @@ Pkg.add("ADCME")
     using ADCME; 
     print(joinpath(splitdir(pathof(ADCME))[1], "deps/deps.jl"))
     ```
+
+## Docker
+
+If you have Docker installed on your system, you can try the no-hassle way to install ADCME (you don't even have to install Julia!):
+```bash
+docker run -ti kailaix/adcme
+```
+See [this guide](./docker.md) for details. 
     
 ## Troubleshooting for MacOS
     
