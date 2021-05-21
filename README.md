@@ -94,6 +94,14 @@ doctor()
 For manual installation without access to the internet, see [here](https://kailaix.github.io/ADCME.jl/dev/).
 
 
+## Install via Docker
+
+If you have Docker installed on your system, you can try the no-hassle way to install ADCME (you don't even have to install Julia!):
+```bash
+docker run -ti kailaix/adcme
+```
+See [this guide](https://kailaix.github.io/ADCME.jl/latest/docker/) for details.
+
 # Tutorial
 
 Here we present three inverse problem examples. The first one is a parameter estimation problem, the second one is a function inverse problem where the unknown function does not depend on the state variables, and the third one is also a function inverse problem, but the unknown function depends on the state variables. 
