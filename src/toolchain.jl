@@ -57,7 +57,12 @@ function uncompress(zipfile::AbstractString, file::Union{Missing, AbstractString
     end
     uncompress_ = ()->begin
         if length(zipfile)>4 && zipfile[end-3:end]==".zip"
-            run(`unzip $zipfile -d $d`)
+            if Sys.iswindows()
+                run(`unzip $zipfile -d $d`)
+            else 
+                UNZIP = joinpath(BINDIR, "unzip")
+                run(`$UNZIP $zipfile -d $d`)
+            end
         elseif length(zipfile)>4 && zipfile[end-3:end]==".tar"
             run(`tar -xvf $zipfile -C $d`)
         elseif length(zipfile)>7 && (zipfile[end-6:end]==".tar.gz" || zipfile[end-3:end]==".tgz")
