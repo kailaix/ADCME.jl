@@ -13,6 +13,9 @@ docker run -ti kailaix/adcme
 
 This will fire a Julia prompt, which already includes precompiled ADCME. 
 
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/docker.png?raw=true)
+
+
 For users who want to open a terminal, run 
 
 ```julia
