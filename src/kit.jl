@@ -419,6 +419,9 @@ function update(i)
 end
 animate(update, 1:100)
 ```
+
+!!! info 
+    `clf()` can be used to clear figures within `update` function. 
 """
 function animate(update::Function, frames; kwargs...)
     mp = require_pyplot()
