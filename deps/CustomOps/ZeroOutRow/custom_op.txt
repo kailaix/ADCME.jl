@@ -1,0 +1,6 @@
+ZeroOutRow
+int64 indices(?,2)
+double vv(?)
+int64 bd(?)
+int64 oindices(?,2) -> output
+double ovv(?) -> output

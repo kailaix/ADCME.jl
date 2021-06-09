@@ -379,3 +379,11 @@ end
     @test run(sess, Ac.o.indices) == [0 0;1 1;2 2]
     @test run(sess, Ac.o.values) ≈ [2.0;1.0;1.0]
 end
+
+@testset "zero_out_row" begin 
+    A = sprand(10,10,0.3)
+    bd = [1;3;5]
+    B = zero_out_row(A, bd)
+    A[bd,:] .= 0
+    @test norm(run(sess, B) - A)< 1e-8
+end

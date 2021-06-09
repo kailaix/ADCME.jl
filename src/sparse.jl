@@ -3,7 +3,7 @@ import Base: accumulate
 import LinearAlgebra: factorize
 export SparseTensor, SparseAssembler, 
 spdiag, find, spzero, dense_to_sparse, accumulate, assemble, rows, cols,
-factorize, solve, trisolve, RawSparseTensor, compress
+factorize, solve, trisolve, RawSparseTensor, compress, zero_out_row
 
 """
     SparseTensor
@@ -777,5 +777,21 @@ function compress(A::SparseTensor)
     indices, v = A.o.indices, A.o.values
     sparse_compress_ = load_op_and_grad(libadcme,"sparse_compress", multiple=true)
     ind, vv = sparse_compress_(indices,v)
+    RawSparseTensor(ind, vv, size(A)...)
+end
+
+@doc raw"""
+    zero_out_row(A::Union{SparseMatrixCSC, SparseTensor}, bd::Array{Int64, 1})
+
+Zeros out rows of a sparse tensor `A`. The counterpart of numerical array function is 
+
+$$A[bd,:] .= 0.0$$
+"""
+function zero_out_row(A::Union{SparseMatrixCSC, SparseTensor}, bd::Array{Int64, 1})
+    A = constant(A)
+    indices, vv = A.o.indices, A.o.values
+    zero_out_row_ = load_op_and_grad(libadcme,"zero_out_row", multiple=true)
+    indices,vv,bd = convert_to_tensor(Any[indices,vv,bd], [Int64,Float64,Int64])
+    ind, vv = zero_out_row_(indices,vv,bd)
     RawSparseTensor(ind, vv, size(A)...)
 end
