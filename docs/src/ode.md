@@ -155,7 +155,7 @@ $$\mathbf{d} = \begin{bmatrix}e^{-t}\\ e^{-2t}\end{bmatrix}$$
 
 and 
 
-$$M = \begin{bmatrix}1 & 2\\3 &4 \end{bmatrix}\qquad Z_1 = \begin{bmatrix}5 & 6\\7 &8 \end{bmatrix}\qquad Z_2 =\begin{bmatrix}9 & 10\\11 &12 \end{bmatrix} $$
+$$M = \begin{bmatrix}1 & 2\\3 &4 \end{bmatrix}\qquad Z_1 = \begin{bmatrix}5 & 6\\7 &8 \end{bmatrix}\qquad Z_2 =\begin{bmatrix}9 & 10\\11 &12 \end{bmatrix}$$
 
 The function $f$ is given by 
 
@@ -216,6 +216,149 @@ savefig("ode_solution.png")
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ode_solution.png?raw=true)
 
+
+
+## Newmark Algorithm 
+
+Besides the explicit Newmark algorithm, we also provide the a-form Newmark algorithm: [`Newmark`](@ref). It is a time integrator for 
+
+$$M\ddot \mathbf{d} + C \dot\mathbf{d} + K \mathbf{d} + f = 0$$
+
+The numerical scheme is given by 
+
+$$\begin{aligned}
+\tilde d_{n+1} &= d_n + \Delta t v_n + \Delta^2/2(1-2\beta)a_n \\ 
+\tilde v_{n+1} &= v_n + (1-\gamma)\Delta a_n \\ 
+(M+\gamma\Delta C+\beta \Delta^2 K)a_{n+1} &= F_{n+1} - C\tilde v_{n+1} - K\tilde d_{n+1}\\ 
+d_{n+1} &= \tilde d_{n+1} + \beta \Delta^2 a_{n+1}\\ 
+v_{n+1} &= \tilde v_{n+1} + \gamma \Delta ta_n
+\end{aligned}$$
+
+Let us consider an example. The left side of the beam is fixed, while the other boundaries are considered free surface. The beam is subject to the gravity force. The governing equation for interior points are 
+
+$$\rho\ddot u = \mathrm{div} \sigma + f$$
+
+The constitutive law is given by 
+
+$$\sigma_{ij} = C_{ijlk} \epsilon_{lk},\quad \epsilon = \frac12\left(\nabla u + (\nabla u)^T\right)$$
+
+We use a plane stress linear elasticity model with $E = 1000.0, \nu = 0.3$. 
+
+Using [AdFem](https://github.com/kailaix/AdFem.jl), the code is as follows
+
+```julia
+using AdFem
+
+mmesh = Mesh(20, 5, 0.1)
+NT = 100
+Δt = 0.3/NT
+bd = bcnode((x,y)->x<0.001, mmesh)
+M = compute_fem_mass_matrix(ones(get_ngauss(mmesh)), mmesh)
+H = compute_plane_stress_matrix(1000.0, 0.3)
+K = compute_fem_stiffness_matrix(H, mmesh)
+F = compute_fem_source_term(ones(get_ngauss(mmesh)), ones(get_ngauss(mmesh)), mmesh)
+nm = Newmark(M, spzero(2mmesh.ndof), K, Δt, factorize_S = false)
+```
+
+Now we need to impose the boundary condition. To this end, since we have a fixed Dirichlet boundary condition, all we need to do is to ensure that the left boundary component of the acceleration $a$ is zero. 
+
+```julia
+nm.S, F = impose_Dirichlet_boundary_conditions(nm.S, F, [bd; bd .+ mmesh.ndof], zeros(2length(bd)))
+nm.S = factorize(nm.S)
+nm.C = impose_Dirichlet_boundary_conditions(nm.C, [bd; bd .+ mmesh.ndof])
+nm.K = impose_Dirichlet_boundary_conditions(nm.K, [bd; bd .+ mmesh.ndof])
+```
+
+Now we can carry out the simulation 
+```julia
+d = TensorArray(NT+1)
+v = TensorArray(NT+1)
+a = TensorArray(NT+1)
+
+d = write(d, 1, zeros(2mmesh.ndof))
+v = write(v, 1, zeros(2mmesh.ndof))
+a = write(a, 1, zeros(2mmesh.ndof))
+i = constant(2, dtype = Int32)
+
+function condition(i, ta...)
+    i<=NT+1
+end
+
+
+function body(i, ta...)
+    d, v, a = ta 
+    d0, v0, a0 = step(nm, read(d, i-1), read(v, i-1), read(a, i-1), F)
+    i+1, write(d, i, d0), write(v, i, v0), write(a, i, a0)
+end
+
+_, darr, varr, aarr = while_loop(condition, body, [i, d, v, a])
+
+D, V, A = stack(darr), stack(varr), stack(aarr)
+
+sess = Session(); init(sess)
+Darr, Varr, Aarr = run(sess, [D, V, A])
+
+
+close("all")
+visualize_displacement(Darr[end,:], mmesh)
+savefig("newmark_simple.png")
+```
+
+The solution at $t=0.3$ is as follows:
+
+![](https://raw.githubusercontent.com/ADCMEMarket/ADCMEImages/master/AdFem/explicit_newmark.png)
+**Complete Code**
+
+```julia
+using AdFem
+
+mmesh = Mesh(20, 5, 0.1)
+NT = 100
+Δt = 0.3/NT
+bd = bcnode((x,y)->x<0.001, mmesh)
+M = compute_fem_mass_matrix(ones(get_ngauss(mmesh)), mmesh)
+H = compute_plane_stress_matrix(1000.0, 0.3)
+K = compute_fem_stiffness_matrix(H, mmesh)
+F = compute_fem_source_term(ones(get_ngauss(mmesh)), ones(get_ngauss(mmesh)), mmesh)
+nm = Newmark(M, spzero(2mmesh.ndof), K, Δt, factorize_S = false)
+
+nm.S, F = impose_Dirichlet_boundary_conditions(nm.S, F, [bd; bd .+ mmesh.ndof], zeros(2length(bd)))
+nm.S = factorize(nm.S)
+nm.C = impose_Dirichlet_boundary_conditions(nm.C, [bd; bd .+ mmesh.ndof])
+nm.K = impose_Dirichlet_boundary_conditions(nm.K, [bd; bd .+ mmesh.ndof])
+
+d = TensorArray(NT+1)
+v = TensorArray(NT+1)
+a = TensorArray(NT+1)
+
+d = write(d, 1, zeros(2mmesh.ndof))
+v = write(v, 1, zeros(2mmesh.ndof))
+a = write(a, 1, zeros(2mmesh.ndof))
+i = constant(2, dtype = Int32)
+
+function condition(i, ta...)
+    i<=NT+1
+end
+
+
+function body(i, ta...)
+    d, v, a = ta 
+    d0, v0, a0 = step(nm, read(d, i-1), read(v, i-1), read(a, i-1), F)
+    i+1, write(d, i, d0), write(v, i, v0), write(a, i, a0)
+end
+
+_, darr, varr, aarr = while_loop(condition, body, [i, d, v, a])
+
+D, V, A = stack(darr), stack(varr), stack(aarr)
+
+sess = Session(); init(sess)
+Darr, Varr, Aarr = run(sess, [D, V, A])
+
+
+close("all")
+visualize_displacement(Darr[end,:], mmesh)
+savefig("explicit_newmark.png")
+```
 
 ## Build Your Own Solvers
 

@@ -1,5 +1,5 @@
 export ode45, rk4, αscheme, αscheme_time, 
-    αscheme_atime, TR_BDF2, ExplicitNewmark
+    αscheme_atime, TR_BDF2, ExplicitNewmark, Newmark
 
 function runge_kutta_one_step(f::Function, t::PyObject, y::PyObject, Δt::PyObject, θ::Union{PyObject, Missing})
     k1 = Δt*f(t, y, θ)
@@ -404,13 +404,14 @@ en = ExplicitNewmark(M, Z1, Z2, Δt)
 d2 = step(en, d0, d1, f)
 ```
 """
-struct ExplicitNewmark 
-    A::Union{PyObject, Tuple{SparseTensor, PyObject}}
+mutable struct ExplicitNewmark 
+    A::Union{PyObject, Tuple{SparseTensor, PyObject}, SparseTensor}
     B::Union{PyObject, SparseTensor} 
     C::Union{PyObject, SparseTensor} 
     function ExplicitNewmark(M::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
             Z1::Union{Missing, PyObject, Array{Float64, 2}, SparseTensor, SparseMatrixCSC}, 
-            Z2::Union{Missing, PyObject, Array{Float64, 2}, SparseTensor, SparseMatrixCSC}, Δt::Float64)
+            Z2::Union{Missing, PyObject, Array{Float64, 2}, SparseTensor, SparseMatrixCSC}, Δt::Float64;
+            factorize_A::Bool = true)
         M = constant(M)
         if ismissing(Z1)
             A = 1/Δt^2 * M
@@ -420,7 +421,7 @@ struct ExplicitNewmark
             A = (1/Δt^2 * M + 1/(2Δt) * Z1)
             C = -(1/Δt^2 * M - 1/(2Δt) * Z1)
         end
-        if isa(A, SparseTensor)
+        if isa(A, SparseTensor) && factorize_A
             A = factorize(A)
         end
         if ismissing(Z2)
@@ -437,8 +438,87 @@ function Base.:show(io::IO, en::ExplicitNewmark)
     print("ExplicitNewmark(DOF=$(size(en.B, 1)))")
 end
 
-function Base.:step(en::ExplicitNewmark, d0::Union{Array{Float64, 1}, PyObject}, d1::Union{Array{Float64, 1}, PyObject}, f::Union{Array{Float64, 1}, PyObject})
+function Base.:step(en::ExplicitNewmark, 
+    d0::Union{Array{Float64, 1}, PyObject}, 
+    d1::Union{Array{Float64, 1}, PyObject}, 
+    f::Union{Array{Float64, 1}, PyObject})
     d0, d1, f = convert_to_tensor([d0, d1, f], [Float64, Float64, Float64])
     en.A \ (en.B * d1 + en.C * d0 - f)
 end
 
+@doc raw"""
+    Newmark(M::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
+                        C::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
+                        K::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
+                        Δt::Float64; β::Float64 = 1/4, γ::Float64 = 1/2, factorize_S::Bool = true)
+
+Creates a Newmark algorithm object. This function uses "a-form" implementation for 
+
+$$M\ddot \mathbf{d} + C \dot\mathbf{d} + K \mathbf{d} + f = 0$$
+
+The numerical scheme is 
+
+$$\begin{aligned}
+\tilde d_{n+1} &= d_n + \Delta t v_n + \Delta^2/2(1-2\beta)a_n \\ 
+\tilde v_{n+1} &= v_n + (1-\gamma)\Delta a_n \\ 
+(M+\gamma\Delta C+\beta \Delta^2 K)a_{n+1} &= F_{n+1} - C\tilde v_{n+1} - K\tilde d_{n+1}\\ 
+d_{n+1} &= \tilde d_{n+1} + \beta \Delta^2 a_{n+1}\\ 
+v_{n+1} &= \tilde v_{n+1} + \gamma \Delta ta_n
+\end{aligned}$$
+
+For unconditional stability
+$$2\beta \geq \gamma \geq \frac12$$
+
+For an explicit form, see [`ExplicitNewmark`](@ref), which corresponds to $\beta = 0, \gamma = \frac12$. 
+
+A common choice for Newmark algorithm is $\beta = \frac14, \gamma = \frac12$ (a.k.a., average acceleration, or 
+Trapezoidal rule), which is unconditionally stable, 
+has second order of accuracy. 
+
+!!! info 
+    Internally, $M+\gamma\Delta C+\beta \Delta^2 K$ is represented by `S`. Users can elect to factorize $S$ (default $=$ true). 
+
+To perform time marching, use 
+```
+step(nm::Newmark, d::PyObject, v::PyObject, a::PyObject, 
+        F::Union{Array{Float64, 1}, PyObject})
+```
+"""
+mutable struct Newmark
+    M::SparseTensor
+    C::SparseTensor
+    K::SparseTensor
+    S::Union{Tuple{SparseTensor, PyCall.PyObject}, SparseTensor}
+    β::Float64
+    γ::Float64
+    Δt::Float64
+    function Newmark(M::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
+            C::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
+            K::Union{SparseTensor, PyObject, Array{Float64, 2}, SparseMatrixCSC}, 
+            Δt::Float64; β::Float64 = 1/4, γ::Float64 = 1/2, factorize_S::Bool = true)
+        M = SparseTensor(M)
+        C = SparseTensor(C)
+        K = SparseTensor(K)
+        S = M + γ*Δt*C + β*Δt^2*K
+        if factorize_S
+            S = factorize(S)
+        end
+        new(M, C, K, S, β, γ, Δt)
+    end
+end
+
+function Base.:show(io::IO, en::Newmark)
+    print("Newmark(DOF=$(size(en.S, 1)), γ=$(en.γ), β=$(en.β))")
+end
+
+
+function Base.:step(nm::Newmark, d::PyObject, v::PyObject, a::PyObject, 
+        F::Union{Array{Float64, 1}, PyObject})
+    β, γ, Δt = nm.β, nm.γ, nm.Δt
+    td = d + Δt * v + Δt^2/2*(1-2β)*a 
+    tv = v + (1-γ)*Δt*a     
+    a_ = nm.S\(-F - nm.C*tv - nm.K*td)
+    d_ = td + β*Δt^2*a_
+    v_ = tv + γ*Δt*a_
+    d_, v_, a_
+end
