@@ -360,6 +360,73 @@ visualize_displacement(Darr[end,:], mmesh)
 savefig("explicit_newmark.png")
 ```
 
+### Calculating Initial Acceleration
+
+Consider another scenario: there is a small slip on the right hand side at $t=0$ and both left and right sides are fixed thereafter. 
+
+```julia
+using AdFem
+using PyPlot 
+
+mmesh = Mesh(20, 5, 0.1)
+NT = 100
+Δt = 0.3/NT
+bd = bcnode((x,y)->x<0.001, mmesh)
+bdr = bcnode((x,y)->x>2-0.001, mmesh)
+M = compute_fem_mass_matrix(ones(get_ngauss(mmesh)), mmesh)
+H = compute_plane_stress_matrix(1000.0, 0.3)
+K = compute_fem_stiffness_matrix(H, mmesh)
+F = zeros(2mmesh.ndof)
+nm = Newmark(M, spzero(2mmesh.ndof), K, Δt, factorize_S = false)
+
+bd_ = [bd; bdr; bd .+ mmesh.ndof; bdr .+ mmesh.ndof]
+nm.S = impose_Dirichlet_boundary_conditions(nm.S, bd_)
+nm.S = factorize(nm.S)
+nm.C = impose_Dirichlet_boundary_conditions(nm.C, bd_)
+nm.K = zero_out_row(nm.K, bd_)
+
+d = TensorArray(NT+1)
+v = TensorArray(NT+1)
+a = TensorArray(NT+1)
+
+d0 = zeros(2mmesh.ndof)
+d0[bdr.+mmesh.ndof] .= 0.5 * 0.1
+d = write(d, 1, d0)
+v = write(v, 1, zeros(2mmesh.ndof))
+a0 = nm.S\(-nm.K * d0)
+a = write(a, 1, a0)
+i = constant(2, dtype = Int32)
+
+function condition(i, ta...)
+    i<=NT+1
+end
+
+
+function body(i, ta...)
+    d, v, a = ta 
+    d0, v0, a0 = step(nm, read(d, i-1), read(v, i-1), read(a, i-1), F)
+    i+1, write(d, i, d0), write(v, i, v0), write(a, i, a0)
+end
+
+_, darr, varr, aarr = while_loop(condition, body, [i, d, v, a])
+
+D, V, A = stack(darr), stack(varr), stack(aarr)
+
+sess = Session(); init(sess)
+Darr, Varr, Aarr = run(sess, [D, V, A])
+
+
+close("all")
+function update(i)
+    clf()
+    visualize_displacement(Darr[i,:], mmesh)
+end 
+p = animate(update, 1:NT)
+saveanim(p, "initial_acce.gif")
+```
+
+![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/AdFem/initial_acce.gif?raw=true)
+
 ## Build Your Own Solvers
 
 Sometimes it is helpful to build your own ODE/PDE solvers. The basic routine is 
