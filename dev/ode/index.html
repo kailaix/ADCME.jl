@@ -251,7 +251,64 @@ Darr, Varr, Aarr = run(sess, [D, V, A])
 
 close(&quot;all&quot;)
 visualize_displacement(Darr[end,:], mmesh)
-savefig(&quot;explicit_newmark.png&quot;)</code></pre><h2 id="Build-Your-Own-Solvers"><a class="docs-heading-anchor" href="#Build-Your-Own-Solvers">Build Your Own Solvers</a><a id="Build-Your-Own-Solvers-1"></a><a class="docs-heading-anchor-permalink" href="#Build-Your-Own-Solvers" title="Permalink"></a></h2><p>Sometimes it is helpful to build your own ODE/PDE solvers. The basic routine is </p><ol><li>Implement the one step state transition function;</li><li>Use <a href="../api/#ADCME.while_loop-Tuple{Union{Function, PyCall.PyObject},Function,Union{PyCall.PyObject, Array{Any,N} where N, Array{PyCall.PyObject,N} where N}}"><code>while_loop</code></a> to build the time integrator. </li></ol><p>As an example, we build a second-order Runge-Kutta scheme for </p><p class="math-container">\[\dot{\mathbf{d}} + \beta \mathbf{d} = \mathbf{t}\]</p><p>The numerical scheme is</p><p class="math-container">\[\begin{aligned}h_1 &amp;= -\beta \mathbf{d}^n + \mathbf{t}^n\\ h_2 &amp;= -\beta(\mathbf{d}^n + \Delta t h_1) + \mathbf{t}^n\\ \mathbf{d}^{n+1} &amp;= \mathbf{d}^n + \frac{\Delta t}{2}(h_1 + h_2)\end{aligned}\]</p><p>The state transition function has the following form </p><pre><code class="language-julia">function rk_one_step(d2, t)
+savefig(&quot;explicit_newmark.png&quot;)</code></pre><h3 id="Calculating-Initial-Acceleration"><a class="docs-heading-anchor" href="#Calculating-Initial-Acceleration">Calculating Initial Acceleration</a><a id="Calculating-Initial-Acceleration-1"></a><a class="docs-heading-anchor-permalink" href="#Calculating-Initial-Acceleration" title="Permalink"></a></h3><p>Consider another scenario: there is a small slip on the right hand side at <span>$t=0$</span> and both left and right sides are fixed thereafter. </p><pre><code class="language-julia">using AdFem
+using PyPlot 
+
+mmesh = Mesh(20, 5, 0.1)
+NT = 100
+Δt = 0.3/NT
+bd = bcnode((x,y)-&gt;x&lt;0.001, mmesh)
+bdr = bcnode((x,y)-&gt;x&gt;2-0.001, mmesh)
+M = compute_fem_mass_matrix(ones(get_ngauss(mmesh)), mmesh)
+H = compute_plane_stress_matrix(1000.0, 0.3)
+K = compute_fem_stiffness_matrix(H, mmesh)
+F = zeros(2mmesh.ndof)
+nm = Newmark(M, spzero(2mmesh.ndof), K, Δt, factorize_S = false)
+
+bd_ = [bd; bdr; bd .+ mmesh.ndof; bdr .+ mmesh.ndof]
+nm.S = impose_Dirichlet_boundary_conditions(nm.S, bd_)
+nm.S = factorize(nm.S)
+nm.C = impose_Dirichlet_boundary_conditions(nm.C, bd_)
+nm.K = zero_out_row(nm.K, bd_)
+
+d = TensorArray(NT+1)
+v = TensorArray(NT+1)
+a = TensorArray(NT+1)
+
+d0 = zeros(2mmesh.ndof)
+d0[bdr.+mmesh.ndof] .= 0.5 * 0.1
+d = write(d, 1, d0)
+v = write(v, 1, zeros(2mmesh.ndof))
+a0 = nm.S\(-nm.K * d0)
+a = write(a, 1, a0)
+i = constant(2, dtype = Int32)
+
+function condition(i, ta...)
+    i&lt;=NT+1
+end
+
+
+function body(i, ta...)
+    d, v, a = ta 
+    d0, v0, a0 = step(nm, read(d, i-1), read(v, i-1), read(a, i-1), F)
+    i+1, write(d, i, d0), write(v, i, v0), write(a, i, a0)
+end
+
+_, darr, varr, aarr = while_loop(condition, body, [i, d, v, a])
+
+D, V, A = stack(darr), stack(varr), stack(aarr)
+
+sess = Session(); init(sess)
+Darr, Varr, Aarr = run(sess, [D, V, A])
+
+
+close(&quot;all&quot;)
+function update(i)
+    clf()
+    visualize_displacement(Darr[i,:], mmesh)
+end 
+p = animate(update, 1:NT)
+saveanim(p, &quot;initial_acce.gif&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/AdFem/initial_acce.gif?raw=true" alt/></p><h2 id="Build-Your-Own-Solvers"><a class="docs-heading-anchor" href="#Build-Your-Own-Solvers">Build Your Own Solvers</a><a id="Build-Your-Own-Solvers-1"></a><a class="docs-heading-anchor-permalink" href="#Build-Your-Own-Solvers" title="Permalink"></a></h2><p>Sometimes it is helpful to build your own ODE/PDE solvers. The basic routine is </p><ol><li>Implement the one step state transition function;</li><li>Use <a href="../api/#ADCME.while_loop-Tuple{Union{Function, PyCall.PyObject},Function,Union{PyCall.PyObject, Array{Any,N} where N, Array{PyCall.PyObject,N} where N}}"><code>while_loop</code></a> to build the time integrator. </li></ol><p>As an example, we build a second-order Runge-Kutta scheme for </p><p class="math-container">\[\dot{\mathbf{d}} + \beta \mathbf{d} = \mathbf{t}\]</p><p>The numerical scheme is</p><p class="math-container">\[\begin{aligned}h_1 &amp;= -\beta \mathbf{d}^n + \mathbf{t}^n\\ h_2 &amp;= -\beta(\mathbf{d}^n + \Delta t h_1) + \mathbf{t}^n\\ \mathbf{d}^{n+1} &amp;= \mathbf{d}^n + \frac{\Delta t}{2}(h_1 + h_2)\end{aligned}\]</p><p>The state transition function has the following form </p><pre><code class="language-julia">function rk_one_step(d2, t)
     h1 = -β*d2 + t 
     h2 = -β*(d2+Δt*h1)+t 
     d2 + Δt/2*(h1+h2)
@@ -291,4 +348,4 @@ plot(ts, D[:,2], &quot;g.&quot;)
 plot(ts, exp.(-ts), &quot;r--&quot;)
 plot(ts, exp.(-2ts), &quot;r--&quot;)
 xlabel(&quot;t&quot;); ylabel(&quot;y&quot;)
-savefig(&quot;ode_solution2.png&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ode_solution2.png?raw=true" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../optim/">« Study on Optimizers</a><a class="docs-footer-nextpage" href="../global/">Shared Memory Across Kernels »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 9 June 2021 23:57">Wednesday 9 June 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+savefig(&quot;ode_solution2.png&quot;)</code></pre><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/ode_solution2.png?raw=true" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../optim/">« Study on Optimizers</a><a class="docs-footer-nextpage" href="../global/">Shared Memory Across Kernels »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 10 June 2021 00:27">Thursday 10 June 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
