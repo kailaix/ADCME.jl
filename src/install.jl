@@ -32,7 +32,7 @@ Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR,
         required_file = get_library(joinpath(ADCME.LIBDIR, "openblas"))
         if !isfile(required_file)
             files = readdir(ADCME.LIBDIR)
-            files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.dylib)", files))[1]
+            files = filter(x->!isnothing(x), match.(r"(libopenblas\S*.\S*)", files))[1]
             target = joinpath(ADCME.LIBDIR, files[1])
             symlink(target, required_file)
             @info "Symlink $(required_file) --> $(files[1])"
