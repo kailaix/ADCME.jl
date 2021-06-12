@@ -64,21 +64,8 @@ ENDIF()
 
 include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
 
-find_program(_nvidia_smi "nvidia-smi")
-if (_nvidia_smi)
-  find_package(CUDA QUIET REQUIRED)
-  SET(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-  SET(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
-  SET(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
-  SET(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
-  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
-  SET(CUDA_PROPAGATE_HOST_FLAGS ON)
-  add_definitions(-DGOOGLE_CUDA)
-  message("Compiling GPU-compatible custom operator!")
-  cuda_add_library(HaloExchangeNeighborTwo SHARED HaloExchangeNeighborTwo.cpp HaloExchangeNeighborTwo.cu)
-else()
-  add_library(HaloExchangeNeighborTwo SHARED HaloExchangeNeighborTwo.cpp)
-endif()
+
+add_library(HaloExchangeNeighborTwo SHARED HaloExchangeNeighborTwo.cpp)
 
 set_property(TARGET HaloExchangeNeighborTwo PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(HaloExchangeNeighborTwo ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
