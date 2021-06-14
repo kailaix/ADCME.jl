@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(TF_CUSTOM_OP)
-SET (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 11)
 
 message("JULIA=${JULIA}")
 
@@ -35,21 +35,28 @@ message("TF_LIB_FILE=${TF_LIB_FILE}")
 
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
-  SET(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
 endif()
 
-SET(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
+
+if(MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
+else()
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+endif()
+
 if(MSVC)
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W0" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   else()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
   endif()
   add_definitions(-DNOMINMAX)
-  SET(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
-else()
-  SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 endif()
+
+include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
+link_directories(${LIBDIR})
 
 # Compile MPI programs
 IF(DEFINED ENV{MPI_C_LIBRARIES})
@@ -61,6 +68,8 @@ IF(DEFINED ENV{MPI_C_LIBRARIES})
 ELSE()
   message("MPI_INCLUDE_PATH and/or MPI_C_LIBRARIES is not set. MPI operators are not compiled.")
 ENDIF()
+
+find_package(OpenMP)
 
 include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
 
