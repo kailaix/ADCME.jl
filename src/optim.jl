@@ -828,7 +828,9 @@ function Optimize!(sess::PyObject, loss::PyObject, max_iter::Int64 = 15000;
     n = 0
     assign_ops = PyObject[]
     for (k,v) in enumerate(vars)
-        push!(assign_ops, assign(v, tf.reshape(pl[n+1:n+prod(sizes[k])], sizes[k])))
+        vnew = tf.reshape(pl[n+1:n+prod(sizes[k])], sizes[k])
+        vnew = cast(vnew, get_dtype(pl))
+        push!(assign_ops, assign(v, vnew))
         n += prod(sizes[k])
     end
     
