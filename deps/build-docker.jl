@@ -3,14 +3,6 @@ if !isdir(ADCME_DIR)
     mkpath(ADCME_DIR)
 end
 
-using Pkg 
-using PyCall
-push!(LOAD_PATH, "@stdlib")
-if PyCall.python!="/usr/local/bin/python"
-    ENV["PYTHON"] = "/usr/local/bin/python"
-    Pkg.build("PyCall")
-end
-
 deps = """
 BINDIR = "$(joinpath(ADCME_DIR, "bin"))"
 LIBDIR = "$(joinpath(ADCME_DIR, "lib"))"
