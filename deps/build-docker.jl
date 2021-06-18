@@ -6,6 +6,9 @@ end
 if !isdir(joinpath(ADCME_DIR, "bin"))
     mkpath(joinpath(ADCME_DIR, "bin"))
 end
+if !isdir(joinpath(ADCME_DIR, "lib/Libraries"))
+    mkpath(joinpath(ADCME_DIR, "lib/Libraries"))
+end
 
 if !islink("$(joinpath(ADCME_DIR, "bin/unzip"))")
     symlink("/usr/bin/unzip", "$(joinpath(ADCME_DIR, "bin/unzip"))")
