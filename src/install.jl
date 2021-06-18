@@ -1,6 +1,7 @@
 # install.jl collects scripts to install many third party libraries 
 
-export install_adept, install_blas, install_openmpi, install_hypre, install_had, install_mfem, install_matplotlib
+export install_adept, install_blas, install_openmpi, install_hypre, 
+    install_had, install_mfem, install_matplotlib, install_eigen
 
 function install_blas(blas_binary::Bool = true)
     if Sys.iswindows()
@@ -38,6 +39,30 @@ Alternatively, you can place your precompiled binary to $(joinpath(ADCME.LIBDIR,
             @info "Symlink $(required_file) --> $(files[1])"
         end
     end 
+end
+
+"""
+    install_eigen()
+
+Install eigen library
+"""
+function install_eigen()
+    require_file("$(ADCME.PREFIXDIR)/eigen.zip") do
+        download("https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip","$(ADCME.PREFIXDIR)/eigen.zip")
+    end
+    
+    require_file("$(ADCME.PREFIXDIR)/eigen3") do
+        UNZIP =  joinpath(ADCME.BINDIR, "unzip")
+        if Sys.iswindows()
+            require_file("$(ADCME.PREFIXDIR)/unzip.exe") do
+                download("http://stahlworks.com/dev/unzip.exe", joinpath(ADCME.PREFIXDIR, "unzip.exe"))
+            end
+            UNZIP =  joinpath(ADCME.PREFIXDIR, "unzip.exe")
+        end 
+        run(`$UNZIP -qq $(ADCME.PREFIXDIR)/eigen.zip -d $(ADCME.PREFIXDIR)`)
+        mv("$(ADCME.PREFIXDIR)/eigen-3.3.7", "$(ADCME.PREFIXDIR)/eigen3", force=true)
+    end
+    
 end
 
 """

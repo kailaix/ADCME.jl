@@ -3,6 +3,29 @@ if !isdir(ADCME_DIR)
     mkpath(ADCME_DIR)
 end
 
+if !isdir(joinpath(ADCME_DIR, "bin"))
+    mkpath(joinpath(ADCME_DIR, "bin"))
+end
+
+if !islink("$(joinpath(ADCME_DIR, "bin/unzip"))")
+    symlink("/usr/bin/unzip", "$(joinpath(ADCME_DIR, "bin/unzip"))")
+end
+
+
+if !islink("$(joinpath(ADCME_DIR, "bin/make"))")
+    symlink("/usr/bin/make", "$(joinpath(ADCME_DIR, "bin/make"))")
+end
+
+if !islink("$(joinpath(ADCME_DIR, "bin/ninja"))")
+    symlink("/usr/loca/bin/ninja", "$(joinpath(ADCME_DIR, "bin/ninja"))")
+end
+
+
+if !islink("$(joinpath(ADCME_DIR, "bin/cmake"))")
+    symlink("/usr/bin/cmake", "$(joinpath(ADCME_DIR, "bin/cmake"))")
+end
+
+
 deps = """
 BINDIR = "$(joinpath(ADCME_DIR, "bin"))"
 LIBDIR = "$(joinpath(ADCME_DIR, "lib"))"

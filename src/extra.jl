@@ -315,6 +315,7 @@ end
 Precompile the built-in custom operators. 
 """
 function Base.:precompile(force::Bool=false)
+    install_eigen()
     PWD = pwd()
     cd("$(@__DIR__)/../deps/CustomOps")
     if force
