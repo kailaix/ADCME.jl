@@ -43,6 +43,8 @@ docs/src/assets/Slide/*.snm
 docs/src/assets/Slide/*.toc
 docs/src/assets/mcmc
 !deps/build.jl
+!deps/build-docker.jl
+!deps/build-standard.jl
 test/*.gif
 test/*.png
 docs/src/assets/Codes/OptimizationResearch/*
