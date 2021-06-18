@@ -9,25 +9,28 @@ end
 if !isdir(joinpath(ADCME_DIR, "lib/Libraries"))
     mkpath(joinpath(ADCME_DIR, "lib/Libraries"))
 end
+if !isdir(joinpath(ADCME_DIR, "include"))
+    mkpath(joinpath(ADCME_DIR, "include"))
+end
 
 if !islink("$(joinpath(ADCME_DIR, "bin/unzip"))")
     symlink("/usr/bin/unzip", "$(joinpath(ADCME_DIR, "bin/unzip"))")
 end
-
-
 if !islink("$(joinpath(ADCME_DIR, "bin/make"))")
     symlink("/usr/bin/make", "$(joinpath(ADCME_DIR, "bin/make"))")
 end
-
-if !islink("$(joinpath(ADCME_DIR, "bin/ninja"))")
-    symlink("/usr/loca/bin/ninja", "$(joinpath(ADCME_DIR, "bin/ninja"))")
-end
-
-
 if !islink("$(joinpath(ADCME_DIR, "bin/cmake"))")
     symlink("/usr/bin/cmake", "$(joinpath(ADCME_DIR, "bin/cmake"))")
 end
-
+if !islink("$(joinpath(ADCME_DIR, "bin/ninja"))")
+    symlink("/usr/local/bin/ninja", "$(joinpath(ADCME_DIR, "bin/ninja"))")
+end
+if !islink("$(joinpath(ADCME_DIR, "bin/pip"))")
+    symlink("/usr/local/bin/pip", "$(joinpath(ADCME_DIR, "bin/pip"))")
+end
+if !islink("$(joinpath(ADCME_DIR, "lib/libopenblas.so"))")
+    symlink("/usr/lib/x86_64-linux-gnu/libopenblas.so", "$(joinpath(ADCME_DIR, "lib/libopenblas.so"))")
+end
 
 deps = """
 BINDIR = "$(joinpath(ADCME_DIR, "bin"))"
