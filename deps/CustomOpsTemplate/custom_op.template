@@ -103,18 +103,6 @@ REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_CPU), ${Operat
 ***************************************************************************************/
 
 
-#ifdef GOOGLE_CUDA
-
-REGISTER_OP("${OperatorName}Gpu")
-${ForwardInputOutput}
-.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
-    ${SetShapeFn}
-    return Status::OK();
-  });
-
-REGISTER_OP("${OperatorName}GpuGrad")
-${BackwardInputOutput}
-
 class ${OperatorName}OpGPU : public OpKernel {
 private:
   ${AttributesDef}
@@ -149,7 +137,7 @@ ${AttributesParse2}
 
   }
 };
-REGISTER_KERNEL_BUILDER(Name("${OperatorName}Gpu").Device(DEVICE_GPU), ${OperatorName}OpGPU);
+REGISTER_KERNEL_BUILDER(Name("${OperatorName}").Device(DEVICE_GPU), ${OperatorName}OpGPU);
 
 class ${OperatorName}GradOpGPU : public OpKernel {
 private:
@@ -185,6 +173,4 @@ public:
     
   }
 };
-REGISTER_KERNEL_BUILDER(Name("${OperatorName}GpuGrad").Device(DEVICE_GPU), ${OperatorName}GradOpGPU);
-
-#endif
+REGISTER_KERNEL_BUILDER(Name("${OperatorName}Grad").Device(DEVICE_GPU), ${OperatorName}GradOpGPU);

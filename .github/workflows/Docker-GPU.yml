@@ -1,5 +1,4 @@
-name: CI to Docker Hub
-
+name: Docker GPU
 on:
   push:
     branches: [ master ]
@@ -29,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile-gpu
+          file: ./Dockerfile-GPU
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/adcme:gpu
 
