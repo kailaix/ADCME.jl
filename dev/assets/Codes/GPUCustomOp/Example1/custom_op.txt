@@ -1,0 +1,3 @@
+MultiplyByTwo
+double x(?)
+double y(?) -> output

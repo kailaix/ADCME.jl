@@ -1,0 +1,4 @@
+MatVec
+double a(?,?)
+double x(?)
+double y(?) -> output
