@@ -1,6 +1,6 @@
 # Install ADCME Docker Image
 
-For users who do not want to deal with installing and debugging dependencies, we also provide a [Docker](https://docs.docker.com/get-docker/) image for ADCME. Docker creates a virtual environment that isolates ADCME and its dependencies from the rest of the system. To install ADCME through docker, the user system must 
+For users who do not want to deal with installing and debugging dependencies, we also provide a [Docker](https://hub.docker.com/repository/docker/kailaix/adcme) image for ADCME. Docker creates a virtual environment that isolates ADCME and its dependencies from the rest of the system. To install ADCME through docker, the user system must 
 
 1. have Docker installed;
 2. have sufficient space (at least 5G).
@@ -23,6 +23,18 @@ docker run -ti kailaix/adcme bash
 ```
 
 This will launch a terminal where users can type `julia` to open a Julia prompt. 
+
+
+## Use GPUs
+
+If you want to run ADCME on GPUs, you can use the following docker command
+
+```julia
+docker run -ti --gpus all kailaix/adcme:gpu
+```
+
+Here `--gpus all` uses all GPU resources. You can use `--gpus n` to specify that you want to use $n$ GPUs. 
+
 
 ## Tips
 

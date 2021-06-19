@@ -159,6 +159,9 @@ Please see [this repository](https://github.com/kailaix/ADCME-CustomOp-Example) 
 
 ### Install GPU-enabled TensorFlow (Linux and Windows)
 
+
+#### Standard Installation 
+
 To use  CUDA in ADCME, we need to install a GPU-enabled version of TensorFlow. In ADCME, this is achieved by simply rebuilding ADCME with `GPU` environment variabe. 
 
 ```julia
@@ -169,222 +172,57 @@ Pkg.build("ADCME")
 
 This will install all GPU dependencies.
 
+#### Docker Installation 
+
+A simpler way to install GPU-enabled ADCME is via Docker. 
+```bash 
+docker pull kailaix/adcme:gpu 
+docker run -ti --gpus all kailaix/adcme 
+```
+Here `--gpus all` directs Docker to use all GPU resources. If you want to use only a certain number of GPU resources, e.g., 2 GPUs, you can use `--gpus 2`. 
+
+The above command will bring up a Julia prompt where GPU-enabled ADCME is already installed. 
+
+
 ### Building a GPU custom operator 
 
-We consider a toy example where the custom operator is a function $f: x\rightarrow 2x$. To begin with, we create a `custom_op.txt` via [`customop`](@ref)
+To illustrate the usage, we consider two examples. In the first example, the custom operator will return a vector $y = 2x$, where $x$ is the input vector. We will implement both forward and backward computations. In the second example, we implement a custom operator that uses cuBLAS, $y = Ax$, where the input $A$ is a $m\times m$ matrix, and $x$ is a vector of size $m$. 
 
-```text
-GpuTest
-double a(?)
-double b(?) -> output
+#### Example 1
+
+First, we run [`customop`](@ref) to generate the templates.
+```julia
+using ADCME
+customop()
 ```
 
-Next, by running `customop()` again several template files are generated. We can then do the implementation in those files
-
-**GpuTest.cpp**
-
-```c++
-#include "tensorflow/core/framework/op_kernel.h"
-#include "tensorflow/core/framework/tensor_shape.h"
-#include "tensorflow/core/platform/default/logging.h"
-#include "tensorflow/core/framework/shape_inference.h"
-#include<cmath>
-
-// Signatures for GPU kernels here 
-void return_double(int n, double *b, const double*a);
-using namespace tensorflow;
-
-
-REGISTER_OP("GpuTest")
-
-.Input("a : double")
-.Output("b : double")
-.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
-    
-        shape_inference::ShapeHandle a_shape;
-        TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 1, &a_shape));
-
-        c->set_output(0, c->input(0));
-    return Status::OK();
-  });
-
-REGISTER_OP("GpuTestGrad")
-
-.Input("grad_b : double")
-.Input("b : double")
-.Input("a : double")
-.Output("grad_a : double");
-
-
-class GpuTestOpGPU : public OpKernel {
-private:
-  
-public:
-  explicit GpuTestOpGPU(OpKernelConstruction* context) : OpKernel(context) {
-
-  }
-
-  void Compute(OpKernelContext* context) override {    
-    DCHECK_EQ(1, context->num_inputs());
-    
-    
-    const Tensor& a = context->input(0);
-    
-    
-    const TensorShape& a_shape = a.shape();
-    
-    
-    DCHECK_EQ(a_shape.dims(), 1);
-
-    // extra check
-        
-    // create output shape
-    int n = a_shape.dim_size(0);
-    TensorShape b_shape({n});
-            
-    // create output tensor
-    
-    Tensor* b = NULL;
-    OP_REQUIRES_OK(context, context->allocate_output(0, b_shape, &b));
-    
-    // get the corresponding Eigen tensors for data access
-    
-    auto a_tensor = a.flat<double>().data();
-    auto b_tensor = b->flat<double>().data();   
-
-    // implement your forward function here 
-
-    // TODO:
-    return_double(n, b_tensor, a_tensor);
-
-  }
-};
-REGISTER_KERNEL_BUILDER(Name("GpuTest").Device(DEVICE_GPU), GpuTestOpGPU);
+We change `custom_op.txt` to 
+```
+MultiplyByTwo
+double x()
+double y() -> output
 ```
 
-**GpuTest.cu**
+and rerun `customop()`. This will generates all the template files. 
 
-```c++
-#include "cuda.h"
-
-__global__ void return_double_(int n, double *b, const double*a){
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i<n) b[i] = 2*a[i];
-}
-
-void return_double(int n, double *b, const double*a){
-    return_double_<<<(n+255)/256, 256>>>(n, b, a);
-}
-```
-
-**CMakeLists.txt**
-
-```cmake
-cmake_minimum_required(VERSION 3.5)
-project(TF_CUSTOM_OP)
-set (CMAKE_CXX_STANDARD 11)
-
-message("JULIA=${JULIA}")
-execute_process(COMMAND ${JULIA} -e "import ADCME; print(ADCME.__STR__)" OUTPUT_VARIABLE JL_OUT)
-
-
-
-list(GET JL_OUT 0 BINDIR)
-list(GET JL_OUT 1 LIBDIR)
-list(GET JL_OUT 2 TF_INC)
-list(GET JL_OUT 3 TF_ABI)
-list(GET JL_OUT 4 PREFIXDIR)
-list(GET JL_OUT 5 CC)
-list(GET JL_OUT 6 CXX)
-list(GET JL_OUT 7 CMAKE)
-list(GET JL_OUT 8 MAKE)
-list(GET JL_OUT 9 GIT)
-list(GET JL_OUT 10 PYTHON)
-list(GET JL_OUT 11 TF_LIB_FILE)
-list(GET JL_OUT 12 LIBCUDA)
-list(GET JL_OUT 13 CUDA_INC)
-
-message("Python path=${PYTHON}")
-message("PREFIXDIR=${PREFIXDIR}")
-message("TF_INC=${TF_INC}")
-message("TF_ABI=${TF_ABI}")
-message("TF_LIB_FILE=${TF_LIB_FILE}")
-
-
-if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
-  set(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}")
-endif()
-
-set(CMAKE_BUILD_TYPE Release)
-if(MSVC)
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
-else()
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-endif()
-include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
-
-
-find_package(CUDA QUIET REQUIRED)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "-shared ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
-SET(CUDA_PROPAGATE_HOST_FLAGS ON)
-
-add_definitions(-DGOOGLE_CUDA)
-message("Compiling GPU-compatible custom operator!")
-cuda_add_library(GpuTest SHARED GpuTest.cpp GpuTest.cu)
-
-
-set_property(TARGET GpuTest PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(GpuTest ${TF_LIB_FILE})
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(GpuTest PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)
-```
-
-We can then compile the operator on a system where `nvcc` is available:
-
+Edit the files as in [this directory](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/GPUCustomOp/Example1). Then we can compile the custom operator 
 ```julia
 change_directory("build")
 ADCME.cmake()
 ADCME.make()
 ```
 
-### Running a GPU custom operator
+Then run `gradtest.jl` to verify the results. 
 
-We can now run a GPU operator by loading the shared library
+#### Example 2
 
-```julia
-using ADCME
+In this example, we implement the matrix vector multiplication
 
-function gpu_test(a)
-    gpu_test_ = load_op_and_grad("$(@__DIR__)/build/libGpuTest","gpu_test")
-    a = convert_to_tensor([a], [Float64]); a = a[1]
-    gpu_test_(a)
-end
+$$y = Ax$$
 
-# TODO: specify your input parameters
-a = [1.0;3.0;-1.0]
-u = gpu_test(a)
-sess = Session(); init(sess)
-run(sess, u)
-```
+Different from Example 1, we need to call a cuBLAS function from the CUDA toolkit. However, the procedure is quite similar. 
 
-If we run the file on a system without GPU resources, we will get the following error 
-
-```text
- <class 'tensorflow.python.framework.errors_impl.InvalidArgumentError'>
-```
-
-If we have GPU resources, the kernel will run correctly with the output
-
-```julia
-2.0
-6.0
--2.0
-```
-
+Refer to [this directory](https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/GPUCustomOp/Example2) for source codes
 
 ## Batch Build
 

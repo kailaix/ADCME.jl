@@ -100,7 +100,12 @@ If you have Docker installed on your system, you can try the no-hassle way to in
 ```bash
 docker run -ti kailaix/adcme
 ```
-See [this guide](https://kailaix.github.io/ADCME.jl/latest/docker/) for details.
+
+For GPU-enabled ADCME, use 
+```bash
+docker run -ti --gpus all kailaix/adcme:gpu
+```
+See [this guide](https://kailaix.github.io/ADCME.jl/latest/docker/) for details. The docker images are hosted [here](https://hub.docker.com/repository/docker/kailaix/adcme).
 
 # Tutorial
 
