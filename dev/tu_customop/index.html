@@ -50,171 +50,15 @@ void backward(double *grad_vv, const double *grad_u, const int *ii, const int *j
     }
 }</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>In this implementation we have used <code>Eigen</code> library for solving sparse matrix. Other choices are also possible, such as algebraic multigrid methods. Note here for convenience we have created a global variable <code>SpMat A;</code>. This is not recommend if you want to run the code concurrently, since the variable <code>A</code> must be overwritten by another concurrent thread. </p></div></div><p><strong>Step 3: Compile</strong></p><p>You should always compile your custom operator using the <a href="https://kailaix.github.io/ADCME.jl/dev/toolchain/">built-in toolchain</a> <code>ADCME.make</code> and <code>ADCME.cmake</code> to ensure compatibility such as ABIs. The built-in toolchain uses exactly the same compiler that has been used to compile your tensorflow shared library. For example, some of the toolchain variables are:</p><table><tr><th style="text-align: right">Variable</th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right"><code>ADCME.CXX</code></td><td style="text-align: right">C++ Compiler</td></tr><tr><td style="text-align: right"><code>ADCME.CC</code></td><td style="text-align: right">C Compiler</td></tr><tr><td style="text-align: right"><code>ADCME.TF_LIB_FILE</code></td><td style="text-align: right"><code>libtensorflow_framework.so</code> location</td></tr><tr><td style="text-align: right"><code>ADCME.CMAKE</code></td><td style="text-align: right">Cmake binary location</td></tr><tr><td style="text-align: right"><code>ADCME.MAKE</code></td><td style="text-align: right">Make (Ninja for Unix systems) binary location</td></tr></table><p>ADCME will properly handle the environment variable for you. So we always recommend you to compile custom operators using ADCME functions:</p><p>First <code>cd</code> into your custom operator director (where <code>CMakeLists.txt</code> is located), create a directory <code>build</code> if it doesn&#39;t exist, <code>cd</code> into <code>build</code>, and do </p><pre><code class="language-julia-repl">julia&gt; using ADCME
 julia&gt; ADCME.cmake()
-julia&gt; ADCME.make()</code></pre><p>Based on your operation system, you will create <code>libMySparseSolver.{so,dylib,dll}</code>. This will be the dynamic library to link in <code>TensorFlow</code>. </p><p><strong>Step 4: Test</strong></p><p>Finally, you could use <code>gradtest.jl</code> to test the operator and its gradients (specify appropriate data in <code>gradtest.jl</code> first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. Note you need to modify this file first, e.g., creating data and modifying the function <code>scalar_function</code>. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom_op.png?raw=true" alt="custom_op"/></p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile <code>libtensorflow_framework.{so,dylib}</code>. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.</p></div></div><p>Please see <a href="https://github.com/kailaix/ADCME-CustomOp-Example">this repository</a> for an extra example. </p><h2 id="Build-GPU-Custom-Operators"><a class="docs-heading-anchor" href="#Build-GPU-Custom-Operators">Build GPU Custom Operators</a><a id="Build-GPU-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Build-GPU-Custom-Operators" title="Permalink"></a></h2><h3 id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)"><a class="docs-heading-anchor" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)">Install GPU-enabled TensorFlow (Linux and Windows)</a><a id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)-1"></a><a class="docs-heading-anchor-permalink" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)" title="Permalink"></a></h3><p>To use  CUDA in ADCME, we need to install a GPU-enabled version of TensorFlow. In ADCME, this is achieved by simply rebuilding ADCME with <code>GPU</code> environment variabe. </p><pre><code class="language-julia">using Pkg
+julia&gt; ADCME.make()</code></pre><p>Based on your operation system, you will create <code>libMySparseSolver.{so,dylib,dll}</code>. This will be the dynamic library to link in <code>TensorFlow</code>. </p><p><strong>Step 4: Test</strong></p><p>Finally, you could use <code>gradtest.jl</code> to test the operator and its gradients (specify appropriate data in <code>gradtest.jl</code> first). If you implement the gradients correctly, you will be able to obtain first order convergence for finite difference and second order convergence for automatic differentiation. Note you need to modify this file first, e.g., creating data and modifying the function <code>scalar_function</code>. </p><p><img src="https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/custom_op.png?raw=true" alt="custom_op"/></p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>If the process fails, it is most probable the GCC compiler is not compatible with which was used to compile <code>libtensorflow_framework.{so,dylib}</code>. ADCME downloads a  GCC compiler via Conda for you. However, if you follow the above steps but encounter some problems, we are happy to resolve the compatibility issue and improve the robustness of ADCME. Submitting an issue is welcome.</p></div></div><p>Please see <a href="https://github.com/kailaix/ADCME-CustomOp-Example">this repository</a> for an extra example. </p><h2 id="Build-GPU-Custom-Operators"><a class="docs-heading-anchor" href="#Build-GPU-Custom-Operators">Build GPU Custom Operators</a><a id="Build-GPU-Custom-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Build-GPU-Custom-Operators" title="Permalink"></a></h2><h3 id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)"><a class="docs-heading-anchor" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)">Install GPU-enabled TensorFlow (Linux and Windows)</a><a id="Install-GPU-enabled-TensorFlow-(Linux-and-Windows)-1"></a><a class="docs-heading-anchor-permalink" href="#Install-GPU-enabled-TensorFlow-(Linux-and-Windows)" title="Permalink"></a></h3><h4 id="Standard-Installation"><a class="docs-heading-anchor" href="#Standard-Installation">Standard Installation</a><a id="Standard-Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Standard-Installation" title="Permalink"></a></h4><p>To use  CUDA in ADCME, we need to install a GPU-enabled version of TensorFlow. In ADCME, this is achieved by simply rebuilding ADCME with <code>GPU</code> environment variabe. </p><pre><code class="language-julia">using Pkg
 ENV[&quot;GPU&quot;] = 1
-Pkg.build(&quot;ADCME&quot;)</code></pre><p>This will install all GPU dependencies.</p><h3 id="Building-a-GPU-custom-operator"><a class="docs-heading-anchor" href="#Building-a-GPU-custom-operator">Building a GPU custom operator</a><a id="Building-a-GPU-custom-operator-1"></a><a class="docs-heading-anchor-permalink" href="#Building-a-GPU-custom-operator" title="Permalink"></a></h3><p>We consider a toy example where the custom operator is a function <span>$f: x\rightarrow 2x$</span>. To begin with, we create a <code>custom_op.txt</code> via <a href="../api/#ADCME.customop-Tuple{}"><code>customop</code></a></p><pre><code class="language-text">GpuTest
-double a(?)
-double b(?) -&gt; output</code></pre><p>Next, by running <code>customop()</code> again several template files are generated. We can then do the implementation in those files</p><p><strong>GpuTest.cpp</strong></p><pre><code class="language-c">#include &quot;tensorflow/core/framework/op_kernel.h&quot;
-#include &quot;tensorflow/core/framework/tensor_shape.h&quot;
-#include &quot;tensorflow/core/platform/default/logging.h&quot;
-#include &quot;tensorflow/core/framework/shape_inference.h&quot;
-#include&lt;cmath&gt;
-
-// Signatures for GPU kernels here 
-void return_double(int n, double *b, const double*a);
-using namespace tensorflow;
-
-
-REGISTER_OP(&quot;GpuTest&quot;)
-
-.Input(&quot;a : double&quot;)
-.Output(&quot;b : double&quot;)
-.SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
-    
-        shape_inference::ShapeHandle a_shape;
-        TF_RETURN_IF_ERROR(c-&gt;WithRank(c-&gt;input(0), 1, &amp;a_shape));
-
-        c-&gt;set_output(0, c-&gt;input(0));
-    return Status::OK();
-  });
-
-REGISTER_OP(&quot;GpuTestGrad&quot;)
-
-.Input(&quot;grad_b : double&quot;)
-.Input(&quot;b : double&quot;)
-.Input(&quot;a : double&quot;)
-.Output(&quot;grad_a : double&quot;);
-
-
-class GpuTestOpGPU : public OpKernel {
-private:
-  
-public:
-  explicit GpuTestOpGPU(OpKernelConstruction* context) : OpKernel(context) {
-
-  }
-
-  void Compute(OpKernelContext* context) override {    
-    DCHECK_EQ(1, context-&gt;num_inputs());
-    
-    
-    const Tensor&amp; a = context-&gt;input(0);
-    
-    
-    const TensorShape&amp; a_shape = a.shape();
-    
-    
-    DCHECK_EQ(a_shape.dims(), 1);
-
-    // extra check
-        
-    // create output shape
-    int n = a_shape.dim_size(0);
-    TensorShape b_shape({n});
-            
-    // create output tensor
-    
-    Tensor* b = NULL;
-    OP_REQUIRES_OK(context, context-&gt;allocate_output(0, b_shape, &amp;b));
-    
-    // get the corresponding Eigen tensors for data access
-    
-    auto a_tensor = a.flat&lt;double&gt;().data();
-    auto b_tensor = b-&gt;flat&lt;double&gt;().data();   
-
-    // implement your forward function here 
-
-    // TODO:
-    return_double(n, b_tensor, a_tensor);
-
-  }
-};
-REGISTER_KERNEL_BUILDER(Name(&quot;GpuTest&quot;).Device(DEVICE_GPU), GpuTestOpGPU);</code></pre><p><strong>GpuTest.cu</strong></p><pre><code class="language-c">#include &quot;cuda.h&quot;
-
-__global__ void return_double_(int n, double *b, const double*a){
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i&lt;n) b[i] = 2*a[i];
-}
-
-void return_double(int n, double *b, const double*a){
-    return_double_&lt;&lt;&lt;(n+255)/256, 256&gt;&gt;&gt;(n, b, a);
-}</code></pre><p><strong>CMakeLists.txt</strong></p><pre><code class="language-cmake">cmake_minimum_required(VERSION 3.5)
-project(TF_CUSTOM_OP)
-set (CMAKE_CXX_STANDARD 11)
-
-message(&quot;JULIA=${JULIA}&quot;)
-execute_process(COMMAND ${JULIA} -e &quot;import ADCME; print(ADCME.__STR__)&quot; OUTPUT_VARIABLE JL_OUT)
-
-
-
-list(GET JL_OUT 0 BINDIR)
-list(GET JL_OUT 1 LIBDIR)
-list(GET JL_OUT 2 TF_INC)
-list(GET JL_OUT 3 TF_ABI)
-list(GET JL_OUT 4 PREFIXDIR)
-list(GET JL_OUT 5 CC)
-list(GET JL_OUT 6 CXX)
-list(GET JL_OUT 7 CMAKE)
-list(GET JL_OUT 8 MAKE)
-list(GET JL_OUT 9 GIT)
-list(GET JL_OUT 10 PYTHON)
-list(GET JL_OUT 11 TF_LIB_FILE)
-list(GET JL_OUT 12 LIBCUDA)
-list(GET JL_OUT 13 CUDA_INC)
-
-message(&quot;Python path=${PYTHON}&quot;)
-message(&quot;PREFIXDIR=${PREFIXDIR}&quot;)
-message(&quot;TF_INC=${TF_INC}&quot;)
-message(&quot;TF_ABI=${TF_ABI}&quot;)
-message(&quot;TF_LIB_FILE=${TF_LIB_FILE}&quot;)
-
-
-if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
-  set(CMAKE_CXX_FLAGS &quot;-D_GLIBCXX_USE_CXX11_ABI=${TF_ABI} ${CMAKE_CXX_FLAGS}&quot;)
-endif()
-
-set(CMAKE_BUILD_TYPE Release)
-if(MSVC)
-set(CMAKE_CXX_FLAGS_RELEASE &quot;-DNDEBUG&quot;)
-else()
-set(CMAKE_CXX_FLAGS_RELEASE &quot;-O3 -DNDEBUG&quot;)
-endif()
-include_directories(${TF_INC} ${PREFIXDIR} ${CUDA_INC})
-
-
-find_package(CUDA QUIET REQUIRED)
-set(CMAKE_CXX_FLAGS &quot;-std=c++11 ${CMAKE_CXX_FLAGS}&quot;)
-set(CMAKE_CXX_FLAGS &quot;-O3 ${CMAKE_CXX_FLAGS}&quot;)
-set(CMAKE_CXX_FLAGS &quot;-shared ${CMAKE_CXX_FLAGS}&quot;)
-set(CMAKE_CXX_FLAGS &quot;-fPIC ${CMAKE_CXX_FLAGS}&quot;)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
-SET(CUDA_PROPAGATE_HOST_FLAGS ON)
-
-add_definitions(-DGOOGLE_CUDA)
-message(&quot;Compiling GPU-compatible custom operator!&quot;)
-cuda_add_library(GpuTest SHARED GpuTest.cpp GpuTest.cu)
-
-
-set_property(TARGET GpuTest PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(GpuTest ${TF_LIB_FILE})
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set_target_properties(GpuTest PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/build)</code></pre><p>We can then compile the operator on a system where <code>nvcc</code> is available:</p><pre><code class="language-julia">change_directory(&quot;build&quot;)
+Pkg.build(&quot;ADCME&quot;)</code></pre><p>This will install all GPU dependencies.</p><h4 id="Docker-Installation"><a class="docs-heading-anchor" href="#Docker-Installation">Docker Installation</a><a id="Docker-Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Docker-Installation" title="Permalink"></a></h4><p>A simpler way to install GPU-enabled ADCME is via Docker. </p><pre><code class="language-bash">docker pull kailaix/adcme:gpu 
+docker run -ti --gpus all kailaix/adcme </code></pre><p>Here <code>--gpus all</code> directs Docker to use all GPU resources. If you want to use only a certain number of GPU resources, e.g., 2 GPUs, you can use <code>--gpus 2</code>. </p><p>The above command will bring up a Julia prompt where GPU-enabled ADCME is already installed. </p><h3 id="Building-a-GPU-custom-operator"><a class="docs-heading-anchor" href="#Building-a-GPU-custom-operator">Building a GPU custom operator</a><a id="Building-a-GPU-custom-operator-1"></a><a class="docs-heading-anchor-permalink" href="#Building-a-GPU-custom-operator" title="Permalink"></a></h3><p>To illustrate the usage, we consider two examples. In the first example, the custom operator will return a vector <span>$y = 2x$</span>, where <span>$x$</span> is the input vector. We will implement both forward and backward computations. In the second example, we implement a custom operator that uses cuBLAS, <span>$y = Ax$</span>, where the input <span>$A$</span> is a <span>$m\times m$</span> matrix, and <span>$x$</span> is a vector of size <span>$m$</span>. </p><h4 id="Example-1"><a class="docs-heading-anchor" href="#Example-1">Example 1</a><a id="Example-1-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1" title="Permalink"></a></h4><p>First, we run <a href="../api/#ADCME.customop-Tuple{}"><code>customop</code></a> to generate the templates.</p><pre><code class="language-julia">using ADCME
+customop()</code></pre><p>We change <code>custom_op.txt</code> to </p><pre><code class="nohighlight">MultiplyByTwo
+double x()
+double y() -&gt; output</code></pre><p>and rerun <code>customop()</code>. This will generates all the template files. </p><p>Edit the files as in <a href="https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/GPUCustomOp/Example1">this directory</a>. Then we can compile the custom operator </p><pre><code class="language-julia">change_directory(&quot;build&quot;)
 ADCME.cmake()
-ADCME.make()</code></pre><h3 id="Running-a-GPU-custom-operator"><a class="docs-heading-anchor" href="#Running-a-GPU-custom-operator">Running a GPU custom operator</a><a id="Running-a-GPU-custom-operator-1"></a><a class="docs-heading-anchor-permalink" href="#Running-a-GPU-custom-operator" title="Permalink"></a></h3><p>We can now run a GPU operator by loading the shared library</p><pre><code class="language-julia">using ADCME
-
-function gpu_test(a)
-    gpu_test_ = load_op_and_grad(&quot;$(@__DIR__)/build/libGpuTest&quot;,&quot;gpu_test&quot;)
-    a = convert_to_tensor([a], [Float64]); a = a[1]
-    gpu_test_(a)
-end
-
-# TODO: specify your input parameters
-a = [1.0;3.0;-1.0]
-u = gpu_test(a)
-sess = Session(); init(sess)
-run(sess, u)</code></pre><p>If we run the file on a system without GPU resources, we will get the following error </p><pre><code class="language-text"> &lt;class &#39;tensorflow.python.framework.errors_impl.InvalidArgumentError&#39;&gt;</code></pre><p>If we have GPU resources, the kernel will run correctly with the output</p><pre><code class="language-julia">2.0
-6.0
--2.0</code></pre><h2 id="Batch-Build"><a class="docs-heading-anchor" href="#Batch-Build">Batch Build</a><a id="Batch-Build-1"></a><a class="docs-heading-anchor-permalink" href="#Batch-Build" title="Permalink"></a></h2><p>At some point, you might have a lot of custom operators. Building one-by-one will take up too much time. To reduce the building time, you might want to build all the operators all at once concurrently. To this end, you can consider batch build by using a common CMakeLists.txt. The commands in the CMakeLists.txt are the same as a typical custom operator, except that the designated libraries are different</p><pre><code class="language-cmake"># ... The same as a typical CMake script ...
+ADCME.make()</code></pre><p>Then run <code>gradtest.jl</code> to verify the results. </p><h4 id="Example-2"><a class="docs-heading-anchor" href="#Example-2">Example 2</a><a id="Example-2-1"></a><a class="docs-heading-anchor-permalink" href="#Example-2" title="Permalink"></a></h4><p>In this example, we implement the matrix vector multiplication</p><p class="math-container">\[y = Ax\]</p><p>Different from Example 1, we need to call a cuBLAS function from the CUDA toolkit. However, the procedure is quite similar. </p><p>Refer to <a href="https://github.com/kailaix/ADCME.jl/tree/master/docs/src/assets/Codes/GPUCustomOp/Example2">this directory</a> for source codes</p><h2 id="Batch-Build"><a class="docs-heading-anchor" href="#Batch-Build">Batch Build</a><a id="Batch-Build-1"></a><a class="docs-heading-anchor-permalink" href="#Batch-Build" title="Permalink"></a></h2><p>At some point, you might have a lot of custom operators. Building one-by-one will take up too much time. To reduce the building time, you might want to build all the operators all at once concurrently. To this end, you can consider batch build by using a common CMakeLists.txt. The commands in the CMakeLists.txt are the same as a typical custom operator, except that the designated libraries are different</p><pre><code class="language-cmake"># ... The same as a typical CMake script ...
 
 # Specify all the library paths and library names. 
 set(LIBDIR_NAME VolumetricStrain ComputeVel DirichletBd
@@ -286,4 +130,4 @@ PREFIXDIR=
 TF_INC=
 TF_ABI=
 TF_LIB_FILE=</code></pre><p><strong>A:</strong> Update ADCME to the latest version and check whether or not the ADCME compiler string is empty</p><pre><code class="language-julia">using ADCME
-ADCME.__STR__</code></pre><p><strong>Q: Julia package precompilation errors that seem not linked to ADCME.</strong></p><p><strong>A:</strong> Remove the corresponding packages using <code>using Pkg; Pkg.rm(XXX)</code> and reinstall those packages. </p><p><strong>Q: Precompilation error linked to ADCME</strong></p><pre><code class="language-text">ERROR: LoadError: ADCME is not properly built; run `Pkg.build(&quot;ADCME&quot;)` to fix the problem.</code></pre><p><strong>A:</strong> Build ADCME using <code>Pkg.build(&quot;ADCME&quot;)</code>. Exit Julia and open Julia again. Check whether <code>deps.jl</code> exists in the <code>deps</code> directory of your Julia package (optional).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tu_implicit/">« Advanced: Automatic Differentiation for Implicit Operators</a><a class="docs-footer-nextpage" href="../tu_debug/">Advanced: Debugging and Profiling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 19 June 2021 00:10">Saturday 19 June 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ADCME.__STR__</code></pre><p><strong>Q: Julia package precompilation errors that seem not linked to ADCME.</strong></p><p><strong>A:</strong> Remove the corresponding packages using <code>using Pkg; Pkg.rm(XXX)</code> and reinstall those packages. </p><p><strong>Q: Precompilation error linked to ADCME</strong></p><pre><code class="language-text">ERROR: LoadError: ADCME is not properly built; run `Pkg.build(&quot;ADCME&quot;)` to fix the problem.</code></pre><p><strong>A:</strong> Build ADCME using <code>Pkg.build(&quot;ADCME&quot;)</code>. Exit Julia and open Julia again. Check whether <code>deps.jl</code> exists in the <code>deps</code> directory of your Julia package (optional).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tu_implicit/">« Advanced: Automatic Differentiation for Implicit Operators</a><a class="docs-footer-nextpage" href="../tu_debug/">Advanced: Debugging and Profiling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 19 June 2021 00:15">Saturday 19 June 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
