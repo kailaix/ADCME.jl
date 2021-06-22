@@ -2,15 +2,16 @@
 using ADCME
 
 mpi_init()
-r = mpi_rank()
+r = mpi_rank() + 2
 a = constant(ones(10) * r)
-b = mpi_bcast(a, 3)
+c = constant(1.0)
+b = mpi_bcast(a, deps = c)
 L = sum(b^2)
 L = mpi_sum(L)
 g = gradients(L, a)
 
 sess = Session(); init(sess)
-v, G = run(sess, [b, G])
+v, G = run(sess, [b, g])
 
 @info r, v
 

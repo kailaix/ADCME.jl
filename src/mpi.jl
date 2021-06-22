@@ -117,7 +117,8 @@ end
 
 Sum `a` on the MPI processor `root`.
 """
-function mpi_sum(a::Union{Array{Float64}, Float64, PyObject}, root::Int64 = 0)
+function mpi_sum(a::Union{Array{Float64}, Float64, PyObject}, 
+        root::Int64 = 0)
     a = convert_to_tensor(a, dtype = Float64)
     if length(size(a))==0
         a = reshape(a, (1,))
@@ -136,11 +137,12 @@ function mpi_sum(a::Union{Array{Float64}, Float64, PyObject}, root::Int64 = 0)
     end
 end
 
-function _mpi_bcast(a,root::Int64=0)
+function _mpi_bcast(a,root::Int64=0, deps::Union{Missing, Float64, PyObject} = missing)
     mpi_check()
+    deps = coalesce(deps, 0.0)
     mpibcast_ = load_system_op("mpibcast")
-    a,root = convert_to_tensor(Any[a,root], [Float64,Int64])
-    out = mpibcast_(a,root)
+    a,root, deps = convert_to_tensor(Any[a,root, deps], [Float64,Int64, Float64])
+    out = mpibcast_(a,root, deps)
     if !isnothing(length(a))
         return set_shape(out, (length(a),))
     else
@@ -153,21 +155,22 @@ end
 
 Broadcast `a` from processor `root` to all other processors.
 """
-function mpi_bcast(a::Union{Array{Float64}, Float64, PyObject}, root::Int64 = 0)
+function mpi_bcast(a::Union{Array{Float64}, Float64, PyObject}, 
+        root::Int64 = 0; deps::Union{PyObject, Missing, Float64} = missing)
     a = convert_to_tensor(a, dtype = Float64)
     if length(size(a))==0
         a = reshape(a, (1,))
-        out = _mpi_bcast(a, root)
+        out = _mpi_bcast(a, root, deps)
         return squeeze(out)
     elseif length(size(a))==1
-        return _mpi_bcast(a, root)
+        return _mpi_bcast(a, root, deps)
     elseif nothing in size(a)
         error("The shape of 1st input $(size(a)) contains nothing. mpi_bcast is not able to determine
         the output shape.")
     else 
         s = size(a)
         a = reshape(a, (-1,))
-        out = _mpi_bcast(a, root)
+        out = _mpi_bcast(a, root, deps)
         return reshape(out, s)
     end
 end
