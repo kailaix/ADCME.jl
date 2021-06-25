@@ -120,21 +120,18 @@ using MPI-enabled LBFGS optimizer.
 
 ```julia
 using ADCME
-import ADOPT
+import Optim
 mpi_init()
 θ = placeholder(ones(1))
 fθ = mpi_bcast(θ)
-l = fθ^mpi_rank()
+l = fθ^(mpi_rank()+1)
 L = (sum(mpi_sum(l)) - 2.0)^2
+g = gradients(L, θ)
 sess = Session(); init(sess)
 
 f = x->run(sess, L, θ=>x)
 g! = (G, x)->(G[:] = run(sess, g, θ=>x))
 
-options = Options()
-if mpi_rank()==0
-    options.show_trace = true 
-end
 result = mpi_optimize(f, g!, ones(1))
 if mpi_rank()==0
     @info  result.minimizer, result.minimum
