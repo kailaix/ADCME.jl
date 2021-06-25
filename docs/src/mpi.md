@@ -107,7 +107,7 @@ To resolve the data race issue, we can explicitly make Operator 3 depend on Oper
 
 For solving inverse problems using distributed computing, an MPI-capable optimizer is required. The ADCME solution to distributed optimization is that the master machine holds, distributes and updates the optimizable variables. The gradients are calculated in the same device where the corresponding forward computation is done. Therefore, for a given serial optimizer, we can refactor it to a distributed one by letting worker nodes wait for instructions from the master node to compute either the objective function or the gradient.
 
-This idea is implemented in the [`ADOPT.jl`](https://github.com/kailaix/ADOPT.jl) package, a customized version of [`Optim.jl`](https://github.com/JuliaNLSolvers/Optim.jl). 
+This idea is implemented in the [`ADOPT.jl`](https://github.com/kailaix/ADOPT.jl) package, a customized version of [`Optim.jl`](https://github.com/JuliaNLSolvers/Optim.jl). In ADCME, we provide a wrapper [`mpi_optimize`](@ref). 
 
 ![](https://github.com/ADCMEMarket/ADCMEImages/blob/master/ADCME/mpiopt.png?raw=true)
 
@@ -120,7 +120,7 @@ using MPI-enabled LBFGS optimizer.
 
 ```julia
 using ADCME
-using ADOPT
+import ADOPT
 mpi_init()
 θ = placeholder(ones(1))
 fθ = mpi_bcast(θ)
@@ -135,33 +135,12 @@ options = Options()
 if mpi_rank()==0
     options.show_trace = true 
 end
-mpi_optimize(f, g!, ones(1), ADOPT.LBFGS(), options)
+result = mpi_optimize(f, g!, ones(1))
 if mpi_rank()==0
     @info  result.minimizer, result.minimum
 end
 
 mpi_finalize()
-```
-
-The expected output is 
-```
-Iter     Function value   Gradient norm
-     0     4.000000e+00     2.400000e+01
- * time: 0.00012421607971191406
-     1     6.660012e-01     7.040518e+00
- * time: 1.128843069076538
-     2     7.050686e-02     1.322515e+00
- * time: 1.210536003112793
-     3     2.254820e-03     2.744374e-01
- * time: 1.2910940647125244
-     4     4.319834e-07     3.908046e-03
- * time: 1.3442070484161377
-     5     2.894433e-16     1.011994e-07
- * time: 1.3975300788879395
-     6     0.000000e+00     0.000000e+00
- * time: 1.4507441520690918
-[ Info: ([0.5436890126920764], 0.0)
-```
 
 
 ### Reduce Sum

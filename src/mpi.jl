@@ -1,6 +1,6 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
     mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized, mpi_halo_exchange, mpi_halo_exchange2,
-    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor, require_mpi
+    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor, require_mpi, mpi_optimize
 
 """
     mpi_init()
@@ -559,4 +559,84 @@ function Base.:adjoint(A::mpi_SparseTensor)
     indices, vals = mpi_tensor_transpose(oplibpath, A.rows, A.cols, A.ncols, A.values, n, mpi_rank(), A.N)
     sp = RawSparseTensor(indices, vals, n, A.N)
     mpi_SparseTensor(sp, A.ilower, A.iupper)
+end
+
+@doc raw"""
+    mpi_optimize(_f::Function, _g!::Function, x0::Array{Float64};
+        method::String = "LBFGS", options = missing)
+
+Performs the MPI-enabled optimization. 
+
+# Example 
+
+```bash
+mpirun -n 4 julia adcme_inverse.jl
+```
+
+You can find the file `adcme_inverse.jl` [here](https://github.com/kailaix/ADCME.jl/blob/master/docs/src/assets/Codes/MPI/apps/optimization/adcme_inverse.jl).
+"""
+function mpi_optimize(_f::Function, _g!::Function, x0::Array{Float64};
+    method::String = "LBFGS", options = missing)
+    Optim = require_optim()
+    require_mpi()
+    r = mpi_rank()
+    flag = zeros(Int64, 1)
+
+    __cnt = 0
+    __iter = 0
+
+    function f(x)
+        flag[1] = 1
+        mpi_sync!(flag)
+        L = _f(x)
+
+        if r==0 && ADCME.options.training.verbose
+            __cnt += 1
+            println("iter $__cnt, current loss=",L)
+        end
+
+        return L 
+    end
+
+    function g!(G, x)
+        if r==0 && ADCME.options.training.verbose
+            __iter += 1
+            println("================== STEP $__iter ==================")
+        end
+        flag[1] = 2
+        mpi_sync!(flag)
+        _g!(G, x)
+    end
+
+    if method == "LBFGS"
+        method = Optim.LBFGS()
+    elseif method == "BFGS"
+        method = Optim.BFGS()
+    else
+        error("Method $method not implemented.")
+    end
+
+    options = coalesce(options, Optim.Options())
+
+    r = mpi_rank()
+    if r==0
+        println("[MPI Size = $(mpi_size())] Optimization starts...")
+        result = Optim.optimize(f, g!, x0, method, options)
+        flag[1] = 0
+        mpi_sync!(flag)
+        return result
+    else 
+        while true 
+            mpi_sync!(flag)
+            if flag[1]==1
+                _f(x0)
+            elseif flag[1]==2
+                _g!(zero(x0), x0)
+            else 
+                break 
+            end
+        end
+        return nothing
+    end
+
 end

@@ -1,12 +1,19 @@
 export test_jacobian, test_gradients, linedata, lineview, meshdata, 
     meshview, gradview, jacview, PCLview, pcolormeshview,
-    animate, saveanim, test_hessian
+    animate, saveanim, test_hessian, require_optim
 
 function require_pyplot()
     if !isdefined(Main, :PyPlot)
         error("You must load PyPlot to use this function, e.g., `using PyPlot` or `import PyPlot`")
     end
     Main.PyPlot
+end
+
+function require_optim()
+    if !isdefined(Main, :Optim)
+        error("You must load Optim to use this function, e.g., `import Optim` or `using Optim`")
+    end
+    Main.Optim
 end
 
 
