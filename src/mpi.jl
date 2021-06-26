@@ -1,6 +1,7 @@
 export mpi_bcast, mpi_init, mpi_recv, mpi_send, 
     mpi_sendrecv, mpi_sum,  mpi_finalize, mpi_initialized, mpi_halo_exchange, mpi_halo_exchange2,
-    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor, require_mpi, mpi_optimize
+    mpi_finalized, mpi_rank, mpi_size, mpi_sync!, mpi_gather, mpi_SparseTensor, require_mpi, mpi_optimize,
+    mpi_barrier
 
 """
     mpi_init()
@@ -639,4 +640,31 @@ function mpi_optimize(_f::Function, _g!::Function, x0::Array{Float64};
         return nothing
     end
 
+end
+
+@doc raw"""
+    mpi_barrier(o::PyObject)
+
+Returns 0. Impose a barrier for object `o`.
+
+```julia
+using ADCME 
+
+mpi_init()
+s = constant(rand(10))
+t = mpi_bcast(s)
+t = t + 1.0 + mpi_barrier(t)
+q = mpi_bcast(t)
+sess = Session(); init(sess)
+run(sess, q)
+```
+"""
+function mpi_barrier(o::PyObject)
+    if length(size(o))!=0
+        o = reshape(o, (-1,))[1]
+    end
+    mpi_check()
+    mpi_barrier_ = load_system_op("mpi_barrier")
+    o = convert_to_tensor(o, dtype = Float64)
+    mpi_barrier_(o)
 end

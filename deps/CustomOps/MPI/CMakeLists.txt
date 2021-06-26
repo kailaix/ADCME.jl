@@ -68,7 +68,7 @@ ENDIF()
 
 
 
-add_library(mpiop SHARED MPIBCAST.cpp MPISUM.cpp MPISEND.cpp MPIRECV.cpp)
+add_library(mpiop SHARED MPIBCAST.cpp MPISUM.cpp MPISEND.cpp MPIRECV.cpp MPIBarrier.cpp)
 set_property(TARGET mpiop PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(mpiop ${TF_LIB_FILE} ${MPI_C_LIBRARIES})
 set_target_properties(mpiop PROPERTIES 
