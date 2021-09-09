@@ -315,7 +315,22 @@ Here are some research papers using ADCME:
 
 [AdFem.jl](https://github.com/kailaix/AdFem.jl/): Inverse Modeling with the Finite Element Method
 
+# Citation
 
+Please cite this paper if you use this library:
+
+https://arxiv.org/abs/2011.11955
+
+```
+@misc{xu2020adcme,
+title={ADCME: Learning Spatially-varying Physical Fields using Deep Neural Networks},
+author={Kailai Xu and Eric Darve},
+year={2020},
+eprint={2011.11955},
+archivePrefix={arXiv},
+primaryClass={math.NA}
+}
+```
 
 # LICENSE
 
