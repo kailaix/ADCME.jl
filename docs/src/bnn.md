@@ -159,7 +159,7 @@ Evaluating $p(\mathcal{D})\geq 0$ is intractable, so we seek to minimize a lower
 
 $$F(\mathcal{D}, \theta) =  \text{KL}(p(w|\theta)||p(w)) - \mathbb{E}_{p(w|\theta)}\log p(\mathcal{D}|w)$$
 
-In practice, thee variational free energy is approximated by the discrete samples 
+In practice, the variational free energy is approximated by the discrete samples 
 
 $$F(\mathcal{D}, \theta) \approx  \frac{1}{N}\sum_{i=1}^N \left[\log p(w_i|\theta)) - \log p(w_i)  - \log p(\mathcal{D}|w_i)\right]$$
 
